@@ -1,0 +1,25 @@
+---
+layout: nil
+---
+<?xml version="1.0"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Cukes JVM Eclipse Plugin</title>
+    <link>http://mrpotes.github.com/cukes-jvm-eclipse-plugin/</link>
+    <atom:link href="http://mrpotes.github.com/cukes-jvm-eclipse-plugin/rss.xml" rel="self" type="application/rss+xml" />
+    <description>News from Cukes JVM Eclipse Plugin</description>
+    <language>en-gb</language>
+    <pubDate>{{ site.time | date: "%a, %d %b %Y %H:%M:%S %z" }}</pubDate>
+    <lastBuildDate>{{ site.time | date: "%a, %d %b %Y %H:%M:%S %z" }}</lastBuildDate>
+{% for post in site.posts %}
+    <item>
+      <title>{{ post.title }}</title>
+      <link>http://mrpotes.github.com/cukes-jvm-eclipse-plugin{{ post.url }}</link>
+      <pubDate>{{ post.date | date: "%a, %d %b %Y %H:%M:%S %z" }}</pubDate>
+      <author>mrpotes</author>
+      <guid>http://mrpotes.github.com/cukes-jvm-eclipse-plugin{{ post.id }}</guid>
+      <description>{{ post.content | xml_escape }}</description>
+    </item>
+{% endfor %}
+  </channel>
+</rss>

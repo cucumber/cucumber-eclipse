@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
+<head>
+	<meta charset="utf-8">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link rel="stylesheet" href="{{ site.url }}/stylesheets/base.css">
+	<link rel="stylesheet" href="{{ site.url }}/stylesheets/skeleton.css">
+	<link rel="stylesheet" href="{{ site.url }}/stylesheets/layout.css">
+	<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<title>Cucumber-Eclipse > {{ page.title }}</title>
+	<link rel="alternate" type="application/rss+xml" title="RSS Feed for cucumber-eclipse" href="{{ site.url }}/rss.xml" />
+</head>
+<body>
+	<div class="container">
+		<div class="sixteen columns">
+			<h1 class="remove-bottom" style="margin-top: 40px">Cucumber-Eclipse</h1>
+		</div>
+		<div class="nav sixteen columns">
+			<ul>
+				<li><a href="{{site.url}}">Home</a></li>
+				<li><a href="{{site.url}}/news.html">News</a><li>
+			</ul>
+		</div>
+		{{ content }}
+	</div>
+</body>
+</html>

@@ -1,0 +1,15 @@
+---
+layout: default
+title: Home
+---
+<div class="sixteen columns">
+	<h2>News</h2>
+	<hr/>
+	{% for post in site.posts %}
+	<div class="twelve columns offset-by-two post">
+		<h4><a href="{{ site.url }}{{ post.url }}">{{ post.title }}</a></h4>
+		<p><small class="subheader">{{ post.date | date_to_string }}</small></p>
+		<div class="content">{{ post.content }}</div>
+	</div>
+	{% endfor %}
+</div>
