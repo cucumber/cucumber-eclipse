@@ -48,4 +48,4 @@ The build procedure is then:
 * Open site.xml and remove the feature version you're removing, and add the new one
 * In the site.xml, click the Build All button
 * In the _posts directory, add a new .md file for your version, giving brief release notes.
-* Git-add all changes, and commit using a github issue that covers the release.
+* Git-add all changes, and commit using a github issue that covers the release, commit and push to relevant branches.
