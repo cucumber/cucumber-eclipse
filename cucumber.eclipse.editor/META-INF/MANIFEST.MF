@@ -1,10 +1,12 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Cucumber Editor
-Bundle-SymbolicName: cucumber.eclipse.editor
+Bundle-SymbolicName: cucumber.eclipse.editor;singleton:=true
 Bundle-Version: 0.0.1.alpha
 Bundle-Activator: cucumber.eclipse.editor.Activator
 Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime
+ org.eclipse.core.runtime,
+ org.eclipse.ui.editors;bundle-version="3.8.0",
+ org.eclipse.jface.text;bundle-version="3.8.1"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7

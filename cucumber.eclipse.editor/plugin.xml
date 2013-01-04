@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension point="org.eclipse.ui.editors">
+      <editor
+            class="cucumber.eclipse.editor.editors.Editor"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            extensions="feature"
+            icon="icons/cukes.gif"
+            id="cucumber.eclipse.editor.editors.Editor"
+            name="Editor">
+      </editor>
+   	</extension>
+</plugin>
