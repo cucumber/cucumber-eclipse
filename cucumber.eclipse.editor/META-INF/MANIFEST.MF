@@ -10,3 +10,5 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jface.text
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ClassPath: META-INF/lib/gherkin-2.9.3.jar,
+ .
