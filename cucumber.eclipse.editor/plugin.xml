@@ -11,4 +11,38 @@
             name="Editor">
       </editor>
    	</extension>
+   <extension
+         point="org.eclipse.ui.themes">
+        <themeElementCategory label="Gherkin" id="cucumber.eclipse.editor.presentation"/>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_string_colour"
+        	label="String Colour"
+        	value="0,128,0">
+        </colorDefinition>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_comment_colour"
+        	label="Comment Colour"
+        	value="128,0,0">
+        </colorDefinition>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_text_colour"
+        	label="Text Colour"
+        	value="0,0,0">
+        </colorDefinition>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_keyword_colour"
+        	label="Keyword Colour"
+        	value="128,128,0">
+        </colorDefinition>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_step_colour"
+        	label="Step Colour"
+        	value="0,128,128">
+        </colorDefinition>
+     </extension>
 </plugin>

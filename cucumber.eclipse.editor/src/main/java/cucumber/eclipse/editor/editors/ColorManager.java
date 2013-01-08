@@ -7,6 +7,9 @@ import java.util.Map;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.themes.ITheme;
+import org.eclipse.ui.themes.IThemeManager;
 
 public class ColorManager {
 
@@ -24,5 +27,14 @@ public class ColorManager {
 			fColorTable.put(rgb, color);
 		}
 		return color;
+	}
+	
+	public Color getColor(GherkinColors color) {
+		return PlatformUI.
+		getWorkbench().
+		getThemeManager().
+		getCurrentTheme().
+		getColorRegistry().
+		get(color.COLOR_PREFERENCE_ID);
 	}
 }

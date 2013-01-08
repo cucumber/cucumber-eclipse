@@ -29,11 +29,11 @@ public class GherkinKeywordScanner extends RuleBasedScanner {
 		
 		i18n = new I18n(_code); 
 		
-		IToken keyword= new Token(new TextAttribute(manager.getColor(GherkinColorConstants.KEYWORD)));
-		IToken step= new Token(new TextAttribute(manager.getColor(GherkinColorConstants.STEP)));
-		IToken string= new Token(new TextAttribute(manager.getColor(GherkinColorConstants.STRING)));
-		IToken comment= new Token(new TextAttribute(manager.getColor(GherkinColorConstants.COMMENT)));
-		IToken other= new Token(new TextAttribute(manager.getColor(GherkinColorConstants.DEFAULT)));
+		IToken keyword= new Token(new TextAttribute(manager.getColor(GherkinColors.KEYWORD)));
+		IToken step= new Token(new TextAttribute(manager.getColor(GherkinColors.STEP)));
+		IToken string= new Token(new TextAttribute(manager.getColor(GherkinColors.STRING)));
+		IToken comment= new Token(new TextAttribute(manager.getColor(GherkinColors.COMMENT)));
+		IToken other= new Token(new TextAttribute(manager.getColor(GherkinColors.DEFAULT)));
 
 		List<IRule> rules= new ArrayList<IRule>();
 
@@ -99,4 +99,5 @@ public class GherkinKeywordScanner extends RuleBasedScanner {
 	public static void setCode(String code) {
 		_code = code;
 	}
+	
 }

@@ -28,7 +28,7 @@ public class GherkinConfiguration extends SourceViewerConfiguration {
 			keywordScanner.setDefaultReturnToken(
 				new Token(
 					new TextAttribute(
-						colorManager.getColor(GherkinColorConstants.DEFAULT))));
+						colorManager.getColor(GherkinColors.DEFAULT))));
 		}
 		return keywordScanner;
 	}

@@ -21,6 +21,7 @@ public class GherkinDamagerRepairer extends DefaultDamagerRepairer {
 				documentPartitioningChanged);
 
 		if (fScanner instanceof GherkinKeywordScanner) {
+			//((GherkinKeywordScanner) fScanner).configureRules(); // in case preferences have been changed..?
 			String newCode = determineGherkinLanguageMode(fDocument);
 			if (!newCode.equals(code)) {
 				code = newCode;
