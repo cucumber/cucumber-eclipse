@@ -49,3 +49,10 @@ The build procedure is then:
 * In the site.xml, click the Build All button
 * In the _posts directory, add a new .md file for your version, giving brief release notes.
 * Git-add all changes, and commit using a github issue that covers the release, commit and push to relevant branches.
+ 
+
+Screenshots
+===========
+
+* Example of gherkin syntax highlighting from the plugin in Juno
+![Screenshot](http://farm9.staticflickr.com/8045/8356468225_24bc14c2a6_b.jpg)
