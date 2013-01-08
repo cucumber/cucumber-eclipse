@@ -53,6 +53,9 @@ The build procedure is then:
 
 Screenshots
 ===========
+* Syntax Highlighting Colour Preferences
 
+![Screenshot](http://farm9.staticflickr.com/8097/8361733419_05234a9323.jpg)
 * Example of gherkin syntax highlighting from the plugin in Juno
 ![Screenshot](http://farm9.staticflickr.com/8045/8356468225_24bc14c2a6_b.jpg)
+
