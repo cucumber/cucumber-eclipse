@@ -1,4 +1,4 @@
-Basic Gherkin Editor
-====================
+Basic Gherkin Editor = Colour Preferences
+=========================================
 
-Version 0.0.1 is released - this just includes a port of the basic gherkin editor from https://github.com/ilanpillemer/gherkin-eclipse-plugin
+Version 0.0.1b is released - this just adds the ability to change the colours used for syntax highlighting in preferences
