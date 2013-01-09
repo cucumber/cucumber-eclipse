@@ -44,5 +44,11 @@
         	label="Step Colour"
         	value="0,128,128">
         </colorDefinition>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_numeric_literal_colour"
+        	label="Numeric Colour"
+        	value="0,128,0">
+        </colorDefinition>
      </extension>
 </plugin>

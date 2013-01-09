@@ -34,6 +34,8 @@ public class GherkinKeywordScanner extends RuleBasedScanner {
 		IToken string= new Token(new TextAttribute(manager.getColor(GherkinColors.STRING)));
 		IToken comment= new Token(new TextAttribute(manager.getColor(GherkinColors.COMMENT)));
 		IToken other= new Token(new TextAttribute(manager.getColor(GherkinColors.DEFAULT)));
+		IToken numeric= new Token(new TextAttribute(manager.getColor(GherkinColors.NUMERIC)));
+		
 
 		List<IRule> rules= new ArrayList<IRule>();
 
@@ -50,10 +52,12 @@ public class GherkinKeywordScanner extends RuleBasedScanner {
 
 
 		WordRule wordRule= new WordRule(new GherkinWordDetector(), other);
-		WordRule wordStarStepRule= new WordRule(new GherkinStarStepWordDetector(), other);
-		
+		WordRule numericRule= new WordRule(new GherkinNumericDetector(), numeric);
+		WordRule wordStarStepRule= new WordRule(new GherkinStarStepWordDetector(), step);
 		// Add rule to colour the * that can be used instead of steps
 		wordStarStepRule.addWord("*", keyword);
+		
+	
 	
 		for (String featureElement: FEATURE_ELEMENT_KEYWORD_KEYS ) {
 			List<String> keywords = i18n.keywords(featureElement);
@@ -68,10 +72,9 @@ public class GherkinKeywordScanner extends RuleBasedScanner {
 				rules.add(new SingleLineRule(e.trim(), " ", step ));	
 			}
 		}
-		
+		rules.add(numericRule);
 		rules.add(wordRule);
 		rules.add(wordStarStepRule);
-
 		IRule[] result= new IRule[rules.size()];
 		rules.toArray(result);
 		setRules(result);
