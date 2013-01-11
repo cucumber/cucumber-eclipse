@@ -2,13 +2,7 @@ package cucumber.eclipse.editor.editors;
 
 import gherkin.parser.ParseError;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.BadLocationException;
@@ -16,16 +10,14 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
-
 import cucumber.eclipse.editor.Activator;
 
-//import org.eclipse.core.
+
 
 public class GherkinPopupMenuPrettyFormatActionDelegate implements
 		IObjectActionDelegate {
@@ -46,14 +38,6 @@ public class GherkinPopupMenuPrettyFormatActionDelegate implements
 	public void setActivePart(IAction arg0, IWorkbenchPart targetPart) {
 		shell = targetPart.getSite().getShell();
 
-	}
-
-	// ref: http://stackoverflow.com/a/5445161/480998
-	public static String convertStreamToString(java.io.InputStream is,
-			String charSet) {
-		java.util.Scanner s = new java.util.Scanner(is, charSet)
-				.useDelimiter("\\A");
-		return s.hasNext() ? s.next() : "";
 	}
 
 	@Override
