@@ -48,11 +48,5 @@ public class GherkinConfiguration extends TextSourceViewerConfiguration {
 		return reconciler;
 	}
 	
-	@Override
-	public IContentFormatter getContentFormatter(ISourceViewer sourceViewer) {
-		final MultiPassContentFormatter formatter= new MultiPassContentFormatter(getConfiguredDocumentPartitioning(sourceViewer), IDocument.DEFAULT_CONTENT_TYPE);
-		formatter.setMasterStrategy(new GherkinFormattingStrategy());
-		return formatter;
-	}
 
 }

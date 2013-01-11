@@ -11,33 +11,20 @@ import static org.hamcrest.Matchers.*;
 import cucumber.eclipse.editor.editors.GherkinFormatterUtil;
 
 public class GherkinFormattingStrategyTest {
-	@Ignore @Test public void testStringFormatting() throws Exception {
-		StringBuffer buf= new StringBuffer();
-		buf.append("unformatted stuff\n");
-				String contents= buf.toString();
+	@Test public void testStringFormatting() throws Exception {
 
-
-		String formatted= GherkinFormatterUtil.format( contents, 0, "\n");
-
-		buf= new StringBuffer();
-		buf.append("formatted stuff;\n");
-		assertThat(buf.toString(), is(formatted));
+		String formatted= GherkinFormatterUtil.format( GherkinTestFixtures.unformatted_feature );
+		assertThat(GherkinTestFixtures.formatted_feature, is(formatted));
 
 	}
 
 	@Ignore @Test public void testTextEdit() throws Exception {
-		StringBuffer buf= new StringBuffer();
-		buf.append("unformatted stuff\n");
-		String contents= buf.toString();
 		
-		TextEdit edit= GherkinFormatterUtil.formatTextEdit(contents, 0, "\n");
-		Document doc= new Document(contents);
+		TextEdit edit= GherkinFormatterUtil.formatTextEdit( GherkinTestFixtures.unformatted_feature, 0, "\n");
+		Document doc= new Document(GherkinTestFixtures.unformatted_feature);
 		edit.apply(doc);
-		String formatted= doc.get();
+		String formatted = doc.get();
 
-		buf= new StringBuffer();
-		buf.append("formatted stuff;\n");
-		String expected= buf.toString();
-		assertThat(buf.toString(), is(formatted));
+		assertThat(GherkinTestFixtures.formatted_feature, is(formatted));
 	}
 }

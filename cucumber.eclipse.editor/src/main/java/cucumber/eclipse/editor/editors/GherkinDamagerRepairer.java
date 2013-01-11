@@ -29,6 +29,7 @@ public class GherkinDamagerRepairer extends DefaultDamagerRepairer {
 				damageRegion = new Region(0, fDocument.getLength());
 			}
 		}
+
 		return damageRegion;
 	}
 

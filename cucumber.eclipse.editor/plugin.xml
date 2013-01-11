@@ -51,4 +51,41 @@
         	value="0,128,0">
         </colorDefinition>
      </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            name="Formatter"
+            id="cucumber.eclipse.editor.formmtter">
+      </category>
+      <command
+            categoryId="cucumber.eclipse.editor.formmtter"
+            description="Format"
+            id="cucumber.eclipse.editor.formmater.pretty_formatter"
+            name="Pretty format feature file">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            commandId="cucumber.eclipse.editor.formmater.pretty_formatter"
+            class="cucumber.eclipse.editor.editors.GherkinPrettyFormatHandler">
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+     <objectContribution
+        id="cucumber.eclipse.editor.gherkin"
+        objectClass="org.eclipse.core.resources.IFile"
+	    nameFilter="*.feature">
+	    <action id="cucumber.eclipse.edtior.action.format"
+	       label="Pretty Format"
+	       icon="icons/cukes.gif"
+	       menubarPath="additions"
+	       helpContextId="cucumber.eclipse.editor.pretty_format_action_context"
+	       class="cucumber.eclipse.editor.editors.GherkinPopupMenuPrettyFormatActionDelegate"	
+           definitionId="cucumber.eclipse.editor.formmater.pretty_formatter"
+	       enablesFor="1">
+	    </action>
+	 </objectContribution>
+   </extension>
 </plugin>
