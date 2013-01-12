@@ -73,10 +73,9 @@
    </extension>
    <extension
          point="org.eclipse.ui.popupMenus">
-     <objectContribution
+     <viewerContribution
         id="cucumber.eclipse.editor.gherkin"
-        objectClass="org.eclipse.core.resources.IFile"
-	    nameFilter="*.feature">
+        targetID="#TextEditorContext">
 	    <action id="cucumber.eclipse.edtior.action.format"
 	       label="Pretty Format"
 	       icon="icons/cukes.gif"
@@ -84,8 +83,8 @@
 	       helpContextId="cucumber.eclipse.editor.pretty_format_action_context"
 	       class="cucumber.eclipse.editor.editors.GherkinPopupMenuPrettyFormatActionDelegate"	
            definitionId="cucumber.eclipse.editor.formmater.pretty_formatter"
-	       enablesFor="1">
+	       >
 	    </action>
-	 </objectContribution>
+	 </viewerContribution>
    </extension>
 </plugin>
