@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/cucumber.eclipse.feature_0.0.1.c_alpha.jar" id="cucumber.eclipse.feature" version="0.0.1.c_alpha">
+   <feature url="features/cucumber.eclipse.feature_0.0.1.d_alpha.jar" id="cucumber.eclipse.feature" version="0.0.1.d_alpha">
       <category name="Cucumber Eclipse"/>
    </feature>
    <category-def name="Cucumber Eclipse" label="Cucumber Eclipse Plugin"/>
