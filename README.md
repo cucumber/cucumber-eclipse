@@ -51,11 +51,10 @@ The build procedure is then:
 * Git-add all changes, and commit using a github issue that covers the release, commit and push to relevant branches.
  
 
-Screenshots
-===========
-* Syntax Highlighting Colour Preferences
+Screenshots and Features of the plugin
+======================================
+Please consult the [wiki](https://github.com/cucumber/cucumber-eclipse/wiki) for a full list for currently available features and screenshots.
+eg [Syntax Highlighting](https://github.com/cucumber/cucumber-eclipse/wiki/I18n-Syntax-highlighting)
 
-![Screenshot](http://farm9.staticflickr.com/8097/8361733419_05234a9323.jpg)
-* Example of gherkin syntax highlighting from the plugin in Juno
-![Screenshot](http://farm9.staticflickr.com/8045/8356468225_24bc14c2a6_b.jpg)
+
 
