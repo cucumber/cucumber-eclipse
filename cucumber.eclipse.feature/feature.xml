@@ -2,7 +2,7 @@
 <feature
       id="cucumber.eclipse.feature"
       label="Cucumber Eclipse Feature"
-      version="0.0.1.c_alpha">
+      version="0.0.1.d_alpha">
 
    <description url="http://www.example.com/description">
       [Enter Feature Description here.]

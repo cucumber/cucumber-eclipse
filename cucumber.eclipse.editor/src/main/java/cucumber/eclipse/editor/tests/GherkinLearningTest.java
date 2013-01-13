@@ -29,8 +29,7 @@ public class GherkinLearningTest {
 		out.flush();
 
 		String should_be = GherkinTestFixtures.formatted_feature;
-
-		assertThat(output.toString(), is(should_be));
+		assertThat(output.toString(),   is(should_be));
 
 	}
 
