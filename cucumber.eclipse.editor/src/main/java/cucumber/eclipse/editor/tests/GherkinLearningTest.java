@@ -6,8 +6,10 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
 import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.*;
+//import static org.hamcrest.Matchers.*;
 
-import static org.hamcrest.Matchers.*;
+import org.hamcrest.Matcher;
 import org.junit.Test;
 
 import gherkin.formatter.Formatter;
@@ -15,6 +17,8 @@ import gherkin.parser.Parser;
 import gherkin.formatter.PrettyFormatter;
 
 public class GherkinLearningTest {
+	
+
 	@Test
 	public void format() throws UnsupportedEncodingException {
 		String gherkin = GherkinTestFixtures.unformatted_feature;
@@ -29,7 +33,9 @@ public class GherkinLearningTest {
 		out.flush();
 
 		String should_be = GherkinTestFixtures.formatted_feature;
-		assertThat(output.toString(),   is(should_be));
+		org.hamcrest.CoreMatchers.is(should_be);
+		assertThat(output.toString(), is(should_be)   );
+		
 
 	}
 
