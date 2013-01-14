@@ -2,10 +2,19 @@ package cucumber.eclipse.editor.editors;
 
 import gherkin.formatter.Formatter;
 import gherkin.formatter.PrettyFormatter;
+import gherkin.lexer.LexingError;
+import gherkin.parser.ParseError;
 import gherkin.parser.Parser;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
+
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.text.edits.TextEdit;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.texteditor.ITextEditor;
 
 public class GherkinFormatterUtil {
 
@@ -25,6 +34,33 @@ public class GherkinFormatterUtil {
 	public static TextEdit formatTextEdit(String contents, int i, String string) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public static void format(IEditorPart editorPart) {
+		ITextEditor editor = (ITextEditor) editorPart;
+		Shell shell = editorPart.getSite().getShell();
+		IDocument doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
+		String contents = doc.get();
+		try {
+			String formatted = GherkinFormatterUtil.format(contents);
+			doc.replace(0, doc.getLength(), formatted);
+		} catch (ParseError e) {
+			MessageDialog.openInformation(shell, "Unable to pretty format.",
+					"One can only format a feature file that has no parse errors: \n"
+							+ "The following parse error was encountered: ["
+							+ e.getMessage() + "]");
+
+		} catch (LexingError e) {
+			MessageDialog.openInformation(shell, "Unable to pretty format.",
+					"One can only format a feature file that has no lexing errors: \n"
+							+ "The following lex error was encountered: ["
+							+ e.getMessage() + "]");
+		}
+		
+		catch (BadLocationException e) {
+			e.printStackTrace();
+		}
+		
 	}
 
 }

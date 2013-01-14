@@ -87,4 +87,13 @@
 	    </action>
 	 </viewerContribution>
    </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="cucumber.eclipse.editor.formmater.pretty_formatter"
+            contextId="org.eclipse.ui.contexts.window"
+            sequence="M1+SHIFT+F"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
+      </key>
+   </extension>
 </plugin>

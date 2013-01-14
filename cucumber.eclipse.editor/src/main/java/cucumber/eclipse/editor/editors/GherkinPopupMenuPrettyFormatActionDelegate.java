@@ -1,6 +1,6 @@
 package cucumber.eclipse.editor.editors;
 
-import gherkin.lexer.LexingError;
+
 import gherkin.parser.ParseError;
 
 import org.eclipse.jface.action.IAction;
@@ -27,31 +27,11 @@ public class GherkinPopupMenuPrettyFormatActionDelegate implements
 
 		IEditorPart editorPart = Activator.getDefault().getWorkbench()
 				.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-		ITextEditor editor = (ITextEditor) editorPart;
-		Shell shell = editorPart.getSite().getShell();
-		IDocument doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
-		String contents = doc.get();
-		try {
-			String formatted = GherkinFormatterUtil.format(contents);
-			doc.replace(0, doc.getLength(), formatted);
-		} catch (ParseError e) {
-			MessageDialog.openInformation(shell, "Unable to pretty format.",
-					"One can only format a feature file that has no parse errors: \n"
-							+ "The following parse error was encountered: ["
-							+ e.getMessage() + "]");
-
-		} catch (LexingError e) {
-			MessageDialog.openInformation(shell, "Unable to pretty format.",
-					"One can only format a feature file that has no lexing errors: \n"
-							+ "The following lex error was encountered: ["
-							+ e.getMessage() + "]");
-		}
 		
-		catch (BadLocationException e) {
-			e.printStackTrace();
-		}
+		GherkinFormatterUtil. format(editorPart);
 
 	}
+
 
 	@Override
 	public void setActiveEditor(IAction action, IEditorPart part) {
