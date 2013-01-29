@@ -12,7 +12,7 @@ import org.eclipse.jface.text.*;
 
 public class GherkinKeywordScanner extends RuleBasedScanner {
 		
-    private static final List<String> FEATURE_ELEMENT_KEYWORD_KEYS = Arrays.asList("feature", "background", "scenario", "scenario_outline", "examples");
+    private static final List<String> FEATURE_ELEMENT_KEYWORD_KEYS = Arrays.asList("scenario_outline","feature", "background", "scenario", "examples");
     private static final List<String> STEP_KEYWORD_KEYS = Arrays.asList("given", "when", "then", "and", "but");
     private static I18n i18n;   
     private static String _code = "en";
