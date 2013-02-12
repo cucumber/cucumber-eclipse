@@ -12,5 +12,5 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.5.0",
  org.junit4
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Bundle-ClassPath: META-INF/lib/gherkin-2.9.3.jar,
- .
+Bundle-ClassPath: .,
+ META-INF/lib/gherkin-2.11.6.jar
