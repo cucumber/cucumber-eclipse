@@ -43,10 +43,9 @@ There is an Eclipse Update Site on the gh-pages branch. If you're going to do a 
 You can then import the update-site subdirectory as an Eclipse project, and you'll also need to import the cucumber.eclipse.feature directory of the main code that you're using.
 
 The build procedure is then:
-* Update version numbers in plugin.xml/MANIFEST.MF for each plugin
-* Update version number in feature.xml for the feature
-* Open site.xml and remove the feature version you're removing, and add the new one
-* In the site.xml, click the Build All button
+* Update version numbers by running `mvn tycho-versions:set-version -DnewVersion=0.0.4-SNAPSHOT`
+* Build the Eclipse Plugin, Feature and P2 repository with `mvn clean install`
+* Copy the contents of `cucumber.eclipse.p2updatesite\target\repository` to the `update-site` folder in the cucumber-eclipse-site
 * In the _posts directory, add a new .md file for your version, giving brief release notes.
 * Git-add all changes, and commit using a github issue that covers the release, commit and push to relevant branches.
  
