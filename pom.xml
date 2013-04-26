@@ -25,8 +25,8 @@
 	
 	<repositories>
 		<repository>
-			<id>galileo</id>
-			<url>http://download.eclipse.org/releases/galileo/</url>
+			<id>juno</id>
+			<url>http://download.eclipse.org/releases/juno/</url>
 			<layout>p2</layout>
 		</repository>
 
@@ -60,6 +60,7 @@
 						<include>**/*Test.java</include>
 					</includes>
 					<forkedProcessTimeoutInSeconds>7200</forkedProcessTimeoutInSeconds>
+					<argLine>-XstartOnFirstThread</argLine>
 				</configuration>
 			</plugin>
 		</plugins>
