@@ -23,4 +23,4 @@ Export-Package: cucumber.eclipse.editor,
  cucumber.eclipse.editor.editors,
  gherkin.formatter,
  gherkin.parser
-DynamicImport-Package: *
+DynamicImport-Package: * 
