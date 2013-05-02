@@ -25,8 +25,8 @@
 	
 	<repositories>
 		<repository>
-			<id>juno</id>
-			<url>http://download.eclipse.org/releases/juno/</url>
+			<id>galileo</id>
+			<url>http://download.eclipse.org/releases/galileo/</url>
 			<layout>p2</layout>
 		</repository>
 

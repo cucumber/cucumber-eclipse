@@ -64,11 +64,31 @@
             name="Pretty format feature file">
       </command>
    </extension>
+      <extension
+         point="org.eclipse.ui.commands">
+      <category
+            name="Formatter"
+            id="cucumber.eclipse.editor.runner">
+      </category>
+      <command
+            categoryId="cucumber.eclipse.editor.runner"
+            description="Format"
+            id="cucumber.eclipse.editor.formmater.feature_runner"
+            name="Run Feature">
+      </command>
+   </extension>
    <extension
          point="org.eclipse.ui.handlers">
       <handler
             commandId="cucumber.eclipse.editor.formmater.pretty_formatter"
             class="cucumber.eclipse.editor.editors.GherkinPrettyFormatHandler">
+      </handler>
+   </extension>
+      <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            commandId="cucumber.eclipse.editor.formmater.feature_runner"
+            class="cucumber.eclipse.editor.editors.GherkinFeatureRunnerHandler">
       </handler>
    </extension>
    <extension
@@ -87,6 +107,22 @@
 	    </action>
 	 </viewerContribution>
    </extension>
+      <extension
+         point="org.eclipse.ui.popupMenus">
+     <viewerContribution
+        id="cucumber.eclipse.editor.runner"
+        targetID="#TextEditorContext">
+	    <action id="cucumber.eclipse.edtior.action.runner"
+	       label="Run Feature"
+	       icon="icons/cukes.gif"
+	       menubarPath="additions"
+	       helpContextId="cucumber.eclipse.editor.feature_runner_action_context"
+	       class="cucumber.eclipse.editor.editors.GherkinPopupMenuFeatureRunnerActionDelegate"	
+           definitionId="cucumber.eclipse.editor.formmater.feature_runner"
+	       >
+	    </action>
+	 </viewerContribution>
+   </extension>
    <extension
          point="org.eclipse.ui.bindings">
       <key
@@ -96,4 +132,28 @@
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
       </key>
    </extension>
+   <extension point = "org.eclipse.debug.core.launchConfigurationTypes">
+   <launchConfigurationType
+   	   id="cucumber.eclipse.launching.localCucumberFeature"
+	   name="Cucumber Feature"
+	   delegate="cucumber.eclipse.launching.CucumberFeatureLocalApplicationLaunchConfigurationDelegate"
+	   modes= "run"
+	   sourceLocatorId="cucumber.eclipse.launching.sourceLocator.JavaSourceLookupDirector"
+       sourcePathComputerId="cucumber.eclipse.launching.sourceLookup.javaSourcePathComputer">
+   </launchConfigurationType>
+</extension>
+<extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+    <launchConfigurationTypeImage
+        icon="icons/cukes.gif"
+        configTypeID="cucumber.eclipse.launching.localCucumberFeature"
+        id="org.eclipse.jdt.debug.ui.launchConfigurationTypeImage.localCucumberFeature">
+    </launchConfigurationTypeImage>
+</extension>
+<extension point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+    <launchConfigurationTabGroup
+        type="cucumber.eclipse.launching.localCucumberFeature"
+        class="cucumber.eclipse.launching.CucumberFeatureTabGroup"
+        id="cucumber.eclipse.launching.launchConfigurationTabGroup.localCucumberFeature">
+    </launchConfigurationTabGroup>
+</extension>
 </plugin>
