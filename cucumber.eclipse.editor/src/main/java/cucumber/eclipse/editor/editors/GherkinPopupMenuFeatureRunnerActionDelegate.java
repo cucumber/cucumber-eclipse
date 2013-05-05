@@ -25,7 +25,7 @@ public class GherkinPopupMenuFeatureRunnerActionDelegate implements
 		IEditorPart editorPart = Activator.getDefault().getWorkbench()
 				.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 		ITextEditor part = (ITextEditor) editorPart;
-				
+			// /Users/ilanpillemer/Developer/Projects/cucumber-jvm/examples/java-calculator/src/test/resources/cucumber/examples/java/calculator/basic_arithmetic.feature";	
 	}
 	@Override
 	public void setActiveEditor(IAction action, IEditorPart part) {
