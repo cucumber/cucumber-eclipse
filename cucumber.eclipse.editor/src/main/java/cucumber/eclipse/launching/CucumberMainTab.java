@@ -81,23 +81,13 @@ implements ILaunchConfigurationTab {
 		
         IWorkbenchPage page = JDIDebugUIPlugin.getActivePage();
         if (page != null) {
-        	
-        	
-
           IEditorPart part = page.getActiveEditor();
-
-        			if(part  != null)
-        			{
+        			if(part  != null) {
         			    IFileEditorInput input = (IFileEditorInput)part.getEditorInput() ;
         			    IFile file = input.getFile();
         			    IProject activeProject = file.getProject();
-        			    String activeProjectName = activeProject.getName();
-        			    System.out.println("found " + activeProjectName);
         			    return activeProject;
         			}
-
-           return null;
-           
         }
 
        return null;
@@ -111,7 +101,7 @@ implements ILaunchConfigurationTab {
 	       	 initializeJavaProject(javaProject, config);
 	        }
 	        else {
-	            config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, EMPTY_STRING);
+	         config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, EMPTY_STRING);
 	        }
 	        
 	}
