@@ -8,12 +8,18 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.internal.ui.SWTFactory;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
 import org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin;
+import org.eclipse.jdt.internal.debug.ui.launcher.LauncherMessages;
 import org.eclipse.jdt.internal.debug.ui.launcher.SharedJavaMainTab;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
@@ -24,24 +30,57 @@ import org.eclipse.ui.IWorkbenchPage;
 public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigurationTab {
 
 	protected Text fFeaturePath;
+	private WidgetListener fListener = new WidgetListener();
+	private Button fFeatureButton;
+
+	private class WidgetListener implements ModifyListener, SelectionListener {
+
+		public void modifyText(ModifyEvent e) {
+			updateLaunchConfigurationDialog();
+		}
+
+		public void widgetDefaultSelected(SelectionEvent e) {/* do nothing */
+		}
+
+		public void widgetSelected(SelectionEvent e) {
+			Object source = e.getSource();
+			if (source == fFeatureButton) {
+				// TODO
+			} else {
+				updateLaunchConfigurationDialog();
+			}
+		}
+	}
 
 	@Override
 	public void createControl(Composite parent) {
 		Composite comp = SWTFactory.createComposite(parent, parent.getFont(), 1, 1, GridData.FILL_BOTH);
 		createProjectEditor(comp);
 		setControl(comp);
+		createFeaturePathEditor(comp);
 
-		Font font = parent.getFont();
-		String text = "lorem";
-		Group mainGroup = SWTFactory.createGroup(parent, text, 2, 1, GridData.FILL_HORIZONTAL);
-		Composite comp2 = SWTFactory.createComposite(mainGroup, font, 2, 2, GridData.FILL_BOTH, 0, 0);
-		fFeaturePath = SWTFactory.createSingleText(comp2, 1);
-		fFeaturePath.addModifyListener(new ModifyListener() {
-			public void modifyText(ModifyEvent e) {
-				updateLaunchConfigurationDialog();
-			}
-		});
+	}
 
+	private void createFeaturePathEditor(Composite comp) {
+		Font font = comp.getFont();
+		Group group = new Group(comp, SWT.NONE);
+		group.setText("Feature Path:");
+		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+		group.setLayoutData(gd);
+		GridLayout layout = new GridLayout();
+		layout.numColumns = 2;
+		group.setLayout(layout);
+		group.setFont(font);
+		fFeaturePath = new Text(group, SWT.SINGLE | SWT.BORDER);
+		gd = new GridData(GridData.FILL_HORIZONTAL);
+
+		fFeaturePath.setLayoutData(gd);
+		fFeaturePath.setFont(font);
+
+		fFeaturePath.addModifyListener(fListener);
+
+		fFeatureButton = createPushButton(group, LauncherMessages.AbstractJavaMainTab_1, null);
+		fFeatureButton.addSelectionListener(fListener);
 	}
 
 	@Override
@@ -92,7 +131,7 @@ public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigu
 
 		IProject javaProject = getProject();
 		String featurePath = getFeaturePath();
-		if (javaProject != null && getFeaturePath()!=null) {
+		if (javaProject != null && getFeaturePath() != null) {
 			initializeCucumberProject(featurePath, javaProject, config);
 		} else {
 			config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, EMPTY_STRING);
