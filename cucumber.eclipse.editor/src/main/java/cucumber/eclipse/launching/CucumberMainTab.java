@@ -29,9 +29,13 @@ import org.eclipse.ui.IWorkbenchPage;
 
 public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigurationTab {
 
-	protected Text fFeaturePath;
+	private static final String ATTR_FEATURE_PATH = "cucumber feature";
+	private static final String ATTR_GLUE_PATH = "glue path";
+	protected Text fFeaturePath; 
+	protected Text fGluePath;
 	private WidgetListener fListener = new WidgetListener();
 	private Button fFeatureButton;
+	private Button fGlueButton;
 
 	private class WidgetListener implements ModifyListener, SelectionListener {
 
@@ -46,9 +50,10 @@ public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigu
 			Object source = e.getSource();
 			if (source == fFeatureButton) {
 				// TODO
-			} else {
+			} else if (source == fGlueButton) {
+				// TODO
+			} else
 				updateLaunchConfigurationDialog();
-			}
 		}
 	}
 
@@ -58,7 +63,30 @@ public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigu
 		createProjectEditor(comp);
 		setControl(comp);
 		createFeaturePathEditor(comp);
+		createGluePathEditor(comp);
 
+	}
+
+	private void createGluePathEditor(Composite comp) {
+		Font font = comp.getFont();
+		Group group = new Group(comp, SWT.NONE);
+		group.setText("Glue Path:");
+		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+		group.setLayoutData(gd);
+		GridLayout layout = new GridLayout();
+		layout.numColumns = 2;
+		group.setLayout(layout);
+		group.setFont(font);
+		fGluePath = new Text(group, SWT.SINGLE | SWT.BORDER);
+		gd = new GridData(GridData.FILL_HORIZONTAL);
+
+		fGluePath.setLayoutData(gd);
+		fGluePath.setFont(font);
+
+		fGluePath.addModifyListener(fListener);
+
+		fGlueButton = createPushButton(group, LauncherMessages.AbstractJavaMainTab_1, null);
+		fGlueButton.addSelectionListener(fListener);
 	}
 
 	private void createFeaturePathEditor(Composite comp) {
@@ -91,7 +119,8 @@ public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigu
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy config) {
 		config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, fProjText.getText().trim());
-		config.setAttribute("cucumber feature", fFeaturePath.getText().trim());
+		config.setAttribute(ATTR_FEATURE_PATH, fFeaturePath.getText().trim());
+		config.setAttribute(ATTR_GLUE_PATH, fGluePath.getText().trim());
 		mapResources(config);
 
 	}
@@ -126,19 +155,26 @@ public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigu
 		return null;
 	}
 
+	private String getGluePath() {
+		return "cucumber.examples.java.calculator";
+	}
 	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy config) {
 
 		IProject javaProject = getProject();
 		String featurePath = getFeaturePath();
+		String gluePath = getGluePath();
 		if (javaProject != null && getFeaturePath() != null) {
-			initializeCucumberProject(featurePath, javaProject, config);
+			initializeCucumberProject(gluePath, featurePath, javaProject, config);
 		} else {
 			config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, EMPTY_STRING);
-			config.setAttribute("cucumber feature", EMPTY_STRING);
+			config.setAttribute(ATTR_FEATURE_PATH, EMPTY_STRING);
+			config.setAttribute(ATTR_GLUE_PATH, EMPTY_STRING);
 		}
 
 	}
+
+
 
 	@Override
 	protected void handleSearchButtonSelected() {
@@ -148,19 +184,28 @@ public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigu
 	public void initializeFrom(ILaunchConfiguration config) {
 		super.initializeFrom(config);
 		updateFeaturePathFromConfig(config);
+		updateGluePathFromConfig(config);
+	}
+
+	private void updateGluePathFromConfig(ILaunchConfiguration config) {
+		updateFromConfig(config,ATTR_GLUE_PATH,fGluePath);
 	}
 
 	private void updateFeaturePathFromConfig(ILaunchConfiguration config) {
-		String featurePath = "";
+		updateFromConfig(config,ATTR_FEATURE_PATH,fFeaturePath);
+	}
+
+	private void updateFromConfig(ILaunchConfiguration config, String attrib, Text text) {
+		String s = EMPTY_STRING;
 		try {
-			featurePath = config.getAttribute("cucumber feature", "");
+			s = config.getAttribute(attrib, EMPTY_STRING);
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
-		fFeaturePath.setText(featurePath);
+		text.setText(s);
 	}
 
-	protected void initializeCucumberProject(String featurePath, IProject javaProject, ILaunchConfigurationWorkingCopy config) {
+	protected void initializeCucumberProject(String gluePath, String featurePath, IProject javaProject, ILaunchConfigurationWorkingCopy config) {
 
 		String name = null;
 		if (javaProject != null && javaProject.exists()) {
@@ -169,8 +214,8 @@ public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigu
 
 		config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, name);
 		System.out.println("Settting ....................... " + featurePath);
-		config.setAttribute("cucumber feature", featurePath);
-
+		config.setAttribute(ATTR_FEATURE_PATH, featurePath);
+		config.setAttribute(ATTR_GLUE_PATH, gluePath);
 	}
 
 }

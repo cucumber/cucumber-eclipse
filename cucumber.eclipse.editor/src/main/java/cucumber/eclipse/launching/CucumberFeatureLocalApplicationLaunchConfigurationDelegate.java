@@ -36,13 +36,16 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		String[] bootpath = getBootpath(config);
 		runConfig.setBootClassPath(bootpath);
 		
-		String featurePath = "" ;// = "/Users/ilanpillemer/Developer/Projects/cucumber-jvm/examples/java-calculator/src/test/resources/cucumber/examples/java/calculator/basic_arithmetic.feature";
+		String featurePath = "" ;
+		String gluePath = "";
 		
 		featurePath = config.getAttribute("cucumber feature", featurePath);
+		gluePath  = config.getAttribute("glue path", gluePath);
 		System.out.println("Launching ....................... " + featurePath);
+		System.out.println("Glueing ....................... " + gluePath);
+		
 		
 		String glue = "--glue";
-		String gluePath = "cucumber.examples.java.calculator";
 		String[] args = new String[3];
 
 		args[0] = featurePath;
