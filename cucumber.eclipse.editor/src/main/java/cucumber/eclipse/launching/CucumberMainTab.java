@@ -1,5 +1,6 @@
 package cucumber.eclipse.launching;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -7,10 +8,14 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.internal.ui.SWTFactory;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin;
 import org.eclipse.jdt.internal.debug.ui.launcher.LauncherMessages;
 import org.eclipse.jdt.internal.debug.ui.launcher.SharedJavaMainTab;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.TreeSelection;
+import org.eclipse.jface.text.TextSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -25,13 +30,16 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 
 public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigurationTab {
 
 	private static final String ATTR_FEATURE_PATH = "cucumber feature";
 	private static final String ATTR_GLUE_PATH = "glue path";
-	protected Text fFeaturePath; 
+	protected Text fFeaturePath;
 	protected Text fGluePath;
 	private WidgetListener fListener = new WidgetListener();
 	private Button fFeatureButton;
@@ -155,15 +163,24 @@ public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigu
 		return null;
 	}
 
-	private String getGluePath() {
-		return "cucumber.examples.java.calculator";
+	private TextSelection getTextSelection() {
+		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+		ISelectionService service = window.getSelectionService();
+		
+		if (service instanceof TextSelection) return  (TextSelection)  service.getSelection();
+		else return null;
 	}
+
+	private String getDefaultGluePath() {
+		return "classpath:";
+	}
+
 	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy config) {
 
 		IProject javaProject = getProject();
 		String featurePath = getFeaturePath();
-		String gluePath = getGluePath();
+		String gluePath = getDefaultGluePath();
 		if (javaProject != null && getFeaturePath() != null) {
 			initializeCucumberProject(gluePath, featurePath, javaProject, config);
 		} else {
@@ -173,8 +190,6 @@ public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigu
 		}
 
 	}
-
-
 
 	@Override
 	protected void handleSearchButtonSelected() {
@@ -188,11 +203,11 @@ public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigu
 	}
 
 	private void updateGluePathFromConfig(ILaunchConfiguration config) {
-		updateFromConfig(config,ATTR_GLUE_PATH,fGluePath);
+		updateFromConfig(config, ATTR_GLUE_PATH, fGluePath);
 	}
 
 	private void updateFeaturePathFromConfig(ILaunchConfiguration config) {
-		updateFromConfig(config,ATTR_FEATURE_PATH,fFeaturePath);
+		updateFromConfig(config, ATTR_FEATURE_PATH, fFeaturePath);
 	}
 
 	private void updateFromConfig(ILaunchConfiguration config, String attrib, Text text) {
