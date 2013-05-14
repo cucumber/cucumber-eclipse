@@ -158,14 +158,29 @@
 <extension point="org.eclipse.debug.ui.launchShortcuts">
     <shortcut
         id="cucumber.eclipse.launching.featureLaunchShortcut"
-        class="cucumber.eclipse.launching.launcher.featureLaunchShortcut"
-        label="Featture"
+        class="cucumber.eclipse.launching.CucumberFeatureLaunchShortcut"
+        label="Feature"
         icon="icons/cukes.gif"
         modes="run, debug">
-            <perspective id="org.eclipse.jdt.ui.JavaPerspective"/>
-            <perspective id="org.eclipse.jdt.ui.JavaHierarchyPerspective"/>
-            <perspective id="org.eclipse.jdt.ui.JavaBrowsingPerspective"/>
-            <perspective id="org.eclipse.debug.ui.DebugPerspective"/>
+        <configurationType
+        id="cucumber.eclipse.launching.localCucumberFeature">
+        </configurationType>
+           <contextualLaunch>
+         <contextLabel mode="run" label="Run Feature" />
+         <contextLabel mode="debug" label="Debug Feature" />
+         <enablement >
+           <with variable="selection">
+           <count value="1"/>
+          <iterate>
+            <adapt type="org.eclipse.core.resources.IResource">
+                <and>
+                <test property="org.eclipse.core.resources.name" value="*.feature"/>
+            </and>
+        </adapt>
+          </iterate>
+           </with>
+       </enablement>
+     </contextualLaunch>
     </shortcut>
 </extension>
 </plugin>

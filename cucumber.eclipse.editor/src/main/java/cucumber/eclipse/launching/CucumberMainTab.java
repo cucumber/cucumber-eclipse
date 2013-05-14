@@ -78,7 +78,7 @@ public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigu
 	private void createGluePathEditor(Composite comp) {
 		Font font = comp.getFont();
 		Group group = new Group(comp, SWT.NONE);
-		group.setText("Glue Path:");
+		group.setText("Glue:");
 		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
 		group.setLayoutData(gd);
 		GridLayout layout = new GridLayout();
