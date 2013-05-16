@@ -19,13 +19,15 @@ import org.eclipse.jdt.launching.VMRunnerConfiguration;
 
 public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends AbstractJavaLaunchConfigurationDelegate implements ILaunchConfigurationDelegate2 {
 
+	
+
 	@Override
 	public void launch(ILaunchConfiguration config, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
 
 		IVMInstall vm = verifyVMInstall(config);
 		IVMRunner runner = vm.getVMRunner(mode);
 		String[] classpath = getClasspath(config);
-		VMRunnerConfiguration runConfig = new VMRunnerConfiguration("cucumber.api.cli.Main", classpath);
+		VMRunnerConfiguration runConfig = new VMRunnerConfiguration(CucumberFeatureLaunchConstants.CUCUMBER_API_CLI_MAIN, classpath);
 
 		File workingDir = verifyWorkingDirectory(config);
 		String workingDirName = null;
@@ -39,8 +41,8 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		String featurePath = "" ;
 		String gluePath = "";
 		
-		featurePath = config.getAttribute("cucumber feature", featurePath);
-		gluePath  = config.getAttribute("glue path", gluePath);
+		featurePath = config.getAttribute(CucumberFeatureLaunchConstants.ATTR_FEATURE_PATH, featurePath);
+		gluePath  = config.getAttribute(CucumberFeatureLaunchConstants.ATTR_GLUE_PATH, gluePath);
 		System.out.println("Launching ....................... " + featurePath);
 		System.out.println("Glueing ....................... " + gluePath);
 		

@@ -64,31 +64,11 @@
             name="Pretty format feature file">
       </command>
    </extension>
-      <extension
-         point="org.eclipse.ui.commands">
-      <category
-            name="Formatter"
-            id="cucumber.eclipse.editor.runner">
-      </category>
-      <command
-            categoryId="cucumber.eclipse.editor.runner"
-            description="Format"
-            id="cucumber.eclipse.editor.formmater.feature_runner"
-            name="Run Feature">
-      </command>
-   </extension>
    <extension
          point="org.eclipse.ui.handlers">
       <handler
             commandId="cucumber.eclipse.editor.formmater.pretty_formatter"
             class="cucumber.eclipse.editor.editors.GherkinPrettyFormatHandler">
-      </handler>
-   </extension>
-      <extension
-         point="org.eclipse.ui.handlers">
-      <handler
-            commandId="cucumber.eclipse.editor.formmater.feature_runner"
-            class="cucumber.eclipse.editor.editors.GherkinFeatureRunnerHandler">
       </handler>
    </extension>
    <extension
@@ -103,22 +83,6 @@
 	       helpContextId="cucumber.eclipse.editor.pretty_format_action_context"
 	       class="cucumber.eclipse.editor.editors.GherkinPopupMenuPrettyFormatActionDelegate"	
            definitionId="cucumber.eclipse.editor.formmater.pretty_formatter"
-	       >
-	    </action>
-	 </viewerContribution>
-   </extension>
-      <extension
-         point="org.eclipse.ui.popupMenus">
-     <viewerContribution
-        id="cucumber.eclipse.editor.runner"
-        targetID="#TextEditorContext">
-	    <action id="cucumber.eclipse.edtior.action.runner"
-	       label="Run Feature"
-	       icon="icons/cukes.gif"
-	       menubarPath="additions"
-	       helpContextId="cucumber.eclipse.editor.feature_runner_action_context"
-	       class="cucumber.eclipse.editor.editors.GherkinPopupMenuFeatureRunnerActionDelegate"	
-           definitionId="cucumber.eclipse.editor.formmater.feature_runner"
 	       >
 	    </action>
 	 </viewerContribution>

@@ -32,12 +32,7 @@ public class CucumberFeatureTabGroup
 				new CommonTab()
 		};
 		setTabs(tabs);
-
-		
 	}
-
-
-
 }
 
 

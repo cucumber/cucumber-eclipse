@@ -4,7 +4,7 @@
 	<classpathentry kind="src" path="src/main/java"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins">
 		<accessrules>
-			<accessrule kind="accessible" pattern="**debug**"/>
+			<accessrule kind="accessible" pattern="*"/>
 		</accessrules>
 	</classpathentry>
 	<classpathentry kind="lib" path="META-INF/lib/gherkin-2.11.6.jar"/>
