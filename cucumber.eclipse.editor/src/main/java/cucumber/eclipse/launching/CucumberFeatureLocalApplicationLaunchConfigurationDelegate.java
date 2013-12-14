@@ -48,11 +48,15 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		
 		
 		String glue = "--glue";
-		String[] args = new String[3];
+		String formatter = "--format";
+		String pretty = "pretty";
+		String[] args = new String[5];
 
 		args[0] = featurePath;
 		args[1] = glue;
 		args[2] = gluePath;
+		args[3] = formatter;
+		args[4] = pretty;
 		runConfig.setProgramArguments(args);
 
 		runner.run(runConfig, launch, monitor);
