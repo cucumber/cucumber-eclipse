@@ -56,6 +56,16 @@ public class CucumberFeaureLaunchUtils {
 		text.setText(s);
 	}
 	
+	public static boolean updateFromConfig(ILaunchConfiguration config, String attrib) {
+		boolean b = false;
+		try {
+			b = config.getAttribute(attrib, b);
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+		return b;
+	}
+	
 		private TextSelection getTextSelection() {
 		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		ISelectionService service = window.getSelectionService();
@@ -63,4 +73,5 @@ public class CucumberFeaureLaunchUtils {
 		if (service instanceof TextSelection) return  (TextSelection)  service.getSelection();
 		else return null;
 	}
+
 }

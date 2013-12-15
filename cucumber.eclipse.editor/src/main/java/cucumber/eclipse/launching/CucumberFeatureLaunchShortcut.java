@@ -58,6 +58,15 @@ public class CucumberFeatureLaunchShortcut extends AbstractLaunchShortcut implem
 		config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, project.getName());
 		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_FEATURE_PATH, CucumberFeaureLaunchUtils.getFeaturePath());
 		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_GLUE_PATH, CucumberFeatureLaunchConstants.DEFAULT_CLASSPATH);
+		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_MONOCHROME, true);
+		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_PRETTY, true);
+		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_HTML, false);
+		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_PROGRESS, false);
+		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_JSON, false);
+		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_JUNIT, false);
+		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_RERUN, false);
+		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_USAGE, false);
+		
 	}
 
 	
