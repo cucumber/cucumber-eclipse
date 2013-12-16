@@ -18,6 +18,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 
@@ -52,7 +53,18 @@ public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigu
 		public void widgetSelected(SelectionEvent e) {
 			Object source = e.getSource();
 			if (source == featureButton) {
-				// TODO
+			    // File standard dialog
+			    FileDialog fileDialog = new FileDialog(getShell());
+			    // Set the text
+			    fileDialog.setText("Select File");
+			    // Set filter on .txt files
+			    fileDialog.setFilterExtensions(new String[] { "*.feature" });
+			    // Put in a readable name for the filter
+			    fileDialog.setFilterNames(new String[] { "Features(*.feature)" });
+			    // Open Dialog and save result of selection
+			    fileDialog.setFileName(featurePathText.getText());
+			    featurePathText.setText( fileDialog.open() );
+			    //System.out.println(selected);
 			} else if (source == glueButton) {
 				// TODO
 			} else
@@ -160,8 +172,8 @@ public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigu
 
 		featurePathText.addModifyListener(listener);
 
-//		featureButton = createPushButton(group, LauncherMessages.AbstractJavaMainTab_1, null);
-//		featureButton.addSelectionListener(listener);
+		featureButton = createPushButton(group, LauncherMessages.AbstractJavaMainTab_1, null);
+		featureButton.addSelectionListener(listener);
 	}
 
 	@Override
