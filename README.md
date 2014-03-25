@@ -7,11 +7,11 @@ Installation and further information
 
 Please head over to the [plugin website](http://cucumber.github.com/cucumber-eclipse) for more information.
 
-After you install the Cucumber-Eclipse plugin, you can use it to run Cucumber-JVM. To do this, you will need to install all the libraries you want to use for Cucumber-JVM into your Eclipse project's build-path libraries. The likely candidates and their locations are in the download target at the [java-helloworld](https://github.com/cucumber/cucumber-jvm/blob/master/examples/java-helloworld/build.xml) example at GitHub.
+After you install the Cucumber-Eclipse plugin, you can use it to run Cucumber-JVM. To do this, you will need to install all the libraries you want to use for Cucumber-JVM into your Eclipse project's build-path libraries. The likely candidates and their locations are in the download target at the [cucumber-java-skeleton](https://github.com/cucumber/cucumber-java-skeleton/blob/master/build.xml) example at GitHub.
 
 Create a new feature file by selecting New => File from the menu and naming it with a ".feature" suffix to bring up the Feature Editor. After typing in the Gherkin code for a test, select Run => Run to invoke Cucumber-JVM on that feature. This will also create a run configuration, which you can modify and rename by selecting Run => Run Configurarations.... Tags are not available in Cucumber-Eclipse, but you can organize your features into directories and select the Feature Path that you want the run configuration to use. You can execute run configurations from the Run => Run History menu.
 
-Another alternative is to use Cucumber-Eclipse for editing feature files and getting the generated step-definition stubs, but then running a Junit file with a @RunWith(cucumber.class) annotation similar to the java-helloworld [RunCukesTest.java](https://github.com/cucumber/cucumber-jvm/blob/master/examples/java-helloworld/src/test/java/cucumber/examples/java/helloworld/RunCukesTest.java). The @CucumberOptions most useful are
+Another alternative is to use Cucumber-Eclipse for editing feature files and getting the generated step-definition stubs, but then running a Junit file with a @RunWith(cucumber.class) annotation similar to the cucumber-java-skeleton [RunCukesTest.java](https://github.com/cucumber/cucumber-java-skeleton/blob/master/src/test/java/skeleton/RunCukesTest.java). The @CucumberOptions most useful are
 
 * Run the feature or all features below the directory
   ```gherkin
