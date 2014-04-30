@@ -63,6 +63,12 @@
             id="cucumber.eclipse.editor.formmater.pretty_formatter"
             name="Pretty format feature file">
       </command>
+      <command
+            categoryId="cucumber.eclipse.editor.findstep"
+            description="Find step"
+            id="cucumber.eclipse.editor.formmater.findstep"
+            name="Find step">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -83,6 +89,15 @@
 	       helpContextId="cucumber.eclipse.editor.pretty_format_action_context"
 	       class="cucumber.eclipse.editor.editors.GherkinPopupMenuPrettyFormatActionDelegate"	
            definitionId="cucumber.eclipse.editor.formmater.pretty_formatter"
+	       >
+	    </action>
+	   	<action id="cucumber.eclipse.editor.action.findstep"
+	       label="Find Step"
+	       icon="icons/cukes.gif"
+	       menubarPath="additions"
+	       helpContextId="cucumber.eclipse.editor.findsteps_action_context"
+	       class="cucumber.eclipse.editor.editors.PopupMenuFindStepActionDelegate"	
+           definitionId="cucumber.eclipse.editor.formmater.findsteps"
 	       >
 	    </action>
 	 </viewerContribution>
