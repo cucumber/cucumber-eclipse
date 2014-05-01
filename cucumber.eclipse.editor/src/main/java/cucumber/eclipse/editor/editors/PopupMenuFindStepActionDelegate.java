@@ -31,6 +31,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
@@ -38,6 +39,7 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -51,14 +53,16 @@ import cucumber.eclipse.steps.integration.Step;
 public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
 
 	
-	private IWorkbenchWindow window;
 	private Editor editorPart;
 	private Pattern cukePattern = Pattern.compile("(?:Given|When|Then) (.*)$");
 	
 	@Override
 	public void run(IAction action) {
 
-		List<Step> steps = getAllDeclaredSteps();
+		IProject project = 
+				((IFileEditorInput) editorPart.getEditorInput()).getFile().getProject();
+		
+		List<Step> steps = getAllDeclaredSteps(project);
 		
 		String selectedLine = getSelectedLine();
 		
@@ -79,10 +83,7 @@ public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
 			System.out.println(cukeStep);
 		}
 		
-		MessageDialog.openInformation(
-				editorPart.getEditorSite().getShell(),
-				"Test",
-				steps.toString());
+		System.out.println(steps.toString());
 	}
 	
 	private void openEditor(Step step) throws CoreException {
@@ -113,45 +114,36 @@ public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
 		}
 	}
 
-	private List<Step> getAllDeclaredSteps() {
+	private List<Step> getAllDeclaredSteps(IProject project) {
 		List<Step> steps = new LinkedList<Step>();
-		
-		// Get the root of the workspace
-		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		IWorkspaceRoot root = workspace.getRoot();
-		// Get all projects in the workspace
-		IProject[] projects = root.getProjects();
-		// Loop over all projects
-		for (IProject project : projects) {
-			try {
-				if (project.isNatureEnabled("org.eclipse.jdt.core.javanature")) {
-					IJavaProject javaProject = JavaCore.create(project);
 
-					IPackageFragment[] packages = javaProject
-							.getPackageFragments();
-					for (IPackageFragment javaPackage : packages) {
+		try {
+			if (project.isNatureEnabled("org.eclipse.jdt.core.javanature")) {
+				IJavaProject javaProject = JavaCore.create(project);
 
-						if (javaPackage.getKind() == IPackageFragmentRoot.K_SOURCE) {
+				IPackageFragment[] packages = javaProject.getPackageFragments();
+				for (IPackageFragment javaPackage : packages) {
 
-							System.out.println("Package "
-									+ javaPackage.getElementName());
+					if (javaPackage.getKind() == IPackageFragmentRoot.K_SOURCE) {
 
-							for (ICompilationUnit compUnit : javaPackage
-									.getCompilationUnits()) {
-								steps.addAll(getCukeAnnotations(compUnit));
-							}
+						System.out.println("Package "
+								+ javaPackage.getElementName());
+
+						for (ICompilationUnit compUnit : javaPackage
+								.getCompilationUnits()) {
+							steps.addAll(getCukeAnnotations(compUnit));
 						}
 					}
 				}
-			} catch (CoreException e) {
-				e.printStackTrace();
 			}
-		}
+		} catch (CoreException e) {
+			e.printStackTrace();
+		} 
 		return steps;
 	}
 	
 	private List<Step> getCukeAnnotations(ICompilationUnit compUnit)
-			throws JavaModelException {
+			throws JavaModelException{
 		List<Step> steps = new ArrayList<Step>();
 		
 		for (IType t : compUnit.getTypes()) {
@@ -161,7 +153,7 @@ public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
 						Step step = new Step();
 						step.setSource(method.getResource());
 						step.setText(getAnnotationText(annotation));
-
+						step.setLineNumber(getLineNumber(compUnit, annotation));
 						steps.add(step);
 
 					}
@@ -171,6 +163,16 @@ public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
 		System.out.println(steps);
 		return steps;
 
+	}
+	
+	private int getLineNumber(ICompilationUnit compUnit, IAnnotation annotation) throws JavaModelException {
+		Document document = new Document(compUnit.getBuffer().getContents()); 
+		
+		try {
+			return document.getLineOfOffset(annotation.getSourceRange().getOffset()) + 1;
+		} catch (BadLocationException e) {
+			return 0;
+		}
 	}
 	
 	private boolean isStepAnnotation(ICompilationUnit compUnit,
@@ -184,7 +186,7 @@ public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
 			// TODO: Check imports
 			return true;
 		}
-		return false;
+		return false; 
 	}
 
 	private String getAnnotationText(IAnnotation annotation) throws JavaModelException {
