@@ -1,4 +1,4 @@
-package cucumber.eclipse.editor.editors;
+package cucumber.eclipse.steps.jdt;
 
 import java.util.ArrayList;
 import java.util.Arrays;

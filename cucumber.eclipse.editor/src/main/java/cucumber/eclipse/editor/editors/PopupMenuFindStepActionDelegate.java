@@ -27,6 +27,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import cucumber.eclipse.steps.integration.IStepDefinitions;
 import cucumber.eclipse.steps.integration.Step;
+import cucumber.eclipse.steps.jdt.StepDefinitions;
 
 
 public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {

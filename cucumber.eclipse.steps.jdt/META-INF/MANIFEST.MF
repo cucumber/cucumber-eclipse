@@ -7,6 +7,7 @@ Bundle-Activator: cucumber.eclipse.steps.jdt.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.core.resources;bundle-version="3.5.0",
+ org.eclipse.jface.text;bundle-version="3.5.0",
  org.eclipse.jdt;bundle-version="3.5.0",
  org.eclipse.jdt.core;bundle-version="3.5.0",
  org.eclipse.jdt.ui;bundle-version="3.5.0",
