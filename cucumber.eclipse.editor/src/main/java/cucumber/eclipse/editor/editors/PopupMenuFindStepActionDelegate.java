@@ -1,10 +1,7 @@
 package cucumber.eclipse.editor.editors;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,23 +11,13 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jdt.core.IAnnotation;
-import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IMemberValuePair;
-import org.eclipse.jdt.core.IMethod;
-import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
-import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorActionDelegate;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
@@ -38,22 +25,27 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
+import cucumber.eclipse.steps.integration.IStepDefinitions;
 import cucumber.eclipse.steps.integration.Step;
 
 
 public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
-
 	
+	private IStepDefinitions stepDefinitions = new StepDefinitions();
 	private Editor editorPart;
 	private Pattern cukePattern = Pattern.compile("(?:Given|When|Then|And) (.*)$");
 	
 	@Override
 	public void run(IAction action) {
 
-		IProject project = 
-				((IFileEditorInput) editorPart.getEditorInput()).getFile().getProject();
+		IEditorInput input = editorPart.getEditorInput();
 		
-		List<Step> steps = getAllDeclaredSteps(project);
+		// Editor contents needs to be associated with an eclipse project
+		// for this to work, if not then simply do nothing.
+		if (!(input instanceof IFileEditorInput)) return;
+		IProject project = ((IFileEditorInput) input).getFile().getProject();
+		
+		Set<Step> steps = stepDefinitions.getSteps(project);
 		
 		String selectedLine = getSelectedLine();
 		
@@ -105,94 +97,8 @@ public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
 		}
 	}
 
-	private List<Step> getAllDeclaredSteps(IProject project) {
-		List<Step> steps = new LinkedList<Step>();
-
-		try {
-			if (project.isNatureEnabled("org.eclipse.jdt.core.javanature")) {
-				IJavaProject javaProject = JavaCore.create(project);
-
-				IPackageFragment[] packages = javaProject.getPackageFragments();
-				for (IPackageFragment javaPackage : packages) {
-
-					if (javaPackage.getKind() == IPackageFragmentRoot.K_SOURCE) {
-
-						System.out.println("Package "
-								+ javaPackage.getElementName());
-
-						for (ICompilationUnit compUnit : javaPackage
-								.getCompilationUnits()) {
-							steps.addAll(getCukeAnnotations(compUnit));
-						}
-					}
-				}
-			}
-		} catch (CoreException e) {
-			e.printStackTrace();
-		} 
-		return steps;
-	}
-	
-	private List<Step> getCukeAnnotations(ICompilationUnit compUnit)
-			throws JavaModelException{
-		List<Step> steps = new ArrayList<Step>();
-		
-		for (IType t : compUnit.getTypes()) {
-			for (IMethod method : t.getMethods()) {
-				for (IAnnotation annotation : method.getAnnotations()) {
-					if (isStepAnnotation(compUnit, annotation)) {
-						Step step = new Step();
-						step.setSource(method.getResource());
-						step.setText(getAnnotationText(annotation));
-						step.setLineNumber(getLineNumber(compUnit, annotation));
-						steps.add(step);
-
-					}
-				}
-			}
-		}
-		System.out.println(steps);
-		return steps;
-
-	}
-	
-	private int getLineNumber(ICompilationUnit compUnit, IAnnotation annotation) throws JavaModelException {
-		Document document = new Document(compUnit.getBuffer().getContents()); 
-		
-		try {
-			return document.getLineOfOffset(annotation.getSourceRange().getOffset()) + 1;
-		} catch (BadLocationException e) {
-			return 0;
-		}
-	}
-	
-	private boolean isStepAnnotation(ICompilationUnit compUnit,
-			IAnnotation annotation) {
-		
-		List<String>  annotations = Arrays.asList("Given", "When", "Then");
-		List<String>  fqAnnotations = Arrays.asList("cucumber.annotation.Given", "cucumber.annotation.When", "cucumber.annotation.Then");
-		
-		if (fqAnnotations.contains(annotation.getElementName())) return true;
-		if (annotations.contains(annotation.getElementName())) {
-			// TODO: Check imports
-			return true;
-		}
-		return false; 
-	}
-
-	private String getAnnotationText(IAnnotation annotation) throws JavaModelException {
-		for (IMemberValuePair mvp :  annotation.getMemberValuePairs()) {
-			if (mvp.getValueKind() == IMemberValuePair.K_STRING) {
-				return (String) mvp.getValue();
-			}
-		}
-		return "";
-	}
-
 	@Override
 	public void selectionChanged(IAction action, ISelection selection) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override

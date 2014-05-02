@@ -57,6 +57,10 @@
             name="Formatter"
             id="cucumber.eclipse.editor.formmtter">
       </category>
+      <category 
+            name="findstep"
+            id="cucumber.eclipse.editor.find">
+      </category>     
       <command
             categoryId="cucumber.eclipse.editor.formmtter"
             description="Format"
@@ -64,7 +68,7 @@
             name="Pretty format feature file">
       </command>
       <command
-            categoryId="cucumber.eclipse.editor.findstep"
+            categoryId="cucumber.eclipse.editor.find"
             description="Find step"
             id="cucumber.eclipse.editor.formmater.findstep"
             name="Find step">
