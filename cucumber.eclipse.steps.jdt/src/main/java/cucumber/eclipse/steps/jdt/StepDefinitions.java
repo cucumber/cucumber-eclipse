@@ -43,9 +43,6 @@ public class StepDefinitions implements IStepDefinitions {
 
 					if (javaPackage.getKind() == IPackageFragmentRoot.K_SOURCE) {
 
-						System.out.println("Package "
-								+ javaPackage.getElementName());
-
 						for (ICompilationUnit compUnit : javaPackage
 								.getCompilationUnits()) {
 							steps.addAll(getCukeAnnotations(compUnit));
@@ -86,7 +83,6 @@ public class StepDefinitions implements IStepDefinitions {
 				}
 			}
 		}
-		System.out.println(steps);
 		return steps;
 
 	}
