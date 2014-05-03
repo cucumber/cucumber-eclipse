@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -83,8 +84,7 @@ public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
 	}
 	
 	private void openEditor(Step step) throws CoreException {
-		   IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-		   IFile file = root.getFile(step.getSource().getFullPath());
+		   IResource file = step.getSource();
 		   IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 
 		   HashMap<String, Integer> map = new HashMap<String, Integer>();
