@@ -35,6 +35,7 @@ public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
 	private IStepDefinitions stepDefinitions = new StepDefinitions();
 	private Editor editorPart;
 	private Pattern cukePattern = Pattern.compile("(?:Given|When|Then|And) (.*)$");
+	private Pattern variablePattern = Pattern.compile("<([^>]+)>");
 	
 	@Override
 	public void run(IAction action) {
@@ -50,24 +51,35 @@ public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
 		
 		String selectedLine = getSelectedLine();
 		
-		Matcher matcher = cukePattern.matcher(selectedLine);
+		Step matchedStep = matchSteps(steps, selectedLine);
+		try {
+			if (matchedStep != null) openEditor(matchedStep);
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+		
+		System.out.println(steps.toString());
+	}
+	
+	Step matchSteps(Set<Step> steps, String currentLine) {
+		Matcher matcher = cukePattern.matcher(currentLine);
 		if (matcher.matches()) {
 			String cukeStep = matcher.group(1);
 		
+			// FIXME: Replace variables with 0 for now to allow them to match steps
+			// Should really read the whole scenario outline and sub in the first scenario
+			Matcher variableMatcher = variablePattern.matcher(cukeStep);
+			cukeStep = variableMatcher.replaceAll("0");
+			
 			for(Step step: steps) {
 				if (step.matches(cukeStep)) {
-					try {
-						openEditor(step);
-					} catch (Exception e) {
-						
-					}
+					return step;
 				}
 			}
 			
 			System.out.println(cukeStep);
-		}
-		
-		System.out.println(steps.toString());
+		} 
+		return null;
 	}
 	
 	private void openEditor(Step step) throws CoreException {
@@ -90,9 +102,9 @@ public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
 		
 		IDocumentProvider docProvider = editorPart.getDocumentProvider();
 		IDocument doc = docProvider.getDocument(editorPart.getEditorInput());
-		
 		try {
-			return doc.get(doc.getLineOffset(line), doc.getLineLength(line)).trim();
+			String stepLine = doc.get(doc.getLineOffset(line), doc.getLineLength(line)).trim();
+			return stepLine;
 		} catch (BadLocationException e) {
 			return "";
 		}
