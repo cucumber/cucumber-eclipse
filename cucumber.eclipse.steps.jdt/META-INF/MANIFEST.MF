@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Cucumber Steps via Eclipse JDT
-Bundle-SymbolicName: cucumber.eclipse.steps.jdt
+Bundle-SymbolicName: cucumber.eclipse.steps.jdt;singleton:=true
 Bundle-Version: 0.0.6.qualifier
 Bundle-Activator: cucumber.eclipse.steps.jdt.Activator
 Require-Bundle: org.eclipse.ui,
@@ -14,3 +14,4 @@ Require-Bundle: org.eclipse.ui,
  cucumber.eclipse.steps.integration
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Export-Package: cucumber.eclipse.steps.jdt
