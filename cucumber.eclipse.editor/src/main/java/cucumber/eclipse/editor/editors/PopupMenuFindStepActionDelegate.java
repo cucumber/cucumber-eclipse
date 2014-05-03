@@ -34,7 +34,7 @@ public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
 	
 	private IStepDefinitions stepDefinitions = new StepDefinitions();
 	private Editor editorPart;
-	private Pattern cukePattern = Pattern.compile("(?:Given|When|Then|And) (.*)$");
+	private Pattern cukePattern = Pattern.compile("(?:Given|When|Then|And|But) (.*)$");
 	private Pattern variablePattern = Pattern.compile("<([^>]+)>");
 	
 	@Override

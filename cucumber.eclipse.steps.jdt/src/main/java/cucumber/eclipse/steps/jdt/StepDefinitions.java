@@ -1,15 +1,17 @@
 package cucumber.eclipse.steps.jdt;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IImportDeclaration;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMemberValuePair;
 import org.eclipse.jdt.core.IMethod;
@@ -26,6 +28,8 @@ import cucumber.eclipse.steps.integration.Step;
 
 public class StepDefinitions implements IStepDefinitions {
 
+	private Pattern cukeAnnotationMatcher = Pattern.compile("cucumber\\..*\\.(Given|When|Then|And|But)");
+	
 	@Override
 	public Set<Step> getSteps(IProject project) {
 		Set<Step> steps = new HashSet<Step>();
@@ -59,10 +63,19 @@ public class StepDefinitions implements IStepDefinitions {
 			throws JavaModelException{
 		List<Step> steps = new ArrayList<Step>();
 		
+		List<String> importedAnnotations = new ArrayList<String>();
+		
+		for (IImportDeclaration decl : compUnit.getImports()) {
+			Matcher m = cukeAnnotationMatcher.matcher(decl.getElementName());
+			if (m.find()) {
+				importedAnnotations.add(m.group(1));
+			}
+		}
+		
 		for (IType t : compUnit.getTypes()) {
 			for (IMethod method : t.getMethods()) {
 				for (IAnnotation annotation : method.getAnnotations()) {
-					if (isStepAnnotation(compUnit, annotation)) {
+					if (isStepAnnotation(importedAnnotations, annotation)) {
 						Step step = new Step();
 						step.setSource(method.getResource());
 						step.setText(getAnnotationText(annotation));
@@ -88,15 +101,11 @@ public class StepDefinitions implements IStepDefinitions {
 		}
 	}
 	
-	private boolean isStepAnnotation(ICompilationUnit compUnit,
-			IAnnotation annotation) {
+	private boolean isStepAnnotation(List<String> importedAnnotations,
+			IAnnotation annotation) throws JavaModelException {
 		
-		List<String>  annotations = Arrays.asList("Given", "When", "Then");
-		List<String>  fqAnnotations = Arrays.asList("cucumber.annotation.Given", "cucumber.annotation.When", "cucumber.annotation.Then");
-		
-		if (fqAnnotations.contains(annotation.getElementName())) return true;
-		if (annotations.contains(annotation.getElementName())) {
-			// TODO: Check imports
+		if (cukeAnnotationMatcher.matcher(annotation.getElementName()).find()) return true;
+		if (importedAnnotations.contains(annotation.getElementName())) {
 			return true;
 		}
 		return false; 
