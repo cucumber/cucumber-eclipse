@@ -5,12 +5,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.BadLocationException;
@@ -25,6 +22,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.eclipse.ui.texteditor.ITextEditor;
 
 import cucumber.eclipse.steps.integration.IStepDefinitions;
 import cucumber.eclipse.steps.integration.Step;
@@ -34,7 +32,7 @@ import cucumber.eclipse.steps.jdt.StepDefinitions;
 public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
 	
 	private IStepDefinitions stepDefinitions = new StepDefinitions();
-	private Editor editorPart;
+	private IEditorPart editorPart;
 	private Pattern cukePattern = Pattern.compile("(?:Given|When|Then|And|But) (.*)$");
 	private Pattern variablePattern = Pattern.compile("<([^>]+)>");
 	
@@ -97,10 +95,13 @@ public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
 	
 
 	private String getSelectedLine() {
-		TextSelection selecton = (TextSelection) editorPart.getSelectionProvider().getSelection();
+		
+		ITextEditor editor = (ITextEditor) editorPart;
+				
+		TextSelection selecton = (TextSelection) editor.getSelectionProvider().getSelection();
 		int line = selecton.getStartLine();	
 		
-		IDocumentProvider docProvider = editorPart.getDocumentProvider();
+		IDocumentProvider docProvider = editor.getDocumentProvider();
 		IDocument doc = docProvider.getDocument(editorPart.getEditorInput());
 		try {
 			String stepLine = doc.get(doc.getLineOffset(line), doc.getLineLength(line)).trim();
@@ -116,7 +117,7 @@ public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
 
 	@Override
 	public void setActiveEditor(IAction action, IEditorPart targetEditor) {
-		this.editorPart = (Editor) targetEditor;
+		this.editorPart = targetEditor;
 	}
 
 }

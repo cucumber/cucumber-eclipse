@@ -70,7 +70,7 @@
       <command
             categoryId="cucumber.eclipse.editor.find"
             description="Find step"
-            id="cucumber.eclipse.editor.formmater.findstep"
+            id="cucumber.eclipse.editor.navigation.findstep"
             name="Find step">
       </command>
    </extension>
@@ -85,7 +85,7 @@
          point="org.eclipse.ui.popupMenus">
      <viewerContribution
         id="cucumber.eclipse.editor.gherkin"
-        targetID="#TextEditorContext">
+        targetID="#CukeEditorContext">
 	    <action id="cucumber.eclipse.edtior.action.format"
 	       label="Pretty Format"
 	       icon="icons/cukes.gif"
@@ -95,15 +95,15 @@
            definitionId="cucumber.eclipse.editor.formmater.pretty_formatter"
 	       >
 	    </action>
-	   	<action id="cucumber.eclipse.editor.action.findstep"
-	       label="Find Step"
-	       icon="icons/cukes.gif"
-	       menubarPath="additions"
-	       helpContextId="cucumber.eclipse.editor.findsteps_action_context"
-	       class="cucumber.eclipse.editor.editors.PopupMenuFindStepActionDelegate"	
-           definitionId="cucumber.eclipse.editor.formmater.findsteps"
-	       >
-	    </action>
+        <action
+              class="cucumber.eclipse.editor.editors.PopupMenuFindStepActionDelegate"
+              definitionId="cucumber.eclipse.editor.navigation.findstep"
+              helpContextId="cucumber.eclipse.editor.findsteps_action_context"
+              icon="icons/cukes.gif"
+              id="cucumber.eclipse.editor.action.findstep"
+              label="Find Step"
+              menubarPath="additions">
+        </action>
 	 </viewerContribution>
    </extension>
    <extension

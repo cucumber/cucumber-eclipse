@@ -12,6 +12,17 @@ public class Editor extends TextEditor {
 		setSourceViewerConfiguration(new GherkinConfiguration(colorManager));
 		setDocumentProvider(new GherkinDocumentProvider());
 	}
+	
+	
+	
+	@Override
+	protected void initializeEditor() {
+		super.initializeEditor();
+		setEditorContextMenuId("#CukeEditorContext");
+	}
+
+
+
 	public void dispose() {
 		super.dispose();
 		colorManager.dispose();
