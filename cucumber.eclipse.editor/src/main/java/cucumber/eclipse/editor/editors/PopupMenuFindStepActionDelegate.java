@@ -81,7 +81,6 @@ public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
 			e.printStackTrace();
 		}
 		
-		System.out.println(steps.toString());
 	}
 	
 	Step matchSteps(Set<Step> steps, String currentLine) {
@@ -100,7 +99,6 @@ public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
 				}
 			}
 			
-			System.out.println(cukeStep);
 		} 
 		return null;
 	}
