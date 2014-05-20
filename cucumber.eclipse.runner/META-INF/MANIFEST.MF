@@ -5,6 +5,16 @@ Bundle-SymbolicName: cucumber.eclipse.runner
 Bundle-Version: 0.0.10.qualifier
 Bundle-Activator: cucumber.eclipse.runner.Activator
 Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime
+ org.eclipse.core.runtime,
+ org.eclipse.jdt.core;bundle-version="3.5.0",
+ org.eclipse.debug.core;bundle-version="3.5.0",
+ org.eclipse.jdt.launching;bundle-version="3.5.0",
+ org.eclipse.debug.ui;bundle-version="3.5.0",
+ org.eclipse.jdt.debug.ui;bundle-version="3.4.0",
+ org.eclipse.pde.ui;bundle-version="3.5.0",
+ org.eclipse.core.resources;bundle-version="3.5.0",
+ org.eclipse.jface.text;bundle-version="3.5.0",
+ org.eclipse.ui.ide;bundle-version="3.5.0"
+ 
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
