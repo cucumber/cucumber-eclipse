@@ -4,8 +4,7 @@ Bundle-Name: Cucumber Steps Integration
 Bundle-SymbolicName: cucumber.eclipse.steps.integration;singleton:=true
 Bundle-Version: 0.0.10.qualifier
 Bundle-Activator: cucumber.eclipse.steps.integration.Activator
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
+Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources;bundle-version="3.5.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
