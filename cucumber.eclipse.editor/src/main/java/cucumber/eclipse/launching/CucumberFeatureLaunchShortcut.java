@@ -2,6 +2,7 @@ package cucumber.eclipse.launching;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -85,9 +86,22 @@ public class CucumberFeatureLaunchShortcut extends AbstractLaunchShortcut implem
 	
 	@Override
 	protected boolean isGoodMatch(ILaunchConfiguration configuration) {
-		// TODO Auto-generated method stub
-		return false;
+		boolean goodType = isGoodType(configuration);
+		boolean goodName = isGoodName(configuration);
+		return goodType && goodName;
 	}
 
+	private boolean isGoodName(ILaunchConfiguration configuration) {
+		return configuration.getName().equals(newLaunchConfigurationName);
+	}
+
+	private boolean isGoodType(ILaunchConfiguration configuration) {
+		try {
+			String identifier = configuration.getType().getIdentifier();
+			return CucumberFeatureLaunchConstants.CUCUMBER_FEATURE_LAUNCH_CONFIG_TYPE.equals(identifier);
+		} catch (CoreException e) {
+			return false;
+		}
+	}
 
 }
