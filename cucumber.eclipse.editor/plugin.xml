@@ -149,8 +149,8 @@
         id="cucumber.eclipse.launching.localCucumberFeature">
         </configurationType>
            <contextualLaunch>
-         <contextLabel mode="run" label="Run Feature" />
-         <contextLabel mode="debug" label="Debug Feature" />
+         <contextLabel mode="run" label="Cucumber Feature" />
+         <contextLabel mode="debug" label="Cucumber Feature" />
          <enablement >
            <with variable="selection">
            <count value="1"/>
