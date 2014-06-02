@@ -32,7 +32,7 @@ public class Step {
 	}
 	
 	public boolean matches(String s) {
-		return compiledText.matcher(s).matches();
+		return compiledText.matcher(s).find();
 	}
 	
 	@Override
