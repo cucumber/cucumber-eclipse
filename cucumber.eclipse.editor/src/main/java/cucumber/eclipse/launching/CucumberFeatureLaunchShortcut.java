@@ -3,6 +3,7 @@ package cucumber.eclipse.launching;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.ILaunchShortcut2;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
@@ -12,6 +13,9 @@ import org.eclipse.ui.IEditorPart;
 
 public class CucumberFeatureLaunchShortcut extends AbstractLaunchShortcut implements ILaunchShortcut2 {
 
+	private String newLaunchConfigurationName;
+
+
 	@Override
 	public void launch(ISelection selection, String arg1) {
 		// TODO Auto-generated method stub
@@ -20,6 +24,7 @@ public class CucumberFeatureLaunchShortcut extends AbstractLaunchShortcut implem
 
   	@Override
 	public void launch(IEditorPart part, String mode) {
+  		newLaunchConfigurationName = part.getTitle();
 		launch(mode);
 	}
 
@@ -67,6 +72,14 @@ public class CucumberFeatureLaunchShortcut extends AbstractLaunchShortcut implem
 		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_RERUN, false);
 		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_USAGE, false);
 		
+	}
+	
+	@Override
+	protected String getName(ILaunchConfigurationType type) {
+		if(newLaunchConfigurationName != null) {
+			return newLaunchConfigurationName;
+		}
+		return super.getName(type);
 	}
 
 	
