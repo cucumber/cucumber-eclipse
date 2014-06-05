@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -48,9 +49,10 @@ public class StepDefinitions implements IStepDefinitions {
 	private Pattern cukeAnnotationMatcher = Pattern.compile("cucumber\\.api\\.java\\.([a-z_]+)\\.(.*)$");
 	
 	@Override
-	public Set<Step> getSteps(IProject project) {
+	public Set<Step> getSteps(IFile featurefile) {
 		Set<Step> steps = new HashSet<Step>();
 
+		IProject project = featurefile.getProject();
 		try {
 			if (project.isNatureEnabled("org.eclipse.jdt.core.javanature")) {
 				IJavaProject javaProject = JavaCore.create(project);
