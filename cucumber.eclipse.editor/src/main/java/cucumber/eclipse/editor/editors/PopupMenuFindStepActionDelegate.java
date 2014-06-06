@@ -8,8 +8,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -61,19 +61,20 @@ public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
 	public void run(IAction action) {
 
 		IEditorInput input = editorPart.getEditorInput();
-		
+
 		// Editor contents needs to be associated with an eclipse project
 		// for this to work, if not then simply do nothing.
-		if (!(input instanceof IFileEditorInput)) return;
-		IProject project = ((IFileEditorInput) input).getFile().getProject();
+		if (!(input instanceof IFileEditorInput)) {
+			return;
+		}
+		IFile featurefile = ((IFileEditorInput) input).getFile();
 
 		Set<Step> steps = new HashSet<Step>();
 		for (IStepDefinitions stepDef : getStepDefinitions()) {
-			steps.addAll(stepDef.getSteps(project));
+			steps.addAll(stepDef.getSteps(featurefile));
 		}
 
 		String selectedLine = getSelectedLine();
-		
 		Step matchedStep = matchSteps(steps, selectedLine);
 		try {
 			if (matchedStep != null) openEditor(matchedStep);

@@ -2,9 +2,9 @@ package cucumber.eclipse.steps.integration;
 
 import java.util.Set;
 
-import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IFile;
 
 public interface IStepDefinitions {
 
-	Set<Step> getSteps(IProject project);
+	Set<Step> getSteps(IFile featurefile);
 }
