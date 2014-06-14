@@ -20,6 +20,7 @@ import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.TextEditor;
 
 
@@ -81,6 +82,12 @@ public class Editor extends TextEditor {
 		viewer.doOperation(ProjectionViewer.TOGGLE);
 
 		annotationModel = viewer.getProjectionAnnotationModel();
+
+		// register the editor scope context
+		IContextService service = (IContextService) getSite().getService(IContextService.class);
+		if (service != null) {
+			service.activateContext("cucumber.eclipse.editor.featureEditorScope");
+		}
 	}
 
 	public void updateFoldingStructure( List<Position> positions )
