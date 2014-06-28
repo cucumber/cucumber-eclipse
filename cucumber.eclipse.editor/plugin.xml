@@ -80,38 +80,44 @@
             commandId="cucumber.eclipse.editor.formmater.pretty_formatter"
             class="cucumber.eclipse.editor.editors.GherkinPrettyFormatHandler">
       </handler>
+      <handler
+            commandId="cucumber.eclipse.editor.navigation.findstep"
+            class="cucumber.eclipse.editor.editors.PopupMenuFindStepActionDelegate">
+      </handler>
    </extension>
    <extension
-         point="org.eclipse.ui.popupMenus">
-     <viewerContribution
-        id="cucumber.eclipse.editor.gherkin"
-        targetID="#CukeEditorContext">
-	    <action id="cucumber.eclipse.edtior.action.format"
-	       label="Pretty Format"
-	       icon="icons/cukes.gif"
-	       menubarPath="additions"
-	       helpContextId="cucumber.eclipse.editor.pretty_format_action_context"
-	       class="cucumber.eclipse.editor.editors.GherkinPopupMenuPrettyFormatActionDelegate"	
-           definitionId="cucumber.eclipse.editor.formmater.pretty_formatter"
-	       >
-	    </action>
-        <action
-              class="cucumber.eclipse.editor.editors.PopupMenuFindStepActionDelegate"
-              definitionId="cucumber.eclipse.editor.navigation.findstep"
-              helpContextId="cucumber.eclipse.editor.findsteps_action_context"
-              icon="icons/cukes.gif"
-              id="cucumber.eclipse.editor.action.findstep"
-              label="Find Step"
-              menubarPath="additions">
-        </action>
-	 </viewerContribution>
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:#CukeEditorContext?before=additions">
+         <command
+               commandId="cucumber.eclipse.editor.formmater.pretty_formatter"
+               helpContextId="cucumber.eclipse.editor.pretty_format_action_context"
+               icon="icons/cukes.gif"
+               label="Pretty Format"
+               style="push">
+         </command>
+         <command
+               commandId="cucumber.eclipse.editor.navigation.findstep"
+               helpContextId="cucumber.eclipse.editor.findsteps_action_context"
+               icon="icons/cukes.gif"
+               label="Find Step"
+               style="push">
+         </command>
+      </menuContribution>
    </extension>
    <extension
          point="org.eclipse.ui.bindings">
       <key
             commandId="cucumber.eclipse.editor.formmater.pretty_formatter"
-            contextId="org.eclipse.ui.contexts.window"
+            contextId="cucumber.eclipse.editor.featureEditorScope"
             sequence="M1+SHIFT+F"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
+      </key>
+      <key
+            commandId="cucumber.eclipse.editor.navigation.findstep"
+            contextId="cucumber.eclipse.editor.featureEditorScope"
+            sequence="F3"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
       </key>
    </extension>
@@ -173,5 +179,13 @@
            <super type="org.eclipse.core.resources.problemmarker"/>
            <super type="org.eclipse.core.resources.textmarker"/>
            <persistent value="true"/>
-        </extension>
+    </extension>
+    <extension
+          point="org.eclipse.ui.contexts">
+       <context
+             id="cucumber.eclipse.editor.featureEditorScope"
+             name="Editing Feature"
+             parentId="org.eclipse.ui.contexts.window">
+       </context>
+    </extension>
 </plugin>

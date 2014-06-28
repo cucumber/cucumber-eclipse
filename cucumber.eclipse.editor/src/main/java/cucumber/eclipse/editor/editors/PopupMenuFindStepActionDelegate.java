@@ -8,23 +8,24 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextSelection;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ui.IEditorActionDelegate;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -32,11 +33,9 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import cucumber.eclipse.steps.integration.IStepDefinitions;
 import cucumber.eclipse.steps.integration.Step;
 
-
-public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
+public class PopupMenuFindStepActionDelegate extends AbstractHandler {
 
 	private final static String EXTENSION_POINT_STEPDEFINITIONS_ID = "cucumber.eclipse.steps.integration";
-	private IEditorPart editorPart;
 	private Pattern cukePattern = Pattern.compile("(?:Given|When|Then|And|But) (.*)$");
 	private Pattern variablePattern = Pattern.compile("<([^>]+)>");
 
@@ -58,14 +57,15 @@ public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
 	}
 
 	@Override
-	public void run(IAction action) {
-
+	public Object execute(ExecutionEvent event) throws ExecutionException {
+		
+		IEditorPart editorPart = HandlerUtil.getActiveEditorChecked(event);
 		IEditorInput input = editorPart.getEditorInput();
 
 		// Editor contents needs to be associated with an eclipse project
 		// for this to work, if not then simply do nothing.
 		if (!(input instanceof IFileEditorInput)) {
-			return;
+			return null;
 		}
 		IFile featurefile = ((IFileEditorInput) input).getFile();
 
@@ -74,16 +74,16 @@ public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
 			steps.addAll(stepDef.getSteps(featurefile));
 		}
 
-		String selectedLine = getSelectedLine();
+		String selectedLine = getSelectedLine(editorPart);
 		Step matchedStep = matchSteps(steps, selectedLine);
 		try {
 			if (matchedStep != null) openEditor(matchedStep);
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
-		
+		return null;
 	}
-	
+		
 	Step matchSteps(Set<Step> steps, String currentLine) {
 		Matcher matcher = cukePattern.matcher(currentLine);
 		if (matcher.matches()) {
@@ -117,7 +117,7 @@ public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
 	}
 	
 
-	private String getSelectedLine() {
+	private String getSelectedLine(IEditorPart editorPart) {
 		
 		ITextEditor editor = (ITextEditor) editorPart;
 				
@@ -133,14 +133,4 @@ public class PopupMenuFindStepActionDelegate implements IEditorActionDelegate {
 			return "";
 		}
 	}
-
-	@Override
-	public void selectionChanged(IAction action, ISelection selection) {
-	}
-
-	@Override
-	public void setActiveEditor(IAction action, IEditorPart targetEditor) {
-		this.editorPart = targetEditor;
-	}
-
 }
