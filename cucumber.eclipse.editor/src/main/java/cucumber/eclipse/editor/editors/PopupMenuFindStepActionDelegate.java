@@ -19,6 +19,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -37,6 +38,7 @@ public class PopupMenuFindStepActionDelegate extends AbstractHandler {
 
 	private final static String EXTENSION_POINT_STEPDEFINITIONS_ID = "cucumber.eclipse.steps.integration";
 	private Pattern cukePattern = Pattern.compile("(?:Given|When|Then|And|But) (.*)$");
+//	private Pattern cukePattern = Pattern.compile("(?:Givet|När|Så|Och|Men) (.*)$");
 	private Pattern variablePattern = Pattern.compile("<([^>]+)>");
 
 	private List<IStepDefinitions> getStepDefinitions() {
@@ -75,7 +77,16 @@ public class PopupMenuFindStepActionDelegate extends AbstractHandler {
 		}
 
 		String selectedLine = getSelectedLine(editorPart);
-		Step matchedStep = matchSteps(steps, selectedLine);
+		String language = getDocumentLanguage(editorPart);
+		
+		if(language != null) {
+			System.out.println(language);
+			if(language.toLowerCase().equals("sv")) {
+				this.cukePattern = Pattern.compile("(?:Givet|När|Så|Och|Men) (.*)$");
+			}
+		}
+		
+		Step matchedStep = matchSteps(language, steps, selectedLine);
 		try {
 			if (matchedStep != null) openEditor(matchedStep);
 		} catch (CoreException e) {
@@ -84,7 +95,9 @@ public class PopupMenuFindStepActionDelegate extends AbstractHandler {
 		return null;
 	}
 		
-	Step matchSteps(Set<Step> steps, String currentLine) {
+
+
+	Step matchSteps(String language, Set<Step> steps, String currentLine) {
 		Matcher matcher = cukePattern.matcher(currentLine);
 		if (matcher.matches()) {
 			String cukeStep = matcher.group(1);
@@ -114,9 +127,32 @@ public class PopupMenuFindStepActionDelegate extends AbstractHandler {
 		   marker.setAttributes(map);
 		   IDE.openEditor(page, marker);
 		   marker.delete();
+		   
 	}
 	
-
+	private String getDocumentLanguage(IEditorPart editorPart) {
+		String lang = null;
+		try {
+			ITextEditor editor = (ITextEditor) editorPart;
+			IDocumentProvider docProvider = editor.getDocumentProvider();
+			IDocument doc = docProvider.getDocument(editorPart.getEditorInput());
+			
+			IRegion lineInfo = doc.getLineInformation(0);
+			int length = lineInfo.getLength();
+			int offset = lineInfo.getOffset();
+			String line = doc.get(offset, length);
+			
+			if(line.contains("language")) {
+				int indexOf = line.indexOf(":");
+				lang = line.substring((indexOf + 1)).trim();
+			}
+		} catch(BadLocationException e) {
+			e.printStackTrace();
+		}
+		
+		return lang;
+	}
+	
 	private String getSelectedLine(IEditorPart editorPart) {
 		
 		ITextEditor editor = (ITextEditor) editorPart;
