@@ -1,5 +1,7 @@
 package cucumber.eclipse.editor.editors;
 
+import gherkin.I18n;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -7,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -37,8 +40,6 @@ import cucumber.eclipse.steps.integration.Step;
 public class PopupMenuFindStepActionDelegate extends AbstractHandler {
 
 	private final static String EXTENSION_POINT_STEPDEFINITIONS_ID = "cucumber.eclipse.steps.integration";
-	private Pattern cukePattern = Pattern.compile("(?:Given|When|Then|And|But) (.*)$");
-//	private Pattern cukePattern = Pattern.compile("(?:Givet|När|Så|Och|Men) (.*)$");
 	private Pattern variablePattern = Pattern.compile("<([^>]+)>");
 
 	private List<IStepDefinitions> getStepDefinitions() {
@@ -75,17 +76,10 @@ public class PopupMenuFindStepActionDelegate extends AbstractHandler {
 		for (IStepDefinitions stepDef : getStepDefinitions()) {
 			steps.addAll(stepDef.getSteps(featurefile));
 		}
-
+		
 		String selectedLine = getSelectedLine(editorPart);
 		String language = getDocumentLanguage(editorPart);
-		
-		if(language != null) {
-			System.out.println(language);
-			if(language.toLowerCase().equals("sv")) {
-				this.cukePattern = Pattern.compile("(?:Givet|När|Så|Och|Men) (.*)$");
-			}
-		}
-		
+
 		Step matchedStep = matchSteps(language, steps, selectedLine);
 		try {
 			if (matchedStep != null) openEditor(matchedStep);
@@ -94,10 +88,13 @@ public class PopupMenuFindStepActionDelegate extends AbstractHandler {
 		}
 		return null;
 	}
+
+	Step matchSteps(String languageCode, Set<Step> steps, String currentLine) {
+		Pattern cukePattern = getLanguageKeyWordMatcher(languageCode);
 		
-
-
-	Step matchSteps(String language, Set<Step> steps, String currentLine) {
+		if(cukePattern == null)
+			return null;
+		
 		Matcher matcher = cukePattern.matcher(currentLine);
 		if (matcher.matches()) {
 			String cukeStep = matcher.group(1);
@@ -167,6 +164,29 @@ public class PopupMenuFindStepActionDelegate extends AbstractHandler {
 			return stepLine;
 		} catch (BadLocationException e) {
 			return "";
+		}
+	}
+	
+	private Pattern getLanguageKeyWordMatcher(String languageCode) {
+		try {
+			I18n i18n = new I18n(languageCode.toLowerCase());
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append("(?:");
+			String delim = "";
+		
+			for(String keyWord : i18n.getCodeKeywords()) {
+				sb.append(delim).append(keyWord);
+				delim = "|";
+			}
+		
+			return Pattern.compile((sb.append(") (.*)$").toString()));
+		} catch(NullPointerException e) {
+			e.printStackTrace();
+			return null;
+		} catch(PatternSyntaxException e) {
+			e.printStackTrace();
+			return null;
 		}
 	}
 }
