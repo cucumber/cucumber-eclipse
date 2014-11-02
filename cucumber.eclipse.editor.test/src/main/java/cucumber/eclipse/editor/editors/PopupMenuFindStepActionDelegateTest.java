@@ -21,7 +21,7 @@ public class PopupMenuFindStepActionDelegateTest {
 		
 		Step s = createStep("^I run a test$");
 		
-		assertEquals(s, delagate.matchSteps(Collections.singleton(s), "When I run a test"));
+		assertEquals(s, delagate.matchSteps("en", Collections.singleton(s), "When I run a test"));
 	}
 
 	@Test
@@ -29,7 +29,7 @@ public class PopupMenuFindStepActionDelegateTest {
 		
 		Step s = createStep("^there are (\\d)* cucumbers$");
 		
-		assertEquals(s, delagate.matchSteps(Collections.singleton(s), "Given there are <start> cucumbers"));
+		assertEquals(s, delagate.matchSteps("en", Collections.singleton(s), "Given there are <start> cucumbers"));
 	}
 	
 	@Test
@@ -41,7 +41,7 @@ public class PopupMenuFindStepActionDelegateTest {
 		steps.add(s2);
 		steps.add(s);
 		
-		assertEquals(s, delagate.matchSteps(steps, "Given there are <start> cucumbers"));
+		assertEquals(s, delagate.matchSteps("en", steps, "Given there are <start> cucumbers"));
 	}
 	
 	private Step createStep(String text) {
