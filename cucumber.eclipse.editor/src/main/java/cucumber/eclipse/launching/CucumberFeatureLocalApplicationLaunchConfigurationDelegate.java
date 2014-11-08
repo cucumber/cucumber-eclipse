@@ -1,20 +1,15 @@
 package cucumber.eclipse.launching;
 
-import java.awt.List;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.variables.VariablesPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate2;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.ITypeHierarchy;
 import org.eclipse.jdt.launching.AbstractJavaLaunchConfigurationDelegate;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.IVMRunner;
@@ -52,7 +47,7 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		boolean isRerun= false;
 		boolean isUsage= false;
 		
-		featurePath = config.getAttribute(CucumberFeatureLaunchConstants.ATTR_FEATURE_PATH, featurePath);
+		featurePath = substituteVar(config.getAttribute(CucumberFeatureLaunchConstants.ATTR_FEATURE_PATH, featurePath));
 		gluePath  = config.getAttribute(CucumberFeatureLaunchConstants.ATTR_GLUE_PATH, gluePath);
 		isMonochrome = config.getAttribute(CucumberFeatureLaunchConstants.ATTR_IS_MONOCHROME, isMonochrome);
 		isPretty = config.getAttribute(CucumberFeatureLaunchConstants.ATTR_IS_PRETTY,isPretty );
@@ -125,5 +120,20 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 
 	}
 
+	/**
+	 * Substitute any variable
+	 */
+	private static String substituteVar(String s) {
+		if (s == null) {
+			return s;
+		}
+		try {
+			return VariablesPlugin.getDefault().getStringVariableManager()
+					.performStringSubstitution(s);
+		} catch (CoreException e) {
+			System.out.println("Could not substitute variable " + s);
+			return null;
+		}
+	}
 
 }
