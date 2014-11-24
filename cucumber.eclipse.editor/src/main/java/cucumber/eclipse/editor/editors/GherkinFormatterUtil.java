@@ -5,7 +5,7 @@ import gherkin.formatter.PrettyFormatter;
 import gherkin.lexer.LexingError;
 import gherkin.parser.ParseError;
 import gherkin.parser.Parser;
-import java.io.ByteArrayOutputStream;
+import java.io.StringWriter;
 import java.io.PrintWriter;
 
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -20,7 +20,7 @@ public class GherkinFormatterUtil {
 
 	public static String format(String contents) {
 		// set up
-		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		StringWriter output = new StringWriter();
 		PrintWriter out = new PrintWriter(output);
 		Formatter formatter = new PrettyFormatter(out, true, false);
 
