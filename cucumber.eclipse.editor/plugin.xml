@@ -40,6 +40,12 @@
         </colorDefinition>
         <colorDefinition 
         	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_placeholder_colour"
+        	label="Placeholder Colour"
+        	value="255,128,0">
+        </colorDefinition>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
         	id="cucumber.eclipse.editor.presentation.gherkin_step_colour"
         	label="Step Colour"
         	value="0,128,128">
