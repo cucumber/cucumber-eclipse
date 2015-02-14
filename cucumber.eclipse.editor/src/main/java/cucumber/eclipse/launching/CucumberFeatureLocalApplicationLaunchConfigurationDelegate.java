@@ -71,7 +71,7 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		
 		
 		String glue = "--glue";
-		String formatter = "--format";
+		String formatter = "--plugin"; // Cucumber-JVM's --format option is deprecated. Please use --plugin instead.
 		Collection<String> args = new ArrayList<String>();
 		//String[] args = new String[6];
 		args.add(featurePath);
