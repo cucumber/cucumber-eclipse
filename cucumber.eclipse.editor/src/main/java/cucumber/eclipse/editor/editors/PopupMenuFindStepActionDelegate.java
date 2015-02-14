@@ -169,7 +169,12 @@ public class PopupMenuFindStepActionDelegate extends AbstractHandler {
 	
 	private Pattern getLanguageKeyWordMatcher(String languageCode) {
 		try {
-			I18n i18n = new I18n(languageCode.toLowerCase());
+			if (languageCode == null) {
+				languageCode = "en";
+			} else {
+				languageCode = languageCode.toLowerCase();
+			}
+			I18n i18n = new I18n(languageCode);
 			
 			StringBuilder sb = new StringBuilder();
 			sb.append("(?:");
