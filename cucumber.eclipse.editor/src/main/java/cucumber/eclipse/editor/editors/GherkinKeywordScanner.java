@@ -35,6 +35,7 @@ public class GherkinKeywordScanner extends RuleBasedScanner {
 		IToken comment= new Token(new TextAttribute(manager.getColor(GherkinColors.COMMENT)));
 		IToken other= new Token(new TextAttribute(manager.getColor(GherkinColors.DEFAULT)));
 		IToken numeric= new Token(new TextAttribute(manager.getColor(GherkinColors.NUMERIC)));
+		IToken placeholder= new Token(new TextAttribute(manager.getColor(GherkinColors.PLACEHOLDER)));
 		
 
 		List<IRule> rules= new ArrayList<IRule>();
@@ -45,7 +46,9 @@ public class GherkinKeywordScanner extends RuleBasedScanner {
 		// Add rule for strings and character constants.
 		rules.add(new SingleLineRule("\"", "\"", string, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
 		rules.add(new SingleLineRule("'", "'", string, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
-		
+
+		// Add rule for placeholders.
+		rules.add(new GherkinPlaceholderRule(placeholder));
 		
 		// Add generic whitespace rule.
 		rules.add(new WhitespaceRule(new GherkinWhitespaceDetector()));
