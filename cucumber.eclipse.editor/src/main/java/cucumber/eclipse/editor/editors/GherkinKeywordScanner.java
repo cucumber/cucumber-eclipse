@@ -31,6 +31,7 @@ public class GherkinKeywordScanner extends RuleBasedScanner {
 		
 		IToken keyword= new Token(new TextAttribute(manager.getColor(GherkinColors.KEYWORD)));
 		IToken step= new Token(new TextAttribute(manager.getColor(GherkinColors.STEP)));
+		IToken tag= new Token(new TextAttribute(manager.getColor(GherkinColors.TAG)));
 		IToken string= new Token(new TextAttribute(manager.getColor(GherkinColors.STRING)));
 		IToken comment= new Token(new TextAttribute(manager.getColor(GherkinColors.COMMENT)));
 		IToken other= new Token(new TextAttribute(manager.getColor(GherkinColors.DEFAULT)));
@@ -47,6 +48,9 @@ public class GherkinKeywordScanner extends RuleBasedScanner {
 		rules.add(new SingleLineRule("\"", "\"", string, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
 		rules.add(new SingleLineRule("'", "'", string, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
 
+		// Add rule for tags.
+		rules.add(new GherkinTagRule(tag));
+		
 		// Add rule for placeholders.
 		rules.add(new GherkinPlaceholderRule(placeholder));
 		
