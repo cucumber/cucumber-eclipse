@@ -1,7 +1,6 @@
 package cucumber.eclipse.editor.editors;
 
 import gherkin.formatter.Formatter;
-import gherkin.formatter.PrettyFormatter;
 import gherkin.lexer.LexingError;
 import gherkin.parser.ParseError;
 import gherkin.parser.Parser;
