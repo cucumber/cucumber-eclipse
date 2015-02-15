@@ -21,8 +21,8 @@ public class GherkinFormatterUtil {
 		// set up
 		StringWriter output = new StringWriter();
 		PrintWriter out = new PrintWriter(output);
-		Formatter formatter = new PrettyFormatter(out, true, false);
-
+		Formatter formatter = new PrettyFormatter(out, true, false, true);
+		
 		// parse 
 		new Parser(formatter).parse(contents, "", 0);
 
