@@ -52,6 +52,12 @@
         </colorDefinition>
         <colorDefinition 
         	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_tag_colour"
+        	label="Tag Colour"
+        	value="0,128,255">
+        </colorDefinition>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
         	id="cucumber.eclipse.editor.presentation.gherkin_numeric_literal_colour"
         	label="Numeric Colour"
         	value="0,128,0">

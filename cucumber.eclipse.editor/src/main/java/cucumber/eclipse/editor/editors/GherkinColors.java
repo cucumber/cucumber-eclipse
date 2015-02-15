@@ -8,6 +8,7 @@ public enum GherkinColors {
 	STRING	("cucumber.eclipse.editor.presentation.gherkin_string_colour"), 
 	NUMERIC	("cucumber.eclipse.editor.presentation.gherkin_numeric_literal_colour"), 
 	STEP	("cucumber.eclipse.editor.presentation.gherkin_step_colour"), 
+	TAG		("cucumber.eclipse.editor.presentation.gherkin_tag_colour"), 
 	DEFAULT	("cucumber.eclipse.editor.presentation.gherkin_text_colour");
 	
 	public final String COLOR_PREFERENCE_ID;
