@@ -113,16 +113,6 @@ public class PrettyFormatter implements Reporter, Formatter {
         statement = scenarioOutline;
     }
 
-    @Override
-    public void startOfScenarioLifeCycle(Scenario scenario) {
-        // NoOp
-    }
-
-    @Override
-    public void endOfScenarioLifeCycle(Scenario scenario) {
-        // NoOp
-    }
-
     private void replay() {
         addAnyOrphanMatch();
         printStatement();
