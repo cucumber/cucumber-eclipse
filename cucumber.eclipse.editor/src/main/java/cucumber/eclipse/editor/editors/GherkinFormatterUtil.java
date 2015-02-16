@@ -1,11 +1,11 @@
 package cucumber.eclipse.editor.editors;
 
-import gherkin.formatter.Formatter;
 import gherkin.lexer.LexingError;
 import gherkin.parser.ParseError;
 import gherkin.parser.Parser;
-import java.io.StringWriter;
+
 import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.BadLocationException;
@@ -21,7 +21,12 @@ public class GherkinFormatterUtil {
 		// set up
 		StringWriter output = new StringWriter();
 		PrintWriter out = new PrintWriter(output);
-		Formatter formatter = new PrettyFormatter(out, true, false, true);
+		
+		PrettyFormatter formatter = new PrettyFormatter(out, true, false);
+
+		// TODO: make these configurable preferences!
+		formatter.setRightAlignNumericValues(true);
+		formatter.setCenterSteps(true);
 		
 		// parse 
 		new Parser(formatter).parse(contents, "", 0);
