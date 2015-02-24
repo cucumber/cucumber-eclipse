@@ -27,6 +27,7 @@ public class GherkinFormatterUtil {
 		// TODO: make these configurable preferences!
 		formatter.setRightAlignNumericValues(true);
 		formatter.setCenterSteps(true);
+		formatter.setPreserveBlankLineBetweenSteps(true);
 		
 		// parse 
 		new Parser(formatter).parse(contents, "", 0);
