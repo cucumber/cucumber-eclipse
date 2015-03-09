@@ -1,5 +1,6 @@
 package cucumber.eclipse.editor;
 
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
@@ -47,4 +48,10 @@ public class Activator extends AbstractUIPlugin {
 		return plugin;
 	}
 
+	
+	@Override
+	public IPreferenceStore getPreferenceStore() {
+		return super.getPreferenceStore();
+		
+	}
 }
