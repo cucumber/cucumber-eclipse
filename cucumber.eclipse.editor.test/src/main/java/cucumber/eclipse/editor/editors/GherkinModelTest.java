@@ -77,4 +77,48 @@ public class GherkinModelTest {
         assertThat("offset", range.getOffset(), is(document.getLineOffset(5)));
         assertThat("range", range.getLength(), is(document.getLineOffset(8) - document.getLineOffset(5)));
     }
+    
+    @Test
+    public void featureElementHasAttachedChildren() throws BadLocationException {        
+        String source = "Feature: x\n"
+                + "\n"
+                + "  Background:\n"
+                + "    When x\n"
+                + "\n"
+                + "  Scenario Outline: 1\n"
+                + "    Given y\n"
+                + "\n"
+                + "    Examples:\n"
+                + "      | a | b |\n"
+                + "      | 1 | 2 |\n"
+                + "\n"
+                + "  Scenario: 2\n"
+                + "    Given z\n";
+        Document document = new Document(source);
+        GherkinModel model = new GherkinModel();
+        
+        model.updateFromDocument(document);
+        PositionedElement feature = model.getFeatureElement();
+        
+        assertThat("feature.children.size",
+                feature.getChildren().size(), is(3));
+        assertThat("feature.children[0].background",
+                feature.getChildren().get(0).isBackground(), is(true));
+        assertThat("feature.children[1].scenarioOutline",
+                feature.getChildren().get(1).isScenarioOutline(), is(true));
+        assertThat("feature.children[2].scenario",
+                feature.getChildren().get(2).isScenario(), is(true));
+        assertThat("feature.children[0].children.size",
+                feature.getChildren().get(0).getChildren().size(), is(1));
+        assertThat("feature.children[0].children[0].step",
+                feature.getChildren().get(0).getChildren().get(0).isStep(), is(true));
+        assertThat("feature.children[1].children.size",
+                feature.getChildren().get(1).getChildren().size(), is(1));
+        assertThat("feature.children[1].children[0].step",
+                feature.getChildren().get(1).getChildren().get(0).isStep(), is(true));
+        assertThat("feature.children[2].children.size",
+                feature.getChildren().get(2).getChildren().size(), is(1));
+        assertThat("feature.children[2].children[0].step",
+                feature.getChildren().get(2).getChildren().get(0).isStep(), is(true));
+    }
 }
