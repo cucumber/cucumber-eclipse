@@ -38,9 +38,14 @@ public class GherkinModel {
 			return line - 1;
 		}
 
-		public void setEndLine(int lineNo) throws BadLocationException {
-			endOffset = document.getLineOffset(getDocumentLine(lineNo))
-					+ document.getLineLength(getDocumentLine(lineNo));
+		public void setEndLine(int lineNo) {
+			try {
+				endOffset = document.getLineOffset(getDocumentLine(lineNo))
+						+ document.getLineLength(getDocumentLine(lineNo));
+			} catch (BadLocationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		public BasicStatement getStatement() {
@@ -60,14 +65,23 @@ public class GherkinModel {
 		}
 	}
 	
-	private List<Position> foldRanges = new ArrayList<Position>();
+	private List<PositionedElement> elements = new ArrayList<PositionedElement>();
 	
 	public List<Position> getFoldRanges() {
+		List<Position> foldRanges = new ArrayList<Position>();
+		for (PositionedElement element : elements) {
+			try {
+				foldRanges.add(element.toPosition());
+			} catch (BadLocationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		return foldRanges;
 	}
 
 	public void updateFromDocument(final IDocument document) {
-		foldRanges.clear();
+		elements.clear();
 		
 		Parser p = new Parser(new Formatter() {
 
@@ -84,6 +98,7 @@ public class GherkinModel {
 
 			@Override
 			public void step(Step arg0) {
+				stack.peek().setEndLine(arg0.getLine());
 			}
 
 			private boolean isStepContainer(BasicStatement stmt) {
@@ -92,65 +107,39 @@ public class GherkinModel {
 						|| stmt instanceof Background;
 			}
 
-			private boolean isExamples(BasicStatement stmt) {
-				return stmt instanceof Examples;
-			}
-
 			@Override
 			public void scenarioOutline(ScenarioOutline arg0) {
-				try {
-					handleStepContainer(arg0);
-				} catch (BadLocationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				handleStepContainer(arg0);
 			}
 
-			private void handleStepContainer(DescribedStatement stmt)
-					throws BadLocationException {
-				if (isExamples(stack.peek().getStatement())) {
-					PositionedElement pos = stack.pop();
-					pos.setEndLine(stmt.getLine() - 1);
-					foldRanges.add(pos.toPosition());
-				}
+			private void handleStepContainer(DescribedStatement stmt) {
 				if (isStepContainer(stack.peek().getStatement())) {
-					PositionedElement pos = stack.pop();
-					pos.setEndLine(stmt.getLine() - 1);
-					foldRanges.add(pos.toPosition());
+					stack.pop();
 				}
-				stack.push(new PositionedElement(document, stmt));
+				stack.push(newPositionedElement(stmt));
 			}
 
 			@Override
 			public void scenario(Scenario arg0) {
-				try {
-					handleStepContainer(arg0);
-				} catch (BadLocationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				handleStepContainer(arg0);
 			}
 
 			@Override
 			public void feature(Feature arg0) {
-				stack.push(new PositionedElement(document, arg0));
+				stack.push(newPositionedElement(arg0));
 			}
 
 			@Override
 			public void examples(Examples arg0) {
-				stack.push(new PositionedElement(document, arg0));
+				int lastLine = getLastExamplesLine(arg0);
+				newPositionedElement(arg0).setEndLine(lastLine);
+				stack.peek().setEndLine(lastLine);
 			}
 
 			@Override
 			public void eof() {
-				int lastline = document.getNumberOfLines();
 				while (!stack.isEmpty()) {
-					PositionedElement pos = stack.pop();
-					try {
-						pos.setEndLine(lastline);
-						foldRanges.add(pos.toPosition());
-					} catch (BadLocationException e) {
-					}
+					stack.pop().setEndLine(document.getNumberOfLines());
 				}
 			}
 
@@ -164,12 +153,21 @@ public class GherkinModel {
 
 			@Override
 			public void background(Background arg0) {
-				try {
-					handleStepContainer(arg0);
-				} catch (BadLocationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				handleStepContainer(arg0);
+			}
+			
+			private PositionedElement newPositionedElement(DescribedStatement stmt) {
+				PositionedElement element = new PositionedElement(document, stmt);
+				elements.add(element);
+				return element;
+			}
+
+			private int getLastExamplesLine(Examples examples) {
+				int lastline = examples.getLine();
+				if (!examples.getRows().isEmpty()) {
+					lastline = examples.getRows().get(examples.getRows().size() - 1).getLine(); 
 				}
+				return lastline;
 			}
 		});
 		

@@ -11,26 +11,49 @@ import org.junit.Test;
 public class GherkinModelTest {
 
     @Test
-    public void stepContainerFoldRangeExtendsToNextStepContainer() throws BadLocationException {        
+    public void stepContainerFoldRangeExtendsToLineFollowingLastStep() throws BadLocationException {        
         String source = "Feature: x\n"
                 + "\n"
                 + "  Scenario: 1\n" // line 2
                 + "    Given y\n"
-                + "\n"
-                + "  Scenario: 2\n" // line 5
+                + "\n" // line 4
+                + "  Scenario: 2\n"
                 + "    Given z\n";
         Document document = new Document(source);
         GherkinModel model = new GherkinModel();
         
         model.updateFromDocument(document);
-        Position range = model.getFoldRanges().get(0);
+        Position range = model.getFoldRanges().get(1);
         
         assertThat("offset", range.getOffset(), is(document.getLineOffset(2)));
-        assertThat("range", range.getLength(), is(document.getLineOffset(5) - document.getLineOffset(2)));
+        assertThat("range", range.getLength(), is(document.getLineOffset(4) - document.getLineOffset(2)));
     }
     
     @Test
-    public void examplesFoldRangeExtendsToNextStepContainer() throws BadLocationException {        
+    public void scenarioOutlineFoldRangeExtendsToLineFollowingLastExampleRow() throws BadLocationException {        
+        String source = "Feature: x\n"
+                + "\n"
+                + "  Scenario Outline: 1\n" // line 2
+                + "    Given y\n"
+                + "\n"
+                + "    Examples:\n"
+                + "      | a | b |\n"
+                + "      | 1 | 2 |\n"
+                + "\n" // line 8
+                + "  Scenario: 2\n"
+                + "    Given z\n";
+        Document document = new Document(source);
+        GherkinModel model = new GherkinModel();
+        
+        model.updateFromDocument(document);
+        Position range = model.getFoldRanges().get(1);
+        
+        assertThat("offset", range.getOffset(), is(document.getLineOffset(2)));
+        assertThat("range", range.getLength(), is(document.getLineOffset(8) - document.getLineOffset(2)));
+    }
+    
+    @Test
+    public void examplesFoldRangeExtendsToLineFollowingLastRow() throws BadLocationException {        
         String source = "Feature: x\n"
                 + "\n"
                 + "  Scenario Outline: 1\n"
@@ -39,16 +62,16 @@ public class GherkinModelTest {
                 + "    Examples:\n" // line 5
                 + "      | a | b |\n"
                 + "      | 1 | 2 |\n"
-                + "\n"
-                + "  Scenario: 2\n" // line 9
+                + "\n" // line 8
+                + "  Scenario: 2\n"
                 + "    Given z\n";
         Document document = new Document(source);
         GherkinModel model = new GherkinModel();
         
         model.updateFromDocument(document);
-        Position range = model.getFoldRanges().get(0);
+        Position range = model.getFoldRanges().get(2);
         
         assertThat("offset", range.getOffset(), is(document.getLineOffset(5)));
-        assertThat("range", range.getLength(), is(document.getLineOffset(9) - document.getLineOffset(5)));
+        assertThat("range", range.getLength(), is(document.getLineOffset(8) - document.getLineOffset(5)));
     }
 }
