@@ -23,6 +23,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import cucumber.eclipse.editor.markers.MarkerManager;
 import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
@@ -66,7 +67,8 @@ public class Editor extends TextEditor {
 	private ProjectionSupport projectionSupport;
 	private ProjectionAnnotationModel annotationModel;
 	private Annotation[] oldAnnotations;
-
+	private GherkinOutlinePage outlinePage;
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -95,6 +97,11 @@ public class Editor extends TextEditor {
 			service.activateContext("cucumber.eclipse.editor.featureEditorScope");
 		}
 	}
+	
+	public void updateGherkinModel(GherkinModel model) {
+		updateOutline(model.getFeatureElement());
+		updateFoldingStructure(model.getFoldRanges());
+	}
 
 	public void updateFoldingStructure(List<Position> positions) {
 		Map<Annotation, Position> newAnnotations = new HashMap<Annotation, Position>();
@@ -103,6 +110,12 @@ public class Editor extends TextEditor {
 		}
 		annotationModel.modifyAnnotations(oldAnnotations, newAnnotations, null);
 		oldAnnotations = newAnnotations.keySet().toArray(new Annotation[0]);
+	}
+
+	private void updateOutline(PositionedElement featureElement) {
+		if (outlinePage != null) {
+			outlinePage.update(featureElement);
+		}
 	}
 
 	@Override
@@ -134,6 +147,17 @@ public class Editor extends TextEditor {
 	protected void editorSaved() {
 		super.editorSaved();
 		validateAndMark();
+	}
+
+	public Object getAdapter(Class required) {
+		if (IContentOutlinePage.class.equals(required)) {
+			if (outlinePage == null) {
+				outlinePage = new GherkinOutlinePage();
+			}
+			outlinePage.setInput(getEditorInput());
+			return outlinePage;
+		}
+		return super.getAdapter(required);
 	}
 
 	private void validateAndMark() {

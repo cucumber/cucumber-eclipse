@@ -6,6 +6,7 @@ import java.util.List;
 
 import gherkin.formatter.model.Background;
 import gherkin.formatter.model.BasicStatement;
+import gherkin.formatter.model.DescribedStatement;
 import gherkin.formatter.model.Examples;
 import gherkin.formatter.model.Feature;
 import gherkin.formatter.model.Scenario;
@@ -92,5 +93,22 @@ class PositionedElement {
 		}
 
 		return new Position(offset, endOffset - offset);
+	}
+	
+	@Override
+	public String toString() {
+		String result;
+		
+		if (statement instanceof DescribedStatement) {
+			result = ((DescribedStatement) statement).getName();
+		}
+		else if (statement instanceof Step) {
+			result = ((Step) statement).getKeyword() + ((Step) statement).getName();
+		}
+		else {
+			result = statement.toString();
+		}
+		
+		return result;
 	}
 }
