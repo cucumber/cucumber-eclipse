@@ -98,7 +98,7 @@ public class GherkinModel {
 
 			@Override
 			public void step(Step arg0) {
-				stack.peek().setEndLine(arg0.getLine());
+				stack.peek().setEndLine(arg0.getLineRange().getLast());
 			}
 
 			private boolean isStepContainer(BasicStatement stmt) {
@@ -163,7 +163,7 @@ public class GherkinModel {
 			}
 
 			private int getLastExamplesLine(Examples examples) {
-				int lastline = examples.getLine();
+				int lastline = examples.getLineRange().getLast();
 				if (!examples.getRows().isEmpty()) {
 					lastline = examples.getRows().get(examples.getRows().size() - 1).getLine(); 
 				}

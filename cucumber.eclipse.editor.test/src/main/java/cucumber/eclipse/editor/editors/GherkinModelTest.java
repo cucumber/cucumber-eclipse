@@ -15,8 +15,11 @@ public class GherkinModelTest {
         String source = "Feature: x\n"
                 + "\n"
                 + "  Scenario: 1\n" // line 2
-                + "    Given y\n"
-                + "\n" // line 4
+                + "    Given y with\n"
+                + "      \"\"\"\n"
+                + "      a\n"
+                + "      \"\"\"\n"
+                + "\n" // line 7
                 + "  Scenario: 2\n"
                 + "    Given z\n";
         Document document = new Document(source);
@@ -26,7 +29,7 @@ public class GherkinModelTest {
         Position range = model.getFoldRanges().get(1);
         
         assertThat("offset", range.getOffset(), is(document.getLineOffset(2)));
-        assertThat("range", range.getLength(), is(document.getLineOffset(4) - document.getLineOffset(2)));
+        assertThat("range", range.getLength(), is(document.getLineOffset(7) - document.getLineOffset(2)));
     }
     
     @Test
