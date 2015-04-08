@@ -1,6 +1,5 @@
 package cucumber.eclipse.launching;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -27,11 +26,7 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		String[] classpath = getClasspath(config);
 		VMRunnerConfiguration runConfig = new VMRunnerConfiguration(CucumberFeatureLaunchConstants.CUCUMBER_API_CLI_MAIN, classpath);
 
-		File workingDir = verifyWorkingDirectory(config);
-		String workingDirName = null;
-		if (workingDir != null) {
-			workingDirName = workingDir.getAbsolutePath();
-		}
+		verifyWorkingDirectory(config);
 
 		String[] bootpath = getBootpath(config);
 		runConfig.setBootClassPath(bootpath);
