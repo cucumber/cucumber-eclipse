@@ -1,11 +1,13 @@
 package cucumber.eclipse.launching;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.variables.VariablesPlugin;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate2;
@@ -30,6 +32,8 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 
 		String[] bootpath = getBootpath(config);
 		runConfig.setBootClassPath(bootpath);
+		runConfig.setVMArguments(DebugPlugin.parseArguments(getVMArguments(config)));
+		runConfig.setWorkingDirectory(getWorkingDirectory(config).getAbsolutePath());
 		
 		String featurePath = "" ;
 		String gluePath = "";
@@ -109,6 +113,9 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		}
 		
 		if (isMonochrome) args.add("--monochrome");
+
+		args.addAll(Arrays.asList(DebugPlugin.parseArguments(getProgramArguments(config))));
+
 		runConfig.setProgramArguments(args.toArray(new String[0]));
 
 		runner.run(runConfig, launch, monitor);
