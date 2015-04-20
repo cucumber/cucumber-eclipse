@@ -21,16 +21,8 @@
 		<module>cucumber.eclipse.steps.integration</module>
 		<module>cucumber.eclipse.steps.jdt</module>
 		<module>cucumber.eclipse.p2updatesite</module>
+		<module>cucumber.eclipse.targetdefinition</module>
 	</modules>
-
-	<repositories>
-		<repository>
-			<id>galileo</id>
-			<url>http://download.eclipse.org/releases/galileo/</url>
-			<layout>p2</layout>
-		</repository>
-
-	</repositories>
 
 	<build>
 		<plugins>
@@ -38,6 +30,15 @@
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>target-platform-configuration</artifactId>
 				<version>${tycho-version}</version>
+				<configuration>
+					<target>
+						<artifact>
+							<groupId>cucumber.eclipse</groupId>
+							<artifactId>cucumber.eclipse.targetdefinition</artifactId>
+							<version>${project.version}</version>
+						</artifact>
+					</target>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
