@@ -8,6 +8,7 @@ import gherkin.formatter.model.Scenario;
 import gherkin.formatter.model.ScenarioOutline;
 import gherkin.formatter.model.Step;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,8 @@ public class GherkinErrorMarker implements Formatter {
 
 	IFile file;
 	IDocument document;
+
+	private List<Step> steps = new ArrayList<Step>();
 
 	public GherkinErrorMarker(IFile inputfile, IDocument doc) {
 		this.file = inputfile;
@@ -130,6 +133,11 @@ public class GherkinErrorMarker implements Formatter {
 	 */
 	@Override
 	public void step(Step arg0) {
+		steps.add(arg0);
+	}
+	
+	public List<Step> getSteps() {
+		return steps;
 	}
 
 	/*

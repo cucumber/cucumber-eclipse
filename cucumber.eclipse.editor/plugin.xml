@@ -193,6 +193,43 @@
            <persistent value="true"/>
     </extension>
     <extension
+	    id="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror"
+	    name="Unmatched step"
+	    point="org.eclipse.core.resources.markers">
+	    <super type="org.eclipse.core.resources.problemmarker"/>
+	  <super
+	    type="org.eclipse.core.resources.textmarker">
+	  </super>
+	</extension>
+    <extension
+	  point="org.eclipse.ui.editors.annotationTypes">
+	  <type
+	        markerType="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror"
+	        name="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror">
+	  </type>
+	</extension>
+   <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror"
+            colorPreferenceKey="org.eclipse.viatra2.slice.color"
+            colorPreferenceValue="192,255,192"
+            contributesToHeader="false"
+            highlightPreferenceKey="org.eclipse.viatra2.slice.highlight"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="true"
+            label="GTASM Slice Marker"
+            overviewRulerPreferenceKey="org.eclipse.viatra2.slice.overview"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="0"
+            textPreferenceKey="org.eclipse.viatra2.slice.text"
+            textPreferenceValue="true"
+            textStylePreferenceValue="BOX"
+            verticalRulerPreferenceKey="org.eclipse.viatra2.slice.ruler"
+            verticalRulerPreferenceValue="true">
+      </specification>
+   </extension>
+    <extension
           point="org.eclipse.ui.contexts">
        <context
              id="cucumber.eclipse.editor.featureEditorScope"

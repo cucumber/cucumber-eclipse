@@ -1,13 +1,20 @@
 package cucumber.eclipse.editor.editors;
 
+import static cucumber.eclipse.editor.editors.FeatureFileUtil.getDocumentLanguage;
+import static cucumber.eclipse.editor.editors.FeatureFileUtil.getStepsInEncompassingProject;
 import gherkin.lexer.LexingError;
 import gherkin.parser.Parser;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
@@ -22,10 +29,14 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.texteditor.MarkerUtilities;
+
+import cucumber.eclipse.steps.integration.Step;
 
 
 public class Editor extends TextEditor {
-
+	private static final String UNMATCHED_STAP_ERROR_ID = "cucumber.eclipse.editor.editors.Editor.unmatchedsteperror";
+	
 	private ColorManager colorManager;
 	private IEditorInput input;
 
@@ -133,8 +144,10 @@ public class Editor extends TextEditor {
 
 	private void validateAndMark() {
 		IDocument doc = getDocumentProvider().getDocument(input);
+		IFileEditorInput fileEditorInput = (IFileEditorInput) input;
+		IFile featureFile = fileEditorInput.getFile();
 		GherkinErrorMarker marker = new GherkinErrorMarker(
-				((IFileEditorInput) input).getFile(), doc);
+				featureFile, doc);
 		marker.removeExistingMarkers();
 
 		Parser p = new Parser(marker, false);
@@ -142,6 +155,36 @@ public class Editor extends TextEditor {
 			p.parse(doc.get(), "", 0);
 		} catch (LexingError l) {
 		}
+		
+		highlightUnmatchedSteps(featureFile, doc, marker.getSteps());
+	}
 
+	private void highlightUnmatchedSteps(IFile featureFile, IDocument doc, List<gherkin.formatter.model.Step> list) {
+		try {
+			featureFile.deleteMarkers(UNMATCHED_STAP_ERROR_ID, true, IResource.DEPTH_ZERO);
+		} catch (CoreException e1) {
+			e1.printStackTrace();
+		}
+		
+		for (gherkin.formatter.model.Step stepLine : list) {
+			String stepString = stepLine.getKeyword() + stepLine.getName();
+			Step step = new StepMatcher().matchSteps(getDocumentLanguage(this), getStepsInEncompassingProject(featureFile), stepString);
+			if(step == null){
+				try {
+					Map<String, Object> attributes = new HashMap<String, Object>();
+					attributes.put(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+					attributes.put(IMarker.LINE_NUMBER, stepLine.getLine());
+					attributes.put(IMarker.MESSAGE, "Step does not have a matching glue code.");
+					
+					attributes.put(IMarker.CHAR_START, doc.getLineOffset(stepLine.getLine() - 1));
+					attributes.put(IMarker.CHAR_END, doc.getLineOffset(stepLine.getLine()));
+					MarkerUtilities.createMarker(featureFile, attributes, UNMATCHED_STAP_ERROR_ID);
+				} catch (CoreException e) {
+					e.printStackTrace();
+				} catch (BadLocationException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 }
