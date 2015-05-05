@@ -17,7 +17,6 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -72,7 +71,7 @@ public class PopupMenuFindStepActionDelegate extends AbstractHandler {
 		}
 		
 		String selectedLine = getSelectedLine(editorPart);
-		String language = getDocumentLanguage(editorPart);
+		String language = FeatureFileUtil.getDocumentLanguage(editorPart);
 
 		Step matchedStep = new StepMatcher().matchSteps(language, steps, selectedLine);
 		try {
@@ -94,29 +93,6 @@ public class PopupMenuFindStepActionDelegate extends AbstractHandler {
 		   IDE.openEditor(page, marker);
 		   marker.delete();
 		   
-	}
-	
-	private String getDocumentLanguage(IEditorPart editorPart) {
-		String lang = null;
-		try {
-			ITextEditor editor = (ITextEditor) editorPart;
-			IDocumentProvider docProvider = editor.getDocumentProvider();
-			IDocument doc = docProvider.getDocument(editorPart.getEditorInput());
-			
-			IRegion lineInfo = doc.getLineInformation(0);
-			int length = lineInfo.getLength();
-			int offset = lineInfo.getOffset();
-			String line = doc.get(offset, length);
-			
-			if(line.contains("language")) {
-				int indexOf = line.indexOf(":");
-				lang = line.substring((indexOf + 1)).trim();
-			}
-		} catch(BadLocationException e) {
-			e.printStackTrace();
-		}
-		
-		return lang;
 	}
 	
 	private String getSelectedLine(IEditorPart editorPart) {
