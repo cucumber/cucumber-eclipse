@@ -25,7 +25,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import cucumber.eclipse.steps.integration.Step;
 
-public class PopupMenuFindStepActionDelegate extends AbstractHandler {
+public class PopupMenuFindStepHandler extends AbstractHandler {
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		
