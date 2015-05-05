@@ -1,27 +1,25 @@
 package cucumber.eclipse.editor.editors;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Test;
-import org.omg.CORBA.portable.Delegate;
 
-import static org.junit.Assert.*;
-
-import cucumber.eclipse.editor.editors.PopupMenuFindStepActionDelegate;
 import cucumber.eclipse.steps.integration.Step;
 
-public class PopupMenuFindStepActionDelegateTest {
+public class StepMatcherTest {
 
-	private PopupMenuFindStepActionDelegate delagate = new PopupMenuFindStepActionDelegate();
+	private StepMatcher stepMatcher = new StepMatcher();
 	
 	@Test
 	public void simpleStepMatches() {
 		
 		Step s = createStep("^I run a test$");
 		
-		assertEquals(s, delagate.matchSteps("en", Collections.singleton(s), "When I run a test"));
+		assertEquals(s, stepMatcher.matchSteps("en", Collections.singleton(s), "When I run a test"));
 	}
 
 	@Test
@@ -29,7 +27,7 @@ public class PopupMenuFindStepActionDelegateTest {
 		
 		Step s = createStep("^there are (\\d)* cucumbers$");
 		
-		assertEquals(s, delagate.matchSteps("en", Collections.singleton(s), "Given there are <start> cucumbers"));
+		assertEquals(s, stepMatcher.matchSteps("en", Collections.singleton(s), "Given there are <start> cucumbers"));
 	}
 	
 	@Test
@@ -41,7 +39,7 @@ public class PopupMenuFindStepActionDelegateTest {
 		steps.add(s2);
 		steps.add(s);
 		
-		assertEquals(s, delagate.matchSteps("en", steps, "Given there are <start> cucumbers"));
+		assertEquals(s, stepMatcher.matchSteps("en", steps, "Given there are <start> cucumbers"));
 	}
 	
 	private Step createStep(String text) {
