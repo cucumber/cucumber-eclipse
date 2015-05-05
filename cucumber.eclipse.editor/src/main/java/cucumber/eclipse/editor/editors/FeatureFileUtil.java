@@ -45,8 +45,8 @@ class FeatureFileUtil{
 
 		return lang;
 	}
-
-	static Set<Step> getSteps(IFile featurefile) {
+	
+	static Set<Step> getStepsInEncompassingProject(IFile featurefile) {
 		Set<Step> steps = new HashSet<Step>();
 		for (IStepDefinitions stepDef : FeatureFileUtil.getStepDefinitions()) {
 			steps.addAll(stepDef.getSteps(featurefile));

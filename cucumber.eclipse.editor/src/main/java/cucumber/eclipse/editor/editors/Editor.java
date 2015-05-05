@@ -1,12 +1,18 @@
 package cucumber.eclipse.editor.editors;
 
+import static cucumber.eclipse.editor.editors.FeatureFileUtil.getDocumentLanguage;
+import static cucumber.eclipse.editor.editors.FeatureFileUtil.getStepsInEncompassingProject;
 import gherkin.lexer.LexingError;
 import gherkin.parser.Parser;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
@@ -22,6 +28,9 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.texteditor.MarkerUtilities;
+
+import cucumber.eclipse.steps.integration.Step;
 
 
 public class Editor extends TextEditor {
@@ -133,8 +142,10 @@ public class Editor extends TextEditor {
 
 	private void validateAndMark() {
 		IDocument doc = getDocumentProvider().getDocument(input);
+		IFileEditorInput fileEditorInput = (IFileEditorInput) input;
+		IFile featureFile = fileEditorInput.getFile();
 		GherkinErrorMarker marker = new GherkinErrorMarker(
-				((IFileEditorInput) input).getFile(), doc);
+				featureFile, doc);
 		marker.removeExistingMarkers();
 
 		Parser p = new Parser(marker, false);
@@ -142,6 +153,30 @@ public class Editor extends TextEditor {
 			p.parse(doc.get(), "", 0);
 		} catch (LexingError l) {
 		}
+		
+		highlightUnmatchedSteps(featureFile, marker.getSteps());
+	}
 
+	private void highlightUnmatchedSteps(IFile featureFile, List<gherkin.formatter.model.Step> list) {
+		try {
+			featureFile.deleteMarkers(IMarker.PROBLEM, true, IResource.DEPTH_ZERO);
+		} catch (CoreException e1) {
+			e1.printStackTrace();
+		}
+		
+		for (gherkin.formatter.model.Step stepLine : list) {
+			Step step = new StepMatcher().matchSteps(getDocumentLanguage(this), getStepsInEncompassingProject(featureFile), stepLine.getKeyword() + stepLine.getName());
+			if(step == null){
+				try {
+					Map<String, Object> attributes = new HashMap<String, Object>();
+					attributes.put(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+					attributes.put(IMarker.LINE_NUMBER, stepLine.getLine());
+					attributes.put(IMarker.MESSAGE, "Step does not have a matching glue code.");
+					MarkerUtilities.createMarker(featureFile, attributes, IMarker.PROBLEM);
+				} catch (CoreException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 }

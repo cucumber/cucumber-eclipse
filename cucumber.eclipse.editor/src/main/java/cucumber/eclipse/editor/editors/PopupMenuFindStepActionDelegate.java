@@ -39,7 +39,7 @@ public class PopupMenuFindStepActionDelegate extends AbstractHandler {
 		}
 		IFile featurefile = ((IFileEditorInput) input).getFile();
 
-		Set<Step> steps = FeatureFileUtil.getSteps(featurefile);
+		Set<Step> steps = FeatureFileUtil.getStepsInEncompassingProject(featurefile);
 		
 		String selectedLine = getSelectedLine(editorPart);
 		String language = FeatureFileUtil.getDocumentLanguage(editorPart);
