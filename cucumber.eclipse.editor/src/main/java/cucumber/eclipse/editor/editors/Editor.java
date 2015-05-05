@@ -14,6 +14,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
@@ -34,7 +35,8 @@ import cucumber.eclipse.steps.integration.Step;
 
 
 public class Editor extends TextEditor {
-
+	private static final String UNMATCHED_STAP_ERROR_ID = "cucumber.eclipse.editor.editors.Editor.unmatchedsteperror";
+	
 	private ColorManager colorManager;
 	private IEditorInput input;
 
@@ -154,26 +156,32 @@ public class Editor extends TextEditor {
 		} catch (LexingError l) {
 		}
 		
-		highlightUnmatchedSteps(featureFile, marker.getSteps());
+		highlightUnmatchedSteps(featureFile, doc, marker.getSteps());
 	}
 
-	private void highlightUnmatchedSteps(IFile featureFile, List<gherkin.formatter.model.Step> list) {
+	private void highlightUnmatchedSteps(IFile featureFile, IDocument doc, List<gherkin.formatter.model.Step> list) {
 		try {
-			featureFile.deleteMarkers(IMarker.PROBLEM, true, IResource.DEPTH_ZERO);
+			featureFile.deleteMarkers(UNMATCHED_STAP_ERROR_ID, true, IResource.DEPTH_ZERO);
 		} catch (CoreException e1) {
 			e1.printStackTrace();
 		}
 		
 		for (gherkin.formatter.model.Step stepLine : list) {
-			Step step = new StepMatcher().matchSteps(getDocumentLanguage(this), getStepsInEncompassingProject(featureFile), stepLine.getKeyword() + stepLine.getName());
+			String stepString = stepLine.getKeyword() + stepLine.getName();
+			Step step = new StepMatcher().matchSteps(getDocumentLanguage(this), getStepsInEncompassingProject(featureFile), stepString);
 			if(step == null){
 				try {
 					Map<String, Object> attributes = new HashMap<String, Object>();
 					attributes.put(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
 					attributes.put(IMarker.LINE_NUMBER, stepLine.getLine());
 					attributes.put(IMarker.MESSAGE, "Step does not have a matching glue code.");
-					MarkerUtilities.createMarker(featureFile, attributes, IMarker.PROBLEM);
+					
+					attributes.put(IMarker.CHAR_START, doc.getLineOffset(stepLine.getLine() - 1));
+					attributes.put(IMarker.CHAR_END, doc.getLineOffset(stepLine.getLine()));
+					MarkerUtilities.createMarker(featureFile, attributes, UNMATCHED_STAP_ERROR_ID);
 				} catch (CoreException e) {
+					e.printStackTrace();
+				} catch (BadLocationException e) {
 					e.printStackTrace();
 				}
 			}
