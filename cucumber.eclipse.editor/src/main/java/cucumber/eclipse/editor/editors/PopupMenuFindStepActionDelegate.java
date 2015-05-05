@@ -1,9 +1,6 @@
 package cucumber.eclipse.editor.editors;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -13,8 +10,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextSelection;
@@ -28,30 +23,9 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import cucumber.eclipse.steps.integration.IStepDefinitions;
 import cucumber.eclipse.steps.integration.Step;
 
 public class PopupMenuFindStepActionDelegate extends AbstractHandler {
-
-	private final static String EXTENSION_POINT_STEPDEFINITIONS_ID = "cucumber.eclipse.steps.integration";
-
-	private List<IStepDefinitions> getStepDefinitions() {
-		List<IStepDefinitions> stepDefs = new ArrayList<IStepDefinitions>();
-		IConfigurationElement[] config = Platform
-				.getExtensionRegistry()
-				.getConfigurationElementsFor(EXTENSION_POINT_STEPDEFINITIONS_ID);
-		try {
-			for (IConfigurationElement ce : config) {
-				Object obj = ce.createExecutableExtension("class");
-				if (obj instanceof IStepDefinitions) {
-					stepDefs.add((IStepDefinitions) obj);
-				}
-			}
-		} catch (CoreException e) {
-		}
-		return stepDefs;
-	}
-
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		
@@ -65,10 +39,7 @@ public class PopupMenuFindStepActionDelegate extends AbstractHandler {
 		}
 		IFile featurefile = ((IFileEditorInput) input).getFile();
 
-		Set<Step> steps = new HashSet<Step>();
-		for (IStepDefinitions stepDef : getStepDefinitions()) {
-			steps.addAll(stepDef.getSteps(featurefile));
-		}
+		Set<Step> steps = FeatureFileUtil.getSteps(featurefile);
 		
 		String selectedLine = getSelectedLine(editorPart);
 		String language = FeatureFileUtil.getDocumentLanguage(editorPart);
