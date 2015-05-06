@@ -85,6 +85,11 @@
             id="cucumber.eclipse.editor.navigation.findstep"
             name="Find step">
       </command>
+      <command
+            description="Toggle comment"
+            id="cucumber.eclipse.editor.toggle.comment"
+            name="Toggle comment">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -95,6 +100,10 @@
       <handler
             commandId="cucumber.eclipse.editor.navigation.findstep"
             class="cucumber.eclipse.editor.editors.PopupMenuFindStepActionDelegate">
+      </handler>
+      <handler
+            class="cucumber.eclipse.editor.editors.GherkinToggleCommentHandler"
+            commandId="cucumber.eclipse.editor.toggle.comment">
       </handler>
    </extension>
    <extension
@@ -131,6 +140,12 @@
             contextId="cucumber.eclipse.editor.featureEditorScope"
             sequence="F3"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
+      </key>
+      <key
+            commandId="cucumber.eclipse.editor.toggle.comment"
+            contextId="cucumber.eclipse.editor.featureEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+/">
       </key>
    </extension>
    <extension point = "org.eclipse.debug.core.launchConfigurationTypes">
