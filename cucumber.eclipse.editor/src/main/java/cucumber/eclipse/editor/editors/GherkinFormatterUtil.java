@@ -6,6 +6,8 @@ import gherkin.parser.Parser;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -34,11 +36,36 @@ public class GherkinFormatterUtil {
 		formatter.setCenterSteps(store.getBoolean(ICucumberPreferenceConstants.PREF_FORMAT_CENTER_STEPS));
 		formatter.setPreserveBlankLineBetweenSteps(store.getBoolean(ICucumberPreferenceConstants.PREF_FORMAT_PRESERVE_BLANK_LINE_BETWEEN_STEPS));
 		
-		// parse 
+		List<String> trailingComments = getTrailingComments(contents);
+		// parse
 		new Parser(formatter).parse(contents, "", 0);
+		appendTrailingComments(out, trailingComments);
 
 		out.flush();
 		return output.toString();
+	}
+
+	private static void appendTrailingComments(PrintWriter out,
+			List<String> unattachedComments) {
+		for (String unattachedComment : unattachedComments) {
+			out.print(unattachedComment + "\n");
+		}
+	}
+
+	private static List<String> getTrailingComments(String contents) {
+		List<String> unattachedComments = new ArrayList<String>();
+		String[] split = contents.split("\n");
+		for (int i = split.length - 1; i >= 0; i--) {
+			if (!isComment(split[i])) {
+				break;
+			}
+			unattachedComments.add(split[i]);
+		}
+		return unattachedComments;
+	}
+
+	private static boolean isComment(String line) {
+		return line.trim().startsWith("#");
 	}
 
 	public static TextEdit formatTextEdit(String contents, int i, String string) {

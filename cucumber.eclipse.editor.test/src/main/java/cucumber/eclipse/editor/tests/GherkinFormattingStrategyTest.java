@@ -33,7 +33,7 @@ public class GherkinFormattingStrategyTest {
     @Test public void testStringFormattingEndingWithComments() throws Exception {
     	
 	String formatted= GherkinFormatterUtil.format( feature_with_comments_unformatted_and_formatted );
-	assertThat(feature_with_comments_unformatted_and_formatted, is(formatted));
+	assertThat(formatted, is(feature_with_comments_unformatted_and_formatted));
 	
     }
 
