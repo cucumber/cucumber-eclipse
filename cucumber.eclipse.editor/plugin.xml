@@ -40,9 +40,21 @@
         </colorDefinition>
         <colorDefinition 
         	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_placeholder_colour"
+        	label="Placeholder Colour"
+        	value="255,128,0">
+        </colorDefinition>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
         	id="cucumber.eclipse.editor.presentation.gherkin_step_colour"
         	label="Step Colour"
         	value="0,128,128">
+        </colorDefinition>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_tag_colour"
+        	label="Tag Colour"
+        	value="0,128,255">
         </colorDefinition>
         <colorDefinition 
         	categoryId="cucumber.eclipse.editor.presentation"
@@ -57,11 +69,21 @@
             name="Formatter"
             id="cucumber.eclipse.editor.formmtter">
       </category>
+      <category 
+            name="findstep"
+            id="cucumber.eclipse.editor.find">
+      </category>     
       <command
             categoryId="cucumber.eclipse.editor.formmtter"
             description="Format"
             id="cucumber.eclipse.editor.formmater.pretty_formatter"
             name="Pretty format feature file">
+      </command>
+      <command
+            categoryId="cucumber.eclipse.editor.find"
+            description="Find step"
+            id="cucumber.eclipse.editor.navigation.findstep"
+            name="Find step">
       </command>
    </extension>
    <extension
@@ -70,29 +92,44 @@
             commandId="cucumber.eclipse.editor.formmater.pretty_formatter"
             class="cucumber.eclipse.editor.editors.GherkinPrettyFormatHandler">
       </handler>
+      <handler
+            commandId="cucumber.eclipse.editor.navigation.findstep"
+            class="cucumber.eclipse.editor.editors.PopupMenuFindStepActionDelegate">
+      </handler>
    </extension>
    <extension
-         point="org.eclipse.ui.popupMenus">
-     <viewerContribution
-        id="cucumber.eclipse.editor.gherkin"
-        targetID="#TextEditorContext">
-	    <action id="cucumber.eclipse.edtior.action.format"
-	       label="Pretty Format"
-	       icon="icons/cukes.gif"
-	       menubarPath="additions"
-	       helpContextId="cucumber.eclipse.editor.pretty_format_action_context"
-	       class="cucumber.eclipse.editor.editors.GherkinPopupMenuPrettyFormatActionDelegate"	
-           definitionId="cucumber.eclipse.editor.formmater.pretty_formatter"
-	       >
-	    </action>
-	 </viewerContribution>
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:#CukeEditorContext?before=additions">
+         <command
+               commandId="cucumber.eclipse.editor.formmater.pretty_formatter"
+               helpContextId="cucumber.eclipse.editor.pretty_format_action_context"
+               icon="icons/cukes.gif"
+               label="Pretty Format"
+               style="push">
+         </command>
+         <command
+               commandId="cucumber.eclipse.editor.navigation.findstep"
+               helpContextId="cucumber.eclipse.editor.findsteps_action_context"
+               icon="icons/cukes.gif"
+               label="Find Step"
+               style="push">
+         </command>
+      </menuContribution>
    </extension>
    <extension
          point="org.eclipse.ui.bindings">
       <key
             commandId="cucumber.eclipse.editor.formmater.pretty_formatter"
-            contextId="org.eclipse.ui.contexts.window"
+            contextId="cucumber.eclipse.editor.featureEditorScope"
             sequence="M1+SHIFT+F"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
+      </key>
+      <key
+            commandId="cucumber.eclipse.editor.navigation.findstep"
+            contextId="cucumber.eclipse.editor.featureEditorScope"
+            sequence="F3"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
       </key>
    </extension>
@@ -130,8 +167,8 @@
         id="cucumber.eclipse.launching.localCucumberFeature">
         </configurationType>
            <contextualLaunch>
-         <contextLabel mode="run" label="Run Feature" />
-         <contextLabel mode="debug" label="Debug Feature" />
+         <contextLabel mode="run" label="Cucumber Feature" />
+         <contextLabel mode="debug" label="Cucumber Feature" />
          <enablement >
            <with variable="selection">
            <count value="1"/>
@@ -147,4 +184,40 @@
      </contextualLaunch>
     </shortcut>
 </extension>
+    <extension
+           id="cucumber.eclipse.editor.editors.Editor.syntaxerror"
+           point="org.eclipse.core.resources.markers"
+           name="Gherkin Syntax Error Marker">
+           <super type="org.eclipse.core.resources.problemmarker"/>
+           <super type="org.eclipse.core.resources.textmarker"/>
+           <persistent value="true"/>
+    </extension>
+    <extension
+          point="org.eclipse.ui.contexts">
+       <context
+             id="cucumber.eclipse.editor.featureEditorScope"
+             name="Editing Feature"
+             parentId="org.eclipse.ui.contexts.window">
+       </context>
+    </extension>
+	<extension
+		id="cucumber.eclipse.editor.preferences"
+		point="org.eclipse.core.runtime.preferences"
+		name="preferences">
+		<scope
+			name="project"
+			class="org.eclipse.core.internal.resources.ProjectPreferences"/>
+	</extension>
+	<extension
+		point="org.eclipse.core.runtime.preferences">
+		<initializer
+			class="cucumber.eclipse.editor.preferences.CucumberPreferenceInitializer"/>
+	</extension>
+	<extension
+		point="org.eclipse.ui.preferencePages">
+		<page
+			id="cucumber.eclipse.editor.preferences.Page1"
+			class="cucumber.eclipse.editor.preferences.CucumberPreferencePage"
+			name="Cucumber" />
+   </extension>
 </plugin>

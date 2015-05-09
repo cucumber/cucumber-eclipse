@@ -1,0 +1,65 @@
+package cucumber.eclipse.editor.preferences;
+
+import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.resource.LocalResourceManager;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
+
+import cucumber.eclipse.editor.Activator;
+
+public class CucumberPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
+
+    public CucumberPreferencePage() {
+		super(FLAT);
+		setPreferenceStore(Activator.getDefault().getPreferenceStore());
+	}
+    
+	@Override
+	protected void createFieldEditors() {
+
+		Composite parent = getFieldEditorParent();
+
+		CLabel label = new CLabel(parent, SWT.NULL);
+		label.setText(getString("Gherkin Formatting"));
+		label.setImage(getImage("icons/cukes.gif"));
+		
+        addField(new BooleanFieldEditor(
+           ICucumberPreferenceConstants.PREF_FORMAT_RIGHT_ALIGN_NUMERIC_VALUES_IN_TABLES,
+           getString("&Right-align numeric values in tables"), parent));
+        
+        addField(new BooleanFieldEditor(
+           ICucumberPreferenceConstants.PREF_FORMAT_CENTER_STEPS,
+           getString("&Center Steps"), parent));
+
+        addField(new BooleanFieldEditor(
+           ICucumberPreferenceConstants.PREF_FORMAT_PRESERVE_BLANK_LINE_BETWEEN_STEPS,
+           getString("&Preserve blank lines between steps"), parent));
+
+	}
+
+	public static Image getImage(String imagePath) {
+		LocalResourceManager manager = new LocalResourceManager(JFaceResources.getResources());
+		ImageDescriptor imageDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(Activator.PLUGIN_ID, imagePath);
+		Image image = manager.createImage(imageDescriptor);
+		return image;
+	}
+
+	public static String getString(String key) {
+		// TODO: load strings via .messages file from resource bundle...
+		return key;
+	}
+
+	@Override
+	public void init(IWorkbench arg0) {
+		// nothing to init here...
+	}
+
+}

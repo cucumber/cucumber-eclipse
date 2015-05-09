@@ -1,20 +1,16 @@
 package cucumber.eclipse.launching;
 
-import java.awt.List;
-import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.variables.VariablesPlugin;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate2;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.ITypeHierarchy;
 import org.eclipse.jdt.launching.AbstractJavaLaunchConfigurationDelegate;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.IVMRunner;
@@ -32,14 +28,12 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		String[] classpath = getClasspath(config);
 		VMRunnerConfiguration runConfig = new VMRunnerConfiguration(CucumberFeatureLaunchConstants.CUCUMBER_API_CLI_MAIN, classpath);
 
-		File workingDir = verifyWorkingDirectory(config);
-		String workingDirName = null;
-		if (workingDir != null) {
-			workingDirName = workingDir.getAbsolutePath();
-		}
+		verifyWorkingDirectory(config);
 
 		String[] bootpath = getBootpath(config);
 		runConfig.setBootClassPath(bootpath);
+		runConfig.setVMArguments(DebugPlugin.parseArguments(getVMArguments(config)));
+		runConfig.setWorkingDirectory(getWorkingDirectory(config).getAbsolutePath());
 		
 		String featurePath = "" ;
 		String gluePath = "";
@@ -52,7 +46,7 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		boolean isRerun= false;
 		boolean isUsage= false;
 		
-		featurePath = config.getAttribute(CucumberFeatureLaunchConstants.ATTR_FEATURE_PATH, featurePath);
+		featurePath = substituteVar(config.getAttribute(CucumberFeatureLaunchConstants.ATTR_FEATURE_PATH, featurePath));
 		gluePath  = config.getAttribute(CucumberFeatureLaunchConstants.ATTR_GLUE_PATH, gluePath);
 		isMonochrome = config.getAttribute(CucumberFeatureLaunchConstants.ATTR_IS_MONOCHROME, isMonochrome);
 		isPretty = config.getAttribute(CucumberFeatureLaunchConstants.ATTR_IS_PRETTY,isPretty );
@@ -76,7 +70,7 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		
 		
 		String glue = "--glue";
-		String formatter = "--format";
+		String formatter = "--plugin"; // Cucumber-JVM's --format option is deprecated. Please use --plugin instead.
 		Collection<String> args = new ArrayList<String>();
 		//String[] args = new String[6];
 		args.add(featurePath);
@@ -119,11 +113,29 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		}
 		
 		if (isMonochrome) args.add("--monochrome");
+
+		args.addAll(Arrays.asList(DebugPlugin.parseArguments(getProgramArguments(config))));
+
 		runConfig.setProgramArguments(args.toArray(new String[0]));
 
 		runner.run(runConfig, launch, monitor);
 
 	}
 
+	/**
+	 * Substitute any variable
+	 */
+	private static String substituteVar(String s) {
+		if (s == null) {
+			return s;
+		}
+		try {
+			return VariablesPlugin.getDefault().getStringVariableManager()
+					.performStringSubstitution(s);
+		} catch (CoreException e) {
+			System.out.println("Could not substitute variable " + s);
+			return null;
+		}
+	}
 
 }

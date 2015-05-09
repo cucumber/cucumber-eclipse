@@ -2,7 +2,7 @@
 <feature
       id="cucumber.eclipse.feature"
       label="Cucumber Eclipse Feature"
-      version="0.0.6.qualifier">
+      version="0.0.11.qualifier">
 
    <description>
       Eclipse plugin for Cucumber
@@ -13,7 +13,7 @@
    </copyright>
 
    <license url="">
-The MIT License
+      The MIT License
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -37,6 +37,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
    <plugin
          id="cucumber.eclipse.editor"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="cucumber.eclipse.steps.integration"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="cucumber.eclipse.steps.jdt"
          download-size="0"
          install-size="0"
          version="0.0.0"

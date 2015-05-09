@@ -8,7 +8,7 @@
 		<version>0.0.11-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>cucumber.eclipse.editor.test</artifactId>
-	<packaging>eclipse-test-plugin</packaging>
+	<artifactId>cucumber.eclipse.targetdefinition</artifactId>
+	<packaging>eclipse-target-definition</packaging>
 
 </project>

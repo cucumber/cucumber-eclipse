@@ -2,14 +2,14 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<version>0.0.6-SNAPSHOT</version>
+	<version>0.0.11-SNAPSHOT</version>
 	<groupId>cucumber.eclipse</groupId>
 	<artifactId>parent</artifactId>
 	<packaging>pom</packaging>
 	<name>Cucumber Eclipse Parent</name>
 
 	<properties>
-		<tycho-version>0.17.0</tycho-version>
+		<tycho-version>0.22.0</tycho-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -21,16 +21,8 @@
 		<module>cucumber.eclipse.steps.integration</module>
 		<module>cucumber.eclipse.steps.jdt</module>
 		<module>cucumber.eclipse.p2updatesite</module>
+		<module>cucumber.eclipse.targetdefinition</module>
 	</modules>
-
-	<repositories>
-		<repository>
-			<id>galileo</id>
-			<url>http://download.eclipse.org/releases/galileo/</url>
-			<layout>p2</layout>
-		</repository>
-
-	</repositories>
 
 	<build>
 		<plugins>
@@ -38,6 +30,15 @@
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>target-platform-configuration</artifactId>
 				<version>${tycho-version}</version>
+				<configuration>
+					<target>
+						<artifact>
+							<groupId>cucumber.eclipse</groupId>
+							<artifactId>cucumber.eclipse.targetdefinition</artifactId>
+							<version>${project.version}</version>
+						</artifact>
+					</target>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>

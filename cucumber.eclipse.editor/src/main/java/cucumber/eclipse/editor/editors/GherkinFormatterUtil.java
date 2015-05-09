@@ -1,14 +1,14 @@
 package cucumber.eclipse.editor.editors;
 
-import gherkin.formatter.Formatter;
-import gherkin.formatter.PrettyFormatter;
 import gherkin.lexer.LexingError;
 import gherkin.parser.ParseError;
 import gherkin.parser.Parser;
-import java.io.ByteArrayOutputStream;
+
 import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.widgets.Shell;
@@ -16,14 +16,24 @@ import org.eclipse.text.edits.TextEdit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import cucumber.eclipse.editor.Activator;
+import cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants;
+
 public class GherkinFormatterUtil {
 
 	public static String format(String contents) {
 		// set up
-		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		StringWriter output = new StringWriter();
 		PrintWriter out = new PrintWriter(output);
-		Formatter formatter = new PrettyFormatter(out, true, false);
+		
+		PrettyFormatter formatter = new PrettyFormatter(out, true, false);
 
+		// configurable preferences
+		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+		formatter.setRightAlignNumericValues(store.getBoolean(ICucumberPreferenceConstants.PREF_FORMAT_RIGHT_ALIGN_NUMERIC_VALUES_IN_TABLES));
+		formatter.setCenterSteps(store.getBoolean(ICucumberPreferenceConstants.PREF_FORMAT_CENTER_STEPS));
+		formatter.setPreserveBlankLineBetweenSteps(store.getBoolean(ICucumberPreferenceConstants.PREF_FORMAT_PRESERVE_BLANK_LINE_BETWEEN_STEPS));
+		
 		// parse 
 		new Parser(formatter).parse(contents, "", 0);
 
