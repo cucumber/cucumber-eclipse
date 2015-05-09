@@ -7,6 +7,7 @@ import gherkin.parser.Parser;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -61,6 +62,8 @@ public class GherkinFormatterUtil {
 			}
 			unattachedComments.add(split[i]);
 		}
+		Collections.reverse(unattachedComments);
+		
 		return unattachedComments;
 	}
 

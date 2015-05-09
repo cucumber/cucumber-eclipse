@@ -18,7 +18,7 @@ public class GherkinFormattingStrategyTest {
 	+ "\n"
 	+ "  Scenario: scenario 1\n"
 	+ "    When some action\n"
-	+ "    Then some validation\n"
+	+ "    # Then some validation\n"
 	+ "    # And some more validation\n"
 	;
 
