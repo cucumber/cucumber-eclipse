@@ -94,7 +94,7 @@
       </handler>
       <handler
             commandId="cucumber.eclipse.editor.navigation.findstep"
-            class="cucumber.eclipse.editor.editors.PopupMenuFindStepActionDelegate">
+            class="cucumber.eclipse.editor.editors.PopupMenuFindStepHandler">
       </handler>
    </extension>
    <extension
@@ -192,6 +192,43 @@
            <super type="org.eclipse.core.resources.textmarker"/>
            <persistent value="true"/>
     </extension>
+    <extension
+	    id="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror"
+	    name="Unmatched step"
+	    point="org.eclipse.core.resources.markers">
+	    <super type="org.eclipse.core.resources.problemmarker"/>
+	  <super
+	    type="org.eclipse.core.resources.textmarker">
+	  </super>
+	</extension>
+    <extension
+	  point="org.eclipse.ui.editors.annotationTypes">
+	  <type
+	        markerType="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror"
+	        name="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror">
+	  </type>
+	</extension>
+   <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror"
+            colorPreferenceKey="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror.color"
+            colorPreferenceValue="247,207,84"
+            contributesToHeader="false"
+            highlightPreferenceKey="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror.highlight"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="true"
+            label="Unmatched step error"
+            overviewRulerPreferenceKey="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror.overview"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="0"
+            textPreferenceKey="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror.text"
+            textPreferenceValue="true"
+            textStylePreferenceValue="BOX"
+            verticalRulerPreferenceKey="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror.ruler"
+            verticalRulerPreferenceValue="true">
+      </specification>
+   </extension>
     <extension
           point="org.eclipse.ui.contexts">
        <context

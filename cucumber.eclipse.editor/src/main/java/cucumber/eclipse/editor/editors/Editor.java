@@ -1,14 +1,23 @@
 package cucumber.eclipse.editor.editors;
 
+import static cucumber.eclipse.editor.editors.FeatureFileUtil.getDocumentLanguage;
+import static cucumber.eclipse.editor.editors.FeatureFileUtil.getStepsInEncompassingProject;
 import gherkin.lexer.LexingError;
 import gherkin.parser.Parser;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -22,9 +31,12 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.texteditor.MarkerUtilities;
 
+import cucumber.eclipse.steps.integration.Step;
 
 public class Editor extends TextEditor {
+	private static final String UNMATCHED_STAP_ERROR_ID = "cucumber.eclipse.editor.editors.Editor.unmatchedsteperror";
 
 	private ColorManager colorManager;
 	private IEditorInput input;
@@ -32,13 +44,14 @@ public class Editor extends TextEditor {
 	public Editor() {
 		super();
 		colorManager = new ColorManager();
-		setSourceViewerConfiguration(new GherkinConfiguration(this, colorManager));
+		setSourceViewerConfiguration(new GherkinConfiguration(this,
+				colorManager));
 		setDocumentProvider(new GherkinDocumentProvider());
 	}
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * org.eclipse.ui.texteditor.AbstractDecoratedTextEditor#createSourceViewer
 	 * (org.eclipse.swt.widgets.Composite,
@@ -62,9 +75,10 @@ public class Editor extends TextEditor {
 	private ProjectionSupport projectionSupport;
 	private ProjectionAnnotationModel annotationModel;
 	private Annotation[] oldAnnotations;
+
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * org.eclipse.ui.texteditor.AbstractDecoratedTextEditor#createPartControl
 	 * (org.eclipse.swt.widgets.Composite)
@@ -84,20 +98,20 @@ public class Editor extends TextEditor {
 		annotationModel = viewer.getProjectionAnnotationModel();
 
 		// register the editor scope context
-		IContextService service = (IContextService) getSite().getService(IContextService.class);
+		IContextService service = (IContextService) getSite().getService(
+				IContextService.class);
 		if (service != null) {
 			service.activateContext("cucumber.eclipse.editor.featureEditorScope");
 		}
 	}
 
-	public void updateFoldingStructure( List<Position> positions )
-	{
+	public void updateFoldingStructure(List<Position> positions) {
 		Map<Annotation, Position> newAnnotations = new HashMap<Annotation, Position>();
-		for( Position p : positions ) {
-			newAnnotations.put( new ProjectionAnnotation(), p );
+		for (Position p : positions) {
+			newAnnotations.put(new ProjectionAnnotation(), p);
 		}
 		annotationModel.modifyAnnotations(oldAnnotations, newAnnotations, null);
-		oldAnnotations = newAnnotations.keySet().toArray( new Annotation[0] );
+		oldAnnotations = newAnnotations.keySet().toArray(new Annotation[0]);
 	}
 
 	@Override
@@ -108,7 +122,7 @@ public class Editor extends TextEditor {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * org.eclipse.ui.editors.text.TextEditor#doSetInput(org.eclipse.ui.IEditorInput
 	 * )
@@ -133,8 +147,9 @@ public class Editor extends TextEditor {
 
 	private void validateAndMark() {
 		IDocument doc = getDocumentProvider().getDocument(input);
-		GherkinErrorMarker marker = new GherkinErrorMarker(
-				((IFileEditorInput) input).getFile(), doc);
+		IFileEditorInput fileEditorInput = (IFileEditorInput) input;
+		IFile featureFile = fileEditorInput.getFile();
+		GherkinErrorMarker marker = new GherkinErrorMarker(featureFile, doc);
 		marker.removeExistingMarkers();
 
 		Parser p = new Parser(marker, false);
@@ -143,5 +158,59 @@ public class Editor extends TextEditor {
 		} catch (LexingError l) {
 		}
 
+		highlightUnmatchedSteps(featureFile, doc, marker.getSteps());
+	}
+
+	private void highlightUnmatchedSteps(IFile featureFile, IDocument doc,
+			List<gherkin.formatter.model.Step> list) {
+		deleteUnmatchedStepsMarkers(featureFile);
+		createMarkers(featureFile, doc, list);
+	}
+
+	private void createMarkers(IFile featureFile, IDocument doc,
+			List<gherkin.formatter.model.Step> list) {
+		for (gherkin.formatter.model.Step stepLine : list) {
+			String stepString = stepLine.getKeyword() + stepLine.getName();
+			Step step = new StepMatcher().matchSteps(getDocumentLanguage(this),
+					getStepsInEncompassingProject(featureFile), stepString);
+			if (step == null) {
+				try {
+					markUnmatchedStep(featureFile, doc, stepLine);
+				} catch (CoreException e) {
+					e.printStackTrace();
+				} catch (BadLocationException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	private void deleteUnmatchedStepsMarkers(IFile featureFile) {
+		try {
+			featureFile.deleteMarkers(UNMATCHED_STAP_ERROR_ID, true,
+					IResource.DEPTH_ZERO);
+		} catch (CoreException e1) {
+			e1.printStackTrace();
+		}
+	}
+
+	private void markUnmatchedStep(IFile featureFile, IDocument doc,
+			gherkin.formatter.model.Step stepLine) throws BadLocationException,
+			CoreException {
+		Map<String, Object> attributes = new HashMap<String, Object>();
+		attributes.put(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+		attributes.put(IMarker.LINE_NUMBER, stepLine.getLine());
+		attributes.put(IMarker.MESSAGE,
+				"Step does not have a matching glue code.");
+
+		FindReplaceDocumentAdapter find = new FindReplaceDocumentAdapter(doc);
+		IRegion region = find.find(0, stepLine.getName(), true, true, false,
+				false);
+
+		attributes.put(IMarker.CHAR_START, region.getOffset());
+		attributes.put(IMarker.CHAR_END,
+				region.getOffset() + region.getLength());
+		MarkerUtilities.createMarker(featureFile, attributes,
+				UNMATCHED_STAP_ERROR_ID);
 	}
 }
