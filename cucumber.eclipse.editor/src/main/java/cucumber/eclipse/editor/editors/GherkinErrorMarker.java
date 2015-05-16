@@ -10,7 +10,6 @@ import gherkin.formatter.model.Scenario;
 import gherkin.formatter.model.ScenarioOutline;
 import gherkin.formatter.model.Step;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,8 +40,6 @@ public class GherkinErrorMarker implements Formatter {
 	IEditorPart editor;
 	IFile file;
 	IDocument document;
-
-	private List<Step> steps = new ArrayList<Step>();
 
 	public GherkinErrorMarker(IEditorPart editor, IFile inputfile, IDocument doc) {
 		this.editor = editor;
@@ -143,7 +140,6 @@ public class GherkinErrorMarker implements Formatter {
 	 */
 	@Override
 	public void step(Step stepLine) {
-		steps.add(stepLine);
 		String stepString = stepLine.getKeyword() + stepLine.getName();
 		cucumber.eclipse.steps.integration.Step step = new StepMatcher().matchSteps(
 				getDocumentLanguage(editor), getStepsInEncompassingProject(file),
@@ -157,10 +153,6 @@ public class GherkinErrorMarker implements Formatter {
 				e.printStackTrace();
 			}
 		}
-	}
-	
-	public List<Step> getSteps() {
-		return steps;
 	}
 
 	/*
