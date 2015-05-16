@@ -35,7 +35,7 @@ public class GherkinErrorMarker implements Formatter {
 
 	private static final String ERROR_ID = "cucumber.eclipse.editor.editors.Editor.syntaxerror";
 
-	private static final String UNMATCHED_STAP_ERROR_ID = "cucumber.eclipse.editor.editors.Editor.unmatchedsteperror";
+	private static final String UNMATCHED_STEP_ERROR_ID = "cucumber.eclipse.editor.editors.Editor.unmatchedsteperror";
 
 	IEditorPart editor;
 	IFile file;
@@ -202,7 +202,7 @@ public class GherkinErrorMarker implements Formatter {
 
 	private void deleteUnmatchedStepsMarkers(IFile featureFile) {
 		try {
-			featureFile.deleteMarkers(UNMATCHED_STAP_ERROR_ID, true,
+			featureFile.deleteMarkers(UNMATCHED_STEP_ERROR_ID, true,
 					IResource.DEPTH_ZERO);
 		} catch (CoreException e1) {
 			e1.printStackTrace();
@@ -226,6 +226,6 @@ public class GherkinErrorMarker implements Formatter {
 		attributes.put(IMarker.CHAR_END,
 				region.getOffset() + region.getLength());
 		MarkerUtilities.createMarker(featureFile, attributes,
-				UNMATCHED_STAP_ERROR_ID);
+				UNMATCHED_STEP_ERROR_ID);
 	}
 }
