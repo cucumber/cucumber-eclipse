@@ -52,5 +52,13 @@
                id="cucumber.eclipse.steps.jdt.commands.addNatureCommand">
          </command>
    </menuContribution>
+</extension>
+<extension
+      point="org.eclipse.ui.ide.projectNatureImages">
+   <image
+         icon="icons/cukes_nature.gif"
+         id="cucumber.eclipse.steps.jdt.projectNatureImage"
+         natureId="cucumber.eclipse.steps.jdt.stepsNature">
+   </image>
 </extension> 
 </plugin>

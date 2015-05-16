@@ -8,7 +8,12 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jdt.ui.IPackagesViewPart;
+import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 public class AddNatureHandler extends AbstractHandler {
@@ -33,9 +38,22 @@ public class AddNatureHandler extends AbstractHandler {
         IProjectDescription description = project.getDescription();
 	    String[] oldNatures = description.getNatureIds();
 	    String[] newNatures = new String[oldNatures.length + 1];
-	    System.arraycopy(oldNatures, 0, newNatures, 0, oldNatures.length);
-	    newNatures[oldNatures.length] = "cucumber.eclipse.steps.jdt.stepsNature"; 
+	    System.arraycopy(oldNatures, 0, newNatures, 1, oldNatures.length);
+	    newNatures[0] = "cucumber.eclipse.steps.jdt.stepsNature"; 
 	    description.setNatureIds(newNatures);
 	    project.setDescription(description, new NullProgressMonitor());
+	    updatePackageExplorer();
+    }
+    
+    private void updatePackageExplorer() {
+        final IViewPart foundView = PlatformUI.getWorkbench()
+                        .getActiveWorkbenchWindow().getActivePage()
+                        .findView(JavaUI.ID_PACKAGES);
+
+        if (foundView instanceof IPackagesViewPart) {
+                final IPackagesViewPart packageExplorerView = (IPackagesViewPart) foundView;
+                final TreeViewer treeViewer = packageExplorerView.getTreeViewer();
+                treeViewer.refresh();
+        }
     }
 }
