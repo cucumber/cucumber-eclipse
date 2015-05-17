@@ -47,7 +47,7 @@ public class GherkinErrorMarker implements Formatter {
 
 	public void removeExistingMarkers() {
 		markerManager.removeAll(ERROR_ID, file);
-		deleteUnmatchedStepsMarkers(file);
+		markerManager.removeAll(UNMATCHED_STEP_ERROR_ID, file);
 	}
 
 	/*
@@ -187,10 +187,6 @@ public class GherkinErrorMarker implements Formatter {
 	 */
 	@Override
 	public void uri(String arg0) {
-	}
-
-	private void deleteUnmatchedStepsMarkers(IFile featureFile) {
-		markerManager.removeAll(UNMATCHED_STEP_ERROR_ID, featureFile);
 	}
 
 	private void markUnmatchedStep(IFile featureFile, IDocument doc,
