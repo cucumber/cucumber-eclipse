@@ -101,6 +101,9 @@ class PositionedElement {
 		
 		if (statement instanceof DescribedStatement) {
 			result = ((DescribedStatement) statement).getName();
+			if ("".equals(result)) {
+				result = statement.getKeyword();
+			}
 		}
 		else if (statement instanceof Step) {
 			result = ((Step) statement).getKeyword() + ((Step) statement).getName();
