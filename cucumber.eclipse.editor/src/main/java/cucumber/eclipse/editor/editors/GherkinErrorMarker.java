@@ -1,7 +1,6 @@
 package cucumber.eclipse.editor.editors;
 
 import static cucumber.eclipse.editor.editors.FeatureFileUtil.getDocumentLanguage;
-import static cucumber.eclipse.editor.editors.FeatureFileUtil.getStepsInEncompassingProject;
 import gherkin.formatter.Formatter;
 import gherkin.formatter.model.Background;
 import gherkin.formatter.model.Examples;
@@ -26,6 +25,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 
 import cucumber.eclipse.editor.Activator;
+import cucumber.eclipse.editor.steps.IStepProvider;
 
 /**
  * @author andreas
@@ -38,11 +38,13 @@ public class GherkinErrorMarker implements Formatter {
 	private static final String UNMATCHED_STEP_ERROR_ID = "cucumber.eclipse.editor.editors.Editor.unmatchedsteperror";
 
 	IEditorPart editor;
+	IStepProvider stepProvider;
 	IFile file;
 	IDocument document;
 
-	public GherkinErrorMarker(IEditorPart editor, IFile inputfile, IDocument doc) {
+	public GherkinErrorMarker(IEditorPart editor, IStepProvider stepProvider, IFile inputfile, IDocument doc) {
 		this.editor = editor;
+		this.stepProvider = stepProvider;
 		this.file = inputfile;
 		this.document = doc;
 	}
@@ -142,7 +144,7 @@ public class GherkinErrorMarker implements Formatter {
 	public void step(Step stepLine) {
 		String stepString = stepLine.getKeyword() + stepLine.getName();
 		cucumber.eclipse.steps.integration.Step step = new StepMatcher().matchSteps(
-				getDocumentLanguage(editor), getStepsInEncompassingProject(file),
+				getDocumentLanguage(editor), stepProvider.getStepsInEncompassingProject(file),
 				stepString);
 		if (step == null) {
 			try {

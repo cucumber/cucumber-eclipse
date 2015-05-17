@@ -23,6 +23,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
 import cucumber.eclipse.steps.integration.Step;
 
 public class PopupMenuFindStepHandler extends AbstractHandler {
@@ -39,7 +40,7 @@ public class PopupMenuFindStepHandler extends AbstractHandler {
 		}
 		IFile featurefile = ((IFileEditorInput) input).getFile();
 
-		Set<Step> steps = FeatureFileUtil.getStepsInEncompassingProject(featurefile);
+		Set<Step> steps = new ExtensionRegistryStepProvider().getStepsInEncompassingProject(featurefile);
 		
 		String selectedLine = getSelectedLine(editorPart);
 		String language = FeatureFileUtil.getDocumentLanguage(editorPart);

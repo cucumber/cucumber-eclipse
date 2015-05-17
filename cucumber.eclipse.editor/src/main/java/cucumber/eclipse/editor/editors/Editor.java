@@ -24,6 +24,8 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.TextEditor;
 
+import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
+
 public class Editor extends TextEditor {
 
 	private ColorManager colorManager;
@@ -137,7 +139,8 @@ public class Editor extends TextEditor {
 		IDocument doc = getDocumentProvider().getDocument(input);
 		IFileEditorInput fileEditorInput = (IFileEditorInput) input;
 		IFile featureFile = fileEditorInput.getFile();
-		GherkinErrorMarker marker = new GherkinErrorMarker(this, featureFile, doc);
+		GherkinErrorMarker marker = new GherkinErrorMarker(this,
+				new ExtensionRegistryStepProvider(), featureFile, doc);
 		marker.removeExistingMarkers();
 
 		Parser p = new Parser(marker, false);
