@@ -198,8 +198,8 @@ public class GherkinErrorMarker implements Formatter {
 			CoreException {
 		
 		FindReplaceDocumentAdapter find = new FindReplaceDocumentAdapter(doc);
-		IRegion region = find.find(0, stepLine.getName(), true, true, false,
-				false);
+		IRegion region = find.find(doc.getLineOffset(stepLine.getLine() - 1),
+				stepLine.getName(), true, true, false, false);
 
 		markerManager.add(UNMATCHED_STEP_ERROR_ID,
 				featureFile,
