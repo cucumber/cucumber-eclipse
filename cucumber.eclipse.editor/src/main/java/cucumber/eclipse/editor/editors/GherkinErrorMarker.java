@@ -1,6 +1,6 @@
 package cucumber.eclipse.editor.editors;
 
-import static cucumber.eclipse.editor.editors.FeatureFileUtil.getDocumentLanguage;
+import static cucumber.eclipse.editor.editors.DocumentUtil.getDocumentLanguage;
 import gherkin.formatter.Formatter;
 import gherkin.formatter.model.Background;
 import gherkin.formatter.model.Examples;
@@ -139,7 +139,7 @@ public class GherkinErrorMarker implements Formatter {
 	public void step(Step stepLine) {
 		String stepString = stepLine.getKeyword() + stepLine.getName();
 		cucumber.eclipse.steps.integration.Step step = new StepMatcher().matchSteps(
-				getDocumentLanguage(editor), stepProvider.getStepsInEncompassingProject(file),
+				getDocumentLanguage(document), stepProvider.getStepsInEncompassingProject(file),
 				stepString);
 		if (step == null) {
 			try {
