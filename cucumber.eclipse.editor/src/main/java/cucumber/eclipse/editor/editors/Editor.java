@@ -140,9 +140,9 @@ public class Editor extends TextEditor {
 		IDocument doc = getDocumentProvider().getDocument(input);
 		IFileEditorInput fileEditorInput = (IFileEditorInput) input;
 		IFile featureFile = fileEditorInput.getFile();
-		GherkinErrorMarker marker = new GherkinErrorMarker(this,
-				new ExtensionRegistryStepProvider(), new MarkerManager(),
-				featureFile, doc);
+		GherkinErrorMarker marker = new GherkinErrorMarker(new ExtensionRegistryStepProvider(),
+				new MarkerManager(), featureFile,
+				doc);
 		marker.removeExistingMarkers();
 
 		Parser p = new Parser(marker, false);

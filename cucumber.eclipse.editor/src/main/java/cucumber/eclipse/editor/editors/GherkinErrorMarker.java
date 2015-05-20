@@ -18,7 +18,6 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.ui.IEditorPart;
 
 import cucumber.eclipse.editor.markers.IMarkerManager;
 import cucumber.eclipse.editor.steps.IStepProvider;
@@ -33,15 +32,13 @@ public class GherkinErrorMarker implements Formatter {
 
 	private static final String UNMATCHED_STEP_ERROR_ID = "cucumber.eclipse.editor.editors.Editor.unmatchedsteperror";
 
-	IEditorPart editor;
 	IStepProvider stepProvider;
 	IMarkerManager markerManager;
 	IFile file;
 	IDocument document;
 
-	public GherkinErrorMarker(IEditorPart editor, IStepProvider stepProvider, IMarkerManager markerManager,
-			IFile inputfile, IDocument doc) {
-		this.editor = editor;
+	public GherkinErrorMarker(IStepProvider stepProvider, IMarkerManager markerManager, IFile inputfile,
+			IDocument doc) {
 		this.stepProvider = stepProvider;
 		this.markerManager = markerManager;
 		this.file = inputfile;
