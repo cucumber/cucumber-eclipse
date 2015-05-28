@@ -28,6 +28,7 @@ public class GherkinErrorMarkerTest {
                 + "  Scenario: x\n"
                 + "    Given x\n"; // step name at line 3, position 10
         Document document = new Document(source);
+        final AtomicInteger actualLineNumber = new AtomicInteger();
         final AtomicInteger actualCharStart = new AtomicInteger();
         final AtomicInteger actualCharEnd = new AtomicInteger();
         
@@ -37,11 +38,13 @@ public class GherkinErrorMarkerTest {
                     }
                     
                     public void add(String type, IFile file, int severity, String message, int lineNumber, int charStart, int charEnd) {
+                    	actualLineNumber.set(lineNumber);
                         actualCharStart.set(charStart);
                         actualCharEnd.set(charEnd);
                     }
                 }, new TestFile(), document)).parse(source, "", 0);
         
+        assertThat("lineNumber", actualLineNumber.get(), is(4)); // marker line numbers are 1-based
         assertThat("charStart", actualCharStart.get(), is(document.getLineOffset(3) + 10));
         assertThat("charEnd", actualCharEnd.get(), is(document.getLineOffset(3) + 11));
     }
