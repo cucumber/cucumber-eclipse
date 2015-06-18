@@ -1,5 +1,7 @@
 package cucumber.eclipse.editor.editors;
 
+import static cucumber.eclipse.editor.editors.DocumentUtil.getDocumentLanguage;
+
 import java.util.HashMap;
 import java.util.Set;
 
@@ -23,6 +25,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
 import cucumber.eclipse.steps.integration.Step;
 
 public class PopupMenuFindStepHandler extends AbstractHandler {
@@ -39,10 +42,12 @@ public class PopupMenuFindStepHandler extends AbstractHandler {
 		}
 		IFile featurefile = ((IFileEditorInput) input).getFile();
 
-		Set<Step> steps = FeatureFileUtil.getStepsInEncompassingProject(featurefile);
+		Set<Step> steps = new ExtensionRegistryStepProvider().getStepsInEncompassingProject(featurefile);
 		
+		ITextEditor editor = (ITextEditor) editorPart;
+		IDocumentProvider docProvider = editor.getDocumentProvider();
 		String selectedLine = getSelectedLine(editorPart);
-		String language = FeatureFileUtil.getDocumentLanguage(editorPart);
+		String language = getDocumentLanguage(docProvider.getDocument(editorPart.getEditorInput()));
 
 		Step matchedStep = new StepMatcher().matchSteps(language, steps, selectedLine);
 		try {
