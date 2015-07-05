@@ -9,6 +9,9 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
@@ -18,6 +21,9 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
@@ -25,6 +31,7 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
+import cucumber.eclipse.editor.Activator;
 import cucumber.eclipse.editor.markers.MarkerManager;
 import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
 
@@ -153,6 +160,24 @@ public class Editor extends TextEditor {
 		if (IContentOutlinePage.class.equals(required)) {
 			if (outlinePage == null) {
 				outlinePage = new GherkinOutlinePage();
+				outlinePage.addSelectionChangedListener(new ISelectionChangedListener() {
+					
+					@Override
+					public void selectionChanged(SelectionChangedEvent event) {
+						PositionedElement firstElement = (PositionedElement) ((IStructuredSelection)
+								event.getSelection()).getFirstElement();
+						
+						if (firstElement != null) {
+							try {
+								selectAndReveal(firstElement.toPosition().getOffset(), 0);
+							} catch (BadLocationException e) {
+								Activator.getDefault().getLog().log(new Status(IStatus.ERROR,
+										Activator.PLUGIN_ID, "Couldn't set editor selection "
+												+ "from outline", e));
+							}
+						}
+					}
+				});
 			}
 			outlinePage.setInput(getEditorInput());
 			return outlinePage;
