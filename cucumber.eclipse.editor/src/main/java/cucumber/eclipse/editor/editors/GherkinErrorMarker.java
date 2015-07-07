@@ -172,7 +172,7 @@ public class GherkinErrorMarker implements Formatter {
 					file,
 					IMarker.SEVERITY_ERROR,
 					buf.toString(),
-					line - 1,
+					line,
 					document.getLineOffset(line - 1),
 					document.getLineOffset(line - 1) + document.getLineLength(line - 1));
 		} catch (BadLocationException e) {
@@ -201,7 +201,7 @@ public class GherkinErrorMarker implements Formatter {
 				featureFile,
 				IMarker.SEVERITY_WARNING,
 				"Step does not have a matching glue code.",
-				stepLine.getLine() - 1,
+				stepLine.getLine(),
 				region.getOffset(),
 				region.getOffset() + region.getLength());
 	}
