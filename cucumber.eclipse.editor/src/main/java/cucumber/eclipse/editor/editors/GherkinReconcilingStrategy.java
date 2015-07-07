@@ -46,7 +46,7 @@ public class GherkinReconcilingStrategy implements IReconcilingStrategy,
 		
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
-				editor.updateFoldingStructure(model.getFoldRanges());
+				editor.updateGherkinModel(model);
 			}
 		});
 	}

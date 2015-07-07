@@ -23,58 +23,22 @@ import org.eclipse.jface.text.Position;
 
 public class GherkinModel {
 
-	protected static class PositionedElement {
-		private BasicStatement statement;
-		private int endOffset = -1;
-		private IDocument document;
-
-		public PositionedElement(IDocument doc, BasicStatement stmt) {
-			this.statement = stmt;
-			this.document = doc;
-		}
-
-		private static int getDocumentLine(int line) {
-			// numbering in document is 0-based;
-			return line - 1;
-		}
-
-		public void setEndLine(int lineNo) {
-			try {
-				endOffset = document.getLineOffset(getDocumentLine(lineNo))
-						+ document.getLineLength(getDocumentLine(lineNo));
-			} catch (BadLocationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
-		public BasicStatement getStatement() {
-			return statement;
-		}
-
-		public Position toPosition() throws BadLocationException {
-			int offset = document.getLineOffset(getDocumentLine(statement
-					.getLine()));
-			if (endOffset == -1) {
-				endOffset = offset
-						+ document.getLineLength(getDocumentLine(statement
-								.getLine()));
-			}
-
-			return new Position(offset, endOffset - offset);
-		}
-	}
-	
 	private List<PositionedElement> elements = new ArrayList<PositionedElement>();
+	
+	public PositionedElement getFeatureElement() {
+		return elements.isEmpty() ? null : elements.get(0);
+	}
 	
 	public List<Position> getFoldRanges() {
 		List<Position> foldRanges = new ArrayList<Position>();
 		for (PositionedElement element : elements) {
-			try {
-				foldRanges.add(element.toPosition());
-			} catch (BadLocationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			if (element.isFeature() || element.isStepContainer() || element.isExamples()) {
+				try {
+					foldRanges.add(element.toPosition());
+				} catch (BadLocationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 		return foldRanges;
@@ -98,13 +62,9 @@ public class GherkinModel {
 
 			@Override
 			public void step(Step arg0) {
+				PositionedElement element = newPositionedElement(arg0);
+				stack.peek().addChild(element);
 				stack.peek().setEndLine(arg0.getLineRange().getLast());
-			}
-
-			private boolean isStepContainer(BasicStatement stmt) {
-				return stmt instanceof Scenario
-						|| stmt instanceof ScenarioOutline
-						|| stmt instanceof Background;
 			}
 
 			@Override
@@ -113,10 +73,12 @@ public class GherkinModel {
 			}
 
 			private void handleStepContainer(DescribedStatement stmt) {
-				if (isStepContainer(stack.peek().getStatement())) {
+				if (stack.peek().isStepContainer()) {
 					stack.pop();
 				}
-				stack.push(newPositionedElement(stmt));
+				PositionedElement element = newPositionedElement(stmt);
+				stack.peek().addChild(element);
+				stack.push(element);
 			}
 
 			@Override
@@ -156,7 +118,7 @@ public class GherkinModel {
 				handleStepContainer(arg0);
 			}
 			
-			private PositionedElement newPositionedElement(DescribedStatement stmt) {
+			private PositionedElement newPositionedElement(BasicStatement stmt) {
 				PositionedElement element = new PositionedElement(document, stmt);
 				elements.add(element);
 				return element;
