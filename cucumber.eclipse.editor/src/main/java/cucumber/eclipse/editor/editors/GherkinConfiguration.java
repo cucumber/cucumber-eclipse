@@ -66,4 +66,8 @@ public class GherkinConfiguration extends TextSourceViewerConfiguration {
 		return reconciler;
 	}
 
+	@Override
+	public int getTabWidth(ISourceViewer sourceViewer) {
+		return 2;
+	}
 }
