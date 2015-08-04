@@ -21,6 +21,14 @@ public class StepMatcherTest {
 		
 		assertEquals(s, stepMatcher.matchSteps("en", Collections.singleton(s), "When I run a test"));
 	}
+	
+	@Test
+	public void otherLanguageStepMatches() {
+	    
+	    Step s = createStep("^执行$");
+	    
+	    assertEquals(s, stepMatcher.matchSteps("zh-CN", Collections.singleton(s), "当执行"));
+	}
 
 	@Test
 	public void scenarioOutlines() {
