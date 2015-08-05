@@ -43,21 +43,19 @@ private Pattern getLanguageKeyWordMatcher(String languageCode) {
 	try {
 		if (languageCode == null) {
 			languageCode = "en";
-		} else {
-			languageCode = languageCode.toLowerCase();
 		}
 		I18n i18n = new I18n(languageCode);
-		
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("(?:");
 		String delim = "";
 	
-		for(String keyWord : i18n.getCodeKeywords()) {
-			sb.append(delim).append(keyWord);
+		for(String keyWord : i18n.getStepKeywords()) {
+			sb.append(delim).append(Pattern.quote(keyWord));
 			delim = "|";
 		}
 	
-		return Pattern.compile((sb.append(") (.*)$").toString()));
+		return Pattern.compile((sb.append(")(.*)$").toString()));
 	} catch(NullPointerException e) {
 		e.printStackTrace();
 		return null;
