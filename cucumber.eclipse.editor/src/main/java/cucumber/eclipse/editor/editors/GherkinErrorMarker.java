@@ -1,15 +1,9 @@
 package cucumber.eclipse.editor.editors;
 
 import static cucumber.eclipse.editor.editors.DocumentUtil.getDocumentLanguage;
-import gherkin.formatter.Formatter;
-import gherkin.formatter.model.Background;
-import gherkin.formatter.model.Examples;
-import gherkin.formatter.model.Feature;
-import gherkin.formatter.model.Scenario;
-import gherkin.formatter.model.ScenarioOutline;
-import gherkin.formatter.model.Step;
 
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -21,6 +15,13 @@ import org.eclipse.jface.text.IRegion;
 
 import cucumber.eclipse.editor.markers.IMarkerManager;
 import cucumber.eclipse.editor.steps.IStepProvider;
+import gherkin.formatter.Formatter;
+import gherkin.formatter.model.Background;
+import gherkin.formatter.model.Examples;
+import gherkin.formatter.model.Feature;
+import gherkin.formatter.model.Scenario;
+import gherkin.formatter.model.ScenarioOutline;
+import gherkin.formatter.model.Step;
 
 /**
  * @author andreas
@@ -36,6 +37,7 @@ public class GherkinErrorMarker implements Formatter {
 	private final IMarkerManager markerManager;
 	private final IFile file;
 	private final IDocument document;
+    private Set<cucumber.eclipse.steps.integration.Step> foundSteps;
 
 	public GherkinErrorMarker(IStepProvider stepProvider, IMarkerManager markerManager, IFile inputfile,
 			IDocument doc) {
@@ -43,6 +45,7 @@ public class GherkinErrorMarker implements Formatter {
 		this.markerManager = markerManager;
 		this.file = inputfile;
 		this.document = doc;
+        foundSteps = stepProvider.getStepsInEncompassingProject(file);
 	}
 
 	public void removeExistingMarkers() {
@@ -135,9 +138,8 @@ public class GherkinErrorMarker implements Formatter {
 	@Override
 	public void step(Step stepLine) {
 		String stepString = stepLine.getKeyword() + stepLine.getName();
-		cucumber.eclipse.steps.integration.Step step = new StepMatcher().matchSteps(
-				getDocumentLanguage(document), stepProvider.getStepsInEncompassingProject(file),
-				stepString);
+        cucumber.eclipse.steps.integration.Step step = new StepMatcher().matchSteps(
+            getDocumentLanguage(document), foundSteps, stepString);
 		if (step == null) {
 			try {
 				markUnmatchedStep(file, document, stepLine);
