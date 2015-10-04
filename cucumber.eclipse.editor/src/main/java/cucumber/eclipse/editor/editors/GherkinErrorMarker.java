@@ -14,6 +14,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 
 import cucumber.eclipse.editor.markers.IMarkerManager;
+import cucumber.eclipse.editor.markers.MarkerIds;
 import cucumber.eclipse.editor.steps.IStepProvider;
 import gherkin.formatter.Formatter;
 import gherkin.formatter.model.Background;
@@ -28,10 +29,6 @@ import gherkin.formatter.model.Step;
  *
  */
 public class GherkinErrorMarker implements Formatter {
-
-	private static final String ERROR_ID = "cucumber.eclipse.editor.editors.Editor.syntaxerror";
-
-	private static final String UNMATCHED_STEP_ERROR_ID = "cucumber.eclipse.editor.editors.Editor.unmatchedsteperror";
 
 	private final IStepProvider stepProvider;
 	private final IMarkerManager markerManager;
@@ -49,8 +46,9 @@ public class GherkinErrorMarker implements Formatter {
 	}
 
 	public void removeExistingMarkers() {
-		markerManager.removeAll(ERROR_ID, file);
-		markerManager.removeAll(UNMATCHED_STEP_ERROR_ID, file);
+		markerManager.removeAll(MarkerIds.LEXING_ERROR, file);
+		markerManager.removeAll(MarkerIds.SYNTAX_ERROR, file);
+		markerManager.removeAll(MarkerIds.UNMATCHED_STEP, file);
 	}
 
 	/*
@@ -170,7 +168,7 @@ public class GherkinErrorMarker implements Formatter {
 		buf.append(event);
 		
 		try {
-			markerManager.add(ERROR_ID,
+			markerManager.add(MarkerIds.SYNTAX_ERROR,
 					file,
 					IMarker.SEVERITY_ERROR,
 					buf.toString(),
@@ -199,7 +197,7 @@ public class GherkinErrorMarker implements Formatter {
 		IRegion region = find.find(doc.getLineOffset(stepLine.getLine() - 1),
 				stepLine.getName(), true, true, false, false);
 
-		markerManager.add(UNMATCHED_STEP_ERROR_ID,
+		markerManager.add(MarkerIds.UNMATCHED_STEP,
 				featureFile,
 				IMarker.SEVERITY_WARNING,
 				"Step does not have a matching glue code.",
