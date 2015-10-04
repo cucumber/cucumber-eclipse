@@ -40,5 +40,12 @@ Screenshots and Features of the plugin
 Please consult the [wiki](https://github.com/cucumber/cucumber-eclipse/wiki) for a full list for currently available features and screenshots.
 eg [Syntax Highlighting](https://github.com/cucumber/cucumber-eclipse/wiki/I18n-Syntax-highlighting)
 
+Build and install from source
+=============================
 
+To use the latest features, you can choose to build and install from source.
 
+- Build the plugin using Maven (https://maven.apache.org/) <code>mvn clean install</code>
+- Open Eclipse and navigate to Help -> Install New Software... -> Add
+- Point to the update-site built in step 1: <code>file:path_to_repo/cucumber.eclipse.p2updatesite/target/repository</code>
+- Proceed to install like any other plug-in
