@@ -69,7 +69,7 @@ public class GherkinKeywordScanner extends RuleBasedScanner {
 		for (String featureElement: FEATURE_ELEMENT_KEYWORD_KEYS ) {
 			List<String> keywords = i18n.keywords(featureElement);
 			for (String e : keywords) {
-				  rules.add(new SingleLineRule(e.trim(), " ", keyword ));
+				rules.add(new SingleLineRule(e.trim() + ":", " ", keyword));
 			}
 		}
 		
