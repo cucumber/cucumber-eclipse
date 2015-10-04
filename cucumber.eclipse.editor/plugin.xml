@@ -217,6 +217,17 @@
 	  </super>
 	</extension>
     <extension
+          id="cucumber.eclipse.editor.editors.Editor.lexingerror"
+          name="Lexing error"
+          point="org.eclipse.core.resources.markers">
+       <super
+             type="org.eclipse.core.resources.problemmarker">
+       </super>
+       <super
+             type="org.eclipse.core.resources.textmarker">
+       </super>
+    </extension>
+    <extension
 	  point="org.eclipse.ui.editors.annotationTypes">
 	  <type
 	        markerType="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror"

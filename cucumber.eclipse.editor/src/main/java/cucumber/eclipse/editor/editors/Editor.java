@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -32,6 +33,7 @@ import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import cucumber.eclipse.editor.Activator;
+import cucumber.eclipse.editor.markers.MarkerIds;
 import cucumber.eclipse.editor.markers.MarkerManager;
 import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
 
@@ -189,15 +191,17 @@ public class Editor extends TextEditor {
 		IDocument doc = getDocumentProvider().getDocument(input);
 		IFileEditorInput fileEditorInput = (IFileEditorInput) input;
 		IFile featureFile = fileEditorInput.getFile();
-		GherkinErrorMarker marker = new GherkinErrorMarker(new ExtensionRegistryStepProvider(),
-				new MarkerManager(), featureFile,
-				doc);
+		MarkerManager markerManager = new MarkerManager();
+		GherkinErrorMarker marker = new GherkinErrorMarker(new ExtensionRegistryStepProvider(), markerManager,
+				featureFile, doc);
 		marker.removeExistingMarkers();
 
 		Parser p = new Parser(marker, false);
 		try {
 			p.parse(doc.get(), "", 0);
 		} catch (LexingError l) {
+			markerManager.add(MarkerIds.LEXING_ERROR, featureFile, IMarker.SEVERITY_ERROR, l.getLocalizedMessage(), 1,
+					0, 0);
 		}
 	}
 }
