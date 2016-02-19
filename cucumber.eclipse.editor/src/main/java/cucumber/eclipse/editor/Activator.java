@@ -3,6 +3,7 @@ package cucumber.eclipse.editor;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -12,7 +13,10 @@ public class Activator extends AbstractUIPlugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "cucumber.eclipse.editor"; //$NON-NLS-1$
-
+	
+	//The Bundle
+	private Bundle bundle = null;
+	
 	// The shared instance
 	private static Activator plugin;
 	
@@ -29,6 +33,9 @@ public class Activator extends AbstractUIPlugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
+		
+		//Instantiate Bundle
+		bundle = context.getBundle();
 	}
 
 	/*
@@ -59,4 +66,12 @@ public class Activator extends AbstractUIPlugin {
 	public static ImageDescriptor getImageDescriptor(String path) {
         return imageDescriptorFromPlugin(PLUGIN_ID, path);
     }
+	
+
+	// return Bundle
+	public Bundle get_Bundle() {
+	    return bundle;
+	  }
+	
+	
 }

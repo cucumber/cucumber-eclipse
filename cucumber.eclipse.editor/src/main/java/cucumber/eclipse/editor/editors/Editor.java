@@ -36,6 +36,7 @@ import cucumber.eclipse.editor.Activator;
 import cucumber.eclipse.editor.markers.MarkerIds;
 import cucumber.eclipse.editor.markers.MarkerManager;
 import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
+import cucumber.eclipse.editor.template.GherkinSampleTemplate;
 
 public class Editor extends TextEditor {
 
@@ -45,9 +46,14 @@ public class Editor extends TextEditor {
 	public Editor() {
 		super();
 		colorManager = new ColorManager();
-		setSourceViewerConfiguration(new GherkinConfiguration(this,
-				colorManager));
-		setDocumentProvider(new GherkinDocumentProvider());
+		setSourceViewerConfiguration(new GherkinConfiguration(this, colorManager));
+		
+		// Commented By Girija to override any blank feature file with sample template
+		//setDocumentProvider(new GherkinDocumentProvider());		
+		
+		// Added By Girija
+		// Used to create a Sample Template for any Blank Feature File
+		setDocumentProvider(new GherkinDocumentProvider(GherkinSampleTemplate.getFeatureTemplate()));
 	}
 
 	/*
@@ -59,13 +65,11 @@ public class Editor extends TextEditor {
 	 * org.eclipse.jface.text.source.IVerticalRuler, int)
 	 */
 	@Override
-	protected ISourceViewer createSourceViewer(Composite parent,
-			IVerticalRuler ruler, int styles) {
+	protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
 		fAnnotationAccess = getAnnotationAccess();
 		fOverviewRuler = createOverviewRuler(getSharedColors());
 
-		ISourceViewer viewer = new ProjectionViewer(parent, ruler,
-				getOverviewRuler(), isOverviewRulerVisible(), styles);
+		ISourceViewer viewer = new ProjectionViewer(parent, ruler, getOverviewRuler(), isOverviewRulerVisible(), styles);
 
 		// ensure decoration support has been created and configured.
 		getSourceViewerDecorationSupport(viewer);
@@ -90,8 +94,7 @@ public class Editor extends TextEditor {
 		super.createPartControl(parent);
 		ProjectionViewer viewer = (ProjectionViewer) getSourceViewer();
 
-		projectionSupport = new ProjectionSupport(viewer,
-				getAnnotationAccess(), getSharedColors());
+		projectionSupport = new ProjectionSupport(viewer, getAnnotationAccess(), getSharedColors());
 		projectionSupport.install();
 
 		// turn projection mode on
@@ -100,8 +103,7 @@ public class Editor extends TextEditor {
 		annotationModel = viewer.getProjectionAnnotationModel();
 
 		// register the editor scope context
-		IContextService service = (IContextService) getSite().getService(
-				IContextService.class);
+		IContextService service = (IContextService) getSite().getService(IContextService.class);
 		if (service != null) {
 			service.activateContext("cucumber.eclipse.editor.featureEditorScope");
 		}
@@ -192,16 +194,14 @@ public class Editor extends TextEditor {
 		IFileEditorInput fileEditorInput = (IFileEditorInput) input;
 		IFile featureFile = fileEditorInput.getFile();
 		MarkerManager markerManager = new MarkerManager();
-		GherkinErrorMarker marker = new GherkinErrorMarker(new ExtensionRegistryStepProvider(), markerManager,
-				featureFile, doc);
+		GherkinErrorMarker marker = new GherkinErrorMarker(new ExtensionRegistryStepProvider(), markerManager, featureFile, doc);
 		marker.removeExistingMarkers();
 
 		Parser p = new Parser(marker, false);
 		try {
 			p.parse(doc.get(), "", 0);
 		} catch (LexingError l) {
-			markerManager.add(MarkerIds.LEXING_ERROR, featureFile, IMarker.SEVERITY_ERROR, l.getLocalizedMessage(), 1,
-					0, 0);
+			markerManager.add(MarkerIds.LEXING_ERROR, featureFile, IMarker.SEVERITY_ERROR, l.getLocalizedMessage(), 1, 0, 0);
 		}
 	}
 }
