@@ -20,8 +20,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
     private final IContextInformation[] NO_CONTEXTS = {};
     private ICompletionProposal[] NO_COMPLETIONS = {};
 
-    public final Image ICON = Activator.getImageDescriptor("icons/cukes.gif")
-            .createImage();
+    public final Image ICON = Activator.getImageDescriptor("icons/cukes.gif").createImage();
 
     @Override
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer,

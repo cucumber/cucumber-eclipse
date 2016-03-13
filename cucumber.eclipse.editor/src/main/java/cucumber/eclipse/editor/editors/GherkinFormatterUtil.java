@@ -46,8 +46,7 @@ public class GherkinFormatterUtil {
 		return output.toString();
 	}
 
-	private static void appendTrailingComments(PrintWriter out,
-			List<String> unattachedComments) {
+	private static void appendTrailingComments(PrintWriter out, List<String> unattachedComments) {
 		for (String unattachedComment : unattachedComments) {
 			out.print(unattachedComment + "\n");
 		}
