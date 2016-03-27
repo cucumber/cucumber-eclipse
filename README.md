@@ -40,6 +40,20 @@ Screenshots and Features of the plugin
 Please consult the [wiki](https://github.com/cucumber/cucumber-eclipse/wiki) for a full list for currently available features and screenshots.
 eg [Syntax Highlighting](https://github.com/cucumber/cucumber-eclipse/wiki/I18n-Syntax-highlighting)
 
+Latest Feature Highlights
+=========================
+Some major feature are integrated with the latest build :
+
+A. [Content Assistance for feature file](https://github.com/cucumber/cucumber-eclipse/wiki/Content-Assistance-for-feature-file) :
+- 'Content Assistance' for Eclipse editor can be activated by pressing '[Ctrl]+[Space]' keys while writing any feature file.
+- Display proposals for list of Keywords.
+- Display proposals for Predefined-Steps/
+- Display proposals for Search based Predefined-Steps by '[Predefined-Step]:[Step-Definition(java) File]' format.
+
+B. [New Step-Definition File Wizard](https://github.com/cucumber/cucumber-eclipse/wiki/New-Step-Definition-File-Wizard) :
+- User can create a new  Step definition(java) file from Eclipse 'File' Menu : 
+- File > New > Other > Cucumber > Step-Definition class > Next > :
+
 Build and install from source
 =============================
 
