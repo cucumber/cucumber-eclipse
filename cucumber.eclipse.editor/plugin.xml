@@ -283,4 +283,18 @@
 			class="cucumber.eclipse.editor.preferences.CucumberPreferencePage"
 			name="Cucumber" />
    </extension>
+ <extension
+       point="org.eclipse.ui.newWizards">
+    <category
+          id="cucumber.eclipse.editor"
+          name="Cucumber">
+    </category>
+    <wizard
+          category="cucumber.eclipse.editor"
+          class="cucumber.eclipse.editor.wizard.NewStepDefFileWizard"
+          icon="icons/cukes.gif"
+          id="cucumber.eclipse.editor.wizard.NewFeatureFileWizard"
+          name="Step-Definition class">
+    </wizard>
+ </extension> 
 </plugin>

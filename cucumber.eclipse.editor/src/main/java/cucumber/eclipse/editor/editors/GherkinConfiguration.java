@@ -44,12 +44,9 @@ public class GherkinConfiguration extends TextSourceViewerConfiguration {
 
 	public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer) {
 		PresentationReconciler reconciler = new PresentationReconciler();
-
 		DefaultDamagerRepairer dr = new GherkinDamagerRepairer(getGherkinKeywordScanner());
 		reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
 		reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
-
-
 		return reconciler;
 	}
 
@@ -57,10 +54,21 @@ public class GherkinConfiguration extends TextSourceViewerConfiguration {
 	public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
         ContentAssistant ca = new ContentAssistant();
         IContentAssistProcessor cap = new GherkinKeywordsAssistProcessor();
-        ca.setContentAssistProcessor(cap, IDocument.DEFAULT_CONTENT_TYPE);
-        ca.setInformationControlCreator(getInformationControlCreator(sourceViewer));
+        	ca.setContentAssistProcessor(cap, IDocument.DEFAULT_CONTENT_TYPE);
+        	ca.setInformationControlCreator(getInformationControlCreator(sourceViewer));
+        	
+        	//Added By Girija For Content Assistance
+        	ca.setStatusMessage("<Step>:<Class>, Press 'Ctrl+SPace' For Cucumber Assistance");
+        	ca.setStatusLineVisible(true);
+        	
+        	ca.enableAutoActivation(true);
+        	ca.setAutoActivationDelay(500);
+        	//ca.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
+        	//ca.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
+        	
         return ca;
 	}
+	
 	
 	/*
 	 * (non-Javadoc)
@@ -71,13 +79,12 @@ public class GherkinConfiguration extends TextSourceViewerConfiguration {
 	 */
 	@Override
 	public IReconciler getReconciler(ISourceViewer sourceViewer) {
-
 		IReconcilingStrategy strategy = new GherkinReconcilingStrategy(editor);
-
 		MonoReconciler reconciler = new MonoReconciler(strategy, false);
 		return reconciler;
 	}
 
+	
 	@Override
 	public int getTabWidth(ISourceViewer sourceViewer) {
 		return 2;
