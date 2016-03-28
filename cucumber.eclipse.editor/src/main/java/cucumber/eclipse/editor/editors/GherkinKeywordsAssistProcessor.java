@@ -133,6 +133,9 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 						contentAssist.displayNoProposal(offset, ICON, result);
 					}
 					
+					
+					
+					
 					//All Step-Proposals if any <space>
 					else if(lastPrefix.startsWith(" ") | 
 							!stepDetailList.isEmpty())
@@ -145,6 +148,11 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 							contentAssist.importStepProposals(lastPrefix, offset, ICON, step, result);
 						}
 					}
+					
+					
+					
+					
+					
 					else
 					{
 						//System.out.println("NO PROPOSAL-3***************");

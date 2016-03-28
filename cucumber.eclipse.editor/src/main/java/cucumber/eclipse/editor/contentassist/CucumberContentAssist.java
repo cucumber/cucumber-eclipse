@@ -105,6 +105,8 @@ public class CucumberContentAssist {
 	}
 	
 	
+	
+	
 	//Populate all step proposals
 	public void importStepProposals(String prefix, int offset, Image ICON, String stepDetail, ArrayList<ICompletionProposal> result) {
 		//Split the DetailStep
@@ -117,10 +119,20 @@ public class CucumberContentAssist {
 							+ "\nSource : " + stepSource
 							+ "\nLine Number : " + lineNumber;
 		
-		//System.out.println("ALL_STEP_DETAILS ="+stepDetails);		
-		allStepsProposal = new CompletionProposal(stepText.replace(prefix, ""), offset, 0, stepText.length(),ICON, stepWithSource, null, stepDetails);
+		//System.out.println("ALL_STEP_DETAILS ="+stepDetails);			
+		//System.out.println("PREFIX ="+prefix);
+		
+		if(!prefix.startsWith(" "))			
+			allStepsProposal = new CompletionProposal(stepText.replace(prefix, ""), offset, 0, stepText.length(),ICON, stepWithSource, null, stepDetails);
+		else		
+			allStepsProposal = new CompletionProposal(stepText, offset, 0, stepText.length(),ICON, stepWithSource, null, stepDetails);
+		
 		result.add(allStepsProposal);
 	}
+	
+	
+	
+	
 	
 	
 	//No Proposals
