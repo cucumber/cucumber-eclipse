@@ -34,7 +34,8 @@ public class GherkinErrorMarker implements Formatter {
 	private final IMarkerManager markerManager;
 	private final IFile file;
 	private final IDocument document;
-    private Set<cucumber.eclipse.steps.integration.Step> foundSteps;
+   
+	private Set<cucumber.eclipse.steps.integration.Step> foundSteps;
 
 	public GherkinErrorMarker(IStepProvider stepProvider, IMarkerManager markerManager, IFile inputfile,
 			IDocument doc) {

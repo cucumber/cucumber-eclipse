@@ -5,19 +5,14 @@ package cucumber.eclipse.editor.contentassist;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.Vector;
-
 import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.swt.graphics.Image;
-
 import cucumber.eclipse.steps.integration.Step;
 import cucumber.eclipse.steps.jdt.StepDefinitions;
+
 
 /**
  * @author girija.panda@nokia.com

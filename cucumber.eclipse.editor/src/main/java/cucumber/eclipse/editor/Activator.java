@@ -14,7 +14,7 @@ public class Activator extends AbstractUIPlugin {
 	// The plug-in ID
 	public static final String PLUGIN_ID = "cucumber.eclipse.editor"; //$NON-NLS-1$
 	
-	//The Bundle
+	//The BundleA
 	private Bundle bundle = null;
 	
 	// The shared instance
@@ -71,7 +71,7 @@ public class Activator extends AbstractUIPlugin {
 	// return Bundle
 	public Bundle get_Bundle() {
 	    return bundle;
-	  }
+	}
 	
 	
 }

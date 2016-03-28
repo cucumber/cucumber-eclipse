@@ -283,7 +283,7 @@
 			class="cucumber.eclipse.editor.preferences.CucumberPreferencePage"
 			name="Cucumber" />
    </extension>
-   <extension
+ <extension
        point="org.eclipse.ui.newWizards">
     <category
           id="cucumber.eclipse.editor"
@@ -296,5 +296,5 @@
           id="cucumber.eclipse.editor.wizard.NewFeatureFileWizard"
           name="Step-Definition class">
     </wizard>
- </extension>
+ </extension> 
 </plugin>

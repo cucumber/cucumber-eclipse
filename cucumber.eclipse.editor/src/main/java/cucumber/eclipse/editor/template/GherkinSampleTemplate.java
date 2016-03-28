@@ -62,7 +62,8 @@ public class GherkinSampleTemplate {
 				inputStream = FileLocator.openStream(Activator.getDefault().getBundle(), 
 													new Path(filePath), 
 													false);
-				if (inputStream != null) {
+				if (inputStream != null) 
+				{
 					byteData = new byte[inputStream.available()];
 					// buffIStream = new BufferedInputStream(inputStream);
 					// buffIStream.read(data);
