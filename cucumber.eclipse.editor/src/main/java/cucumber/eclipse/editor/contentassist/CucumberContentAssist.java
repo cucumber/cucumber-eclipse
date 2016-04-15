@@ -36,7 +36,7 @@ public class CucumberContentAssist {
 	public final String  KEYWORD_REGEX= "(^Given|When|Then|And|But|$[\\S\\W\\D])|(^(?!Given|When|Then|And|But).+)"; //issue
 	
 	//RegEx2 : Line starts with <Step-Keyword>+<space>+<any-word>
-	public final String KEYWORD_SPACE_WORD_REGEX = "^(Given|When|Then|And|But)[\\s][\\w\\d\\s\\.]*";
+	public final String KEYWORD_SPACE_WORD_REGEX = "^(Given|When|Then|And|But)[\\s].*";
 	
 	//RegEx-3 : starts with space
 	public final String STARTSWITH_ANYSPACE = "^\\s+";
@@ -108,12 +108,14 @@ public class CucumberContentAssist {
 	
 	
 	//Populate all step proposals
-	public void importStepProposals(String prefix, int offset, Image ICON, String stepDetail, ArrayList<ICompletionProposal> result) {
-		//Split the DetailStep
-		String[] token = stepDetail.split(":");		
-		String stepText = token[0].trim();
-		String stepSource = token[1].trim();
-		String lineNumber = token[2].trim();
+	public void importStepProposals(String prefix, int offset, int lineEnd, Image ICON, String stepDetail, ArrayList<ICompletionProposal> result) {
+		//Split the DetailStep, preserving colons in the step definition
+		// eg "This product is shown: (.*) : Steps.java:16"
+		int lastIndex = stepDetail.lastIndexOf(':');
+		int secondToLastIndex = stepDetail.lastIndexOf(':', lastIndex - 1);
+		String stepText = stepDetail.substring(0, secondToLastIndex).trim();
+		String stepSource = stepDetail.substring(secondToLastIndex + 1, lastIndex).trim();
+		String lineNumber = stepDetail.substring(lastIndex + 1).trim();
 		String stepWithSource = stepText + " : "+ stepSource;
 		String stepDetails = "Step : " + stepText
 							+ "\nSource : " + stepSource
@@ -123,7 +125,7 @@ public class CucumberContentAssist {
 		//System.out.println("PREFIX ="+prefix);
 		
 		if(!prefix.startsWith(" "))			
-			allStepsProposal = new CompletionProposal(stepText.replace(prefix, ""), offset, 0, stepText.length(),ICON, stepWithSource, null, stepDetails);
+			allStepsProposal = new CompletionProposal(stepText.replace(prefix, ""), offset, lineEnd - offset, stepText.length()-prefix.length(),ICON, stepWithSource, null, stepDetails);
 		else		
 			allStepsProposal = new CompletionProposal(stepText, offset, 0, stepText.length(),ICON, stepWithSource, null, stepDetails);
 		
@@ -157,6 +159,9 @@ public class CucumberContentAssist {
 	//Get exact step
 	public static String getStepName(String myStep){
 		myStep = myStep.replaceAll("\\^|\\$", "");
+		myStep = myStep.replace("([\"]*)", "{text}");
+		myStep = myStep.replace("(\\d+)", "{integer-number}");
+        myStep = myStep.replace("(\\d+\\.\\d+)", "{real-number}");
 		return myStep;
 	}
 
@@ -189,18 +194,21 @@ public class CucumberContentAssist {
 			return string;
 	}
 
-	//Get Last word of a String
-	public String lastPrefix(String string) {
-		String lastWord = null;
-		if( string.contains(" ")|
-		    string.endsWith(" ") )
-		{								
-			lastWord = string.substring(string.lastIndexOf(' '), string.length());							
-			lastWord = lastWord.matches("(^\\s)[\\w]+")?lastWord=lastWord.trim():lastWord;
-			return lastWord;
+	// Remove the first word of a String, given words are separated by spaces and/or tabs
+	// eg. removeFirstWord("Given I want t") and removeFirstWord("Given\tI want t") both return "I want t"
+	public String removeFirstWord(String string) {
+		// Find the first space or tab character
+		int indexOfSpace = string.indexOf(' ');
+		int indexOfTab = string.indexOf('\t');
+		if (indexOfTab != -1 && indexOfTab < indexOfSpace) {
+			indexOfSpace = indexOfTab;
 		}
-		else
+
+		if (indexOfSpace == -1) {
 			return string;
+		} else
+			// Remove first word and then left-trim
+			return string.substring(indexOfSpace).replaceAll("^\\s+","");
 	}
 
 
