@@ -53,6 +53,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 			IRegion line = viewer.getDocument().getLineInformationOfOffset(offset);
 			// To trim white-space from the start of typed string
 			String typed = viewer.getDocument().get(line.getOffset(), offset - line.getOffset()).replaceAll(contentAssist.STARTSWITH_ANYSPACE, "");
+			int lineEnd = line.getOffset() + line.getLength();
 			//System.out.println("USER-TYPED =" + typed);
 
 			// Create an ArrayList instance for collecting the generated
@@ -89,7 +90,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 				if (typed.matches(contentAssist.KEYWORD_SPACE_WORD_REGEX)) 
 				{
 					//System.out.println("IF-2:Inside ...");
-					String lastPrefix = contentAssist.lastPrefix(typed);
+					String lastPrefix = contentAssist.removeFirstWord(typed);
 					//System.out.println("LAST-PREFIX =" +lastPrefix);
 
 					//Collect all steps with 
@@ -120,7 +121,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 							if(step.startsWith(lastPrefix))
 							{	
 								//Populate all matched steps
-								contentAssist.importStepProposals(lastPrefix, offset, ICON, step, result);							
+								contentAssist.importStepProposals(lastPrefix, offset, lineEnd, ICON, step, result);
 							}
 						}
 					}
@@ -145,7 +146,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 						{							
 							//System.out.println("stepDetailList ###########");
 							//Populate all step proposal
-							contentAssist.importStepProposals(lastPrefix, offset, ICON, step, result);
+							contentAssist.importStepProposals(lastPrefix, offset, offset, ICON, step, result);
 						}
 					}
 					
