@@ -51,15 +51,20 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 			
 			// line of cursor locate,and from begin to cursor.
 			IRegion line = viewer.getDocument().getLineInformationOfOffset(offset);
-			// To trim white-space from the start of typed string
+			
+			// Capture User Typed String with trimmed white-space from the start of typed string
 			String typed = viewer.getDocument().get(line.getOffset(), offset - line.getOffset()).replaceAll(contentAssist.STARTSWITH_ANYSPACE, "");
 			//System.out.println("USER-TYPED =" + typed);
 
+			// Capture any Existing Step
+			String preStep = viewer.getDocument().get(line.getOffset(), line.getLength()).replaceAll(contentAssist.STARTSWITH_ANYSPACE, "");
+			preStep = contentAssist.lastPrefix(preStep);
+			//System.out.println("PRE-STEP =" + preStep);
+			
 			// Create an ArrayList instance for collecting the generated
 			// ICompletionProposal instance
 			ArrayList<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
 			
-		
 			// Fetch All key words and remove Junk words
 			List<String> keywordList = allKeywords(i18n); 
 			List<String> junks = contentAssist.getJunkList();
@@ -76,7 +81,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 				//POPULATE KEYWORD ASSISTANCE
 				if (typed.matches(contentAssist.KEYWORD_REGEX)) 
 				{
-					//System.out.println("IF-1:Inside ...");
+					 //System.out.println("IF-1:Inside ...");
 					// To display only Step-Keywords
 					for (String string : contentAssist.stepKeywords) {
 						CompletionProposal p = new CompletionProposal(string, offset - typed.length(), typed.length(),string.length(), ICON, null, null, null);
@@ -89,9 +94,10 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 				if (typed.matches(contentAssist.KEYWORD_SPACE_WORD_REGEX)) 
 				{
 					//System.out.println("IF-2:Inside ...");
+				
 					String lastPrefix = contentAssist.lastPrefix(typed);
 					//System.out.println("LAST-PREFIX =" +lastPrefix);
-
+					
 					//Collect all steps with 
 					contentAssist.collectAllSteps(lastPrefix);
 					
@@ -100,9 +106,9 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 					List<String> matchedStepList = contentAssist.importMatchedStepList();
 					
 					//System.out.println("stepDetailList = " +stepDetailList);
-					//System.out.println("matchedStepList = " +matchedStepList);
+					//System.out.println("matchedStepList = " +matchedStepList);					
 					
-					//1.
+					//1. NO-Proposal For Any Empty List
 					if( matchedStepList.isEmpty() &&
 							stepDetailList.isEmpty())
 					{
@@ -110,7 +116,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 						contentAssist.displayNoProposal(offset, ICON, result);
 					}
 					
-					//Proposal For Non-Empty Matched-Step-List
+					//2. Proposal For Non-Empty Matched-Step-List
 					else if(!matchedStepList.isEmpty())
 					{
 						//System.out.println("matchedStepList NOT EMPTY......");
@@ -120,24 +126,21 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 							if(step.startsWith(lastPrefix))
 							{	
 								//Populate all matched steps
-								contentAssist.importStepProposals(lastPrefix, offset, ICON, step, result);							
+								contentAssist.importStepProposals(lastPrefix, preStep, offset, ICON, step, result);							
 							}
 						}
 					}
 					
-					//No proposal for Unmatched Prefix AND Empty Matched-Step-List
-					else if(!lastPrefix.startsWith(" ") && 
-							matchedStepList.isEmpty())
+					//3. No proposal for Empty Matched-Step-List
+					else if( lastPrefix.matches(contentAssist.STARTS_ANY) && 
+							 matchedStepList.isEmpty() )
 					{
 						//System.out.println("NO PROPOSAL-2***************");
 						contentAssist.displayNoProposal(offset, ICON, result);
 					}
 					
-					
-					
-					
-					//All Step-Proposals if any <space>
-					else if(lastPrefix.startsWith(" ") | 
+					//4. All Step-Proposals if any <space> and COMMA
+					else if(lastPrefix.matches(contentAssist.COMMA_SPACE_REGEX) |
 							!stepDetailList.isEmpty())
 					{
 						//System.out.println("stepDetailList NOT EMPTY......");
@@ -145,14 +148,11 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 						{							
 							//System.out.println("stepDetailList ###########");
 							//Populate all step proposal
-							contentAssist.importStepProposals(lastPrefix, offset, ICON, step, result);
+							contentAssist.importStepProposals(lastPrefix, preStep, offset, ICON, step, result);
 						}
 					}
-					
-					
-					
-					
-					
+			
+					//5. No Match No Proposal
 					else
 					{
 						//System.out.println("NO PROPOSAL-3***************");
@@ -161,7 +161,6 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 				}
 			}
 		
-			
 			//New Line starts with blank
 			else 
 			{
