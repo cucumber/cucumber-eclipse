@@ -38,21 +38,9 @@ The full option list can be found at [CucumberOptions](https://github.com/cucumb
 Screenshots and Features of the plugin
 ======================================
 Please consult the [wiki](https://github.com/cucumber/cucumber-eclipse/wiki) for a full list for currently available features and screenshots.
-eg [Syntax Highlighting](https://github.com/cucumber/cucumber-eclipse/wiki/I18n-Syntax-highlighting)
-
-Latest Feature Highlights
-=========================
-Some major feature are integrated with the latest build :
-
-A. [Content Assistance for feature file](https://github.com/cucumber/cucumber-eclipse/wiki/Content-Assistance-for-feature-file) :
-- 'Content Assistance' for Eclipse editor can be activated by pressing '[Ctrl]+[Space]' keys while writing any feature file.
-- Display proposals for list of Keywords.
-- Display proposals for Predefined-Steps/
-- Display proposals for Search based Predefined-Steps by '[Predefined-Step]:[Step-Definition(java) File]' format.
-
-B. [New Step-Definition File Wizard](https://github.com/cucumber/cucumber-eclipse/wiki/New-Step-Definition-File-Wizard) :
-- User can create a new  Step definition(java) file from Eclipse 'File' Menu : 
-- File > New > Other > Cucumber > Step-Definition class > Next > :
+- eg [Syntax Highlighting](https://github.com/cucumber/cucumber-eclipse/wiki/I18n-Syntax-highlighting)
+- eg [Content Assistance for feature file](https://github.com/cucumber/cucumber-eclipse/wiki/Content-Assistance-for-feature-file)
+- eg [New Step-Definition File Wizard](https://github.com/cucumber/cucumber-eclipse/wiki/New-Step-Definition-File-Wizard)
 
 Build and install from source
 =============================
@@ -63,3 +51,18 @@ To use the latest features, you can choose to build and install from source.
 - Open Eclipse and navigate to Help -> Install New Software... -> Add
 - Point to the update-site built in step 1: <code>file:path_to_repo/cucumber.eclipse.p2updatesite/target/repository</code>
 - Proceed to install like any other plug-in
+
+How soon will my ticket be fixed?
+=================================
+
+The best way to have a bug fixed or feature request implemented is to
+to fork the cucumber-eclipse repository and send a
+[pull request](http://help.github.com/send-pull-requests/).
+If the pull request is reasonable it has a good chance of
+making it into the next release. If you build the release yourself, even more chance!
+
+If you don't fix the bug yourself (or pay someone to do it for you), the bug might never get fixed. If it is a serious
+bug, other people than you might care enough to provide a fix.
+
+In other words, there is no guarantee that a bug or feature request gets fixed. Tickets that are more than 6 months old
+are likely to be closed to keep the backlog manageable.
