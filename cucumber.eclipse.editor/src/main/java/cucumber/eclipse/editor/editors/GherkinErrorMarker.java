@@ -201,7 +201,7 @@ public class GherkinErrorMarker implements Formatter {
 		markerManager.add(MarkerIds.UNMATCHED_STEP,
 				featureFile,
 				IMarker.SEVERITY_WARNING,
-				"Step does not have a matching glue code.",
+				"Step '" + stepLine.getName() + "' does not have a matching glue code",
 				stepLine.getLine(),
 				region.getOffset(),
 				region.getOffset() + region.getLength());
