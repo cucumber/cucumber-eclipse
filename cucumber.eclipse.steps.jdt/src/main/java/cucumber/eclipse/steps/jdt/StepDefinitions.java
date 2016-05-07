@@ -1,15 +1,16 @@
 package cucumber.eclipse.steps.jdt;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IClassFile;
@@ -62,17 +63,16 @@ public class StepDefinitions implements IStepDefinitions {
 			if (project.isNatureEnabled("org.eclipse.jdt.core.javanature")) 
 			{				
 				IJavaProject javaProject = JavaCore.create(project);
-				IPackageFragment[] packages = javaProject.getPackageFragments();
 				
-				for (IPackageFragment javaPackage : packages) {
-
-					if (javaPackage.getKind() == IPackageFragmentRoot.K_SOURCE) {
-
-						for (ICompilationUnit compUnit : javaPackage
-								.getCompilationUnits()) {
-									steps.addAll(getCukeAnnotations(javaProject, compUnit));
-						}
-					}
+				List<IJavaProject> projectsToScan = new ArrayList<IJavaProject>();
+				
+				projectsToScan.add(javaProject);
+				
+				projectsToScan.addAll(getRequiredJavaProjects(javaProject));
+				
+				for (IJavaProject currentJavaProject: projectsToScan) {
+				
+					scanJavaProjectForStepDefinitions(currentJavaProject);
 				}
 			}
 		} catch (CoreException e) {
@@ -189,5 +189,39 @@ public class StepDefinitions implements IStepDefinitions {
 		}
 		return "";
 	}
+	
+	public static List<IJavaProject> getRequiredJavaProjects(IJavaProject javaProject) throws CoreException {
+		
+		List<String> requiredProjectNames = Arrays.asList(javaProject.getRequiredProjectNames());
+		
+		List<IJavaProject> requiredProjects = new ArrayList<IJavaProject>();
+		
+		for (String requiredProjectName : requiredProjectNames) {
+			
+			IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(requiredProjectName);
+			
+			if (project.isNatureEnabled("org.eclipse.jdt.core.javanature")) {
 
+				requiredProjects.add(JavaCore.create(project));
+			}
+		}
+		return requiredProjects;
+	}
+
+	private void scanJavaProjectForStepDefinitions(IJavaProject projectToScan)
+			throws JavaModelException, CoreException {
+		
+		IPackageFragment[] packages = projectToScan.getPackageFragments();
+		
+		for (IPackageFragment javaPackage : packages) {
+
+			if (javaPackage.getKind() == IPackageFragmentRoot.K_SOURCE) {
+
+				for (ICompilationUnit compUnit : javaPackage
+						.getCompilationUnits()) {
+							steps.addAll(getCukeAnnotations(projectToScan, compUnit));
+				}
+			}
+		}
+	}
 }
