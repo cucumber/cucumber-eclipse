@@ -170,10 +170,11 @@ public class NewStepDefFileWizardPage extends WizardPage {
 					this.m_packageNameText.setText(sel.getPackageName());
 				}
 				
-				//String className = sel.getClassName() + "Test";
-				String className = sel.getClassName();
-				this.m_featureNameText.setText(className);
-			}	
+				if(sel.getClassName() != null ){
+					this.m_featureNameText.setText(sel.getClassName());
+				}
+				
+			}
 			//System.out.println("NewFeaturFileWizardPage:initialize() END....");
 		}
 
