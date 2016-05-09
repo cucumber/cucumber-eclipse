@@ -3,6 +3,7 @@ package cucumber.eclipse.editor.editors;
 import static cucumber.eclipse.editor.editors.DocumentUtil.getDocumentLanguage;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -12,7 +13,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.ui.IEditorInput;
@@ -25,13 +25,17 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import cucumber.eclipse.editor.markers.MarkerIds;
+import cucumber.eclipse.editor.markers.MarkerManager;
 import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
 import cucumber.eclipse.steps.integration.Step;
+import gherkin.lexer.LexingError;
+import gherkin.parser.Parser;
 
 public class PopupMenuFindStepHandler extends AbstractHandler {
+	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		
 		IEditorPart editorPart = HandlerUtil.getActiveEditorChecked(event);
 		IEditorInput input = editorPart.getEditorInput();
 
@@ -46,14 +50,18 @@ public class PopupMenuFindStepHandler extends AbstractHandler {
 		
 		ITextEditor editor = (ITextEditor) editorPart;
 		IDocumentProvider docProvider = editor.getDocumentProvider();
-		String selectedLine = getSelectedLine(editorPart);
+		List<String> selectedLineResolvedSteps = resolveSelectedLineStep(editorPart);
 		String language = getDocumentLanguage(docProvider.getDocument(editorPart.getEditorInput()));
-
-		Step matchedStep = new StepMatcher().matchSteps(language, steps, selectedLine);
-		try {
-			if (matchedStep != null) openEditor(matchedStep);
-		} catch (CoreException e) {
-			e.printStackTrace();
+		for (String variant : selectedLineResolvedSteps) {
+			Step matchedStep = new StepMatcher().matchSteps(language, steps, variant);
+			try {
+				if (matchedStep != null) {
+					openEditor(matchedStep);
+					break;
+				}
+			} catch (CoreException e) {
+				e.printStackTrace();
+			}
 		}
 		return null;
 	}
@@ -70,21 +78,26 @@ public class PopupMenuFindStepHandler extends AbstractHandler {
 		   marker.delete();
 		   
 	}
-	
-	private String getSelectedLine(IEditorPart editorPart) {
-		
+
+	// go through all examples of current scenario outline and generate step strings with replaced variables values
+	private List<String> resolveSelectedLineStep(IEditorPart editorPart) {
 		ITextEditor editor = (ITextEditor) editorPart;
-				
-		TextSelection selecton = (TextSelection) editor.getSelectionProvider().getSelection();
-		int line = selecton.getStartLine();	
+		TextSelection selection = (TextSelection) editor.getSelectionProvider().getSelection();
+
+		int currentLineNumber = selection.getStartLine() + 1;
+
+		IDocument document = editor.getDocumentProvider().getDocument(editorPart.getEditorInput());
 		
-		IDocumentProvider docProvider = editor.getDocumentProvider();
-		IDocument doc = docProvider.getDocument(editorPart.getEditorInput());
+		IFileEditorInput fileEditorInput = (IFileEditorInput) editorPart.getEditorInput();
+		IFile featureFile = fileEditorInput.getFile();
+		MarkerManager markerManager = new MarkerManager();
+		PopupMenuFindStepFormatter findStepFormatter = new PopupMenuFindStepFormatter(currentLineNumber);
+		Parser p = new Parser(findStepFormatter, false);
 		try {
-			String stepLine = doc.get(doc.getLineOffset(line), doc.getLineLength(line)).trim();
-			return stepLine;
-		} catch (BadLocationException e) {
-			return "";
+			p.parse(document.get(), "", 0);
+		} catch (LexingError l) {
+			markerManager.add(MarkerIds.LEXING_ERROR, featureFile, IMarker.SEVERITY_ERROR, l.getLocalizedMessage(), 1, 0, 0);
 		}
+		return findStepFormatter.getResolvedStepNames();
 	}
 }

@@ -2,7 +2,10 @@ package cucumber.eclipse.editor.editors;
 
 import static cucumber.eclipse.editor.editors.DocumentUtil.getDocumentLanguage;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
@@ -19,6 +22,7 @@ import cucumber.eclipse.editor.steps.IStepProvider;
 import gherkin.formatter.Formatter;
 import gherkin.formatter.model.Background;
 import gherkin.formatter.model.Examples;
+import gherkin.formatter.model.ExamplesTableRow;
 import gherkin.formatter.model.Feature;
 import gherkin.formatter.model.Scenario;
 import gherkin.formatter.model.ScenarioOutline;
@@ -36,6 +40,10 @@ public class GherkinErrorMarker implements Formatter {
 	private final IDocument document;
    
 	private Set<cucumber.eclipse.steps.integration.Step> foundSteps;
+
+	private boolean inScenarioOutline = false;
+
+	private List<gherkin.formatter.model.Step> scenarioOutlineSteps;
 
 	public GherkinErrorMarker(IStepProvider stepProvider, IMarkerManager markerManager, IFile inputfile,
 			IDocument doc) {
@@ -97,7 +105,12 @@ public class GherkinErrorMarker implements Formatter {
 	 * gherkin.formatter.Formatter#examples(gherkin.formatter.model.Examples)
 	 */
 	@Override
-	public void examples(Examples arg0) {
+	public void examples(Examples examples) {
+		ExamplesTableRow examplesHeader = examples.getRows().get(0);
+		for (int i = 1; i < examples.getRows().size(); i++) {
+			ExamplesTableRow currentExample = examples.getRows().get(i);
+			matchScenarioOutlineExample(examplesHeader, currentExample);
+		}
 	}
 
 	/*
@@ -117,6 +130,7 @@ public class GherkinErrorMarker implements Formatter {
 	 */
 	@Override
 	public void scenario(Scenario arg0) {
+		inScenarioOutline = false;
 	}
 
 	/*
@@ -127,6 +141,9 @@ public class GherkinErrorMarker implements Formatter {
 	 */
 	@Override
 	public void scenarioOutline(ScenarioOutline arg0) {
+		inScenarioOutline = true;
+		
+		scenarioOutlineSteps = new ArrayList<gherkin.formatter.model.Step>();
 	}
 
 	/*
@@ -136,17 +153,10 @@ public class GherkinErrorMarker implements Formatter {
 	 */
 	@Override
 	public void step(Step stepLine) {
-		String stepString = stepLine.getKeyword() + stepLine.getName();
-        cucumber.eclipse.steps.integration.Step step = new StepMatcher().matchSteps(
-            getDocumentLanguage(document), foundSteps, stepString);
-		if (step == null) {
-			try {
-				markUnmatchedStep(file, document, stepLine);
-			} catch (CoreException e) {
-				e.printStackTrace();
-			} catch (BadLocationException e) {
-				e.printStackTrace();
-			}
+		if (!inScenarioOutline) {
+			validateStep(stepLine);
+		} else {
+			scenarioOutlineSteps.add(stepLine);
 		}
 	}
 
@@ -190,18 +200,65 @@ public class GherkinErrorMarker implements Formatter {
 	public void uri(String arg0) {
 	}
 
-	private void markUnmatchedStep(IFile featureFile, IDocument doc,
-			gherkin.formatter.model.Step stepLine) throws BadLocationException,
-			CoreException {
-		
+	private Map<String, String> getExampleVariablesMap(ExamplesTableRow header, ExamplesTableRow values) {
+		Map<String, String> result = new LinkedHashMap<String, String>();
+		for (int i = 0; i < header.getCells().size(); i++) {
+			result.put(header.getCells().get(i), values.getCells().get(i));
+		}
+		return result;
+	}
+
+	private void matchScenarioOutlineExample(ExamplesTableRow header, ExamplesTableRow example) {
+		Map<String, String> exampleVariablesMap = getExampleVariablesMap(header, example);
+		for (gherkin.formatter.model.Step scenarioOutlineStepLine : scenarioOutlineSteps) {
+			validateStep(scenarioOutlineStepLine, exampleVariablesMap, example.getLine());
+		}
+	}
+
+	private String getResolvedStepStringForExample(Step stepLine, Map<String, String> examplesLineMap) {
+		String stepString = stepLine.getKeyword() + stepLine.getName();
+		if (examplesLineMap != null) {
+			for (Map.Entry<String, String> examplesLineEntry : examplesLineMap.entrySet()) {
+				stepString = stepString.replace("<" + examplesLineEntry.getKey() + ">", examplesLineEntry.getValue());
+			}
+		}
+		return stepString;
+	}
+	
+	public void validateStep(Step stepLine) {
+		validateStep(stepLine, null, -1);
+	}
+	
+	public void validateStep(Step stepLine, Map<String, String> examplesLineMap, int currentLine) {
+		String stepString = getResolvedStepStringForExample(stepLine, examplesLineMap);
+		cucumber.eclipse.steps.integration.Step step = new StepMatcher().matchSteps(getDocumentLanguage(document),
+				foundSteps, stepString);
+		if (step == null) {
+			try {
+				markUnmatchedStep(file, document, stepLine, inScenarioOutline ? currentLine : -1);
+			} catch (CoreException e) {
+				e.printStackTrace();
+			} catch (BadLocationException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private void markUnmatchedStep(IFile featureFile, IDocument doc, gherkin.formatter.model.Step stepLine,
+			int exampleLine) throws BadLocationException, CoreException {
 		FindReplaceDocumentAdapter find = new FindReplaceDocumentAdapter(doc);
 		IRegion region = find.find(doc.getLineOffset(stepLine.getLine() - 1),
 				stepLine.getName(), true, true, false, false);
 
+		String warningMessage = String.format(
+				"Step '%s' does not have a matching glue code%s",
+				stepLine.getName(),
+				(inScenarioOutline ? " for example on line " + exampleLine : ""));
+
 		markerManager.add(MarkerIds.UNMATCHED_STEP,
 				featureFile,
 				IMarker.SEVERITY_WARNING,
-				"Step '" + stepLine.getName() + "' does not have a matching glue code",
+				warningMessage,
 				stepLine.getLine(),
 				region.getOffset(),
 				region.getOffset() + region.getLength());
