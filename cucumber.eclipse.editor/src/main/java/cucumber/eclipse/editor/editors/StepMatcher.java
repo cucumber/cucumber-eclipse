@@ -11,6 +11,7 @@ import gherkin.I18n;
 class StepMatcher {
 	private Pattern variablePattern = Pattern.compile("<([^>]+)>");
 	private Pattern aliasPattern = Pattern.compile("\\(([\\w|/]+)\\)");
+	private Pattern groupPattern = Pattern.compile("(\\(.+?\\))");
 
 	Step matchSteps(String languageCode, Set<Step> steps, String currentLine) {
 		Pattern cukePattern = getLanguageKeyWordMatcher(languageCode);
@@ -22,20 +23,22 @@ class StepMatcher {
 		if (matcher.matches()) {
 			String cukeStep = matcher.group(1);
 
-			// FIXME: Replace variables with 0 for now to allow them to
+			// FIXME: Replace variables with <p> for now to allow them to
 			// match steps
 			// Should really read the whole scenario outline and sub in the
 			// first scenario
 			Matcher variableMatcher = variablePattern.matcher(cukeStep);
-			cukeStep = variableMatcher.replaceAll("0");
+			cukeStep = variableMatcher.replaceAll("<p>");
 
 			for (Step step : steps) {
-				// for each alias match, want to insert 0 as an option
-				// e.g. (two|ten) becomes (0|two|ten)
-				Matcher aliasMatcher = aliasPattern.matcher(step.getText());
-				while (aliasMatcher.find()) {
+				// for each group match, want to insert <p> as an option
+				// e.g. (\\d+) becomes (<p>|\\d+)
+				// e.g. (two|ten) becomes (<p>|two|ten)
+				Matcher groupMatcher = groupPattern.matcher(step.getText());
+				while (groupMatcher.find()) {
 					step.setText(
-							step.getText().replace(aliasMatcher.group(0), "(0|" + aliasMatcher.group(0).substring(1)));
+							step.getText().replace(groupMatcher.group(0),
+									"(<p>|" + groupMatcher.group(0).substring(1)));
 				}
 
 				if (step.matches(cukeStep)) {
