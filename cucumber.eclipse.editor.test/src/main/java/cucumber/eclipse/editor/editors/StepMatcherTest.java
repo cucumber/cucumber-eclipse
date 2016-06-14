@@ -84,6 +84,40 @@ public class StepMatcherTest {
 				"Given there are two cucumbers and fifteen gherkins"));
 	}
 
+	@Test
+	public void scenarioOutlinesAliasNonMatching() {
+
+		Step s = createStep("^there are (?:two|ten) cucumbers$");
+
+		assertEquals(s, stepMatcher.matchSteps("en", Collections.singleton(s), "Given there are <cukes> cucumbers"));
+	}
+
+	@Test
+	public void scenarioAliasNonMatching() {
+
+		Step s = createStep("^there are (?:two|ten) cucumbers$");
+
+		assertEquals(s, stepMatcher.matchSteps("en", Collections.singleton(s), "Given there are two cucumbers"));
+	}
+
+	@Test
+	public void scenarioOutlinesAliasNonMatchingMultiple() {
+
+		Step s = createStep("^there are (?:two|ten) cucumbers and (?:five|fifteen) gherkins$");
+
+		assertEquals(s, stepMatcher.matchSteps("en", Collections.singleton(s),
+				"Given there are <cukes> cucumbers and <gherks> gherkins"));
+	}
+
+	@Test
+	public void scenarioAliasNonMatchingMultiple() {
+
+		Step s = createStep("^there are (?:two|ten) cucumbers and (?:five|fifteen) gherkins$");
+
+		assertEquals(s, stepMatcher.matchSteps("en", Collections.singleton(s),
+				"Given there are two cucumbers and fifteen gherkins"));
+	}
+
 	private Step createStep(String text) {
 
 		Step s = new Step();

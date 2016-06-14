@@ -10,7 +10,7 @@ import gherkin.I18n;
 
 class StepMatcher {
 	private Pattern variablePattern = Pattern.compile("<([^>]+)>");
-	private Pattern aliasPattern = Pattern.compile("\\(([\\w|/]+)\\)");
+	private Pattern groupPatternNonParameterMatch = Pattern.compile("(\\(\\?:.+?\\))");
 	private Pattern groupPattern = Pattern.compile("(\\(.+?\\))");
 
 	Step matchSteps(String languageCode, Set<Step> steps, String currentLine) {
@@ -23,22 +23,30 @@ class StepMatcher {
 		if (matcher.matches()) {
 			String cukeStep = matcher.group(1);
 
-			// FIXME: Replace variables with <p> for now to allow them to
-			// match steps
+			// FIXME: Replace variables with (MPL - <p>) for now to allow them
+			// to match steps
 			// Should really read the whole scenario outline and sub in the
 			// first scenario
 			Matcher variableMatcher = variablePattern.matcher(cukeStep);
 			cukeStep = variableMatcher.replaceAll("<p>");
 
 			for (Step step : steps) {
+				// firstly, have to replace all non-parameter matching group
+				// expressions to conform to normal regexp
+				// e.g. (?:choiceone|choicetwo) -> (choiceone|choicetwo)
+				Matcher groupNonParameterMatcher = groupPatternNonParameterMatch.matcher(step.getText());
+				while (groupNonParameterMatcher.find()) {
+					step.setText(step.getText().replace(groupNonParameterMatcher.group(0),
+							"(" + groupNonParameterMatcher.group(0).substring(3)));
+				}
+
 				// for each group match, want to insert <p> as an option
 				// e.g. (\\d+) becomes (<p>|\\d+)
 				// e.g. (two|ten) becomes (<p>|two|ten)
 				Matcher groupMatcher = groupPattern.matcher(step.getText());
 				while (groupMatcher.find()) {
-					step.setText(
-							step.getText().replace(groupMatcher.group(0),
-									"(<p>|" + groupMatcher.group(0).substring(1)));
+					step.setText(step.getText().replace(groupMatcher.group(0),
+							"(<p>|" + groupMatcher.group(0).substring(1)));
 				}
 
 				if (step.matches(cukeStep)) {
