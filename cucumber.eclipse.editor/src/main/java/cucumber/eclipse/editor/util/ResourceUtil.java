@@ -8,7 +8,6 @@ import java.util.ResourceBundle;
  */
 public class ResourceUtil {
 
-	private static final String BUNDLE_NAME = "cucumber.eclipse.editor.<PropertiesFilename>";
 	private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle("cucumber.eclipse.editor.<PropertiesFilename>");
 
 	public static String getFormattedString(String key, Object arg) {

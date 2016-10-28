@@ -33,8 +33,6 @@ import gherkin.formatter.model.Step;
  *
  */
 public class GherkinErrorMarker implements Formatter {
-
-	private final IStepProvider stepProvider;
 	private final IMarkerManager markerManager;
 	private final IFile file;
 	private final IDocument document;
@@ -47,7 +45,6 @@ public class GherkinErrorMarker implements Formatter {
 
 	public GherkinErrorMarker(IStepProvider stepProvider, IMarkerManager markerManager, IFile inputfile,
 			IDocument doc) {
-		this.stepProvider = stepProvider;
 		this.markerManager = markerManager;
 		this.file = inputfile;
 		this.document = doc;

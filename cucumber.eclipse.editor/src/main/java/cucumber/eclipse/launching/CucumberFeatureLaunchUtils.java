@@ -5,18 +5,14 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin;
-import org.eclipse.jface.text.TextSelection;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 
-public class CucumberFeaureLaunchUtils {
+public class CucumberFeatureLaunchUtils {
 
-	private CucumberFeaureLaunchUtils() {
+	private CucumberFeatureLaunchUtils() {
 		// NO ENTRY NO INSTANCES
 	}
 
@@ -65,13 +61,4 @@ public class CucumberFeaureLaunchUtils {
 		}
 		return b;
 	}
-	
-		private TextSelection getTextSelection() {
-		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-		ISelectionService service = window.getSelectionService();
-		
-		if (service instanceof TextSelection) return  (TextSelection)  service.getSelection();
-		else return null;
-	}
-
 }

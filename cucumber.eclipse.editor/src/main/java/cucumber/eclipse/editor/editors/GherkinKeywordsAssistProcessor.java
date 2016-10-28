@@ -5,11 +5,6 @@ package cucumber.eclipse.editor.editors;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
@@ -18,7 +13,6 @@ import org.eclipse.swt.graphics.Image;
 
 import cucumber.eclipse.editor.Activator;
 import cucumber.eclipse.editor.contentassist.CucumberContentAssist;
-import cucumber.eclipse.steps.integration.Step;
 import gherkin.I18n;
 
 public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {

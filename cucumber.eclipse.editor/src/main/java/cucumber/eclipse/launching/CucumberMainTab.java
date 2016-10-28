@@ -206,11 +206,11 @@ public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigu
 	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy config) {
 
-		IProject javaProject = CucumberFeaureLaunchUtils.getProject();
-		String featurePath = CucumberFeaureLaunchUtils.getFeaturePath();
+		IProject javaProject = CucumberFeatureLaunchUtils.getProject();
+		String featurePath = CucumberFeatureLaunchUtils.getFeaturePath();
 		String gluePath = getDefaultGluePath();
 		
-		if (javaProject != null && CucumberFeaureLaunchUtils.getFeaturePath() != null) {
+		if (javaProject != null && CucumberFeatureLaunchUtils.getFeaturePath() != null) {
 			initializeCucumberProject(gluePath, featurePath, javaProject, config);
 		} else {
 			config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, "");
@@ -241,23 +241,23 @@ public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigu
 	}
 
 	private void updateFormattersFromConfig(ILaunchConfiguration config) {		
-		monochromeCheckbox.setSelection(CucumberFeaureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_MONOCHROME));
-		jsonCheckbox.setSelection(CucumberFeaureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_JSON));
-		junitCheckbox.setSelection(CucumberFeaureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_JUNIT));
-		prettyCheckbox.setSelection(CucumberFeaureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_PRETTY));
-		progressCheckbox.setSelection(CucumberFeaureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_PROGRESS));
-		htmlCheckbox.setSelection(CucumberFeaureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_HTML));
-		usageCheckbox.setSelection(CucumberFeaureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_USAGE));
-		rerunCheckbox.setSelection(CucumberFeaureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_RERUN));
+		monochromeCheckbox.setSelection(CucumberFeatureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_MONOCHROME));
+		jsonCheckbox.setSelection(CucumberFeatureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_JSON));
+		junitCheckbox.setSelection(CucumberFeatureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_JUNIT));
+		prettyCheckbox.setSelection(CucumberFeatureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_PRETTY));
+		progressCheckbox.setSelection(CucumberFeatureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_PROGRESS));
+		htmlCheckbox.setSelection(CucumberFeatureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_HTML));
+		usageCheckbox.setSelection(CucumberFeatureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_USAGE));
+		rerunCheckbox.setSelection(CucumberFeatureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_RERUN));
 		
 	}
 
 	private void updateGluePathFromConfig(ILaunchConfiguration config) {
-		CucumberFeaureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_GLUE_PATH, gluePathText);
+		CucumberFeatureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_GLUE_PATH, gluePathText);
 	}
 
 	private void updateFeaturePathFromConfig(ILaunchConfiguration config) {
-		CucumberFeaureLaunchUtils.updateFromConfig(config, CucumberFeatureLaunchConstants.ATTR_FEATURE_PATH, featurePathText);
+		CucumberFeatureLaunchUtils.updateFromConfig(config, CucumberFeatureLaunchConstants.ATTR_FEATURE_PATH, featurePathText);
 	}
 
 
