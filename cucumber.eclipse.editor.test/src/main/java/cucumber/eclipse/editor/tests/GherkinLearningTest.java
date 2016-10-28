@@ -1,7 +1,6 @@
 package cucumber.eclipse.editor.tests;
 
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 
@@ -9,7 +8,6 @@ import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 //import static org.hamcrest.Matchers.*;
 
-import org.hamcrest.Matcher;
 import org.junit.Test;
 
 import gherkin.formatter.Formatter;
