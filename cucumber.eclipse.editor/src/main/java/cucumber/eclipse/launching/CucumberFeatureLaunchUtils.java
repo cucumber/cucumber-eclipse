@@ -14,9 +14,9 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 
-public class CucumberFeaureLaunchUtils {
+public class CucumberFeatureLaunchUtils {
 
-	private CucumberFeaureLaunchUtils() {
+	private CucumberFeatureLaunchUtils() {
 		// NO ENTRY NO INSTANCES
 	}
 

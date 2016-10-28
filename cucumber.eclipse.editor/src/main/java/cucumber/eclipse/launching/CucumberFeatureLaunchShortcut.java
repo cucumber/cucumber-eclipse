@@ -60,9 +60,9 @@ public class CucumberFeatureLaunchShortcut extends AbstractLaunchShortcut implem
 
 	@Override
 	protected void initializeConfiguration(ILaunchConfigurationWorkingCopy config) {
-		IProject project = CucumberFeaureLaunchUtils.getProject();
+		IProject project = CucumberFeatureLaunchUtils.getProject();
 		config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, project.getName());
-		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_FEATURE_PATH, CucumberFeaureLaunchUtils.getFeaturePath());
+		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_FEATURE_PATH, CucumberFeatureLaunchUtils.getFeaturePath());
 		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_GLUE_PATH, CucumberFeatureLaunchConstants.DEFAULT_CLASSPATH);
 		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_MONOCHROME, true);
 		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_PRETTY, true);
