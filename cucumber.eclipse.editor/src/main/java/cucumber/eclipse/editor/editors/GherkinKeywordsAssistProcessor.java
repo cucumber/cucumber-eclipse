@@ -5,10 +5,15 @@ package cucumber.eclipse.editor.editors;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.contentassist.*;
+import org.eclipse.jface.text.contentassist.CompletionProposal;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
+import org.eclipse.jface.text.contentassist.IContextInformation;
+import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Image;
 
 import cucumber.eclipse.editor.Activator;
@@ -43,7 +48,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 			I18n i18n = new I18n(lang);
 
 			//Initialize CucumberContentAssist
-			contentAssist = new CucumberContentAssist();
+			contentAssist = new CucumberContentAssist(lang);
 			
 			// line of cursor locate,and from begin to cursor.
 			IRegion line = viewer.getDocument().getLineInformationOfOffset(offset);
@@ -79,7 +84,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 				{
 					 //System.out.println("IF-1:Inside ...");
 					// To display only Step-Keywords
-					for (String string : contentAssist.stepKeywords) {
+					for (String string : contentAssist.getStepKeyWords()) {
 						CompletionProposal p = new CompletionProposal(string, offset - typed.length(), typed.length(),string.length(), ICON, null, null, null);
 						result.add(p);
 					}
