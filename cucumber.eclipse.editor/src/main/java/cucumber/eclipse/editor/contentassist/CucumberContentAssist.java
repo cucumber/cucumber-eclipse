@@ -3,6 +3,8 @@
  */
 package cucumber.eclipse.editor.contentassist;
 
+import static java.util.Arrays.asList;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,6 +16,7 @@ import org.eclipse.swt.graphics.Image;
 
 import cucumber.eclipse.steps.integration.Step;
 import cucumber.eclipse.steps.jdt.StepDefinitions;
+import gherkin.I18n;
 
 /**
  * @author girija.panda@nokia.com
@@ -30,9 +33,6 @@ public class CucumberContentAssist {
 
 	// Junk words needs to be filter form keyword list
 	private String[] junkWords = { "* ", "Business Need", "Ability", "Scenario Template", "Scenarios" };
-
-	// Keywords used for Step
-	public String[] stepKeywords = { "Given", "When", "Then", "And", "But" };
 
 	// RegEx1 : (Line starts with only a <Step-keyword>[without <space> or
 	// <word>]) OR
@@ -81,15 +81,23 @@ public class CucumberContentAssist {
 	CompletionProposal matchedStepsProposal = null;
 	private Set<Step> importedSteps = null;
 
+	private String lang;
+
 	// Initialize
-	public CucumberContentAssist() {
-		
+	public CucumberContentAssist(String lang) {
+		this.lang = lang;
 		// Collection of all steps
 		importedSteps = StepDefinitions.steps;
 
 		// Step lists
 		stepDetailList = new ArrayList<String>();
 		matchedStepList = new ArrayList<String>();
+	}
+
+	public List<String> getStepKeyWords() {
+		List<String> stepKeywords = new I18n(lang).getStepKeywords();
+		stepKeywords.removeAll(asList(junkWords));
+		return stepKeywords;
 	}
 
 	// Iterate and collect step info
