@@ -1,5 +1,6 @@
 package cucumber.eclipse.editor.editors;
 
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
@@ -14,6 +15,9 @@ import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
+
+import cucumber.eclipse.editor.Activator;
+import cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants;
 
 public class GherkinConfiguration extends TextSourceViewerConfiguration {
 
@@ -52,21 +56,26 @@ public class GherkinConfiguration extends TextSourceViewerConfiguration {
 
 	@Override
 	public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
-        ContentAssistant ca = new ContentAssistant();
-        IContentAssistProcessor cap = new GherkinKeywordsAssistProcessor();
-        	ca.setContentAssistProcessor(cap, IDocument.DEFAULT_CONTENT_TYPE);
-        	ca.setInformationControlCreator(getInformationControlCreator(sourceViewer));
-        	
-        	//Added By Girija For Content Assistance
-        	ca.setStatusMessage("<Step>:<Class>, Press 'Ctrl+SPace' For Cucumber Assistance");
-        	ca.setStatusLineVisible(true);
-        	
-        	ca.enableAutoActivation(true);
-        	ca.setAutoActivationDelay(500);
-        	//ca.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
-        	//ca.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
-        	
-        return ca;
+		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+
+		if (store.getBoolean(ICucumberPreferenceConstants.PREF_CHECK_STEP_DEFINITIONS)) {
+			ContentAssistant ca = new ContentAssistant();
+			IContentAssistProcessor cap = new GherkinKeywordsAssistProcessor();
+				ca.setContentAssistProcessor(cap, IDocument.DEFAULT_CONTENT_TYPE);
+				ca.setInformationControlCreator(getInformationControlCreator(sourceViewer));
+				
+				//Added By Girija For Content Assistance
+				ca.setStatusMessage("<Step>:<Class>, Press 'Ctrl+SPace' For Cucumber Assistance");
+				ca.setStatusLineVisible(true);
+				
+				ca.enableAutoActivation(true);
+				ca.setAutoActivationDelay(500);
+				//ca.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
+				//ca.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
+				
+			return ca;
+		}
+		return null;
 	}
 	
 	

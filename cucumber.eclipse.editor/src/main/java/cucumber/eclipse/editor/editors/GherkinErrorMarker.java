@@ -11,13 +11,16 @@ import java.util.Set;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 
+import cucumber.eclipse.editor.Activator;
 import cucumber.eclipse.editor.markers.IMarkerManager;
 import cucumber.eclipse.editor.markers.MarkerIds;
+import cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants;
 import cucumber.eclipse.editor.steps.IStepProvider;
 import gherkin.formatter.Formatter;
 import gherkin.formatter.model.Background;
@@ -227,16 +230,20 @@ public class GherkinErrorMarker implements Formatter {
 	}
 	
 	public void validateStep(Step stepLine, Map<String, String> examplesLineMap, int currentLine) {
-		String stepString = getResolvedStepStringForExample(stepLine, examplesLineMap);
-		cucumber.eclipse.steps.integration.Step step = new StepMatcher().matchSteps(getDocumentLanguage(document),
-				foundSteps, stepString);
-		if (step == null) {
-			try {
-				markUnmatchedStep(file, document, stepLine, inScenarioOutline ? currentLine : -1);
-			} catch (CoreException e) {
-				e.printStackTrace();
-			} catch (BadLocationException e) {
-				e.printStackTrace();
+		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+
+		if (store.getBoolean(ICucumberPreferenceConstants.PREF_CHECK_STEP_DEFINITIONS)) {
+			String stepString = getResolvedStepStringForExample(stepLine, examplesLineMap);
+			cucumber.eclipse.steps.integration.Step step = new StepMatcher().matchSteps(getDocumentLanguage(document),
+																						foundSteps, stepString);
+			if (step == null) {
+				try {
+					markUnmatchedStep(file, document, stepLine, inScenarioOutline ? currentLine : -1);
+				} catch (CoreException e) {
+					e.printStackTrace();
+				} catch (BadLocationException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
