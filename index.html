@@ -3,13 +3,19 @@ layout: default
 title: Home
 ---
 	<div class="two-thirds column">
-		<p>This is a modified version of the original Cucumber-Eclipse plugin, forcing the FindStep Menu option to use the dutch language</p>
-
-		<h3>About the original Plugin</h3>
+		<h3>About the Plugin</h3>
 		<p>See the <a href="https://github.com/cucumber/cucumber-eclipse/blob/master/README.md">README</a> for more information.</p>
-		<p>Please consult the <a href="https://github.com/cucumber/cucumber-eclipse/wiki">wiki</a></p>
 		<h5>Update Site</h5>
-		<p>http:{{ site.url }}/update-site</p>
+		<p>{{ site.url }}update-site</p>
+		<h5>Plugin features, screenshots, etc....</h5>
+		<p>Please consult the <a href="https://github.com/cucumber/cucumber-eclipse/wiki">wiki</a></p>
+		<h5>Issues</h5>
+		<p>Please raise any issues (that aren't outstanding in the TO-DO list in the README)
+		<a href="https://github.com/cucumber/cucumber-eclipse/issues">here</a>.</p>
 	</div>
 	<div class="one-third column">
+		<h3>Latest News</h3>
+		{% for post in paginator.posts %}
+		<p><a href="{{ site.url }}{{ post.url }}">{{ post.title }} <small class="subheader">{{ post.date | date_to_string }}</small></a></p>
+		{% endfor %}
 	</div>
