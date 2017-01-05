@@ -10,7 +10,6 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.FindReplaceDocumentAdapter;
@@ -231,25 +230,50 @@ public class GherkinErrorMarker implements Formatter {
 	
 	public void validateStep(Step stepLine, Map<String, String> examplesLineMap, int currentLine) {
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-
+		
 		if (store.getBoolean(ICucumberPreferenceConstants.PREF_CHECK_STEP_DEFINITIONS)) {
+			
+			if ("".equals(stepLine.getName())) {
+				try {
+					markMissingStepName(file, document, stepLine);
+				} catch (BadLocationException e) {
+					e.printStackTrace();
+				}
+				
+				return;
+			}
+
 			String stepString = getResolvedStepStringForExample(stepLine, examplesLineMap);
 			cucumber.eclipse.steps.integration.Step step = new StepMatcher().matchSteps(getDocumentLanguage(document),
 																						foundSteps, stepString);
 			if (step == null) {
 				try {
 					markUnmatchedStep(file, document, stepLine, inScenarioOutline ? currentLine : -1);
-				} catch (CoreException e) {
-					e.printStackTrace();
 				} catch (BadLocationException e) {
 					e.printStackTrace();
 				}
 			}
 		}
 	}
-	
+
+	private void markMissingStepName(IFile featureFile, IDocument doc, gherkin.formatter.model.Step stepLine)
+			throws BadLocationException {
+		
+		int line = stepLine.getLine() - 1;
+		IRegion lineRegion = doc.getLineInformation(line);
+		
+		markerManager.add(MarkerIds.SYNTAX_ERROR,
+				featureFile,
+				IMarker.SEVERITY_WARNING,
+				"No step name.",
+				line,
+				lineRegion.getOffset(),
+				lineRegion.getOffset() + lineRegion.getLength());
+	}
+
 	private void markUnmatchedStep(IFile featureFile, IDocument doc, gherkin.formatter.model.Step stepLine,
-			int exampleLine) throws BadLocationException, CoreException {
+			int exampleLine) throws BadLocationException {
+		
 		FindReplaceDocumentAdapter find = new FindReplaceDocumentAdapter(doc);
 		IRegion region = find.find(doc.getLineOffset(stepLine.getLine() - 1),
 				stepLine.getName(), true, true, false, false);
