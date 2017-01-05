@@ -17,11 +17,15 @@ public class ExtensionRegistryStepProvider implements IStepProvider {
 
 	final static String EXTENSION_POINT_STEPDEFINITIONS_ID = "cucumber.eclipse.steps.integration";
 
-	public Set<Step> getStepsInEncompassingProject(IFile featurefile) {
-		Set<Step> steps = new HashSet<Step>();
+	private Set<Step> steps = new HashSet<Step>();
+	
+	public ExtensionRegistryStepProvider(IFile file) {
 		for (IStepDefinitions stepDef : getStepDefinitions()) {
-			steps.addAll(stepDef.getSteps(featurefile));
+			steps.addAll(stepDef.getSteps(file));
 		}
+	}
+	
+	public Set<Step> getStepsInEncompassingProject() {
 		return steps;
 	}
 

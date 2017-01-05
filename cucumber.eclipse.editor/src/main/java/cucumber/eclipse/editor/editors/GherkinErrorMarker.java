@@ -51,7 +51,7 @@ public class GherkinErrorMarker implements Formatter {
 		this.markerManager = markerManager;
 		this.file = inputfile;
 		this.document = doc;
-        foundSteps = stepProvider.getStepsInEncompassingProject(file);
+        foundSteps = stepProvider.getStepsInEncompassingProject();
 	}
 
 	public void removeExistingMarkers() {

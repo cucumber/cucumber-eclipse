@@ -1,8 +1,5 @@
 package cucumber.eclipse.editor.editors;
 
-import gherkin.lexer.LexingError;
-import gherkin.parser.Parser;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +33,10 @@ import cucumber.eclipse.editor.Activator;
 import cucumber.eclipse.editor.markers.MarkerIds;
 import cucumber.eclipse.editor.markers.MarkerManager;
 import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
+import cucumber.eclipse.editor.steps.IStepProvider;
 import cucumber.eclipse.editor.template.GherkinSampleTemplate;
+import gherkin.lexer.LexingError;
+import gherkin.parser.Parser;
 
 public class Editor extends TextEditor {
 
@@ -47,6 +47,7 @@ public class Editor extends TextEditor {
 	private Annotation[] oldAnnotations;
 	private GherkinOutlinePage outlinePage;
 	private GherkinModel model;
+	private IStepProvider stepProvider;
 	
 	public Editor() {
 		super();
@@ -113,6 +114,10 @@ public class Editor extends TextEditor {
 		return model;
 	}
 	
+	public IStepProvider getStepProvider() {
+		return stepProvider;
+	}
+	
 	public void updateGherkinModel(GherkinModel model) {
 		validateAndMark();
 		updateOutline(model.getFeatureElement());
@@ -151,6 +156,7 @@ public class Editor extends TextEditor {
 	protected void doSetInput(IEditorInput newInput) throws CoreException {
 		super.doSetInput(newInput);
 		input = newInput;
+		stepProvider = new ExtensionRegistryStepProvider(((IFileEditorInput) newInput).getFile()); 
 		model = new GherkinModel();
 	}
 
@@ -193,7 +199,7 @@ public class Editor extends TextEditor {
 		IFileEditorInput fileEditorInput = (IFileEditorInput) input;
 		IFile featureFile = fileEditorInput.getFile();
 		MarkerManager markerManager = new MarkerManager();
-		GherkinErrorMarker marker = new GherkinErrorMarker(new ExtensionRegistryStepProvider(), markerManager, featureFile, doc);
+		GherkinErrorMarker marker = new GherkinErrorMarker(stepProvider, markerManager, featureFile, doc);
 		marker.removeExistingMarkers();
 
 		Parser p = new Parser(marker, false);
