@@ -46,6 +46,7 @@ public class Editor extends TextEditor {
 	private ProjectionAnnotationModel annotationModel;
 	private Annotation[] oldAnnotations;
 	private GherkinOutlinePage outlinePage;
+	private GherkinModel model;
 	
 	public Editor() {
 		super();
@@ -108,7 +109,12 @@ public class Editor extends TextEditor {
 		}
 	}
 	
+	public GherkinModel getModel() {
+		return model;
+	}
+	
 	public void updateGherkinModel(GherkinModel model) {
+		validateAndMark();
 		updateOutline(model.getFeatureElement());
 		updateFoldingStructure(model.getFoldRanges());
 	}
@@ -145,18 +151,12 @@ public class Editor extends TextEditor {
 	protected void doSetInput(IEditorInput newInput) throws CoreException {
 		super.doSetInput(newInput);
 		input = newInput;
-		validateAndMark();
+		model = new GherkinModel();
 	}
 
 	public void dispose() {
 		super.dispose();
 		colorManager.dispose();
-	}
-
-	@Override
-	protected void editorSaved() {
-		super.editorSaved();
-		validateAndMark();
 	}
 
 	public Object getAdapter(Class required) {

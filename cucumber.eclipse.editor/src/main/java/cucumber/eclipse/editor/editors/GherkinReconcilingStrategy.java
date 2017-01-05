@@ -41,12 +41,11 @@ public class GherkinReconcilingStrategy implements IReconcilingStrategy,
 	 */
 	@Override
 	public void initialReconcile() {
-		final GherkinModel model = new GherkinModel();
-		model.updateFromDocument(document);
+		editor.getModel().updateFromDocument(document);
 		
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
-				editor.updateGherkinModel(model);
+				editor.updateGherkinModel(editor.getModel());
 			}
 		});
 	}
