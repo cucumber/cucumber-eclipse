@@ -42,7 +42,11 @@ public class Editor extends TextEditor {
 
 	private ColorManager colorManager;
 	private IEditorInput input;
-
+	private ProjectionSupport projectionSupport;
+	private ProjectionAnnotationModel annotationModel;
+	private Annotation[] oldAnnotations;
+	private GherkinOutlinePage outlinePage;
+	
 	public Editor() {
 		super();
 		colorManager = new ColorManager();
@@ -76,11 +80,6 @@ public class Editor extends TextEditor {
 
 		return viewer;
 	}
-
-	private ProjectionSupport projectionSupport;
-	private ProjectionAnnotationModel annotationModel;
-	private Annotation[] oldAnnotations;
-	private GherkinOutlinePage outlinePage;
 	
 	/*
 	 * (non-Javadoc)
