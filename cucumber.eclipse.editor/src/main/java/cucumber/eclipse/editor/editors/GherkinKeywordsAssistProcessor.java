@@ -30,11 +30,18 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 	
 	//For content assistance feature By Girija
 	private CucumberContentAssist contentAssist = null;
+	private Editor editor;
 	
+	public GherkinKeywordsAssistProcessor(Editor editor) {
+		this.editor = editor;
+	}
+
 	// To Compute CompletionProposals
 	@Override
 	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
 		try {
+			
+			
 			// TODO listen some language changed event.
 			IDocument document = viewer.getDocument();
 
@@ -48,7 +55,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 			I18n i18n = new I18n(lang);
 
 			//Initialize CucumberContentAssist
-			contentAssist = new CucumberContentAssist(lang);
+			contentAssist = new CucumberContentAssist(lang, editor.getStepProvider());
 			
 			// line of cursor locate,and from begin to cursor.
 			IRegion line = viewer.getDocument().getLineInformationOfOffset(offset);

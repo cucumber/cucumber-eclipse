@@ -7,5 +7,50 @@
             class="cucumber.eclipse.steps.jdt.StepDefinitions">
       </stepDefinitionIntegration>
    </extension>
-
+   <extension 
+    id="stepsNature" 
+    name="Cucumber Steps Nature" 
+    point="org.eclipse.core.resources.natures">
+    <requires-nature
+          id="org.eclipse.jdt.core.javanature">
+    </requires-nature> 
+      <runtime> 
+         <run class="cucumber.eclipse.steps.jdt.CucumberProjectNature"/> 
+      </runtime> 
+      <builder id="cucumber.eclipse.steps.jdt.stepsBuilder"/> 
+   </extension> 
+<extension id="cucumber.eclipse.steps.jdt.stepsBuilder" name="Cucumber Step Builder" point="org.eclipse.core.resources.builders"> 
+      <builder hasNature="true"> 
+         <run class="cucumber.eclipse.steps.jdt.StepsBuilder"/> 
+      </builder> 
+   </extension>
+<extension
+      point="org.eclipse.ui.commands">
+   <category
+         id="cucumber.eclipse.steps.jdt.commands.category"
+         name="Cucumber Steps">
+   </category>
+   <command
+         categoryId="cucumber.eclipse.steps.jdt.commands.category"
+         id="cucumber.eclipse.steps.jdt.commands.addNatureCommand"
+         name="Convert to Cucumber Project...">
+   </command>
+</extension>
+<extension
+      point="org.eclipse.ui.handlers">
+   <handler
+         class="cucumber.eclipse.steps.jdt.handlers.AddNatureHandler"
+         commandId="cucumber.eclipse.steps.jdt.commands.addNatureCommand">
+   </handler>
+</extension>
+<extension
+      point="org.eclipse.ui.menus">
+   <menuContribution
+         locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
+         <command
+               commandId="cucumber.eclipse.steps.jdt.commands.addNatureCommand"
+               id="cucumber.eclipse.steps.jdt.commands.addNatureCommand">
+         </command>
+   </menuContribution>
+</extension> 
 </plugin>

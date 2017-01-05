@@ -4,7 +4,6 @@ package cucumber.eclipse.editor.editors;
 import static java.util.Collections.emptySet;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-import gherkin.parser.Parser;
 
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,7 +19,9 @@ import cucumber.eclipse.editor.markers.IMarkerManager;
 import cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants;
 import cucumber.eclipse.editor.steps.IStepProvider;
 import cucumber.eclipse.editor.tests.TestFile;
+import cucumber.eclipse.steps.integration.IStepListener;
 import cucumber.eclipse.steps.integration.Step;
+import gherkin.parser.Parser;
 
 public class GherkinErrorMarkerTest {
 
@@ -79,8 +80,17 @@ public class GherkinErrorMarkerTest {
 
 	private IStepProvider newStepProvider() {
 		return new IStepProvider() {
+			@Override
 			public Set<Step> getStepsInEncompassingProject() {
 				return emptySet();
+			}
+
+			@Override
+			public void addStepListener(IStepListener listener) {
+			}
+
+			@Override
+			public void removeStepListener(IStepListener listener) {
 			}
 		};
 	}

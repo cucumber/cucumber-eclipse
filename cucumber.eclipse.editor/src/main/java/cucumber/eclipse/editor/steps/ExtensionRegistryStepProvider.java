@@ -11,22 +11,52 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 
 import cucumber.eclipse.steps.integration.IStepDefinitions;
+import cucumber.eclipse.steps.integration.IStepListener;
 import cucumber.eclipse.steps.integration.Step;
+import cucumber.eclipse.steps.integration.StepsChangedEvent;
 
-public class ExtensionRegistryStepProvider implements IStepProvider {
+public class ExtensionRegistryStepProvider implements IStepProvider, IStepListener {
 
 	final static String EXTENSION_POINT_STEPDEFINITIONS_ID = "cucumber.eclipse.steps.integration";
 
 	private Set<Step> steps = new HashSet<Step>();
+
+	private List<IStepDefinitions> stepDefinitions = getStepDefinitions();
+
+	private IFile file;
 	
 	public ExtensionRegistryStepProvider(IFile file) {
-		for (IStepDefinitions stepDef : getStepDefinitions()) {
+		this.file = file;
+		reloadSteps();
+		addStepListener(this);
+	}
+
+	public void addStepListener(IStepListener listener) {
+		for (IStepDefinitions stepDef : stepDefinitions) {
+			stepDef.addStepListener(listener);
+		}
+	}
+
+	public Set<Step> getStepsInEncompassingProject() {
+		return steps;
+	}
+
+	private void reloadSteps() {
+		steps.clear();
+		for (IStepDefinitions stepDef : stepDefinitions) {
 			steps.addAll(stepDef.getSteps(file));
 		}
 	}
-	
-	public Set<Step> getStepsInEncompassingProject() {
-		return steps;
+
+	public void removeStepListener(IStepListener listener) {
+		for (IStepDefinitions stepDef : stepDefinitions) {
+			stepDef.removeStepListener(listener);
+		}
+	}
+
+	@Override
+	public void onStepsChanged(StepsChangedEvent event) {
+		reloadSteps();
 	}
 
 	private static List<IStepDefinitions> getStepDefinitions() {

@@ -35,10 +35,12 @@ import cucumber.eclipse.editor.markers.MarkerManager;
 import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
 import cucumber.eclipse.editor.steps.IStepProvider;
 import cucumber.eclipse.editor.template.GherkinSampleTemplate;
+import cucumber.eclipse.steps.integration.IStepListener;
+import cucumber.eclipse.steps.integration.StepsChangedEvent;
 import gherkin.lexer.LexingError;
 import gherkin.parser.Parser;
 
-public class Editor extends TextEditor {
+public class Editor extends TextEditor implements IStepListener {
 
 	private ColorManager colorManager;
 	private IEditorInput input;
@@ -109,6 +111,15 @@ public class Editor extends TextEditor {
 			service.activateContext("cucumber.eclipse.editor.featureEditorScope");
 		}
 	}
+
+	/* (non-Javadoc)
+	 * @see cucumber.eclipse.steps.integration.StepListener#onStepsChanged
+	 * (cucumber.eclipse.steps.integration.StepsChangedEvent)
+	 */
+	@Override
+	public void onStepsChanged(StepsChangedEvent event) {
+		validateAndMark();
+	}
 	
 	public GherkinModel getModel() {
 		return model;
@@ -156,13 +167,21 @@ public class Editor extends TextEditor {
 	protected void doSetInput(IEditorInput newInput) throws CoreException {
 		super.doSetInput(newInput);
 		input = newInput;
-		stepProvider = new ExtensionRegistryStepProvider(((IFileEditorInput) newInput).getFile()); 
 		model = new GherkinModel();
+		
+		stepProvider = new ExtensionRegistryStepProvider(((IFileEditorInput) newInput).getFile());
+		stepProvider.addStepListener(this);
 	}
 
 	public void dispose() {
 		super.dispose();
+
 		colorManager.dispose();
+
+		if (stepProvider != null) {
+			stepProvider.removeStepListener(this);
+			stepProvider = null;
+		}
 	}
 
 	public Object getAdapter(Class required) {
