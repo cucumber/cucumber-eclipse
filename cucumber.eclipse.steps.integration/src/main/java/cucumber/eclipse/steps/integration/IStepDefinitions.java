@@ -6,5 +6,9 @@ import org.eclipse.core.resources.IFile;
 
 public interface IStepDefinitions {
 
-	Set<Step> getSteps(IFile featurefile);
+    void addStepListener(IStepListener listener);
+
+    Set<Step> getSteps(IFile featurefile);
+
+    void removeStepListener(IStepListener listener);
 }

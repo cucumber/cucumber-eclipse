@@ -2,6 +2,7 @@ package cucumber.eclipse.steps.jdt;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,29 +34,34 @@ import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.core.search.SearchRequestor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
+
 import cucumber.eclipse.steps.integration.IStepDefinitions;
+import cucumber.eclipse.steps.integration.IStepListener;
 import cucumber.eclipse.steps.integration.Step;
+import cucumber.eclipse.steps.integration.StepsChangedEvent;
 
 public class StepDefinitions implements IStepDefinitions {
 
+    public static StepDefinitions INSTANCE;
+    
+    public StepDefinitions() {
+        INSTANCE = this;
+    }
+    
+    private List<IStepListener> listeners = new ArrayList<IStepListener>();
+    
 	private Pattern cukeAnnotationMatcher = Pattern.compile("cucumber\\.api\\.java\\.([a-z_]+)\\.(.*)$");
 	
-	//Newly Declared By Girija 
-	// To Collect all Steps as Set for ContentAssistance
-	public static Set<Step> steps = null;
+	@Override
+	public void addStepListener(IStepListener listener) {
+	    this.listeners.add(listener);
+	}
 	
 	//1. To get Steps as Set from java file
 	@Override
 	public Set<Step> getSteps(IFile featurefile) {
 		
-		//System.out.println("StepDefinitions : getSteps()....In");		
-		
-		// Commented By Girija to use LinkedHashSet
-		//Set<Step> steps = new HashSet<Step>();
-		
-		//Instead of above HashSet
-		//Used LinkedHashSet : Import all steps from step-definition File
-		steps = new LinkedHashSet<Step>();
+		Set<Step> steps = new LinkedHashSet<Step>();
 		
 		IProject project = featurefile.getProject();	
 		try 
@@ -72,7 +78,7 @@ public class StepDefinitions implements IStepDefinitions {
 				
 				for (IJavaProject currentJavaProject: projectsToScan) {
 				
-					scanJavaProjectForStepDefinitions(currentJavaProject);
+					scanJavaProjectForStepDefinitions(currentJavaProject, steps);
 				}
 			}
 		} catch (CoreException e) {
@@ -82,6 +88,15 @@ public class StepDefinitions implements IStepDefinitions {
 		return steps;
 	}
 	
+	public void removeStepListener(IStepListener listener) {
+	    this.listeners.remove(listener);
+	}
+	
+	public void notifyListeners(StepsChangedEvent event) {
+        for (IStepListener listener : listeners) {
+            listener.onStepsChanged(event);
+        }
+    }	
 	
 	// 2. Get Step as List of Cucumber-Annotation from java file
 	private List<Step> getCukeAnnotations(IJavaProject javaProject, ICompilationUnit compUnit)
@@ -208,7 +223,7 @@ public class StepDefinitions implements IStepDefinitions {
 		return requiredProjects;
 	}
 
-	private void scanJavaProjectForStepDefinitions(IJavaProject projectToScan)
+	private void scanJavaProjectForStepDefinitions(IJavaProject projectToScan, Collection<Step> collectedSteps)
 			throws JavaModelException, CoreException {
 		
 		IPackageFragment[] packages = projectToScan.getPackageFragments();
@@ -217,9 +232,8 @@ public class StepDefinitions implements IStepDefinitions {
 
 			if (javaPackage.getKind() == IPackageFragmentRoot.K_SOURCE) {
 
-				for (ICompilationUnit compUnit : javaPackage
-						.getCompilationUnits()) {
-							steps.addAll(getCukeAnnotations(projectToScan, compUnit));
+				for (ICompilationUnit compUnit : javaPackage.getCompilationUnits()) {
+					collectedSteps.addAll(getCukeAnnotations(projectToScan, compUnit));
 				}
 			}
 		}

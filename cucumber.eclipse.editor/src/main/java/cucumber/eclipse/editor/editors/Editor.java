@@ -1,8 +1,5 @@
 package cucumber.eclipse.editor.editors;
 
-import gherkin.lexer.LexingError;
-import gherkin.parser.Parser;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,13 +33,24 @@ import cucumber.eclipse.editor.Activator;
 import cucumber.eclipse.editor.markers.MarkerIds;
 import cucumber.eclipse.editor.markers.MarkerManager;
 import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
+import cucumber.eclipse.editor.steps.IStepProvider;
 import cucumber.eclipse.editor.template.GherkinSampleTemplate;
+import cucumber.eclipse.steps.integration.IStepListener;
+import cucumber.eclipse.steps.integration.StepsChangedEvent;
+import gherkin.lexer.LexingError;
+import gherkin.parser.Parser;
 
-public class Editor extends TextEditor {
+public class Editor extends TextEditor implements IStepListener {
 
 	private ColorManager colorManager;
 	private IEditorInput input;
-
+	private ProjectionSupport projectionSupport;
+	private ProjectionAnnotationModel annotationModel;
+	private Annotation[] oldAnnotations;
+	private GherkinOutlinePage outlinePage;
+	private GherkinModel model;
+	private IStepProvider stepProvider;
+	
 	public Editor() {
 		super();
 		colorManager = new ColorManager();
@@ -76,11 +84,6 @@ public class Editor extends TextEditor {
 
 		return viewer;
 	}
-
-	private ProjectionSupport projectionSupport;
-	private ProjectionAnnotationModel annotationModel;
-	private Annotation[] oldAnnotations;
-	private GherkinOutlinePage outlinePage;
 	
 	/*
 	 * (non-Javadoc)
@@ -108,8 +111,26 @@ public class Editor extends TextEditor {
 			service.activateContext("cucumber.eclipse.editor.featureEditorScope");
 		}
 	}
+
+	/* (non-Javadoc)
+	 * @see cucumber.eclipse.steps.integration.StepListener#onStepsChanged
+	 * (cucumber.eclipse.steps.integration.StepsChangedEvent)
+	 */
+	@Override
+	public void onStepsChanged(StepsChangedEvent event) {
+		validateAndMark();
+	}
+	
+	public GherkinModel getModel() {
+		return model;
+	}
+	
+	public IStepProvider getStepProvider() {
+		return stepProvider;
+	}
 	
 	public void updateGherkinModel(GherkinModel model) {
+		validateAndMark();
 		updateOutline(model.getFeatureElement());
 		updateFoldingStructure(model.getFoldRanges());
 	}
@@ -146,18 +167,21 @@ public class Editor extends TextEditor {
 	protected void doSetInput(IEditorInput newInput) throws CoreException {
 		super.doSetInput(newInput);
 		input = newInput;
-		validateAndMark();
+		model = new GherkinModel();
+		
+		stepProvider = new ExtensionRegistryStepProvider(((IFileEditorInput) newInput).getFile());
+		stepProvider.addStepListener(this);
 	}
 
 	public void dispose() {
 		super.dispose();
-		colorManager.dispose();
-	}
 
-	@Override
-	protected void editorSaved() {
-		super.editorSaved();
-		validateAndMark();
+		colorManager.dispose();
+
+		if (stepProvider != null) {
+			stepProvider.removeStepListener(this);
+			stepProvider = null;
+		}
 	}
 
 	public Object getAdapter(Class required) {
@@ -194,7 +218,7 @@ public class Editor extends TextEditor {
 		IFileEditorInput fileEditorInput = (IFileEditorInput) input;
 		IFile featureFile = fileEditorInput.getFile();
 		MarkerManager markerManager = new MarkerManager();
-		GherkinErrorMarker marker = new GherkinErrorMarker(new ExtensionRegistryStepProvider(), markerManager, featureFile, doc);
+		GherkinErrorMarker marker = new GherkinErrorMarker(stepProvider, markerManager, featureFile, doc);
 		marker.removeExistingMarkers();
 
 		Parser p = new Parser(marker, false);

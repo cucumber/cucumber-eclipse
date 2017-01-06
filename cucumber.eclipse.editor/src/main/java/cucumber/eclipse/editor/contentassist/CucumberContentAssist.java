@@ -14,8 +14,8 @@ import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.swt.graphics.Image;
 
+import cucumber.eclipse.editor.steps.IStepProvider;
 import cucumber.eclipse.steps.integration.Step;
-import cucumber.eclipse.steps.jdt.StepDefinitions;
 import gherkin.I18n;
 
 /**
@@ -84,10 +84,9 @@ public class CucumberContentAssist {
 	private String lang;
 
 	// Initialize
-	public CucumberContentAssist(String lang) {
+	public CucumberContentAssist(String lang, IStepProvider stepProvider) {
 		this.lang = lang;
-		// Collection of all steps
-		importedSteps = StepDefinitions.steps;
+		importedSteps = stepProvider.getStepsInEncompassingProject();
 
 		// Step lists
 		stepDetailList = new ArrayList<String>();

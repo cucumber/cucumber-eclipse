@@ -15,7 +15,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextSelection;
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
@@ -27,7 +26,6 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import cucumber.eclipse.editor.markers.MarkerIds;
 import cucumber.eclipse.editor.markers.MarkerManager;
-import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
 import cucumber.eclipse.steps.integration.Step;
 import gherkin.lexer.LexingError;
 import gherkin.parser.Parser;
@@ -37,18 +35,15 @@ public class PopupMenuFindStepHandler extends AbstractHandler {
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IEditorPart editorPart = HandlerUtil.getActiveEditorChecked(event);
-		IEditorInput input = editorPart.getEditorInput();
 
-		// Editor contents needs to be associated with an eclipse project
-		// for this to work, if not then simply do nothing.
-		if (!(input instanceof IFileEditorInput)) {
+		// Needs to be a gherkin editor for this to work, if not then simply do nothing.
+		if (!(editorPart instanceof Editor)) {
 			return null;
 		}
-		IFile featurefile = ((IFileEditorInput) input).getFile();
-
-		Set<Step> steps = new ExtensionRegistryStepProvider().getStepsInEncompassingProject(featurefile);
 		
-		ITextEditor editor = (ITextEditor) editorPart;
+		Editor editor = (Editor) editorPart;
+		Set<Step> steps = editor.getStepProvider().getStepsInEncompassingProject();
+		
 		IDocumentProvider docProvider = editor.getDocumentProvider();
 		List<String> selectedLineResolvedSteps = resolveSelectedLineStep(editorPart);
 		String language = getDocumentLanguage(docProvider.getDocument(editorPart.getEditorInput()));
