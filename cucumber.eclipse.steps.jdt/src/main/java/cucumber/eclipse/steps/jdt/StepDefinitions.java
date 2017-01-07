@@ -40,17 +40,28 @@ import cucumber.eclipse.steps.integration.IStepListener;
 import cucumber.eclipse.steps.integration.Step;
 import cucumber.eclipse.steps.integration.StepsChangedEvent;
 
-public class StepDefinitions implements IStepDefinitions {
+public final class StepDefinitions implements IStepDefinitions {
 
-    public static StepDefinitions INSTANCE;
-    
-    public StepDefinitions() {
-        INSTANCE = this;
-    }
-    
-    private List<IStepListener> listeners = new ArrayList<IStepListener>();
-    
-	private Pattern cukeAnnotationMatcher = Pattern.compile("cucumber\\.api\\.java\\.([a-z_]+)\\.(.*)$");
+	private static volatile StepDefinitions INSTANCE;
+
+	private List<IStepListener> listeners = new ArrayList<IStepListener>();
+
+	private final Pattern cukeAnnotationMatcher = Pattern.compile("cucumber\\.api\\.java\\.([a-z_]+)\\.(.*)$");
+
+	private StepDefinitions() {
+	}
+
+	public static StepDefinitions getInstance() {
+		if (INSTANCE == null) {
+			synchronized (StepDefinitions.class) {
+				if (INSTANCE == null) {
+					INSTANCE = new StepDefinitions();
+				}
+			}
+		}
+		
+		return INSTANCE;
+	}
 	
 	@Override
 	public void addStepListener(IStepListener listener) {

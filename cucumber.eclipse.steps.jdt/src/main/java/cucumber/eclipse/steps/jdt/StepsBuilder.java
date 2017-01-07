@@ -12,7 +12,7 @@ import cucumber.eclipse.steps.integration.StepsChangedEvent;
 public class StepsBuilder extends IncrementalProjectBuilder {
 
     protected IProject[] build(int kind, Map args, IProgressMonitor monitor) throws CoreException {
-        StepDefinitions defs = StepDefinitions.INSTANCE;
+        StepDefinitions defs = StepDefinitions.getInstance();
         if (defs != null) {
             defs.notifyListeners(new StepsChangedEvent());
         }

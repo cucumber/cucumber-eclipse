@@ -4,7 +4,7 @@
    <extension
          point="cucumber.eclipse.steps.integration">
       <stepDefinitionIntegration
-            class="cucumber.eclipse.steps.jdt.StepDefinitions">
+            class="cucumber.eclipse.steps.jdt.StepDefinitionsFactory">
       </stepDefinitionIntegration>
    </extension>
    <extension 
