@@ -7,6 +7,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.text.edits.TextEdit;
 import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IWorkbench;
@@ -32,11 +33,12 @@ public class SnippetApplicator {
 		try {
 			IStepGenerator generator = generatorProvider.getStepGenerator(stepFile);
 			
-			TextEdit edit = generator.createStepSnippet(stepFile, step);
-
 			ITextEditor editor = openEditor(stepFile);
+			IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
+			
+			TextEdit edit = generator.createStepSnippet(step, document);
 
-			edit.apply(editor.getDocumentProvider().getDocument(editor.getEditorInput()));
+			edit.apply(document);
 		}
 		catch (PartInitException exception) {
 			logException(step, stepFile, exception);
