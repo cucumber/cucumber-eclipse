@@ -6,6 +6,9 @@
       <stepDefinitionIntegration
             class="cucumber.eclipse.steps.jdt.StepDefinitionsFactory">
       </stepDefinitionIntegration>
+      <stepDefinitionIntegration
+            class="cucumber.eclipse.steps.jdt.StepGenerator">
+      </stepDefinitionIntegration>
    </extension>
    <extension 
     id="stepsNature" 

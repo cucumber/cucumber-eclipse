@@ -8,6 +8,8 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.Position;
 import org.junit.Test;
 
+import gherkin.formatter.model.BasicStatement;
+
 public class GherkinModelTest {
 
     @Test
@@ -121,4 +123,22 @@ public class GherkinModelTest {
         assertThat("feature.children[2].children[0].step",
                 feature.getChildren().get(2).getChildren().get(0).isStep(), is(true));
     }
+    
+	@Test
+	public void getStepElementReturnsElement() throws BadLocationException {
+		String source = "Feature: x\n" + "\n"
+				+ "  Scenario: 1\n"
+				+ "    Given y\n" // line 3
+				+ "    And z\n";
+
+		Document document = new Document(source);
+		GherkinModel model = new GherkinModel();
+		model.updateFromDocument(document);
+
+		int stepOffset = source.indexOf("Given");
+		BasicStatement statement = model.getStepElement(stepOffset)
+				.getStatement();
+
+		assertThat(statement.getName(), is("y"));
+	}
 }

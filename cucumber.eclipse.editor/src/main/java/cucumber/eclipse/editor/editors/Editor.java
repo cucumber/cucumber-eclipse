@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
@@ -142,6 +143,10 @@ public class Editor extends TextEditor implements IStepListener {
 		}
 		annotationModel.modifyAnnotations(oldAnnotations, newAnnotations, null);
 		oldAnnotations = newAnnotations.keySet().toArray(new Annotation[0]);
+	}
+	
+	TextSelection getSelection() {
+		return (TextSelection) getSelectionProvider().getSelection();
 	}
 
 	private void updateOutline(PositionedElement featureElement) {

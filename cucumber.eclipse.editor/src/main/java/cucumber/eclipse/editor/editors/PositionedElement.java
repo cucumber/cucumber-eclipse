@@ -17,18 +17,18 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 
-class PositionedElement {
+public class PositionedElement {
 	private BasicStatement statement;
 	private int endOffset = -1;
 	private IDocument document;
 	private List<PositionedElement> children = new ArrayList<PositionedElement>();
 
-	public PositionedElement(IDocument doc, BasicStatement stmt) {
+	PositionedElement(IDocument doc, BasicStatement stmt) {
 		this.statement = stmt;
 		this.document = doc;
 	}
 
-	public void addChild(PositionedElement child) {
+	void addChild(PositionedElement child) {
 		children.add(child);
 	}
 	
@@ -37,7 +37,7 @@ class PositionedElement {
 		return line - 1;
 	}
 
-	public void setEndLine(int lineNo) {
+	void setEndLine(int lineNo) {
 		try {
 			endOffset = document.getLineOffset(getDocumentLine(lineNo))
 					+ document.getLineLength(getDocumentLine(lineNo));
