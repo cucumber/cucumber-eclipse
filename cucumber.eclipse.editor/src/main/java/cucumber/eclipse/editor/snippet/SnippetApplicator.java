@@ -39,6 +39,8 @@ public class SnippetApplicator {
 			TextEdit edit = generator.createStepSnippet(step, document);
 
 			edit.apply(document);
+			
+			editor.selectAndReveal(edit.getRegion().getOffset(), edit.getRegion().getLength());
 		}
 		catch (PartInitException exception) {
 			logException(step, stepFile, exception);
