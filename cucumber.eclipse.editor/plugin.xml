@@ -255,6 +255,11 @@
             verticalRulerPreferenceValue="true">
       </specification>
    </extension>
+   <extension point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator
+         markerType="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror"
+         class="cucumber.eclipse.editor.markers.StepCreationMarkerResolutionGenerator"/>
+   </extension>
     <extension
           point="org.eclipse.ui.contexts">
        <context

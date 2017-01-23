@@ -43,6 +43,16 @@ public class GherkinModel {
 		}
 		return foldRanges;
 	}
+	
+	public PositionedElement getStepElement(int offset) throws BadLocationException {
+		for (PositionedElement element : elements) {
+			if (element.isStep() && element.toPosition().includes(offset)) {
+				return element;
+			}
+		}
+		
+		return null;
+	}
 
 	public void updateFromDocument(final IDocument document) {
 		elements.clear();
