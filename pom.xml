@@ -1,0 +1,90 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<version>0.0.15-SNAPSHOT</version>
+	<groupId>cucumber.eclipse</groupId>
+	<artifactId>parent</artifactId>
+	<packaging>pom</packaging>
+	<name>Cucumber Eclipse Parent</name>
+
+	<properties>
+		<tycho-version>0.22.0</tycho-version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<modules>
+		<module>cucumber.eclipse.editor</module>
+		<module>cucumber.eclipse.editor.test</module>
+		<module>cucumber.eclipse.feature</module>
+		<module>cucumber.eclipse.runner</module>
+		<module>cucumber.eclipse.steps.integration</module>
+		<module>cucumber.eclipse.steps.jdt</module>
+		<module>cucumber.eclipse.p2updatesite</module>
+		<module>cucumber.eclipse.targetdefinition</module>
+	</modules>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<target>
+						<artifact>
+							<groupId>cucumber.eclipse</groupId>
+							<artifactId>cucumber.eclipse.targetdefinition</artifactId>
+							<version>${project.version}</version>
+						</artifact>
+					</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-maven-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<extensions>true</extensions>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-versions-plugin</artifactId>
+				<version>${tycho-version}</version>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-surefire-plugin</artifactId>
+				<version>${tycho-version}</version>				
+				<configuration>
+					<useUIHarness>true</useUIHarness>
+					<includes>
+						<include>**/*Test.java</include>
+					</includes>
+					<forkedProcessTimeoutInSeconds>7200</forkedProcessTimeoutInSeconds>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<profiles>
+		<profile>
+			<id>mac</id>
+			<activation>
+				<os>
+					<family>mac</family>
+				</os>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.eclipse.tycho</groupId>
+						<artifactId>tycho-surefire-plugin</artifactId>
+						<version>${tycho-version}</version>
+						<configuration>
+							<argLine>-XstartOnFirstThread</argLine>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+</project>

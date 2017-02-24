@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension point="org.eclipse.ui.editors">
+      <editor
+            class="cucumber.eclipse.editor.editors.Editor"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            extensions="feature"
+            icon="icons/cukes.gif"
+            id="cucumber.eclipse.editor.editors.Editor"
+            name="Editor">
+      </editor>
+   	</extension>
+   <extension
+         point="org.eclipse.ui.themes">
+        <themeElementCategory label="Gherkin" id="cucumber.eclipse.editor.presentation"/>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_string_colour"
+        	label="String Colour"
+        	value="0,128,0">
+        </colorDefinition>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_comment_colour"
+        	label="Comment Colour"
+        	value="128,0,0">
+        </colorDefinition>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_text_colour"
+        	label="Text Colour"
+        	value="0,0,0">
+        </colorDefinition>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_keyword_colour"
+        	label="Keyword Colour"
+        	value="128,128,0">
+        </colorDefinition>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_placeholder_colour"
+        	label="Placeholder Colour"
+        	value="255,128,0">
+        </colorDefinition>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_step_colour"
+        	label="Step Colour"
+        	value="0,128,128">
+        </colorDefinition>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_tag_colour"
+        	label="Tag Colour"
+        	value="0,128,255">
+        </colorDefinition>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_numeric_literal_colour"
+        	label="Numeric Colour"
+        	value="0,128,0">
+        </colorDefinition>
+     </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            name="Formatter"
+            id="cucumber.eclipse.editor.formmtter">
+      </category>
+      <category 
+            name="findstep"
+            id="cucumber.eclipse.editor.find">
+      </category>     
+      <command
+            categoryId="cucumber.eclipse.editor.formmtter"
+            description="Format"
+            id="cucumber.eclipse.editor.formmater.pretty_formatter"
+            name="Pretty format feature file">
+      </command>
+      <command
+            categoryId="cucumber.eclipse.editor.find"
+            description="Find step"
+            id="cucumber.eclipse.editor.navigation.findstep"
+            name="Find step">
+      </command>
+      <command
+            description="Toggle comment"
+            id="cucumber.eclipse.editor.toggle.comment"
+            name="Toggle comment">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            commandId="cucumber.eclipse.editor.formmater.pretty_formatter"
+            class="cucumber.eclipse.editor.editors.GherkinPrettyFormatHandler">
+      </handler>
+      <handler
+            commandId="cucumber.eclipse.editor.navigation.findstep"
+            class="cucumber.eclipse.editor.editors.PopupMenuFindStepHandler">
+      </handler>
+      <handler
+            class="cucumber.eclipse.editor.editors.GherkinToggleCommentHandler"
+            commandId="cucumber.eclipse.editor.toggle.comment">
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:#CukeEditorContext?before=additions">
+         <command
+               commandId="cucumber.eclipse.editor.formmater.pretty_formatter"
+               helpContextId="cucumber.eclipse.editor.pretty_format_action_context"
+               icon="icons/cukes.gif"
+               label="Pretty Format"
+               style="push">
+         </command>
+         <command
+               commandId="cucumber.eclipse.editor.navigation.findstep"
+               helpContextId="cucumber.eclipse.editor.findsteps_action_context"
+               icon="icons/cukes.gif"
+               label="Find Step"
+               style="push">
+         </command>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="cucumber.eclipse.editor.formmater.pretty_formatter"
+            contextId="cucumber.eclipse.editor.featureEditorScope"
+            sequence="M1+SHIFT+F"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
+      </key>
+      <key
+            commandId="cucumber.eclipse.editor.navigation.findstep"
+            contextId="cucumber.eclipse.editor.featureEditorScope"
+            sequence="F3"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
+      </key>
+      <key
+            commandId="cucumber.eclipse.editor.toggle.comment"
+            contextId="cucumber.eclipse.editor.featureEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+/">
+      </key>
+   </extension>
+   <extension point = "org.eclipse.debug.core.launchConfigurationTypes">
+   <launchConfigurationType
+   	   id="cucumber.eclipse.launching.localCucumberFeature"
+	   name="Cucumber Feature"
+	   delegate="cucumber.eclipse.launching.CucumberFeatureLocalApplicationLaunchConfigurationDelegate"
+	   modes= "run,debug"
+	   >
+   </launchConfigurationType>
+</extension>
+<extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+    <launchConfigurationTypeImage
+        icon="icons/cukes.gif"
+        configTypeID="cucumber.eclipse.launching.localCucumberFeature"
+        id="cucumber.eclipse.launching.launchConfigurationTypeImage.localCucumberFeature">
+    </launchConfigurationTypeImage>
+</extension>
+<extension point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+    <launchConfigurationTabGroup
+        type="cucumber.eclipse.launching.localCucumberFeature"
+        class="cucumber.eclipse.launching.CucumberFeatureTabGroup"
+        id="cucumber.eclipse.launching.launchConfigurationTabGroup.localCucumberFeature">
+    </launchConfigurationTabGroup>
+</extension>
+<extension point="org.eclipse.debug.ui.launchShortcuts">
+    <shortcut
+        id="cucumber.eclipse.launching.featureLaunchShortcut"
+        class="cucumber.eclipse.launching.CucumberFeatureLaunchShortcut"
+        label="Feature"
+        icon="icons/cukes.gif"
+        modes="run, debug">
+        <configurationType
+        id="cucumber.eclipse.launching.localCucumberFeature">
+        </configurationType>
+           <contextualLaunch>
+         <contextLabel mode="run" label="Cucumber Feature" />
+         <contextLabel mode="debug" label="Cucumber Feature" />
+         <enablement >
+           <with variable="selection">
+           <count value="1"/>
+          <iterate>
+            <adapt type="org.eclipse.core.resources.IResource">
+                <and>
+                <test property="org.eclipse.core.resources.name" value="*.feature"/>
+            </and>
+        </adapt>
+          </iterate>
+           </with>
+       </enablement>
+     </contextualLaunch>
+    </shortcut>
+</extension>
+    <extension
+           id="cucumber.eclipse.editor.editors.Editor.syntaxerror"
+           point="org.eclipse.core.resources.markers"
+           name="Gherkin Syntax Error Marker">
+           <super type="org.eclipse.core.resources.problemmarker"/>
+           <super type="org.eclipse.core.resources.textmarker"/>
+           <persistent value="true"/>
+    </extension>
+    <extension
+	    id="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror"
+	    name="Unmatched step"
+	    point="org.eclipse.core.resources.markers">
+	    <super type="org.eclipse.core.resources.problemmarker"/>
+	  <super
+	    type="org.eclipse.core.resources.textmarker">
+	  </super>
+	</extension>
+    <extension
+          id="cucumber.eclipse.editor.editors.Editor.lexingerror"
+          name="Lexing error"
+          point="org.eclipse.core.resources.markers">
+       <super
+             type="org.eclipse.core.resources.problemmarker">
+       </super>
+       <super
+             type="org.eclipse.core.resources.textmarker">
+       </super>
+    </extension>
+    <extension
+	  point="org.eclipse.ui.editors.annotationTypes">
+	  <type
+	        markerType="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror"
+	        name="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror">
+	  </type>
+	</extension>
+   <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror"
+            colorPreferenceKey="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror.color"
+            colorPreferenceValue="247,207,84"
+            contributesToHeader="false"
+            highlightPreferenceKey="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror.highlight"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="true"
+            label="Unmatched step error"
+            overviewRulerPreferenceKey="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror.overview"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="0"
+            textPreferenceKey="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror.text"
+            textPreferenceValue="true"
+            textStylePreferenceValue="BOX"
+            verticalRulerPreferenceKey="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror.ruler"
+            verticalRulerPreferenceValue="true">
+      </specification>
+   </extension>
+   <extension point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator
+         markerType="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror"
+         class="cucumber.eclipse.editor.markers.StepCreationMarkerResolutionGenerator"/>
+   </extension>
+    <extension
+          point="org.eclipse.ui.contexts">
+       <context
+             id="cucumber.eclipse.editor.featureEditorScope"
+             name="Editing Feature"
+             parentId="org.eclipse.ui.contexts.window">
+       </context>
+    </extension>
+	<extension
+		id="cucumber.eclipse.editor.preferences"
+		point="org.eclipse.core.runtime.preferences"
+		name="preferences">
+		<scope
+			name="project"
+			class="org.eclipse.core.internal.resources.ProjectPreferences"/>
+	</extension>
+	<extension
+		point="org.eclipse.core.runtime.preferences">
+		<initializer
+			class="cucumber.eclipse.editor.preferences.CucumberPreferenceInitializer"/>
+	</extension>
+	<extension
+		point="org.eclipse.ui.preferencePages">
+		<page
+			id="cucumber.eclipse.editor.preferences.Page1"
+			class="cucumber.eclipse.editor.preferences.CucumberPreferencePage"
+			name="Cucumber" />
+   </extension>
+ <extension
+       point="org.eclipse.ui.newWizards">
+    <category
+          id="cucumber.eclipse.editor"
+          name="Cucumber">
+    </category>
+    <wizard
+          category="cucumber.eclipse.editor"
+          class="cucumber.eclipse.editor.wizard.NewStepDefFileWizard"
+          icon="icons/cukes.gif"
+          id="cucumber.eclipse.editor.wizard.NewFeatureFileWizard"
+          name="Step-Definition class">
+    </wizard>
+ </extension> 
+</plugin>

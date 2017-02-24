@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension-point id="cucumber.eclipse.steps.integration" name="Cucumber Steps Integration" schema="schema/cucumber.eclipse.steps.integration.exsd"/>
+
+</plugin>
