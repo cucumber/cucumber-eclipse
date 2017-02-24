@@ -50,7 +50,6 @@ class StepMatcher {
 								"(<p>|" + groupMatcher.group(0).substring(1)));
 					}
 				}
-				System.out.println(step.getText());
 				if (step.matches(cukeStep)) {
 					return step;
 				}
