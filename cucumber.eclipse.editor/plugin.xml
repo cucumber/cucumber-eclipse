@@ -134,6 +134,13 @@
                label="Find Step"
                style="push">
          </command>
+         <command
+               commandId="cucumber.eclipse.editor.toggle.recalculate"
+               helpContextId="cucumber.eclipse.editor.recalculate_action_context"
+               icon="icons/cukes.gif"
+               label="Recalculate steps"
+               style="push">
+         </command>         
       </menuContribution>
    </extension>
    <extension
