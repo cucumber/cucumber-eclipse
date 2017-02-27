@@ -29,7 +29,7 @@ class StepMatcher {
 			// first scenario
 			Matcher variableMatcher = variablePattern.matcher(cukeStep);
 			cukeStep = variableMatcher.replaceAll("<p>");
-
+						
 			for (Step step : steps) {
 				// firstly, have to replace all non-parameter matching group
 				// expressions to conform to normal regexp
@@ -50,6 +50,8 @@ class StepMatcher {
 								"(<p>|" + groupMatcher.group(0).substring(1)));
 					}
 				}
+								
+				step.setText(step.getText().replace("\\\\d", "\\d"));
 				if (step.matches(cukeStep)) {
 					return step;
 				}
