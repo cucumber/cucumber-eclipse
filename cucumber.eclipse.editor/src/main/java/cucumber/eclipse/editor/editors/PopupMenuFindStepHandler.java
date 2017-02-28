@@ -27,6 +27,8 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import cucumber.eclipse.editor.markers.MarkerIds;
 import cucumber.eclipse.editor.markers.MarkerManager;
 import cucumber.eclipse.steps.integration.Step;
+import cucumber.eclipse.steps.integration.StepsChangedEvent;
+import cucumber.eclipse.steps.jdt.StepDefinitions;
 import gherkin.lexer.LexingError;
 import gherkin.parser.Parser;
 
@@ -40,6 +42,11 @@ public class PopupMenuFindStepHandler extends AbstractHandler {
 		if (!(editorPart instanceof Editor)) {
 			return null;
 		}
+		
+        StepDefinitions defs = StepDefinitions.getInstance();
+        if (defs != null) {
+            defs.notifyListeners(new StepsChangedEvent());
+        }
 		
 		Editor editor = (Editor) editorPart;
 		Set<Step> steps = editor.getStepProvider().getStepsInEncompassingProject();
