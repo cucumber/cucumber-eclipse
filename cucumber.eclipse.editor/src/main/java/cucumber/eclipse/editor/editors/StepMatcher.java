@@ -43,15 +43,16 @@ class StepMatcher {
 				// for each group match, want to insert <p> as an option
 				// e.g. (\\d+) becomes (<p>|\\d+)
 				// e.g. (two|ten) becomes (<p>|two|ten)
-				if (!step.getText().contains("<p>|")) { 
-					Matcher groupMatcher = groupPattern.matcher(step.getText());
-					while (groupMatcher.find()) {
-						step.setText(step.getText().replace(groupMatcher.group(0),
-								"(<p>|" + groupMatcher.group(0).substring(1)));
-					}
-				}
-								
+//				if (!step.getText().contains("<p>|")) { 
+//					Matcher groupMatcher = groupPattern.matcher(step.getText());
+//					while (groupMatcher.find()) {
+//						step.setText(step.getText().replace(groupMatcher.group(0),
+//								"(<p>|" + groupMatcher.group(0).substring(1)));
+//					}
+//				}
+//								
 				step.setText(step.getText().replace("\\\\d", "\\d"));
+				step.setText(step.getText().replace("\\\"", "\""));
 				if (step.matches(cukeStep)) {
 					return step;
 				}
