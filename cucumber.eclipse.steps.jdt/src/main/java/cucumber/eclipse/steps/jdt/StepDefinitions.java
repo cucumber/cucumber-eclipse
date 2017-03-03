@@ -161,7 +161,7 @@ public final class StepDefinitions implements IStepDefinitions {
 		for (String s : lines) {
 			s = s.trim();
 			count++;
-			if ((s.startsWith("Wenn")) || (s.startsWith("Dann")) || (s.startsWith("Angenommen"))) {
+			if ((s.startsWith("Wenn")) || (s.startsWith("Dann")) || (s.startsWith("Angenommen")) || (s.startsWith("Und"))) {
 				Step step = new Step();
 				step.setSource(method.getResource());
 				int beginIndex = s.indexOf('^');
