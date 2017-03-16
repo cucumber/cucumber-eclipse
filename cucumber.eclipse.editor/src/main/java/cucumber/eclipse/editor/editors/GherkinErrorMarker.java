@@ -39,18 +39,18 @@ public class GherkinErrorMarker implements Formatter {
 	private final IFile file;
 	private final IDocument document;
    
-	private Set<cucumber.eclipse.steps.integration.Step> foundSteps;
+	private Set<cucumber.eclipse.steps.integration.Step> foundSteps = null;
 
 	private boolean inScenarioOutline = false;
 
 	private List<gherkin.formatter.model.Step> scenarioOutlineSteps;
 
-	public GherkinErrorMarker(IStepProvider stepProvider, IMarkerManager markerManager, IFile inputfile,
-			IDocument doc) {
+	public GherkinErrorMarker(IStepProvider stepProvider, IMarkerManager markerManager, IFile inputfile, IDocument doc) 
+	{
 		this.markerManager = markerManager;
 		this.file = inputfile;
 		this.document = doc;
-        foundSteps = stepProvider.getStepsInEncompassingProject();
+        this.foundSteps = stepProvider.getStepsInEncompassingProject();
 	}
 
 	public void removeExistingMarkers() {
@@ -228,7 +228,10 @@ public class GherkinErrorMarker implements Formatter {
 		validateStep(stepLine, null, -1);
 	}
 	
+	
+	
 	public void validateStep(Step stepLine, Map<String, String> examplesLineMap, int currentLine) {
+		
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 		
 		if (store.getBoolean(ICucumberPreferenceConstants.PREF_CHECK_STEP_DEFINITIONS)) {
@@ -244,8 +247,9 @@ public class GherkinErrorMarker implements Formatter {
 			}
 
 			String stepString = getResolvedStepStringForExample(stepLine, examplesLineMap);
-			cucumber.eclipse.steps.integration.Step step = new StepMatcher().matchSteps(getDocumentLanguage(document),
-																						foundSteps, stepString);
+			cucumber.eclipse.steps.integration.Step step = new StepMatcher().matchSteps(getDocumentLanguage(document), foundSteps, stepString);
+			step = new StepMatcher().matchSteps(getDocumentLanguage(document), foundSteps, stepString);
+			
 			if (step == null) {
 				try {
 					markUnmatchedStep(file, document, stepLine, inScenarioOutline ? currentLine : -1);
@@ -254,6 +258,7 @@ public class GherkinErrorMarker implements Formatter {
 				}
 			}
 		}
+		
 	}
 
 	private void markMissingStepName(IFile featureFile, IDocument doc, gherkin.formatter.model.Step stepLine)

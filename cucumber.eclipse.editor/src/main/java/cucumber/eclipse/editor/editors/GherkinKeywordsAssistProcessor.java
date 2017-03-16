@@ -55,7 +55,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 			I18n i18n = new I18n(lang);
 
 			//Initialize CucumberContentAssist
-			contentAssist = new CucumberContentAssist(lang, editor.getStepProvider());
+			this.contentAssist = new CucumberContentAssist(lang, editor.getStepProvider());
 			
 			// line of cursor locate,and from begin to cursor.
 			IRegion line = viewer.getDocument().getLineInformationOfOffset(offset);
@@ -66,7 +66,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 
 			// Capture any Existing Step
 			String preStep = viewer.getDocument().get(line.getOffset(), line.getLength()).replaceAll(contentAssist.STARTSWITH_ANYSPACE, "");
-			preStep = contentAssist.lastPrefix(preStep);
+			preStep = this.contentAssist.lastPrefix(preStep);
 			//System.out.println("PRE-STEP =" + preStep);
 			
 			// Create an ArrayList instance for collecting the generated
@@ -75,7 +75,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 			
 			// Fetch All key words and remove Junk words
 			List<String> keywordList = allKeywords(i18n); 
-			List<String> junks = contentAssist.getJunkList();
+			List<String> junks = this.contentAssist.getJunkList();
 			// System.out.println("junks :" +junks);
 			
 			// Remove junk words from Keyword-List
@@ -85,7 +85,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 			//To display proposals for any char/string is typed
 			if (typed.length() > 0) 
 			{
-				//1. Check Typed=<Keyword> OR Typed=AnyWord
+				//1. To Check Typed=<Keyword> OR Typed=AnyWord
 				//POPULATE KEYWORD ASSISTANCE
 				if (typed.matches(contentAssist.KEYWORD_REGEX)) 
 				{
@@ -97,7 +97,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 					}
 				}
 
-				//2.Check Typed = <Keyword any-words>
+				//2.To Check Typed = <Keyword any-words>
 				//POPULATE STEP ASSISTANCE
 				if (typed.matches(contentAssist.KEYWORD_SPACE_WORD_REGEX)) 
 				{
@@ -180,8 +180,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 				}
 			}
 
-			return (ICompletionProposal[]) result
-					.toArray(new ICompletionProposal[result.size()]);
+			return (ICompletionProposal[]) result.toArray(new ICompletionProposal[result.size()]);
 
 		} catch (Exception e) {
 			// ... log the exception ...
