@@ -21,7 +21,6 @@ public class RecalculateStepsHandler extends AbstractHandler {
 		}
 		
         StepDefinitions defs = StepDefinitions.getInstance();
-        defs.removeStepListeners();
         if (defs != null) {
             defs.notifyListeners(new StepsChangedEvent());
         }
