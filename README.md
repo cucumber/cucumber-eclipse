@@ -38,6 +38,7 @@ The full option list can be found at [CucumberOptions](https://github.com/cucumb
 Screenshots and Features of the plugin
 ======================================
 Please consult the [wiki](https://github.com/cucumber/cucumber-eclipse/wiki) for a full list for currently available features and screenshots.
+- eg [Reusing Of Step-Definitions From External Class-Path Dependencies(JAR/POM...etc)](https://github.com/cucumber/cucumber-eclipse/wiki/Reusing-Of-Step-Definitions-From-External-Class-Path-Dependencies(JAR-POM...etc))
 - eg [Syntax Highlighting](https://github.com/cucumber/cucumber-eclipse/wiki/I18n-Syntax-highlighting)
 - eg [Content Assistance for feature file](https://github.com/cucumber/cucumber-eclipse/wiki/Content-Assistance-for-feature-file)
 - eg [New Step-Definition File Wizard](https://github.com/cucumber/cucumber-eclipse/wiki/New-Step-Definition-File-Wizard)
