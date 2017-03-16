@@ -28,7 +28,7 @@ public class ExtensionRegistryStepProvider implements IStepProvider, IStepListen
 	}
 
 	public void addStepListener(IStepListener listener) {
-		for (IStepDefinitions stepDef : stepDefinitions) {
+		for (IStepDefinitions stepDef : stepDefinitions) {			
 			stepDef.addStepListener(listener);
 		}
 	}

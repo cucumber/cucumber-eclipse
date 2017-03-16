@@ -62,6 +62,13 @@ public final class StepDefinitions implements IStepDefinitions {
 
 		return INSTANCE;
 	}
+	
+	
+
+	@Override
+	public void removeStepListeners() {
+		listeners.clear();		
+	}
 
 	@Override
 	public void addStepListener(IStepListener listener) {

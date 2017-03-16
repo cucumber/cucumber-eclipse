@@ -11,4 +11,6 @@ public interface IStepDefinitions {
     Set<Step> getSteps(IFile featurefile);
 
     void removeStepListener(IStepListener listener);
+    
+    void removeStepListeners();
 }
