@@ -41,8 +41,8 @@ public class NewStepDefFileWizard extends Wizard implements INewWizard {
 	private static final String CUCUMBER_PACKAGE = "import cucumber.api.java.en.";
 	
 	private static final String ANNOTATION_START = "  @" ;
-	private static final String ANNOTATION_CONTENT_START = "(^you are in ";
-	private static final String ANNOTATION_CONTENT_END = " annotation$)";
+	private static final String ANNOTATION_CONTENT_START = "(\"^you are in ";
+	private static final String ANNOTATION_CONTENT_END = " annotation$\")";
 	
 	private static final String METHOD_START = "  public void ";
 	private static final String METHOD_SIGNATURE = "() ";
