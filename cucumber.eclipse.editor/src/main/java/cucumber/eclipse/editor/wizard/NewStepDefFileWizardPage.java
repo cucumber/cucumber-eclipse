@@ -214,13 +214,24 @@ public class NewStepDefFileWizardPage extends WizardPage {
 					return;
 				}
 			}
-			if (!(sourceText.endsWith("/src/main/java") 
-					|| sourceText.endsWith("/src/test/java")) )
-			{
-				//System.out.println("ProjectTextPath:" +sourceText);
-				updateStatus("Source Folder Must Contain '/src/main/java' or '/src/test/java'");		
-				return;
-			}	
+			if(System.getProperty("os.name").toLowerCase().contains("windows")){
+				if (!(sourceText.endsWith("\\src\\main\\java") 
+						|| sourceText.endsWith("\\src\\test\\java")) )
+				{
+					//System.out.println("ProjectTextPath:" +sourceText);
+					updateStatus("Source Folder Must Contain '\\src\\main\\java' or '\\src\\test\\java'");		
+					return;
+				}	
+			}else{
+				if (!(sourceText.endsWith("/src/main/java") 
+						|| sourceText.endsWith("/src/test/java")) )
+				{
+					//System.out.println("ProjectTextPath:" +sourceText);
+					updateStatus("Source Folder Must Contain '/src/main/java' or '/src/test/java'");		
+					return;
+				}	
+			}
+			
 		}catch(Exception ex){
 			updateStatus("Source Folder is not a Java project.");		
 			return;
