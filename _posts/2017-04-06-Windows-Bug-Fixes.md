@@ -6,10 +6,10 @@ Version: 0.0.17.201704062133
 Windows Bug Fixes
 ---
 ### Description :
-* This update fixes some nusiance issues when running eclipse on windows
-* Specifically
+* This update fixes some nuisance issues when running Eclipse on Windows
+* Specifically -
     * Windows users had to change the auto generated path when using the step definition file wizard
-* It also fixes an issue where quotes were not 
+* It also fixes an issue where quotes were not being properly generated in step definitions samples from wizard
 
 ### How To Use This Feature :
 * Build and Bundle your required project into JAR/Maven-Dependency having Step-Definition files
