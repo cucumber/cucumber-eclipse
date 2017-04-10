@@ -12,10 +12,15 @@ import org.eclipse.jface.text.*;
 
 public class GherkinKeywordScanner extends RuleBasedScanner {
 		
+    // TODO 1: Change to retrieve a list of Keywords from the .json file, depending on selected i18n language
     private static final List<String> FEATURE_ELEMENT_KEYWORD_KEYS = Arrays.asList("scenario_outline","feature", "background", "scenario", "examples");
     private static final List<String> STEP_KEYWORD_KEYS = Arrays.asList("given", "when", "then", "and", "but");
+    
     private static I18n i18n;   
+    
+    // TODO 2: Change to retrieve language from parsed .feature file, 
     private static String _code = "en";
+    
     private ColorManager manager;
 	
 	public GherkinKeywordScanner(ColorManager manager) {
