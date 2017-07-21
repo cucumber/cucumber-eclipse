@@ -559,6 +559,18 @@ public class PrettyFormatter implements Reporter, Formatter {
     private static String escapeTripleQuotes(String s) {
         return TRIPLE_QUOTES.matcher(s).replaceAll(ESCAPED_TRIPLE_QUOTES);
     }
+
+	@Override
+	public void endOfScenarioLifeCycle(Scenario arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void startOfScenarioLifeCycle(Scenario arg0) {
+		// TODO Auto-generated method stub
+		
+	}
 }
 
 class MatchResultPair {
