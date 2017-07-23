@@ -10,8 +10,8 @@ Require-Bundle: org.eclipse.core.runtime,
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ClassPath: .,
- META-INF/lib/cucumber-core-1.2.2.jar,
- META-INF/lib/gherkin-2.11.6.jar 
+ META-INF/lib/cucumber-core-1.2.5.jar,
+ META-INF/lib/gherkin-2.12.2.jar
 Export-Package: cucumber.eclipse.steps.integration,
  cucumber.runtime,
  cucumber.runtime.io,

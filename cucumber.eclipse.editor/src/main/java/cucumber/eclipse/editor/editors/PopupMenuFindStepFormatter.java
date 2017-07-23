@@ -97,4 +97,16 @@ public class PopupMenuFindStepFormatter implements Formatter {
 	public List<String> getResolvedStepNames() {
 		return resolvedStepNames;
 	}
+
+	@Override
+	public void endOfScenarioLifeCycle(Scenario arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void startOfScenarioLifeCycle(Scenario arg0) {
+		// TODO Auto-generated method stub
+		
+	}
 }
