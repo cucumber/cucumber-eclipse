@@ -309,14 +309,14 @@
  </extension> 
  
  <!-- Newly added  By Girija
- 	  Redefining 'StepDefinitions' class in 'cucumber.eclipse.editor.steps.jdt'.
+ 	  Defining 'JDTStepDefinitions' class by inheriting 'cucumber.eclipse.editor.steps.jdt.StepDefinitions' class .
  	  Used for the feature : 'Reading Step-Definitions from external JAR'
  	  Commented in 'cucumber.eclipse.steps.jdt/plugin.xml' in order to avoid plugin-dependency conflicts
  -->
  <extension
          point="cucumber.eclipse.steps.integration">
       <stepDefinitionIntegration
-            class="cucumber.eclipse.editor.steps.jdt.StepDefinitions">
+            class="cucumber.eclipse.editor.steps.jdt.JDTStepDefinitions">
       </stepDefinitionIntegration>
   </extension>
  
