@@ -40,15 +40,25 @@ import cucumber.eclipse.steps.integration.IStepListener;
 import cucumber.eclipse.steps.integration.Step;
 import cucumber.eclipse.steps.integration.StepsChangedEvent;
 
-public final class StepDefinitions implements IStepDefinitions {
+/*
+ * Modified for Issue #211 : Duplicate Step definitions
+ * Inheriting this class in cucumber.eclipse.editor.steps.jdt.JDTStepDefinitions child class
+ * 
+ */
 
-	private static volatile StepDefinitions INSTANCE;
+//Commented for Issue #211 : Duplicate Step definitions
+//public class StepDefinitions implements IStepDefinitions {
 
-	private List<IStepListener> listeners = new ArrayList<IStepListener>();
+public class StepDefinitions {
+	
+	public static volatile StepDefinitions INSTANCE;
+	
+	public List<IStepListener> listeners = new ArrayList<IStepListener>();
 
-	private final Pattern cukeAnnotationMatcher = Pattern.compile("cucumber\\.api\\.java\\.([a-z_]+)\\.(.*)$");
-
-	private StepDefinitions() {
+	public final Pattern cukeAnnotationMatcher = Pattern.compile("cucumber\\.api\\.java\\.([a-z_]+)\\.(.*)$");
+	
+	public StepDefinitions() {
+	
 	}
 
 	public static StepDefinitions getInstance() {
@@ -63,14 +73,17 @@ public final class StepDefinitions implements IStepDefinitions {
 		return INSTANCE;
 	}
 	
-	@Override
-	public void addStepListener(IStepListener listener) {
-	    this.listeners.add(listener);
-	}
 	
+	
+	/*Commented due to Issue #211 : Duplicate Step definitions
+	 * Redefined in cucumber.eclipse.editor.steps.jdt.JDTStepDefinitions child class
+	 */
 	//1. To get Steps as Set from java file
-	@Override
+	/*@Override
 	public Set<Step> getSteps(IFile featurefile) {
+		
+		System.out.println("Load StepDefinitions:getSteps()....In package : cucumber.eclipse.steps.jdt");
+
 		
 		Set<Step> steps = new LinkedHashSet<Step>();
 		
@@ -81,14 +94,12 @@ public final class StepDefinitions implements IStepDefinitions {
 			{				
 				IJavaProject javaProject = JavaCore.create(project);
 				
-				List<IJavaProject> projectsToScan = new ArrayList<IJavaProject>();
-				
-				projectsToScan.add(javaProject);
-				
+				//Issue #211 : Duplicate Step definitions
+				List<IJavaProject> projectsToScan = new ArrayList<IJavaProject>();				
+				projectsToScan.add(javaProject);				
 				projectsToScan.addAll(getRequiredJavaProjects(javaProject));
 				
-				for (IJavaProject currentJavaProject: projectsToScan) {
-				
+				for (IJavaProject currentJavaProject: projectsToScan) {				
 					scanJavaProjectForStepDefinitions(currentJavaProject, steps);
 				}
 			}
@@ -97,20 +108,12 @@ public final class StepDefinitions implements IStepDefinitions {
 		} 
 		
 		return steps;
-	}
+	}*/
 	
-	public void removeStepListener(IStepListener listener) {
-	    this.listeners.remove(listener);
-	}
 	
-	public void notifyListeners(StepsChangedEvent event) {
-        for (IStepListener listener : listeners) {
-            listener.onStepsChanged(event);
-        }
-    }	
-	
+
 	// 2. Get Step as List of Cucumber-Annotation from java file
-	private List<Step> getCukeAnnotations(IJavaProject javaProject, ICompilationUnit compUnit)
+	public List<Step> getCukeAnnotations(IJavaProject javaProject, ICompilationUnit compUnit)
 			throws JavaModelException, CoreException {
 		
 		List<Step> steps = new ArrayList<Step>();	
@@ -151,7 +154,7 @@ public final class StepDefinitions implements IStepDefinitions {
 	}
 	
 	
-	private int getLineNumber(ICompilationUnit compUnit, IAnnotation annotation) throws JavaModelException {
+	public int getLineNumber(ICompilationUnit compUnit, IAnnotation annotation) throws JavaModelException {
 		Document document = new Document(compUnit.getBuffer().getContents()); 
 		
 		try {
@@ -162,7 +165,7 @@ public final class StepDefinitions implements IStepDefinitions {
 	}
 	
 	
-	private  List<CucumberAnnotation> getAllAnnotationsInPackage(final IJavaProject javaProject, final String packageFrag, final String lang) throws CoreException, JavaModelException {
+	public  List<CucumberAnnotation> getAllAnnotationsInPackage(final IJavaProject javaProject, final String packageFrag, final String lang) throws CoreException, JavaModelException {
 
 		SearchPattern pattern = SearchPattern.createPattern(packageFrag, IJavaSearchConstants.PACKAGE , IJavaSearchConstants.DECLARATIONS, SearchPattern.R_EXACT_MATCH);
 		IJavaSearchScope scope = SearchEngine.createJavaSearchScope(javaProject.getPackageFragments());
@@ -193,7 +196,7 @@ public final class StepDefinitions implements IStepDefinitions {
 	}
 	
 	
-	private CucumberAnnotation getCukeAnnotation(List<CucumberAnnotation> importedAnnotations,
+	public CucumberAnnotation getCukeAnnotation(List<CucumberAnnotation> importedAnnotations,
 			IAnnotation annotation) throws JavaModelException {
 		
 		Matcher m = cukeAnnotationMatcher.matcher(annotation.getElementName());
@@ -207,7 +210,7 @@ public final class StepDefinitions implements IStepDefinitions {
 	}
 
 	
-	private String getAnnotationText(IAnnotation annotation) throws JavaModelException {
+	public String getAnnotationText(IAnnotation annotation) throws JavaModelException {
 		for (IMemberValuePair mvp :  annotation.getMemberValuePairs()) {
 			if (mvp.getValueKind() == IMemberValuePair.K_STRING) {
 				return (String) mvp.getValue();
@@ -215,6 +218,10 @@ public final class StepDefinitions implements IStepDefinitions {
 		}
 		return "";
 	}
+	
+	
+	
+	
 	
 	public static List<IJavaProject> getRequiredJavaProjects(IJavaProject javaProject) throws CoreException {
 		
@@ -234,7 +241,7 @@ public final class StepDefinitions implements IStepDefinitions {
 		return requiredProjects;
 	}
 
-	private void scanJavaProjectForStepDefinitions(IJavaProject projectToScan, Collection<Step> collectedSteps)
+	public void scanJavaProjectForStepDefinitions(IJavaProject projectToScan, Collection<Step> collectedSteps)
 			throws JavaModelException, CoreException {
 		
 		IPackageFragment[] packages = projectToScan.getPackageFragments();
@@ -249,4 +256,25 @@ public final class StepDefinitions implements IStepDefinitions {
 			}
 		}
 	}
+	
+	
+	/*Commented due to Issue #211 : Duplicate Step definitions
+	 * Redefined in 'cucumber.eclipse.editor.steps.jdt.JDTStepDefinitions' child class
+	 */
+	/*@Override
+	public void addStepListener(IStepListener listener) {
+	    this.listeners.add(listener);
+	}*/
+	
+	/*public void removeStepListener(IStepListener listener) {
+	    this.listeners.remove(listener);
+	}*/
+	
+	public void notifyListeners(StepsChangedEvent event) {
+        for (IStepListener listener : listeners) {
+            listener.onStepsChanged(event);
+        }
+    }
+
+	
 }

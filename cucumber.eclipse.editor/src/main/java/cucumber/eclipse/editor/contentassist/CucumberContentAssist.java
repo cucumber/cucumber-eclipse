@@ -64,6 +64,9 @@ public class CucumberContentAssist {
 	// Regex-8 : Word starts with any Word/Digit/NonWord/Space
 	public final String KEYWORD_SPACE_REGEX = "^(Given|When|Then|And|But)\\s+";
 
+	// Regex-9 : Any Word/Digit/NonWord/Space
+	public final String ANY = "[\\w\\d\\S][\\,]*";
+	
 	public final String COMMA_SPACE_REGEX = "(\\,|\\s$)+";
 
 	// Integer
@@ -96,6 +99,8 @@ public class CucumberContentAssist {
 		this.lang = lang;
 		this.importedSteps = stepProvider.getStepsInEncompassingProject();
 
+		//System.out.println("CucumberContentAssist:importedSteps:" +importedSteps);
+		
 		// Step lists
 		this.stepDetailList = new ArrayList<String>();
 		this.matchedStepList = new ArrayList<String>();
@@ -107,6 +112,8 @@ public class CucumberContentAssist {
 		return stepKeywords;
 	}
 
+	
+	
 	// Iterate and collect all step proposals from Both Source and JAR
 	public void collectAllSteps(String matchPrefix) {
 
@@ -134,13 +141,19 @@ public class CucumberContentAssist {
 					stepSource = getSourceName(step.getSource().toString()); // Source
 					lineNumber = step.getLineNumber() + ""; // Line-Number
 					stepDetailInfo = stepText + " : " + stepSource + ":" + lineNumber;
+					
+					// Don't Delete : Used For Debug
+					//System.out.println("CucumberContentAssist:STEP-TEXT:"+stepText);
 				}
 
 				// Collect Steps from external JAR(.class) file
 				else {
-					stepSource = getSourceName(step.getSourceName());
-					packageName = step.getPackageName();
-					stepDetailInfo = stepText + " : " + stepSource + ":" + packageName;
+						stepSource = getSourceName(step.getSourceName());
+						packageName = step.getPackageName();
+						stepDetailInfo = stepText + " : " + stepSource + ":" + packageName;	
+						
+						// Don't Delete : Used For Debug
+						//System.out.println("collectAllSteps:ELSE:stepDetailInfo:" +stepDetailInfo);
 				}
 
 				// Don't Delete : Used For Debug
@@ -153,9 +166,18 @@ public class CucumberContentAssist {
 				 * (!matchPrefix.matches(ENDSWITH_ANYSPACE))) {
 				 * matchedStepList.add(stepDetailInfo); }
 				 */
-				if (stepText.startsWith(matchPrefix)
-						&& matchPrefix.matches(STARTS_ANY)) {
-					this.matchedStepList.add(stepDetailInfo);
+				
+				//For starts-with prefix
+				if (stepText.startsWith(matchPrefix) &&
+						matchPrefix.matches(STARTS_ANY)) 
+				{
+					 this.matchedStepList.add(stepDetailInfo);
+				}
+				
+				//For contains prefix
+				else if (stepText.contains(matchPrefix) ) 
+				{				
+					this.matchedStepList.add(stepDetailInfo);	
 				}
 
 				// Collect all steps
@@ -185,8 +207,10 @@ public class CucumberContentAssist {
 			lineNumber = stepDetail.substring(stepDetail.lastIndexOf(":") + 1).trim();
 			stepDetails = "Step : " + stepText + 
 						  "\nSource : " + stepSource + 
-						  "\nLine Number : " + lineNumber;
+						  "\nLine Number : " + lineNumber;			
+			//System.out.println("importStepProposals:IF:stepDetails:" +stepDetails);
 		}
+		
 		// Steps from External-JAR(.class) file
 		else if (stepSource.endsWith(".class")) {
 
@@ -201,17 +225,33 @@ public class CucumberContentAssist {
 		// System.out.println("PREFIX ="+prefix);
 		// if(!prefix.startsWith(" ")) {
 
+		//For replace entire prefix
 		if (preStep.length() > prefix.length()) {
 			// Don't Delete : Used For Debug
-			// System.out.println("IF : PREFIX =" + prefix);
-			// System.out.println("IF : PRESTEP =" + preStep);
-			// System.out.println("IF : OFFSET =" + offset);
+			//System.out.println("IF : PREFIX =" + prefix);
+			//System.out.println("IF : PRESTEP =" + preStep);
+			//System.out.println("IF : OFFSET =" + offset);
 			allStepsProposal = new CompletionProposal(getUserStep(stepText),offset - prefix.length(), preStep.length(), stepText.length(), ICON, stepWithSource, null, stepDetails);
-		} else {
+		
+		} 
+		
+		//For starts-with and contains prefix based on offset
+		else 
+		{
 			// Don't Delete : Used For Debug
-			// System.out.println("IF ELSE : PREFIX =" + prefix);
-			// System.out.println("IF ELSE : PRESTEP =" + preStep);
-			allStepsProposal = new CompletionProposal(getUserStep(stepText).replace(prefix, ""), offset, 0, stepText.length(), ICON, stepWithSource, null, stepDetails);
+			//System.out.println("ELSE : PREFIX =" + prefix);
+			//System.out.println("ELSE : PRESTEP =" + preStep);
+			//System.out.println("ELSE : OFFSET =" + offset);			
+			if(stepText.startsWith(prefix)){
+				// Don't Delete : Used For Debug
+				//System.out.println("ELSE IF startsWith : PREFIX =" + prefix);	
+				allStepsProposal = new CompletionProposal(getUserStep(stepText).replace(prefix, ""), offset, 0, stepText.length(), ICON, stepWithSource, null, stepDetails);
+			}
+			else if(stepText.contains(prefix)){
+				// Don't Delete : Used For Debug
+				//System.out.println("ELSE IF ELSE IF contains : PREFIX =" + prefix);	
+				allStepsProposal = new CompletionProposal(getUserStep(stepText),offset - prefix.length(), preStep.length(), stepText.length(), ICON, stepWithSource, null, stepDetails);
+			}
 		}
 
 		result.add(allStepsProposal);
@@ -235,8 +275,7 @@ public class CucumberContentAssist {
 
 	// Get exact step
 	public static String getStepName(String myStep) {
-		myStep = myStep.replaceAll(START_OR_END, "");
-		
+		myStep = myStep.replaceAll(START_OR_END, "");	
 		return myStep;
 	}
 

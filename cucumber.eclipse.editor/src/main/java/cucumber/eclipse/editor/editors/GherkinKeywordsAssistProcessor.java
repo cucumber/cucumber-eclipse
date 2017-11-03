@@ -89,6 +89,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 				//POPULATE KEYWORD ASSISTANCE
 				if (typed.matches(contentAssist.KEYWORD_REGEX)) 
 				{
+					  // Don't Delete : Used For Debug
 					 //System.out.println("IF-1:Inside ...");
 					// To display only Step-Keywords
 					for (String string : contentAssist.getStepKeyWords()) {
@@ -104,7 +105,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 					//System.out.println("IF-2:Inside ...");
 				
 					String lastPrefix = contentAssist.lastPrefix(typed);
-					//System.out.println("LAST-PREFIX =" +lastPrefix);
+					//System.out.println("LAST-PREFIX = " +lastPrefix);
 					
 					//Collect all steps with 
 					contentAssist.collectAllSteps(lastPrefix);
@@ -113,6 +114,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 					List<String> stepDetailList = contentAssist.importAllStepList();
 					List<String> matchedStepList = contentAssist.importMatchedStepList();
 					
+					 // Don't Delete : Used For Debug
 					//System.out.println("stepDetailList = " +stepDetailList);
 					//System.out.println("matchedStepList = " +matchedStepList);					
 					
@@ -120,6 +122,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 					if( matchedStepList.isEmpty() &&
 							stepDetailList.isEmpty())
 					{
+						 // Don't Delete : Used For Debug
 						//System.out.println("NO PROPOSAL-1***************");
 						contentAssist.displayNoProposal(offset, ICON, result);
 					}
@@ -127,13 +130,21 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 					//2. Proposal For Non-Empty Matched-Step-List
 					else if(!matchedStepList.isEmpty())
 					{
+						 // Don't Delete : Used For Debug
 						//System.out.println("matchedStepList NOT EMPTY......");
 						for(String step : matchedStepList)
 						{							
-							//Matched Step proposal
+							//For starts-with Step proposal 
 							if(step.startsWith(lastPrefix))
 							{	
-								//Populate all matched steps
+								//Populate all matched starts-with steps
+								contentAssist.importStepProposals(lastPrefix, preStep, offset, ICON, step, result);							
+							}
+							
+							//For contains Step proposal
+							else if(step.contains(lastPrefix))
+							{							 
+								//Populate all matched contains steps
 								contentAssist.importStepProposals(lastPrefix, preStep, offset, ICON, step, result);							
 							}
 						}
@@ -143,6 +154,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 					else if( lastPrefix.matches(contentAssist.STARTS_ANY) && 
 							 matchedStepList.isEmpty() )
 					{
+						 // Don't Delete : Used For Debug
 						//System.out.println("NO PROPOSAL-2***************");
 						contentAssist.displayNoProposal(offset, ICON, result);
 					}
@@ -151,9 +163,11 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 					else if(lastPrefix.matches(contentAssist.COMMA_SPACE_REGEX) |
 							!stepDetailList.isEmpty())
 					{
+						 // Don't Delete : Used For Debug
 						//System.out.println("stepDetailList NOT EMPTY......");
 						for(String step : stepDetailList)
-						{							
+						{	
+							 // Don't Delete : Used For Debug
 							//System.out.println("stepDetailList ###########");
 							//Populate all step proposal
 							contentAssist.importStepProposals(lastPrefix, preStep, offset, ICON, step, result);
@@ -163,6 +177,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 					//5. No Match No Proposal
 					else
 					{
+						 // Don't Delete : Used For Debug
 						//System.out.println("NO PROPOSAL-3***************");
 						contentAssist.displayNoProposal(offset, ICON, result);
 					}
@@ -172,6 +187,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 			//New Line starts with blank
 			else 
 			{
+				// Don't Delete : Used For Debug
 				//System.out.println("ELSE.... ");
 				// Populate all Keywords
 				for (String string : keywordList) {
@@ -181,7 +197,6 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 			}
 
 			return (ICompletionProposal[]) result.toArray(new ICompletionProposal[result.size()]);
-
 		} catch (Exception e) {
 			// ... log the exception ...
 			return NO_COMPLETIONS;
