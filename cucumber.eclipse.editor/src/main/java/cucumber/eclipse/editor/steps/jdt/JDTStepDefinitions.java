@@ -78,7 +78,7 @@ public class JDTStepDefinitions extends StepDefinitions implements IStepDefiniti
 	@Override
 	public Set<Step> getSteps(IFile featurefile) {
 
-		System.out.println("Load JDTStepDefinitions:getSteps()....In package : cucumber.eclipse.editor.steps.jdt");
+		//System.out.println("Load JDTStepDefinitions:getSteps()....In package : cucumber.eclipse.editor.steps.jdt");
 
 		// Commented By Girija to use LinkedHashSet
 		// Set<Step> steps = new HashSet<Step>();
@@ -141,7 +141,7 @@ public class JDTStepDefinitions extends StepDefinitions implements IStepDefiniti
 			e.printStackTrace();
 		}
 
-		System.out.println("JDTStepDefinitions:STEPS = " + steps);
+		//System.out.println("JDTStepDefinitions:STEPS = " + steps);
 		return steps;
 	}
 
