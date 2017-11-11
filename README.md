@@ -1,9 +1,16 @@
 # Cucumber-Eclipse
 
-Eclipse plugin for [Cucumber](http://cukes.info).
+An Eclipse plugin for [Cucumber](http://cukes.info).
 
-Installation and further information
-====================================
+
+## Eclipse-Market Place Details
+
+![Eclipse-Market Place](https://github.com/cucumber/cucumber-eclipse/blob/gh-pages/images/EclipseMarketPPlace.png)
+
+- Available in [Eclipse-Market](https://marketplace.eclipse.org/content/cucumber-eclipse-plugin) place.
+- Please refer our [Eclipse-Market-Wiki](https://github.com/cucumber/cucumber-eclipse/wiki/Eclipse-Market-Place-For-Cucumber-Eclipse-Plugin) page for detail information.
+
+## Installation and further information
 
 Please head over to the [plugin website](http://cucumber.github.com/cucumber-eclipse) for more information.
 
@@ -35,16 +42,15 @@ Another alternative is to use Cucumber-Eclipse for editing feature files and get
 
 The full option list can be found at [CucumberOptions](https://github.com/cucumber/cucumber-jvm/blob/master/core/src/main/java/cucumber/api/CucumberOptions.java)
 
-Screenshots and Features of the plugin
-======================================
+## Screenshots and Features of the plugin
+
 Please consult the [wiki](https://github.com/cucumber/cucumber-eclipse/wiki) for a full list for currently available features and screenshots.
 - eg [Reusing Of Step-Definitions From External Class-Path Dependencies(JAR/POM...etc)](https://github.com/cucumber/cucumber-eclipse/wiki/Reusing-Of-Step-Definitions-From-External-Class-Path-Dependencies(JAR-POM...etc))
 - eg [Syntax Highlighting](https://github.com/cucumber/cucumber-eclipse/wiki/I18n-Syntax-highlighting)
 - eg [Content Assistance for feature file](https://github.com/cucumber/cucumber-eclipse/wiki/Content-Assistance-for-feature-file)
 - eg [New Step-Definition File Wizard](https://github.com/cucumber/cucumber-eclipse/wiki/New-Step-Definition-File-Wizard)
 
-Build and install from source
-=============================
+## Build and install from source
 
 To use the latest features, you can choose to build and install from source.
 
@@ -53,8 +59,7 @@ To use the latest features, you can choose to build and install from source.
 - Point to the update-site built in step 1: <code>file:path_to_repo/cucumber.eclipse.p2updatesite/target/repository</code>
 - Proceed to install like any other plug-in
 
-How soon will my ticket be fixed?
-=================================
+## How soon will my ticket be fixed?
 
 The best way to have a bug fixed or feature request implemented is to
 to fork the cucumber-eclipse repository and send a
