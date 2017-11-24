@@ -10,6 +10,14 @@ An Eclipse plugin for [Cucumber](http://cukes.info).
 - Available in [Eclipse-Market](https://marketplace.eclipse.org/content/cucumber-eclipse-plugin) place.
 - Please refer our [Eclipse-Market-Wiki](https://github.com/cucumber/cucumber-eclipse/wiki/Eclipse-Market-Place-For-Cucumber-Eclipse-Plugin) page for detail information.
 
+## Download the plugin
+![Download-Plugin](https://github.com/cucumber/cucumber-eclipse/blob/gh-pages/images/Download.png)
+- Please [Download-Plugin-Zip](https://github.com/cucumber/cucumber-eclipse/tree/master/cucumber.eclipse.download/download) from the latest version directory.
+- Plugin is available as Zip and downloaded from the below directory : 
+```gherkin
+ cucumber.eclipse.download\download\{latest-version}\cucumber-eclipse-plugin-{version}.zip
+```
+
 ## Installation and further information
 
 Please head over to the [plugin website](http://cucumber.github.com/cucumber-eclipse) for more information.
@@ -45,10 +53,10 @@ The full option list can be found at [CucumberOptions](https://github.com/cucumb
 ## Screenshots and Features of the plugin
 
 Please consult the [wiki](https://github.com/cucumber/cucumber-eclipse/wiki) for a full list for currently available features and screenshots.
-- eg [Reusing Of Step-Definitions From External Class-Path Dependencies(JAR/POM...etc)](https://github.com/cucumber/cucumber-eclipse/wiki/Reusing-Of-Step-Definitions-From-External-Class-Path-Dependencies(JAR-POM...etc))
-- eg [Syntax Highlighting](https://github.com/cucumber/cucumber-eclipse/wiki/I18n-Syntax-highlighting)
-- eg [Content Assistance for feature file](https://github.com/cucumber/cucumber-eclipse/wiki/Content-Assistance-for-feature-file)
-- eg [New Step-Definition File Wizard](https://github.com/cucumber/cucumber-eclipse/wiki/New-Step-Definition-File-Wizard)
+- [Reusing Of Step-Definitions From External Class-Path Dependencies(JAR/POM...etc)](https://github.com/cucumber/cucumber-eclipse/wiki/Reusing-Of-Step-Definitions-From-External-Class-Path-Dependencies(JAR-POM...etc))
+- [Syntax Highlighting](https://github.com/cucumber/cucumber-eclipse/wiki/I18n-Syntax-highlighting)
+- [Content Assistance For Feature File](https://github.com/cucumber/cucumber-eclipse/wiki/Content-Assistance-for-feature-file)
+- [New Step-Definition File Wizard](https://github.com/cucumber/cucumber-eclipse/wiki/New-Step-Definition-File-Wizard)
 
 ## Build and install from source
 
