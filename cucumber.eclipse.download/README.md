@@ -8,7 +8,7 @@
 ```gherkin
  cucumber.eclipse.download\download\{latest-version}\cucumber-eclipse-plugin-{version}.zip
 ```
-* Exanple :
+* Example :
 ```gherkin
- cucumber.eclipse.download\download\0.0.18-SNAPSHOT\cucumber-eclipse-plugin-0.0.18-SNAPSHOT.zip
+ cucumber.eclipse.download\download\0.0.19-SNAPSHOT\cucumber-eclipse-plugin-0.0.19-SNAPSHOT.zip
 ```
