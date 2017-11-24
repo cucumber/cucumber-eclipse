@@ -17,6 +17,7 @@ An Eclipse plugin for [Cucumber](http://cukes.info).
 ```gherkin
  cucumber.eclipse.download\download\{latest-version}\cucumber-eclipse-plugin-{version}.zip
 ```
+- Please refer our [Plugin-Download/Installation-Wiki](https://github.com/cucumber/cucumber-eclipse/wiki/Download-and-Install-Plugin-From-Zip) for detail information
 
 ## Installation and further information
 
