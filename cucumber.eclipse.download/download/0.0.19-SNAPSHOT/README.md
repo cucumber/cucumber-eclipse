@@ -8,7 +8,3 @@
 ```gherkin
  cucumber.eclipse.download\download\0.0.19-SNAPSHOT\cucumber-eclipse-plugin-0.0.19-SNAPSHOT.zip
 ```
-* Exanple :
-```gherkin
- cucumber.eclipse.download\download\0.0.19-SNAPSHOT\cucumber-eclipse-plugin-0.0.19-SNAPSHOT.zip
-```
