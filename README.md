@@ -2,13 +2,12 @@
 
 An Eclipse plugin for [Cucumber](http://cukes.info).
 
+## Eclipse-Marketplace Details
 
-## Eclipse-Market Place Details
+![Eclipse-Marketplace](https://github.com/cucumber/cucumber-eclipse/blob/gh-pages/images/EclipseMarketPPlace.png)
 
-![Eclipse-Market Place](https://github.com/cucumber/cucumber-eclipse/blob/gh-pages/images/EclipseMarketPPlace.png)
-
-- Available in [Eclipse-Market](https://marketplace.eclipse.org/content/cucumber-eclipse-plugin) place.
-- Please refer our [Eclipse-Market-Wiki](https://github.com/cucumber/cucumber-eclipse/wiki/Eclipse-Market-Place-For-Cucumber-Eclipse-Plugin) page for detail information.
+- Available in [Eclipse-Marketplace](https://marketplace.eclipse.org/content/cucumber-eclipse-plugin).
+- Please refer our [Eclipse-Marketplace-Wiki](https://github.com/cucumber/cucumber-eclipse/wiki/Eclipse-Market-Place-For-Cucumber-Eclipse-Plugin) page for detail information.
 
 ## Download the plugin
 ![Download-Plugin](https://github.com/cucumber/cucumber-eclipse/blob/gh-pages/images/Download.png)
@@ -21,13 +20,13 @@ An Eclipse plugin for [Cucumber](http://cukes.info).
 
 ## Installation and further information
 
-Please head over to the [plugin website](http://cucumber.github.com/cucumber-eclipse) for more information.
+- Please head over to the [plugin website](http://cucumber.github.com/cucumber-eclipse) for more information.
 
-After you install the Cucumber-Eclipse plugin, you can use it to run Cucumber-JVM. To do this, you will need to install all the libraries you want to use for Cucumber-JVM into your Eclipse project's build-path libraries. The likely candidates and their locations are in the download target at the [cucumber-java-skeleton](https://github.com/cucumber/cucumber-java-skeleton/blob/master/build.xml) example at GitHub.
+- After you install the Cucumber-Eclipse plugin, you can use it to run Cucumber-JVM. To do this, you will need to install all the libraries you want to use for Cucumber-JVM into your Eclipse project's build-path libraries. The likely candidates and their locations are in the download target at the [cucumber-java-skeleton](https://github.com/cucumber/cucumber-java-skeleton/blob/master/build.xml) example at GitHub.
 
-Create a new feature file by selecting New => File from the menu and naming it with a ".feature" suffix to bring up the Feature Editor. After typing in the Gherkin code for a test, select Run => Run to invoke Cucumber-JVM on that feature. This will also create a run configuration, which you can modify and rename by selecting Run => Run Configurarations.... Tags are not available in Cucumber-Eclipse, but you can organize your features into directories and select the Feature Path that you want the run configuration to use. You can execute run configurations from the Run => Run History menu.
+- Create a new feature file from Eclipse by selecting New => File from the menu and naming it with a ".feature" suffix to bring up the Feature Editor. After typing in the Gherkin code for a test, select Run => Run to invoke Cucumber-JVM on that feature. This will also create a run configuration, which you can modify and rename by selecting Run => Run Configurarations.... Tags are not available in Cucumber-Eclipse, but you can organize your features into directories and select the Feature Path that you want the run configuration to use. You can execute run configurations from the Run => Run History menu.
 
-Another alternative is to use Cucumber-Eclipse for editing feature files and getting the generated step-definition stubs, but then running a Junit file with a @RunWith(cucumber.class) annotation similar to the cucumber-java-skeleton [RunCukesTest.java](https://github.com/cucumber/cucumber-java-skeleton/blob/master/src/test/java/skeleton/RunCukesTest.java). The @CucumberOptions most useful are
+- Another alternative is to use Cucumber-Eclipse for editing feature files and getting the generated step-definition stubs, but then running a Junit file with a @RunWith(cucumber.class) annotation similar to the cucumber-java-skeleton [RunCukesTest.java](https://github.com/cucumber/cucumber-java-skeleton/blob/master/src/test/java/skeleton/RunCukesTest.java). The @CucumberOptions most useful are
 
 * Run the feature or all features below the directory
   ```gherkin
@@ -49,15 +48,17 @@ Another alternative is to use Cucumber-Eclipse for editing feature files and get
   glue = "my_feature_steps/dir"
   ```
 
-The full option list can be found at [CucumberOptions](https://github.com/cucumber/cucumber-jvm/blob/master/core/src/main/java/cucumber/api/CucumberOptions.java)
+The full option list can be found at [Cucumber-Options](https://github.com/cucumber/cucumber-jvm/blob/master/core/src/main/java/cucumber/api/CucumberOptions.java)
 
 ## Screenshots and Features of the plugin
+Please consult our [Wiki](https://github.com/cucumber/cucumber-eclipse/wiki) for a full list of available features with screenshots.
 
-Please consult the [wiki](https://github.com/cucumber/cucumber-eclipse/wiki) for a full list for currently available features and screenshots.
+### Highlighted Features :
 - [Reusing Of Step-Definitions From External Class-Path Dependencies(JAR/POM...etc)](https://github.com/cucumber/cucumber-eclipse/wiki/Reusing-Of-Step-Definitions-From-External-Class-Path-Dependencies(JAR-POM...etc))
-- [Syntax Highlighting](https://github.com/cucumber/cucumber-eclipse/wiki/I18n-Syntax-highlighting)
 - [Content Assistance For Feature File](https://github.com/cucumber/cucumber-eclipse/wiki/Content-Assistance-for-feature-file)
+- [Syntax Highlighting](https://github.com/cucumber/cucumber-eclipse/wiki/I18n-Syntax-highlighting)
 - [New Step-Definition File Wizard](https://github.com/cucumber/cucumber-eclipse/wiki/New-Step-Definition-File-Wizard)
+
 
 ## Build and install from source
 
