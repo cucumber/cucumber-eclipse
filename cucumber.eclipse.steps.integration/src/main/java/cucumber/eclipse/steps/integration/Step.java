@@ -17,6 +17,8 @@ public class Step {
 	private String sourceName;
 	private String packageName;
 	
+	//private String java8CukeSource;
+	
 	public String getText() {
 		return text;
 	}
@@ -30,6 +32,7 @@ public class Step {
 	public void setSource(IResource source) {
 		this.source = source;
 	}
+	
 	public int getLineNumber() {
 		return lineNumber;
 	}
@@ -47,6 +50,17 @@ public class Step {
 	public void setLang(String lang) {
 		this.lang = lang;
 	}
+	
+	
+	/*//For Java8-Cuke-Step-Definition file
+	public void setJava8CukeSource(String java8CukeSource) {
+		this.java8CukeSource = java8CukeSource;
+	}
+	
+	public String getJava8CukeSource() {
+		return java8CukeSource;
+	}*/
+	
 	
 	
 	
@@ -78,8 +92,8 @@ public class Step {
 		
 		//For Steps from Current-Project
 		if(lineNumber != 0)
-			return "Step [text=" + text + ", source=" + source + ", lineNumber="+ lineNumber +"]";
-		
+				return "Step [text=" + text + ", source=" + source + ", lineNumber="+ lineNumber +"]";
+			
 		//For Steps From External-ClassPath JAR
 		else		
 			return "Step [text=" + text + ", source=" + sourceName+", package="+ packageName +"]";
