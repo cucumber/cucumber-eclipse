@@ -2,10 +2,10 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Cucumber Editor Test
 Bundle-SymbolicName: cucumber.eclipse.editor.test
-Bundle-Version: 0.0.19.qualifier
+Bundle-Version: 0.0.20.qualifier
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Fragment-Host: cucumber.eclipse.editor
-Require-Bundle: org.junit4;bundle-version="4.0.0",
- org.mockito;bundle-version="1.9.5",
- org.hamcrest;bundle-version="1.1.0"
+Require-Bundle: org.junit,
+ org.mockito;resolution:=optional,
+ org.hamcrest;resolution:=optional
