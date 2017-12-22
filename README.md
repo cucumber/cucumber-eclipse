@@ -54,6 +54,7 @@ The full option list can be found at [Cucumber-Options](https://github.com/cucum
 Please consult our [Wiki](https://github.com/cucumber/cucumber-eclipse/wiki) for a full list of available features with screenshots.
 
 ### Highlighted Features :
+-[Lambda Expression support for Cucumber-Java8](https://github.com/cucumber/cucumber-eclipse/wiki/Lambda-Expression-support-for-Cucumber-Java8)
 - [Reusing Of Step-Definitions From External Class-Path Dependencies(JAR/POM...etc)](https://github.com/cucumber/cucumber-eclipse/wiki/Reusing-Of-Step-Definitions-From-External-Class-Path-Dependencies(JAR-POM...etc))
 - [Content Assistance For Feature File](https://github.com/cucumber/cucumber-eclipse/wiki/Content-Assistance-for-feature-file)
 - [Syntax Highlighting](https://github.com/cucumber/cucumber-eclipse/wiki/I18n-Syntax-highlighting)
