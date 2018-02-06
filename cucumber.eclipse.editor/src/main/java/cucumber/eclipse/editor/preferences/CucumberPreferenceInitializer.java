@@ -5,8 +5,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 
 import cucumber.eclipse.editor.Activator;
 
-public class CucumberPreferenceInitializer extends
-AbstractPreferenceInitializer {
+public class CucumberPreferenceInitializer extends AbstractPreferenceInitializer {
 
 	@Override
 	public void initializeDefaultPreferences() {
