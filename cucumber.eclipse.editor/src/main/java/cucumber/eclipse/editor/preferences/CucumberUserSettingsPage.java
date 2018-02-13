@@ -136,14 +136,15 @@ public class CucumberUserSettingsPage extends PreferencePage
 		return image;
 	}
 
-	
-	
 	// Get Package Name
 	public String getPackageName() {
 		IPreferenceStore store = getPreferenceStore();
-		String myPackage = store.getString(ICucumberPreferenceConstants.PREF_ADD_PACKAGE);
-		//System.out.println("My Package = " + myPackage);
-		return myPackage;		
+		return store.getString(ICucumberPreferenceConstants.PREF_ADD_PACKAGE);
+	}
+
+	public Boolean getOnlyPackages() {
+		IPreferenceStore store = getPreferenceStore();
+		return store.getBoolean(ICucumberPreferenceConstants.PREF_ONLY_SEARCH_PACKAGE);
 	}
 	
 	public static String getString(String key) {

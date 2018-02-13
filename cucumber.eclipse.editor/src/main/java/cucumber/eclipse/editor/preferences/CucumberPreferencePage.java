@@ -21,7 +21,7 @@ public class CucumberPreferencePage extends FieldEditorPreferencePage implements
 		super(FLAT);
 		setPreferenceStore(Activator.getDefault().getPreferenceStore());
 	}
-	
+
 	@Override
 	protected void createFieldEditors() {
 
@@ -32,24 +32,28 @@ public class CucumberPreferencePage extends FieldEditorPreferencePage implements
 		label.setImage(getImage("icons/cukes.gif"));
 
 		addField(new BooleanFieldEditor(
-			ICucumberPreferenceConstants.PREF_CHECK_STEP_DEFINITIONS,
-			getString("&Match Steps with Java Step code"), parent));
+				ICucumberPreferenceConstants.PREF_CHECK_STEP_DEFINITIONS,
+				getString("&Match Steps with Java Step code"), parent));
+
+		addField(new BooleanFieldEditor(
+				ICucumberPreferenceConstants.PREF_ONLY_SEARCH_PACKAGE,
+				getString("&Only match steps from package and sub-packages"), parent));
 
 		label = new CLabel(parent, SWT.NULL);
 		label.setText(getString("Gherkin Formatting"));
 		label.setImage(getImage("icons/cukes.gif"));
-		
-		addField(new BooleanFieldEditor(
-			ICucumberPreferenceConstants.PREF_FORMAT_RIGHT_ALIGN_NUMERIC_VALUES_IN_TABLES,
-			getString("&Right-align numeric values in tables"), parent));
-		
-		addField(new BooleanFieldEditor(
-			ICucumberPreferenceConstants.PREF_FORMAT_CENTER_STEPS,
-			getString("&Center Steps"), parent));
 
 		addField(new BooleanFieldEditor(
-			ICucumberPreferenceConstants.PREF_FORMAT_PRESERVE_BLANK_LINE_BETWEEN_STEPS,
-			getString("&Preserve blank lines between steps"), parent));
+				ICucumberPreferenceConstants.PREF_FORMAT_RIGHT_ALIGN_NUMERIC_VALUES_IN_TABLES,
+				getString("&Right-align numeric values in tables"), parent));
+
+		addField(new BooleanFieldEditor(
+				ICucumberPreferenceConstants.PREF_FORMAT_CENTER_STEPS,
+				getString("&Center Steps"), parent));
+
+		addField(new BooleanFieldEditor(
+				ICucumberPreferenceConstants.PREF_FORMAT_PRESERVE_BLANK_LINE_BETWEEN_STEPS,
+				getString("&Preserve blank lines between steps"), parent));
 
 	}
 

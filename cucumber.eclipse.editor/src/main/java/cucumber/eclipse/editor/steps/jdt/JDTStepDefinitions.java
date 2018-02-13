@@ -39,9 +39,7 @@ public class JDTStepDefinitions extends StepDefinitions implements IStepDefiniti
 	// To Collect all Steps as Set for ContentAssistance
 	public static Set<Step> steps = null;
 
-	// Read package name from 'User-Settings' preference
-	private String externalPackageName = null;
-	private CucumberUserSettingsPage userSettingsPage = null;
+	private CucumberUserSettingsPage userSettingsPage = new CucumberUserSettingsPage();
 
 	
 	// 1. To get Steps as Set from both Java-Source and JAR file
@@ -55,6 +53,8 @@ public class JDTStepDefinitions extends StepDefinitions implements IStepDefiniti
 		steps = new LinkedHashSet<Step>();
 		IProject project = featurefile.getProject();
 
+		String featurefilePackage = featurefile.getParent().getFullPath().toString();
+
 		try {
 
 			if (project.isNatureEnabled(JAVA_PROJECT)) {
@@ -63,11 +63,13 @@ public class JDTStepDefinitions extends StepDefinitions implements IStepDefiniti
 				IPackageFragment[] packages = javaProject.getPackageFragments();
 
 				// Get Package name
-				this.externalPackageName = readExternalPackage();
+				final String externalPackageName = this.userSettingsPage.getPackageName();
+				final boolean onlyPackages = this.userSettingsPage.getOnlyPackages();
+
 				for (IPackageFragment javaPackage : packages) {
 
 					// Get Packages from source folder of current project
-					if ((javaPackage.getKind() == JAVA_SOURCE)) {
+					if ((javaPackage.getKind() == JAVA_SOURCE && (!onlyPackages || featurefilePackage.startsWith(javaPackage.getPath().toString())))) {
 						// System.out.println("Package Name-1 :"+javaPackage.getElementName());
 
 						// Collect All Steps From Source
@@ -76,11 +78,11 @@ public class JDTStepDefinitions extends StepDefinitions implements IStepDefiniti
 
 					
 					// Get Packages from JAR exists in class-path
-					if ((javaPackage.getKind() == JAVA_JAR_BINARY) && !this.externalPackageName.equals("")) {
+					if ((javaPackage.getKind() == JAVA_JAR_BINARY) && !externalPackageName.equals("")) {
 
 						// Check package from external JAR/class file
-						if (javaPackage.getElementName().equals(this.externalPackageName)
-								|| javaPackage.getElementName().startsWith(this.externalPackageName)) {
+						if (javaPackage.getElementName().equals(externalPackageName)
+								|| javaPackage.getElementName().startsWith(externalPackageName)) {
 							// Collect All Steps From JAR
 							collectCukeStepsFromJar(javaPackage, steps);
 						}
@@ -126,19 +128,6 @@ public class JDTStepDefinitions extends StepDefinitions implements IStepDefiniti
 		}
 	}
 
-	/**
-	 * Read Package Name From 'User-Settings' 
-	 * page of Cucumber-Preference Page
-	 * 
-	 * @return String
-	 * 
-	 */
-	private String readExternalPackage() {
-		this.userSettingsPage = new CucumberUserSettingsPage();
-		String myPackageName = this.userSettingsPage.getPackageName();
-		return myPackageName;
-	}
-	
 	@Override
 	public void addStepListener(IStepListener listener) {
 		this.listeners.add(listener);
