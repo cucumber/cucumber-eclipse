@@ -62,7 +62,7 @@ public class StepDefinitions extends MethodDefinition {
 	private List<MethodDefinition> methodDefList = null;
 	private List<MethodDeclaration> methodDeclList = null;
 
-	public List<IStepListener> listeners = new ArrayList<IStepListener>();
+	protected static List<IStepListener> listeners = new ArrayList<IStepListener>();
 
 	public StepDefinitions() {
 

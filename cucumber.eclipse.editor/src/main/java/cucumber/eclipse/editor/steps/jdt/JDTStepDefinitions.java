@@ -130,12 +130,12 @@ public class JDTStepDefinitions extends StepDefinitions implements IStepDefiniti
 
 	@Override
 	public void addStepListener(IStepListener listener) {
-		this.listeners.add(listener);
+		StepDefinitions.listeners.add(listener);
 	}
 
 	@Override
 	public void removeStepListener(IStepListener listener) {
-		this.listeners.remove(listener);
+		StepDefinitions.listeners.remove(listener);
 	}
 
 	public void notifyListeners(StepsChangedEvent event) {
