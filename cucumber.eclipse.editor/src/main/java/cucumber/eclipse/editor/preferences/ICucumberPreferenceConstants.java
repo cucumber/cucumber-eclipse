@@ -15,10 +15,14 @@ public interface ICucumberPreferenceConstants {
 			_PREFIX + "format_preserve_blank_line_between_steps"; //$NON-NLS-1$
 	public static final String PREF_CHECK_STEP_DEFINITIONS =
 			_PREFIX + "check_step_definitions"; //$NON-NLS-1$
+	
+	//#239:Only match step implementation in same package as feature file
 	public static final String PREF_ONLY_SEARCH_PACKAGE =
 			_PREFIX + "only_search_package"; //$NON-NLS-1$
-
+	
 	// Newly Declared By Girija for User-Settings Cucumber Preference Page
 	public static final String PREF_ADD_PACKAGE =
-			_PREFIX + "add_package"; //$NON-NLS-1$
+    		_PREFIX + "add_package"; //$NON-NLS-1$
+	
+	
 }

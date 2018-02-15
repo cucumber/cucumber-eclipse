@@ -41,6 +41,12 @@ public class MethodDefinition extends JavaParser {
 	private static final String START_QUOTE = "\"";
 	private static final String END_QUOTE_COMMA_PARENTHESIS = "\",(";
 
+	private static final String DOUBLE_BACKSLASH = "\\\\";
+	private static final String SINGLE_BACKSLASH = "\\";
+	
+	private static final String BEFORE = "Before(";
+	private static final String AFTER = "After(";
+	
 	private List<Statement> methodBodyList = new ArrayList<Statement>();
 	private String methodBody;
 	private String lang;
@@ -97,14 +103,19 @@ public class MethodDefinition extends JavaParser {
 	}
 
 	/**
-	 * Get Method Body And Line-Number
+	 * Filter Before() and After() And
+	 * Get Method Body of Lambda-Expressions
+	 * And collect Line-Number
 	 * 
 	 * @param statement
 	 * @return
 	 */
 	public String getBodyStatement(Statement statement) {
-		this.methodBody = statement.toString();
-		this.lineNumber = getLineNumber(statement);
+		if(!statement.toString().startsWith(BEFORE) && !statement.toString().startsWith(AFTER)){
+			this.methodBody = statement.toString();
+			this.lineNumber = getLineNumber(statement);	
+		}
+		
 		return methodBody;
 	}
 
@@ -121,17 +132,21 @@ public class MethodDefinition extends JavaParser {
 	 */
 	public String getLambdaStep(String lambdaExpr) {
 
-		String lambdaStep = lambdaExpr.trim();
-		if (lambdaStep.matches(STARTSWITH_KEYWORD_PARENTHESIS)) {
+		String lambdaStep = lambdaExpr.trim();		
+		if (lambdaStep.matches(STARTSWITH_KEYWORD_PARENTHESIS)) {	
+					
 			Matcher matcher = lambdaPattern.matcher(lambdaStep);
 			while (matcher.find()) {
 				String junkStep = matcher.group(0);
 				if (junkStep.startsWith(START_QUOTE) && junkStep.endsWith(END_QUOTE_COMMA_PARENTHESIS)) {
 					lambdaStep = junkStep.substring(1, junkStep.lastIndexOf(END_QUOTE_COMMA_PARENTHESIS));
-					lambdaStep = lambdaStep.trim();
+					//Replace Double-Slashes to Single-Slash
+					lambdaStep = lambdaStep.replace(DOUBLE_BACKSLASH, SINGLE_BACKSLASH);
+					lambdaStep = lambdaStep.trim();	
 				}
-			}
+			}	
 		}
+		//System.out.println("MethodDefinition:getLambdaStep():LAMBDA-STEP ="+lambdaStep);		
 		return lambdaStep;
 	}
 
