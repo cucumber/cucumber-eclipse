@@ -59,9 +59,14 @@ public class StepDefinitions extends MethodDefinition {
 	public int JAVA_SOURCE = IPackageFragmentRoot.K_SOURCE;
 	public int JAVA_JAR_BINARY = IPackageFragmentRoot.K_BINARY;
 
+	public String COMMA = ",";
+	
 	private List<MethodDefinition> methodDefList = null;
 	private List<MethodDeclaration> methodDeclList = null;
 
+	//public List<IStepListener> listeners = new ArrayList<IStepListener>();
+	
+	//#240:For Changes in step implementation is reflected in feature file
 	protected static List<IStepListener> listeners = new ArrayList<IStepListener>();
 
 	public StepDefinitions() {
@@ -191,10 +196,14 @@ public class StepDefinitions extends MethodDefinition {
 					// Add all lambda-steps to Step
 					Step step = new Step();
 					step.setSource(method.getSource(iCompUnit));	//source
-					step.setText(method.getLambdaStep(method.getBodyStatement(statement)));	//step
-					step.setLineNumber(method.getCukeLineNumber());	//line-number
-					step.setLang(method.getCukeLang());	//Language
-					steps.add(step);
+					//if(!method.getBodyStatement(statement).startsWith("Before(") && !method.getBodyStatement(statement).startsWith("After")){
+						step.setText(method.getLambdaStep(method.getBodyStatement(statement)));	//step
+						step.setLineNumber(method.getCukeLineNumber());	//line-number
+						step.setLang(method.getCukeLang());	//Language
+						steps.add(step);
+					//}
+					
+					
 				}
 			}
 		}

@@ -5,7 +5,8 @@ import org.eclipse.jface.preference.IPreferenceStore;
 
 import cucumber.eclipse.editor.Activator;
 
-public class CucumberPreferenceInitializer extends AbstractPreferenceInitializer {
+public class CucumberPreferenceInitializer extends
+		AbstractPreferenceInitializer {
 
 	@Override
 	public void initializeDefaultPreferences() {
@@ -14,6 +15,8 @@ public class CucumberPreferenceInitializer extends AbstractPreferenceInitializer
 		store.setDefault(ICucumberPreferenceConstants.PREF_FORMAT_RIGHT_ALIGN_NUMERIC_VALUES_IN_TABLES, true);
 		store.setDefault(ICucumberPreferenceConstants.PREF_FORMAT_PRESERVE_BLANK_LINE_BETWEEN_STEPS, false);
 		store.setDefault(ICucumberPreferenceConstants.PREF_FORMAT_CENTER_STEPS, false);
+		
+		//#239:Only match step implementation in same package as feature file
 		store.setDefault(ICucumberPreferenceConstants.PREF_ONLY_SEARCH_PACKAGE, false);
 	}
 

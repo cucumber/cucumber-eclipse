@@ -68,14 +68,15 @@ public class CucumberContentAssist {
 
 	public final String COMMA_SPACE_REGEX = "(\\,|\\s$)+";
 
-	// Integer
-	public final String INTEGER = "(\\d+)";
+	// Integer RegEx: (\d+)OR(\\d+)
+	//public final static String INTEGER_REGEX = "\\(\\d\\+\\)|\\(\\\\d\\+\\)";
+	public final static String INTEGER = "(\\d+)";
 	// Real Number
-	public final String REAL_NUMBER = "(\\d+\\.\\d+)";
+	public final static String REAL_NUMBER = "(\\d+\\.\\d+)";
 	// Text
-	public final String TEXT = "([\"]*)";
+	public final static String TEXT = "([\"]*)";
 	// Any Text
-	public final String ANY_TEXT = "(.*?)";
+	public final static String ANY_TEXT = "(.*?)";
 	// Start Or End
 	public final static String START_OR_END = "^\\^|\\$$";
 
@@ -321,6 +322,7 @@ public class CucumberContentAssist {
 		stepText = stepText.replace(TEXT, "{text}");
 		stepText = stepText.replace(ANY_TEXT, "{any-text}");
 		stepText = stepText.replaceAll(START_OR_END, "");
+		//System.out.println("stepText = " +stepText);
 		return stepText;
 	}
 
