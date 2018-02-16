@@ -84,8 +84,8 @@ public class JDTStepDefinitions extends StepDefinitions implements IStepDefiniti
 						// Iterate all external packages
 						for (String extPackageName : extPackages) {
 							// Check package from external JAR/class file
-							if (javaPackage.getElementName().equals(extPackageName)
-									|| javaPackage.getElementName().startsWith(extPackageName)) {
+							if (javaPackage.getElementName().equals(extPackageName.trim())
+									|| javaPackage.getElementName().startsWith(extPackageName.trim())) {
 								// Collect All Steps From JAR
 								collectCukeStepsFromJar(javaPackage, steps);
 							}

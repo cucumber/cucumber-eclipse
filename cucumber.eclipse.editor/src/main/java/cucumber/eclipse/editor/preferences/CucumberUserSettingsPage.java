@@ -56,7 +56,7 @@ public class CucumberUserSettingsPage extends PreferencePage implements IWorkben
 
 	// Detail Label
 	private Label exampleLabel = null;
-	private String exampleLabelName = "...(e.g. com.proj1.bdd,org.proj2.bdd,...etc)";
+	private String exampleLabelName = "...(e.g. com.proj1.bdd, org.proj2.bdd,...etc)";
 
 	public CucumberUserSettingsPage() {
 		// setTitle(description);
