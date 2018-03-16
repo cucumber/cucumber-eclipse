@@ -40,10 +40,10 @@ public class CucumberContentAssist {
 	// RegEx1 : (Line starts with only a <Step-keyword>[without <space> or
 	// <word>]) OR
 	// (Line doesn't starts with a <Step-keyword>)
-	public final String KEYWORD_REGEX = "(^Given|When|Then|And|But|$[\\S\\W\\D])|(^(?!Given|When|Then|And|But).+)";
+//	public final String KEYWORD_REGEX = "(^Given|When|Then|And|But|$[\\S\\W\\D])|(^(?!Given|When|Then|And|But).+)";
 
 	// RegEx2 : Line starts with <Step-Keyword>+<space>+<any-word>
-	public final String KEYWORD_SPACE_WORD_REGEX = "^(Given|When|Then|And|But)[\\s][\\w\\d\\s\\S]*";
+//	public final String KEYWORD_SPACE_WORD_REGEX = "^(Given|When|Then|And|But)[\\s][\\w\\d\\s\\S]*";
 
 	// RegEx-3 : starts with space
 	public final String STARTSWITH_ANYSPACE = "^\\s+";
@@ -61,7 +61,7 @@ public class CucumberContentAssist {
 	public final String STARTS_ANY = "^[\\w\\d\\S][^\\,]*";
 
 	// Regex-8 : Word starts with any Word/Digit/NonWord/Space
-	public final String KEYWORD_SPACE_REGEX = "^(Given|When|Then|And|But)\\s+";
+//	public final String KEYWORD_SPACE_REGEX = "^(Given|When|Then|And|But)\\s+";
 
 	// Regex-9 : Any Word/Digit/NonWord/Space
 	public final String ANY = "[\\w\\d\\S][\\,]*";
@@ -91,12 +91,8 @@ public class CucumberContentAssist {
 	CompletionProposal matchedStepsProposal = null;
 	private Set<Step> importedSteps = null;
 
-	// For I18n language
-	private String lang = null;
-
 	// Initialize
 	public CucumberContentAssist(String lang, IStepProvider stepProvider) {
-		this.lang = lang;
 		this.importedSteps = stepProvider.getStepsInEncompassingProject();
 
 		// System.out.println("CucumberContentAssist:importedSteps:"
@@ -107,8 +103,8 @@ public class CucumberContentAssist {
 		this.matchedStepList = new ArrayList<String>();
 	}
 
-	public List<String> getStepKeyWords() {
-		List<String> stepKeywords = new I18n(lang).getStepKeywords();
+	public List<String> getStepKeyWords(I18n i18n) {
+		List<String> stepKeywords = i18n.getStepKeywords();
 		stepKeywords.removeAll(asList(junkWords));
 		return stepKeywords;
 	}
@@ -306,8 +302,17 @@ public class CucumberContentAssist {
 	}
 
 	// Get Last word of a String by replacing KEYWORD
-	public String lastPrefix(String string) {
-		String lastStep = string.replaceFirst(KEYWORD_SPACE_REGEX, "");
+	public String lastPrefix(String string, List<String> keywords) {
+		String longestMatch = null;
+		for (String keyword : keywords) {
+			if (string.startsWith(keyword)) {
+				if (longestMatch == null || keyword.length()>longestMatch.length()) {
+					longestMatch = keyword;
+				}
+			}
+		}
+		//replace the keyword
+		String lastStep = longestMatch!=null?string.substring(longestMatch.length()):string;
 		if (lastStep.contains(","))
 			lastStep = lastStep.substring(lastStep.lastIndexOf(",") + 1).trim();
 		return lastStep;
