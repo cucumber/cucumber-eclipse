@@ -6,6 +6,7 @@ import java.util.Set;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
@@ -43,7 +44,7 @@ public class JDTStepDefinitions extends StepDefinitions implements IStepDefiniti
 	
 	// 1. To get Steps as Set from both Java-Source and JAR file
 	@Override
-	public Set<Step> getSteps(IFile featurefile) {
+	public Set<Step> getSteps(IFile featurefile, IProgressMonitor progressMonitor) {
 
 		// Commented By Girija to use LinkedHashSet Instead of HashSet
 		// Set<Step> steps = new HashSet<Step>();
@@ -76,7 +77,7 @@ public class JDTStepDefinitions extends StepDefinitions implements IStepDefiniti
 						// System.out.println("Package Name-1
 						// :"+javaPackage.getElementName());
 						// Collect All Steps From Source
-						collectCukeStepsFromSource(javaProject, javaPackage, steps);
+						collectCukeStepsFromSource(javaProject, javaPackage, steps, progressMonitor);
 					}
 
 					// Get Packages from JAR exists in class-path
@@ -105,15 +106,16 @@ public class JDTStepDefinitions extends StepDefinitions implements IStepDefiniti
 	 * @param javaProject
 	 * @param javaPackage
 	 * @param steps
+	 * @param progressMonitor 
 	 * @throws JavaModelException
 	 * @throws CoreException
 	 */
-	public void collectCukeStepsFromSource(IJavaProject javaProject, IPackageFragment javaPackage, Set<Step> steps)
+	public void collectCukeStepsFromSource(IJavaProject javaProject, IPackageFragment javaPackage, Set<Step> steps, IProgressMonitor progressMonitor)
 			throws JavaModelException, CoreException {
 
 		for (ICompilationUnit iCompUnit : javaPackage.getCompilationUnits()) {
 			// Collect and add Steps
-			steps.addAll(getCukeSteps(javaProject, iCompUnit));
+			steps.addAll(getCukeSteps(javaProject, iCompUnit, progressMonitor));
 		}
 	}
 
@@ -128,6 +130,7 @@ public class JDTStepDefinitions extends StepDefinitions implements IStepDefiniti
 	public void collectCukeStepsFromJar(IPackageFragment javaPackage, Set<Step> steps)
 			throws JavaModelException, CoreException {
 
+		@SuppressWarnings("deprecation")
 		IClassFile[] classFiles = javaPackage.getClassFiles();
 		for (IClassFile classFile : classFiles) {
 			// System.out.println("----classFile: "

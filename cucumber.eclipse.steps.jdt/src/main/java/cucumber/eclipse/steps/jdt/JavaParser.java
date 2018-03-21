@@ -9,9 +9,8 @@ import java.util.Set;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IImportDeclaration;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.compiler.IProblem;
@@ -35,22 +34,15 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 public class JavaParser extends AbstractHandler {
 
 	private ASTParser astParser = null;
-	private IResource source = null;
-	private static CompilationUnit compUnit = null;
-	private List<Statement> statementList = null;
+	private CompilationUnit compUnit = null;
 	private ASTRequestor astRequestor = null;
 
 	private String className = null;
 	private String methodBody = null;
-	private String importDeclaration = null;
-	private int lineNumber = 0;
-
-	public JavaParser() {
-
-	}
 
 	// Initialize ASTParser as CompilationUnit
-	public JavaParser(ICompilationUnit iCompilationUnit) {
+	@SuppressWarnings("deprecation")
+	public JavaParser(ICompilationUnit iCompilationUnit, IProgressMonitor progressMonitor) {
 
 		// astParser = ASTParser.newParser(AST.JLS3); //for jdk-7
 		this.astParser = ASTParser.newParser(AST.JLS8); // for jdk-8
@@ -61,7 +53,7 @@ public class JavaParser extends AbstractHandler {
 		astParser.setCompilerOptions(Collections.singletonMap(JavaCore.COMPILER_PB_UNUSED_IMPORT, JavaCore.ERROR));
 		astParser.setSource(iCompilationUnit);
 		astParser.setResolveBindings(true);
-		compUnit = (CompilationUnit) astParser.createAST(null);
+		compUnit = (CompilationUnit) astParser.createAST(progressMonitor);
 	}
 
 	/**
@@ -86,26 +78,7 @@ public class JavaParser extends AbstractHandler {
 		this.methodBody = method.getBody().toString();
 		return methodBody;
 	}
-
-	/**
-	 * @param method
-	 * @return List<Statement>
-	 */
-	@SuppressWarnings("unchecked")
-	public List<Statement> getBodyStatements(MethodDeclaration method) {
-		this.statementList = method.getBody().statements();
-		return statementList;
-	}
-
-	/**
-	 * @param iCompUnit
-	 * @return String
-	 */
-
-	public IResource getSource(ICompilationUnit iCompUnit) {
-		this.source = iCompUnit.getResource();
-		return source;
-	}
+	
 
 	/**
 	 * @param iCompUnit
@@ -123,18 +96,9 @@ public class JavaParser extends AbstractHandler {
 	 * @return int
 	 */
 	public int getLineNumber(Statement statement) {
-		this.lineNumber = compUnit.getLineNumber(statement.getStartPosition());
-		return lineNumber;
+		return compUnit.getLineNumber(statement.getStartPosition());
 	}
 
-	/**
-	 * @param importDecl
-	 * @return String
-	 */
-	public String getImportStatement(IImportDeclaration iImportDecl) {
-		this.importDeclaration = iImportDecl.getElementName();
-		return importDeclaration;
-	}
 
 	/**
 	 * Method Visitor
