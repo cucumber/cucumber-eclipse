@@ -3,13 +3,17 @@ package cucumber.eclipse.steps.jdt;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -54,6 +58,7 @@ public class StepDefinitions extends MethodDefinition {
 
 	private final Pattern cukeAnnotationMatcher = Pattern.compile("cucumber\\.api\\.java\\.([a-z_]+)\\.(.*)$");
 	private static final String CUCUMBER_API_JAVA = "cucumber.api.java.";
+	private static final String CUCUMBER_API_JAVA8 = "cucumber.api.java8.";
 
 	public String JAVA_PROJECT = "org.eclipse.jdt.core.javanature";
 	public int JAVA_SOURCE = IPackageFragmentRoot.K_SOURCE;
@@ -61,14 +66,11 @@ public class StepDefinitions extends MethodDefinition {
 
 	public String COMMA = ",";
 	
-	private List<MethodDefinition> methodDefList = null;
-	private List<MethodDeclaration> methodDeclList = null;
-
 	//public List<IStepListener> listeners = new ArrayList<IStepListener>();
 	
 	//#240:For Changes in step implementation is reflected in feature file
 	protected static List<IStepListener> listeners = new ArrayList<IStepListener>();
-
+	
 	public StepDefinitions() {
 
 	}
@@ -118,12 +120,12 @@ public class StepDefinitions extends MethodDefinition {
 
 	// From Java-Source-File(.java) : Collect All Steps as List based on
 	// Cucumber-Annotations
-	public List<Step> getCukeSteps(IJavaProject javaProject, ICompilationUnit iCompUnit)
+	public List<Step> getCukeSteps(IJavaProject javaProject, ICompilationUnit iCompUnit, IProgressMonitor progressMonitor)
 			throws JavaModelException, CoreException {
 
 		List<Step> steps = new ArrayList<Step>();
 		List<CucumberAnnotation> importedAnnotations = new ArrayList<CucumberAnnotation>();
-		IImportDeclaration[] allimports = iCompUnit.getImports();		
+		IImportDeclaration[] allimports = iCompUnit.getImports();
 		
 		for (IImportDeclaration decl : allimports) {
 
@@ -141,13 +143,79 @@ public class StepDefinitions extends MethodDefinition {
 			// If import declaration matches with 'cucumber.api.java8'
 			// Then set Language of Java8-cuke-api
 			if (decl.getElementName().matches(REGEX_JAVA8_CUKEAPI)) {
-				String importDeclaration = getImportStatement(decl);
+				String importDeclaration = decl.getElementName();
 				setJava8CukeLang(importDeclaration);
 			}
 		}
 
-		// Collect all steps from Annotations used in the methods as per imported Annotations
+		List<MethodDeclaration> methodDeclList = null;
+		JavaParser javaParser = null;
 		for (IType t : iCompUnit.getTypes()) {
+			//collect all steps from java8 lamdas
+			for (IType ifType : t.newTypeHierarchy(progressMonitor).getAllInterfaces()) {
+				
+				if (ifType.isInterface() && ifType.getFullyQualifiedName().startsWith(CUCUMBER_API_JAVA8)) {
+					String[] superInterfaceNames = ifType.getSuperInterfaceNames();
+					for (String superIfName : superInterfaceNames) {
+						if (superIfName.endsWith(".LambdaGlueBase")) {
+							//we found a possible interface, now try to load the language...
+							String lang = ifType.getElementName().toLowerCase();
+							//init if not done in previous step..
+							if (javaParser == null)  {
+								javaParser = new JavaParser(iCompUnit, progressMonitor);
+							}
+							if (methodDeclList == null) {
+								methodDeclList = javaParser.getAllMethods();
+							}
+							Set<String> keyWords = new HashSet<String>();
+							for (IMethod method : ifType.getMethods()) {
+								keyWords.add(method.getElementName());
+							}
+							List<MethodDefinition> methodDefList = new ArrayList<MethodDefinition>();
+							// Visiting Methods/Constructors
+							for (MethodDeclaration method : methodDeclList) {
+								
+								// Get Method/Constructor-Block{...}
+								if (isCukeLambdaExpr(method, keyWords)) {
+									// Collect method-body as List of Statements
+									@SuppressWarnings("unchecked")
+									List<Statement> statementList = method.getBody().statements();
+									if (!statementList.isEmpty()) {
+										MethodDefinition definition = new MethodDefinition(method.getName(), method.getReturnType2(), statementList);
+										methodDefList.add(definition);
+										definition.setJava8CukeLang(lang);
+									}
+								}
+							}
+							//Iterate MethodDefinition
+							for (MethodDefinition method : methodDefList) {
+								//Iterate Method-Statements
+								for (Statement statement : method.getMethodBodyList()) {					
+									// Add all lambda-steps to Step
+									Step step = new Step();
+									step.setSource(iCompUnit.getResource());	//source
+									try {
+										String lambdaStep = method.getLambdaStep(statement, keyWords);
+										if (lambdaStep == null) {
+											continue;
+										}
+										step.setText(lambdaStep);	//step
+										step.setLineNumber(javaParser.getLineNumber(statement));	//line-number
+										step.setLang(method.getCukeLang());	//Language
+										steps.add(step);
+									} catch(PatternSyntaxException e) {
+										//we can't parse the pattern so we can't use the step!
+										System.out.println(e);
+									}
+									
+									
+								}
+							}
+						}
+					}
+				}
+			}
+			// Collect all steps from Annotations used in the methods as per imported Annotations
 			for (IMethod method : t.getMethods()) {
 				for (IAnnotation annotation : method.getAnnotations()) {
 					CucumberAnnotation cukeAnnotation = getCukeAnnotation(importedAnnotations, annotation);
@@ -163,51 +231,6 @@ public class StepDefinitions extends MethodDefinition {
 
 			}
 		}
-
-		
-		//If import contains 'cucumber.api.java8'
-		//Then Initialize AST Parser
-		if(Arrays.asList(allimports).toString().matches(CONTAINS_JAVA8_CUKEAPI)){	
-			// Initialize AST Parser
-			// Used for Java8-Cuke-Lambda Expression
-			new JavaParser(iCompUnit);
-			
-			this.methodDefList = new ArrayList<MethodDefinition>();
-			this.methodDeclList = super.getAllMethods();
-
-			// Visiting Methods/Constructors
-			for (MethodDeclaration method : methodDeclList) {
-				// Get Method/Constructor-Block{...}
-				String methodBody = getMethodBody(method);
-				if (isCukeLambdaExpr(methodBody)) {
-					// Collect method-body as List of Statements
-					List<Statement> statementList = getBodyStatements(method);
-					if (!statementList.isEmpty())
-						methodDefList.add(new MethodDefinition(method.getName(), method.getReturnType2(), statementList));
-				}
-
-			}
-
-			//Iterate MethodDefinition
-			for (MethodDefinition method : methodDefList) {
-				//Iterate Method-Statements
-				for (Statement statement : method.getMethodBodyList()) {					
-					
-					// Add all lambda-steps to Step
-					Step step = new Step();
-					step.setSource(method.getSource(iCompUnit));	//source
-					//if(!method.getBodyStatement(statement).startsWith("Before(") && !method.getBodyStatement(statement).startsWith("After")){
-						step.setText(method.getLambdaStep(method.getBodyStatement(statement)));	//step
-						step.setLineNumber(method.getCukeLineNumber());	//line-number
-						step.setLang(method.getCukeLang());	//Language
-						steps.add(step);
-					//}
-					
-					
-				}
-			}
-		}
-		
 		return steps;
 	}
 
@@ -308,6 +331,7 @@ public class StepDefinitions extends MethodDefinition {
 		final List<CucumberAnnotation> annotations = new ArrayList<CucumberAnnotation>();
 
 		SearchRequestor requestor = new SearchRequestor() {
+			@SuppressWarnings("deprecation")
 			public void acceptSearchMatch(SearchMatch match) {
 				try {
 					if (match.getAccuracy() == SearchMatch.A_ACCURATE) {
@@ -390,10 +414,11 @@ public class StepDefinitions extends MethodDefinition {
 	/**
 	 * @param projectToScan
 	 * @param collectedSteps
+	 * @param progressMonitor 
 	 * @throws JavaModelException
 	 * @throws CoreException
 	 */
-	public void scanJavaProjectForStepDefinitions(IJavaProject projectToScan, Collection<Step> collectedSteps)
+	public void scanJavaProjectForStepDefinitions(IJavaProject projectToScan, Collection<Step> collectedSteps, IProgressMonitor progressMonitor)
 			throws JavaModelException, CoreException {
 
 		IPackageFragment[] packages = projectToScan.getPackageFragments();
@@ -403,7 +428,7 @@ public class StepDefinitions extends MethodDefinition {
 			if (javaPackage.getKind() == IPackageFragmentRoot.K_SOURCE) {
 
 				for (ICompilationUnit compUnit : javaPackage.getCompilationUnits()) {
-					collectedSteps.addAll(getCukeSteps(projectToScan, compUnit));
+					collectedSteps.addAll(getCukeSteps(projectToScan, compUnit, progressMonitor));
 				}
 			}
 		}

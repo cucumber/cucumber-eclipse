@@ -3,12 +3,16 @@ package cucumber.eclipse.steps.jdt;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Set;
 
 import org.eclipse.jdt.core.IImportDeclaration;
+import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.ExpressionStatement;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.Statement;
+import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.Type;
 
 /**
@@ -20,7 +24,7 @@ import org.eclipse.jdt.core.dom.Type;
  *
  */
 
-public class MethodDefinition extends JavaParser {
+public class MethodDefinition {
 
 	private SimpleName methodName;
 	private Type returnType;
@@ -29,28 +33,8 @@ public class MethodDefinition extends JavaParser {
 	public static final String REGEX_JAVA8_CUKEAPI = "cucumber\\.api\\.java8\\.(.*)";
 	public static final String CONTAINS_JAVA8_CUKEAPI = "(.*)cucumber\\.api\\.java8\\.(.*)";
 
-	// Ex. Given( or Given<Space>(
-	private final static String KEYWORD_SPACE_PARENTHESIS = "(Given|When|Then|And|But)[\\s]*[\\(]";
-	private final static Pattern cukeKeywordPattern = Pattern.compile(KEYWORD_SPACE_PARENTHESIS);
-
-	private static final String STARTSWITH_KEYWORD_PARENTHESIS = "^(Given|When|Then|And|But)[\\(][\\s\\S]*";
-
-	private static final String REGEX_LAMBDA_STEP = "(\"[^\n]*\")[\\,][\\(]";
-	private static final Pattern lambdaPattern = Pattern.compile(REGEX_LAMBDA_STEP);
-
-	private static final String START_QUOTE = "\"";
-	private static final String END_QUOTE_COMMA_PARENTHESIS = "\",(";
-
-	private static final String DOUBLE_BACKSLASH = "\\\\";
-	private static final String SINGLE_BACKSLASH = "\\";
-	
-	private static final String BEFORE = "Before(";
-	private static final String AFTER = "After(";
-	
 	private List<Statement> methodBodyList = new ArrayList<Statement>();
-	private String methodBody;
 	private String lang;
-	private int lineNumber;
 
 	public String[] java8CukeImport = null;
 
@@ -102,64 +86,57 @@ public class MethodDefinition extends JavaParser {
 		return methodBodyList;
 	}
 
+
 	/**
-	 * Filter Before() and After() And
-	 * Get Method Body of Lambda-Expressions
-	 * And collect Line-Number
-	 * 
 	 * @param statement
-	 * @return
-	 */
-	public String getBodyStatement(Statement statement) {
-		if(!statement.toString().startsWith(BEFORE) && !statement.toString().startsWith(AFTER)){
-			this.methodBody = statement.toString();
-			this.lineNumber = getLineNumber(statement);	
-		}
-		
-		return methodBody;
-	}
-
-	/**
-	 * @return int
-	 */
-	public int getCukeLineNumber() {
-		return lineNumber;
-	}
-
-	/**
-	 * @param lambdaExpr
 	 * @return String
 	 */
-	public String getLambdaStep(String lambdaExpr) {
-
-		String lambdaStep = lambdaExpr.trim();		
-		if (lambdaStep.matches(STARTSWITH_KEYWORD_PARENTHESIS)) {	
-					
-			Matcher matcher = lambdaPattern.matcher(lambdaStep);
-			while (matcher.find()) {
-				String junkStep = matcher.group(0);
-				if (junkStep.startsWith(START_QUOTE) && junkStep.endsWith(END_QUOTE_COMMA_PARENTHESIS)) {
-					lambdaStep = junkStep.substring(1, junkStep.lastIndexOf(END_QUOTE_COMMA_PARENTHESIS));
-					//Replace Double-Slashes to Single-Slash
-					lambdaStep = lambdaStep.replace(DOUBLE_BACKSLASH, SINGLE_BACKSLASH);
-					lambdaStep = lambdaStep.trim();	
+	public String getLambdaStep(Statement statement, Set<String> keywords) {
+		if (statement instanceof ExpressionStatement) {
+			ExpressionStatement expressionStatement = (ExpressionStatement) statement;
+			Expression expression = expressionStatement.getExpression();
+			if (expression instanceof MethodInvocation) {
+				MethodInvocation methodInvocation = (MethodInvocation) expression;
+				String identifier = ((MethodInvocation) expression).getName().getIdentifier();
+				if (keywords.contains(identifier)) {
+					List<?> arguments = methodInvocation.arguments();
+					for (Object object : arguments) {
+						if (object instanceof StringLiteral) {
+							String string = ((StringLiteral) object).getLiteralValue();
+							return string;
+						} else {
+							break;
+						}
+					}
 				}
-			}	
+			}
 		}
-		//System.out.println("MethodDefinition:getLambdaStep():LAMBDA-STEP ="+lambdaStep);		
-		return lambdaStep;
+		return null;
 	}
 
 	/**
-	 * @param methodBody
+	 * @param method
+	 * @param i18n 
 	 * @return boolean
 	 */
-	public boolean isCukeLambdaExpr(String methodBody) {
-		// Matching the Method/Constructor-Block contains RegEx-Pattern:
-		// Given(|When(|Then(|And(|But(
-		// check if Method/Constructor-Block contains any RegEx-Pattern:
-		// Given(|When(|Then(|And(|But(
-		return cukeKeywordPattern.matcher(methodBody).find() ? true : false;
+	public boolean isCukeLambdaExpr(MethodDeclaration method, Set<String> keywords) {
+		@SuppressWarnings("unchecked")
+		List<Statement> statements = method.getBody().statements();
+		for (Statement statement : statements) {
+			if (statement instanceof ExpressionStatement) {
+				ExpressionStatement expressionStatement = (ExpressionStatement) statement;
+				Expression expression = expressionStatement.getExpression();
+				if (expression instanceof MethodInvocation) {
+					String identifier = ((MethodInvocation) expression).getName().getIdentifier();
+					if (keywords.contains(identifier)) {
+						//we found a lamda
+						return true;
+					}
+				}
+			}
+			
+		}
+		return false;
 	}
 
 	/**

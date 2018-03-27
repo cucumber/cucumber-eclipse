@@ -56,7 +56,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 
 			//Initialize CucumberContentAssist
 			this.contentAssist = new CucumberContentAssist(lang, editor.getStepProvider());
-			
+			List<String> stepKeyWords = contentAssist.getStepKeyWords(i18n);
 			// line of cursor locate,and from begin to cursor.
 			IRegion line = viewer.getDocument().getLineInformationOfOffset(offset);
 			
@@ -66,7 +66,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 
 			// Capture any Existing Step
 			String preStep = viewer.getDocument().get(line.getOffset(), line.getLength()).replaceAll(contentAssist.STARTSWITH_ANYSPACE, "");
-			preStep = this.contentAssist.lastPrefix(preStep);
+			preStep = this.contentAssist.lastPrefix(preStep,stepKeyWords);
 			//System.out.println("PRE-STEP =" + preStep);
 			
 			// Create an ArrayList instance for collecting the generated
@@ -85,105 +85,20 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 			//To display proposals for any char/string is typed
 			if (typed.length() > 0) 
 			{
-				//1. To Check Typed=<Keyword> OR Typed=AnyWord
-				//POPULATE KEYWORD ASSISTANCE
-				if (typed.matches(contentAssist.KEYWORD_REGEX)) 
-				{
-					  // Don't Delete : Used For Debug
-					 //System.out.println("IF-1:Inside ...");
-					// To display only Step-Keywords
-					for (String string : contentAssist.getStepKeyWords()) {
-						CompletionProposal p = new CompletionProposal(string, offset - typed.length(), typed.length(),string.length(), ICON, null, null, null);
-						result.add(p);
-					}
-				}
-
-				//2.To Check Typed = <Keyword any-words>
-				//POPULATE STEP ASSISTANCE
-				if (typed.matches(contentAssist.KEYWORD_SPACE_WORD_REGEX)) 
-				{
-					//System.out.println("IF-2:Inside ...");
 				
-					String lastPrefix = contentAssist.lastPrefix(typed);
-					//System.out.println("LAST-PREFIX = " +lastPrefix);
+				for (String stepKeyWord : stepKeyWords) {
 					
-					//Collect all steps with 
-					contentAssist.collectAllSteps(lastPrefix);
-					
-					// Collect all steps and matched steps from step-definition file
-					List<String> stepDetailList = contentAssist.importAllStepList();
-					List<String> matchedStepList = contentAssist.importMatchedStepList();
-					
-					 // Don't Delete : Used For Debug
-					//System.out.println("stepDetailList = " +stepDetailList);
-					//System.out.println("matchedStepList = " +matchedStepList);					
-					
-					//1. NO-Proposal For Any Empty List
-					if( matchedStepList.isEmpty() &&
-							stepDetailList.isEmpty())
-					{
-						 // Don't Delete : Used For Debug
-						//System.out.println("NO PROPOSAL-1***************");
-						contentAssist.displayNoProposal(offset, ICON, result);
+					//1. Check if typed is the prefix of any stepword (ignoring trailing space)
+					if (stepKeyWord.trim().startsWith(typed)) {
+						addStepWordCompletionProposal(offset, typed, result, stepKeyWord);
 					}
 					
-					//2. Proposal For Non-Empty Matched-Step-List
-					else if(!matchedStepList.isEmpty())
-					{
-						 // Don't Delete : Used For Debug
-						//System.out.println("matchedStepList NOT EMPTY......");
-						for(String step : matchedStepList)
-						{							
-							//For starts-with Step proposal 
-							if(step.startsWith(lastPrefix))
-							{	
-								//Populate all matched starts-with steps
-								contentAssist.importStepProposals(lastPrefix, preStep, offset, ICON, step, result);							
-							}
-							
-							//For contains Step proposal
-							else if(step.contains(lastPrefix))
-							{							 
-								//Populate all matched contains steps
-								contentAssist.importStepProposals(lastPrefix, preStep, offset, ICON, step, result);							
-							}
-						}
-					}
-					
-					//3. No proposal for Empty Matched-Step-List
-					else if( lastPrefix.matches(contentAssist.STARTS_ANY) && 
-							 matchedStepList.isEmpty() )
-					{
-						 // Don't Delete : Used For Debug
-						//System.out.println("NO PROPOSAL-2***************");
-						contentAssist.displayNoProposal(offset, ICON, result);
-					}
-					
-					//4. All Step-Proposals if any <space> and COMMA
-					else if(lastPrefix.matches(contentAssist.COMMA_SPACE_REGEX) |
-							!stepDetailList.isEmpty())
-					{
-						 // Don't Delete : Used For Debug
-						//System.out.println("stepDetailList NOT EMPTY......");
-						for(String step : stepDetailList)
-						{	
-							 // Don't Delete : Used For Debug
-							//System.out.println("stepDetailList ###########");
-							//Populate all step proposal
-							contentAssist.importStepProposals(lastPrefix, preStep, offset, ICON, step, result);
-						}
-					}
-			
-					//5. No Match No Proposal
-					else
-					{
-						 // Don't Delete : Used For Debug
-						//System.out.println("NO PROPOSAL-3***************");
-						contentAssist.displayNoProposal(offset, ICON, result);
+					//2.To Check Typed = <Keyword any-words>
+					else if (typed.startsWith(stepKeyWord)){
+						addStepDetailsProposal(offset, typed, preStep, result, stepKeyWords);
 					}
 				}
 			}
-		
 			//New Line starts with blank
 			else 
 			{
@@ -201,6 +116,95 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 			// ... log the exception ...
 			return NO_COMPLETIONS;
 		}
+	}
+
+	private void addStepDetailsProposal(int offset, String typed, String preStep,
+			ArrayList<ICompletionProposal> result, List<String> stepKeyWords) {
+		//System.out.println("IF-2:Inside ...");
+
+		String lastPrefix = contentAssist.lastPrefix(typed,stepKeyWords);
+		//System.out.println("LAST-PREFIX = " +lastPrefix);
+		
+		//Collect all steps with 
+		contentAssist.collectAllSteps(lastPrefix);
+		
+		// Collect all steps and matched steps from step-definition file
+		List<String> stepDetailList = contentAssist.importAllStepList();
+		List<String> matchedStepList = contentAssist.importMatchedStepList();
+		
+		 // Don't Delete : Used For Debug
+		//System.out.println("stepDetailList = " +stepDetailList);
+		//System.out.println("matchedStepList = " +matchedStepList);					
+		
+		//1. NO-Proposal For Any Empty List
+		if( matchedStepList.isEmpty() &&
+				stepDetailList.isEmpty())
+		{
+			 // Don't Delete : Used For Debug
+			//System.out.println("NO PROPOSAL-1***************");
+			contentAssist.displayNoProposal(offset, ICON, result);
+		}
+		
+		//2. Proposal For Non-Empty Matched-Step-List
+		else if(!matchedStepList.isEmpty())
+		{
+			 // Don't Delete : Used For Debug
+			//System.out.println("matchedStepList NOT EMPTY......");
+			for(String step : matchedStepList)
+			{							
+				//For starts-with Step proposal 
+				if(step.startsWith(lastPrefix))
+				{	
+					//Populate all matched starts-with steps
+					contentAssist.importStepProposals(lastPrefix, preStep, offset, ICON, step, result);							
+				}
+				
+				//For contains Step proposal
+				else if(step.contains(lastPrefix))
+				{							 
+					//Populate all matched contains steps
+					contentAssist.importStepProposals(lastPrefix, preStep, offset, ICON, step, result);							
+				}
+			}
+		}
+		
+		//3. No proposal for Empty Matched-Step-List
+		else if( lastPrefix.matches(contentAssist.STARTS_ANY) && 
+				 matchedStepList.isEmpty() )
+		{
+			 // Don't Delete : Used For Debug
+			//System.out.println("NO PROPOSAL-2***************");
+			contentAssist.displayNoProposal(offset, ICON, result);
+		}
+		
+		//4. All Step-Proposals if any <space> and COMMA
+		else if(lastPrefix.matches(contentAssist.COMMA_SPACE_REGEX) |
+				!stepDetailList.isEmpty())
+		{
+			 // Don't Delete : Used For Debug
+			//System.out.println("stepDetailList NOT EMPTY......");
+			for(String step : stepDetailList)
+			{	
+				 // Don't Delete : Used For Debug
+				//System.out.println("stepDetailList ###########");
+				//Populate all step proposal
+				contentAssist.importStepProposals(lastPrefix, preStep, offset, ICON, step, result);
+			}
+		}
+
+		//5. No Match No Proposal
+		else
+		{
+			 // Don't Delete : Used For Debug
+			//System.out.println("NO PROPOSAL-3***************");
+			contentAssist.displayNoProposal(offset, ICON, result);
+		}
+	}
+
+	private void addStepWordCompletionProposal(int offset, String typed, ArrayList<ICompletionProposal> result,
+			String stepKeyWord) {
+		CompletionProposal p = new CompletionProposal(stepKeyWord, offset - typed.length(), typed.length(),stepKeyWord.length(), ICON, null, null, null);
+		result.add(p);
 	}
 
 	
