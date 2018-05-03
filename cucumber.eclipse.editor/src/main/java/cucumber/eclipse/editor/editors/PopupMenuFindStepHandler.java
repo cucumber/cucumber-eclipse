@@ -27,7 +27,6 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import cucumber.eclipse.editor.markers.MarkerIds;
 import cucumber.eclipse.editor.markers.MarkerManager;
 import cucumber.eclipse.steps.integration.Step;
-<<<<<<< HEAD
 import cucumber.eclipse.steps.integration.StepsChangedEvent;
 import cucumber.eclipse.steps.jdt.StepDefinitions;
 import gherkin.lexer.LexingError;
@@ -48,21 +47,6 @@ public class PopupMenuFindStepHandler extends AbstractHandler {
         if (defs != null) {
             defs.notifyListeners(new StepsChangedEvent());
         }
-=======
-import gherkin.lexer.LexingError;
-import gherkin.parser.Parser;
-
-public class PopupMenuFindStepHandler extends AbstractHandler {
-	
-	@Override
-	public Object execute(ExecutionEvent event) throws ExecutionException {
-		IEditorPart editorPart = HandlerUtil.getActiveEditorChecked(event);
-
-		// Needs to be a gherkin editor for this to work, if not then simply do nothing.
-		if (!(editorPart instanceof Editor)) {
-			return null;
-		}
->>>>>>> refs/heads/master-original
 		
 		Editor editor = (Editor) editorPart;
 		Set<Step> steps = editor.getStepProvider().getStepsInEncompassingProject();

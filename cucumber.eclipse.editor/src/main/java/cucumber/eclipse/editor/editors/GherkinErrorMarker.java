@@ -228,7 +228,10 @@ public class GherkinErrorMarker implements Formatter {
 		validateStep(stepLine, null, -1);
 	}
 	
+	
+	
 	public void validateStep(Step stepLine, Map<String, String> examplesLineMap, int currentLine) {
+		
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 		
 		if (store.getBoolean(ICucumberPreferenceConstants.PREF_CHECK_STEP_DEFINITIONS)) {
@@ -255,6 +258,7 @@ public class GherkinErrorMarker implements Formatter {
 				}
 			}
 		}
+		
 	}
 
 	private void markMissingStepName(IFile featureFile, IDocument doc, gherkin.formatter.model.Step stepLine)

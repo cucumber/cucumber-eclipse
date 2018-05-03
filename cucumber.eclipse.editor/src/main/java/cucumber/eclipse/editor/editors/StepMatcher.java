@@ -89,11 +89,6 @@ class StepMatcher {
 					} else
 						break;
 				}
-				step.setText(step.getText().replace("\\\\d", "\\d"));
-				step.setText(step.getText().replace("\\\\w", "\\w"));
-				step.setText(step.getText().replace("\\\\s", "\\s"));
-				step.setText(step.getText().replace("\\\"", "\""));
-				step.setText(step.getText().replace("\\\\.", "."));
 
 				if (step.matches(cukeStep)) {
 					return step;

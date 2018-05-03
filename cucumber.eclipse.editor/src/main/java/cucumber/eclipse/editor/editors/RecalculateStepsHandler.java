@@ -19,11 +19,11 @@ public class RecalculateStepsHandler extends AbstractHandler {
 		if (!(editorPart instanceof Editor)) {
 			return null;
 		}
-		
-        StepDefinitions defs = StepDefinitions.getInstance();
-        if (defs != null) {
-            defs.notifyListeners(new StepsChangedEvent());
-        }
+
+		StepDefinitions defs = StepDefinitions.getInstance();
+		if (defs != null) {
+			defs.notifyListeners(new StepsChangedEvent());
+		}
 
 		return null;
 	}
