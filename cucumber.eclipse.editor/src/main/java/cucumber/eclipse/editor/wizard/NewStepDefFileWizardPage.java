@@ -220,7 +220,8 @@ public class NewStepDefFileWizardPage extends WizardPage {
 				//System.out.println("ProjectTextPath:" +sourceText);
 				updateStatus("Source Folder Must Contain '/src/main/java' or '/src/test/java'");		
 				return;
-			}	
+			}
+			
 		}catch(Exception ex){
 			updateStatus("Source Folder is not a Java project.");		
 			return;

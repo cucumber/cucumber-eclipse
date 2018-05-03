@@ -125,12 +125,12 @@ public class Utils {
 	    IResource resource = result.getResource();
 	    if (resource != null)
 	    {
-	      result.sourceFolder = resource.getFullPath().removeLastSegments(1).toOSString();
+	      result.sourceFolder = resource.getFullPath().removeLastSegments(1).toString();
 	     // System.out.println("result.sourceFolder-1=" +result.sourceFolder);
 	     
 	      for (IClasspathEntry entry : getSourceFolders(result.getProject()))
 	      {
-	        String source = entry.getPath().toOSString();
+	        String source = entry.getPath().toString();
 	        
 	        System.out.println("Source =" +source);
 	        

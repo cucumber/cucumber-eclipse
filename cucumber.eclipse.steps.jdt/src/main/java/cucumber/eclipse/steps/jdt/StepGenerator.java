@@ -129,5 +129,11 @@ public class StepGenerator implements IStepGenerator {
 		public <T> Collection<Class<? extends T>> getDescendants(Class<T> parentType, String packageName) {
 			return new ArrayList<Class<? extends T>>();
 		}
+
+		@Override
+		public <T> Class<? extends T> loadClass(String arg0) throws ClassNotFoundException {
+			// TODO Auto-generated method stub
+			return null;
+		}
 	}	
 }

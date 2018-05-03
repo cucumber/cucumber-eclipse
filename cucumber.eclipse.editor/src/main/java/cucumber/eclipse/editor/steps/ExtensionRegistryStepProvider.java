@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 import cucumber.eclipse.steps.integration.IStepDefinitions;
 import cucumber.eclipse.steps.integration.IStepListener;
@@ -23,12 +24,13 @@ public class ExtensionRegistryStepProvider implements IStepProvider, IStepListen
 	
 	public ExtensionRegistryStepProvider(IFile file) {
 		this.file = file;
-		reloadSteps();
+		//TODO can we obtain a progressmonitor somewhere?
+		reloadSteps(null);
 		addStepListener(this);
 	}
 
 	public void addStepListener(IStepListener listener) {
-		for (IStepDefinitions stepDef : stepDefinitions) {			
+		for (IStepDefinitions stepDef : stepDefinitions) {
 			stepDef.addStepListener(listener);
 		}
 	}
@@ -37,10 +39,10 @@ public class ExtensionRegistryStepProvider implements IStepProvider, IStepListen
 		return steps;
 	}
 
-	private void reloadSteps() {
+	private void reloadSteps(IProgressMonitor progressMonitor) {
 		steps.clear();
 		for (IStepDefinitions stepDef : stepDefinitions) {
-			steps.addAll(stepDef.getSteps(file));
+			steps.addAll(stepDef.getSteps(file, progressMonitor));
 		}
 	}
 
@@ -52,6 +54,7 @@ public class ExtensionRegistryStepProvider implements IStepProvider, IStepListen
 
 	@Override
 	public void onStepsChanged(StepsChangedEvent event) {
-		reloadSteps();
+		//TODO can we obtain a progressmonitor somewhere?
+		reloadSteps(null);
 	}
 }

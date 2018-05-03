@@ -309,6 +309,11 @@
 			id="cucumber.eclipse.editor.preferences.Page1"
 			class="cucumber.eclipse.editor.preferences.CucumberPreferencePage"
 			name="Cucumber" />
+		<page
+			id="cucumber.eclipse.editor.preferences.Page2"
+			category="cucumber.eclipse.editor.preferences.Page1"
+			class="cucumber.eclipse.editor.preferences.CucumberUserSettingsPage"
+			name="User Settings" />	
    </extension>
  <extension
        point="org.eclipse.ui.newWizards">
@@ -324,4 +329,17 @@
           name="Step-Definition class">
     </wizard>
  </extension> 
+ 
+ <!-- Newly added  By Girija
+ 	  Defining 'JDTStepDefinitions' class by inheriting 'cucumber.eclipse.editor.steps.jdt.StepDefinitions' class .
+ 	  Used for the feature : 'Reading Step-Definitions from external JAR'
+ 	  Commented in 'cucumber.eclipse.steps.jdt/plugin.xml' in order to avoid plugin-dependency conflicts
+ -->
+ <extension
+         point="cucumber.eclipse.steps.integration">
+      <stepDefinitionIntegration
+            class="cucumber.eclipse.editor.steps.jdt.JDTStepDefinitions">
+      </stepDefinitionIntegration>
+  </extension>
+ 
 </plugin>

@@ -2,14 +2,15 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<version>0.0.15-SNAPSHOT</version>
+	<version>0.0.21-SNAPSHOT</version>
 	<groupId>cucumber.eclipse</groupId>
 	<artifactId>parent</artifactId>
 	<packaging>pom</packaging>
 	<name>Cucumber Eclipse Parent</name>
 
 	<properties>
-		<tycho-version>0.22.0</tycho-version>
+		<!-- <tycho-version>0.22.0</tycho-version> -->
+		<tycho-version>1.0.0</tycho-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -22,6 +23,7 @@
 		<module>cucumber.eclipse.steps.jdt</module>
 		<module>cucumber.eclipse.p2updatesite</module>
 		<module>cucumber.eclipse.targetdefinition</module>
+		<module>cucumber.eclipse.download</module>
 	</modules>
 
 	<build>

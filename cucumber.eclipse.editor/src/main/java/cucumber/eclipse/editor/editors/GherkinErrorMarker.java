@@ -39,18 +39,18 @@ public class GherkinErrorMarker implements Formatter {
 	private final IFile file;
 	private final IDocument document;
    
-	private Set<cucumber.eclipse.steps.integration.Step> foundSteps;
+	private Set<cucumber.eclipse.steps.integration.Step> foundSteps = null;
 
 	private boolean inScenarioOutline = false;
 
 	private List<gherkin.formatter.model.Step> scenarioOutlineSteps;
 
-	public GherkinErrorMarker(IStepProvider stepProvider, IMarkerManager markerManager, IFile inputfile,
-			IDocument doc) {
+	public GherkinErrorMarker(IStepProvider stepProvider, IMarkerManager markerManager, IFile inputfile, IDocument doc) 
+	{
 		this.markerManager = markerManager;
 		this.file = inputfile;
 		this.document = doc;
-        foundSteps = stepProvider.getStepsInEncompassingProject();
+        this.foundSteps = stepProvider.getStepsInEncompassingProject();
 	}
 
 	public void removeExistingMarkers() {
@@ -244,8 +244,9 @@ public class GherkinErrorMarker implements Formatter {
 			}
 
 			String stepString = getResolvedStepStringForExample(stepLine, examplesLineMap);
-			cucumber.eclipse.steps.integration.Step step = new StepMatcher().matchSteps(getDocumentLanguage(document),
-																						foundSteps, stepString);
+			cucumber.eclipse.steps.integration.Step step = new StepMatcher().matchSteps(getDocumentLanguage(document), foundSteps, stepString);
+			step = new StepMatcher().matchSteps(getDocumentLanguage(document), foundSteps, stepString);
+			
 			if (step == null) {
 				try {
 					markUnmatchedStep(file, document, stepLine, inScenarioOutline ? currentLine : -1);
@@ -290,5 +291,17 @@ public class GherkinErrorMarker implements Formatter {
 				stepLine.getLine(),
 				region.getOffset(),
 				region.getOffset() + region.getLength());
+	}
+
+	@Override
+	public void endOfScenarioLifeCycle(Scenario arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void startOfScenarioLifeCycle(Scenario arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 }

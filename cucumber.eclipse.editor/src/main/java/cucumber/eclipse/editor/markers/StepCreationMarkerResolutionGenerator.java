@@ -42,9 +42,8 @@ public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionG
 		
 		Set<IFile> files = new HashSet<IFile>();
 		
-		ExtensionRegistryStepProvider prof = new ExtensionRegistryStepProvider((IFile) marker.getResource());
-		
-		Set<Step> steps = prof.getStepsInEncompassingProject();
+		Set<Step> steps = new ExtensionRegistryStepProvider((IFile) marker.getResource())
+			.getStepsInEncompassingProject();
 		
 		for (Step step : steps) {
 			files.add((IFile) step.getSource());

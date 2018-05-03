@@ -2,10 +2,10 @@
 <feature
       id="cucumber.eclipse.feature"
       label="Cucumber Eclipse Feature"
-      version="0.0.15.qualifier">
+      version="0.0.21.qualifier">
 
    <description>
-      Eclipse plugin for Cucumber - Witt version
+      Eclipse plugin for Cucumber
    </description>
 
    <copyright>

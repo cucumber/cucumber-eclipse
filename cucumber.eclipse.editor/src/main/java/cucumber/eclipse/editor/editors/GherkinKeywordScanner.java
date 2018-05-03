@@ -15,7 +15,7 @@ public class GherkinKeywordScanner extends RuleBasedScanner {
     private static final List<String> FEATURE_ELEMENT_KEYWORD_KEYS = Arrays.asList("scenario_outline","feature", "background", "scenario", "examples");
     private static final List<String> STEP_KEYWORD_KEYS = Arrays.asList("given", "when", "then", "and", "but");
     private static I18n i18n;   
-    private static String _code = "de";
+    private static String _code = "en";
     private ColorManager manager;
 	
 	public GherkinKeywordScanner(ColorManager manager) {
@@ -100,10 +100,10 @@ public class GherkinKeywordScanner extends RuleBasedScanner {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-			_code = "de";
+			_code = "en";
 		}
 		
-		if (!valid) _code = "de";
+		if (!valid) _code = "en";
 	}
 	
 	public static void setCode(String code) {
