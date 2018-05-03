@@ -445,10 +445,10 @@ public class StepDefinitions extends MethodDefinition {
 
 	
 	public void removeStepListener(IStepListener listener) {
-		this.listeners.remove(listener); 
+		listeners.remove(listener); 
 	}
 	
-	 public void notifyListeners(StepsChangedEvent event) {
+	public void notifyListeners(StepsChangedEvent event) {
 		for (IStepListener listener : listeners) {
 			listener.onStepsChanged(event);
 		}
