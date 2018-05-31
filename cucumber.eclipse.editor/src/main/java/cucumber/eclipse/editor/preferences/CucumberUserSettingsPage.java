@@ -175,6 +175,11 @@ public class CucumberUserSettingsPage extends PreferencePage implements IWorkben
 		return store.getBoolean(ICucumberPreferenceConstants.PREF_ONLY_SEARCH_PACKAGE);
 	}
 	
+	public String getOnlySpecificPackage() {
+		IPreferenceStore store = getPreferenceStore();
+		return store.getString(ICucumberPreferenceConstants.PREF_ONLY_SEARCH_SPECIFIC_PACKAGE);
+	}
+	
 	public static String getString(String key) {
 		// TODO: load strings via .messages file from resource bundle...
 		return key;

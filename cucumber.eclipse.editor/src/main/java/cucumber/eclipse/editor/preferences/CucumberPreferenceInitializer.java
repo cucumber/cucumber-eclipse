@@ -15,6 +15,7 @@ public class CucumberPreferenceInitializer extends
 		store.setDefault(ICucumberPreferenceConstants.PREF_FORMAT_RIGHT_ALIGN_NUMERIC_VALUES_IN_TABLES, true);
 		store.setDefault(ICucumberPreferenceConstants.PREF_FORMAT_PRESERVE_BLANK_LINE_BETWEEN_STEPS, false);
 		store.setDefault(ICucumberPreferenceConstants.PREF_FORMAT_CENTER_STEPS, false);
+		store.setDefault(ICucumberPreferenceConstants.PREF_ONLY_SEARCH_SPECIFIC_PACKAGE, "");
 		
 		//#239:Only match step implementation in same package as feature file
 		store.setDefault(ICucumberPreferenceConstants.PREF_ONLY_SEARCH_PACKAGE, false);

@@ -60,6 +60,8 @@ public class JDTStepDefinitions extends StepDefinitions implements IStepDefiniti
 		
 		//#239:Only match step implementation in same package as feature file
 		final boolean onlyPackages = this.userSettingsPage.getOnlyPackages();
+		final String onlySpeficicPackagesValue = this.userSettingsPage.getOnlySpecificPackage().trim();
+		final boolean onlySpeficicPackages= onlySpeficicPackagesValue.length() == 0 ? false : true;
 		String featurefilePackage = featurefile.getParent().getFullPath().toString();
 
 		try {
@@ -72,12 +74,15 @@ public class JDTStepDefinitions extends StepDefinitions implements IStepDefiniti
 				for (IPackageFragment javaPackage : packages) {
 					// Get Packages from source folder of current project
 					// #239:Only match step implementation in same package as feature file
-					if ((javaPackage.getKind() == JAVA_SOURCE  && 
-							(!onlyPackages || featurefilePackage.startsWith(javaPackage.getPath().toString())))) {
-						// System.out.println("Package Name-1
-						// :"+javaPackage.getElementName());
-						// Collect All Steps From Source
-						collectCukeStepsFromSource(javaProject, javaPackage, steps, progressMonitor);
+					if (javaPackage.getKind() == JAVA_SOURCE ) {
+						if 	((!onlyPackages || featurefilePackage.startsWith(javaPackage.getPath().toString())) && 
+							(!onlySpeficicPackages || javaPackage.getElementName().startsWith(onlySpeficicPackagesValue))) {
+							
+							// System.out.println("Package Name-1
+							// :"+javaPackage.getElementName());
+							// Collect All Steps From Source
+							collectCukeStepsFromSource(javaProject, javaPackage, steps, progressMonitor);
+						}
 					}
 
 					// Get Packages from JAR exists in class-path

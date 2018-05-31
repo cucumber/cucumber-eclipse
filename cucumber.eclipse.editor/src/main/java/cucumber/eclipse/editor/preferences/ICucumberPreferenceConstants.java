@@ -20,6 +20,9 @@ public interface ICucumberPreferenceConstants {
 	public static final String PREF_ONLY_SEARCH_PACKAGE =
 			_PREFIX + "only_search_package"; //$NON-NLS-1$
 	
+	public static final String PREF_ONLY_SEARCH_SPECIFIC_PACKAGE = 
+			_PREFIX + "only_search_specific_package";
+	
 	// Newly Declared By Girija for User-Settings Cucumber Preference Page
 	public static final String PREF_ADD_PACKAGE =
     		_PREFIX + "add_package"; //$NON-NLS-1$
