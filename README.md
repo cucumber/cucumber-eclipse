@@ -34,7 +34,7 @@ Please consult our [Wiki](https://github.com/cucumber/cucumber-eclipse/wiki) for
 
 - Please head over to the [plugin website](http://cucumber.github.com/cucumber-eclipse) for more information.
 
-- After you install the Cucumber-Eclipse plugin, you can use it to run Cucumber-JVM. To do this, you will need to install all the libraries you want to use for Cucumber-JVM into your Eclipse project's build-path libraries. The likely candidates and their locations are in the download target at the [cucumber-java-skeleton](https://github.com/cucumber/cucumber-java-skeleton/blob/master/build.xml) example at GitHub.
+- After you install the Cucumber-Eclipse plugin, you can use it to run Cucumber-JVM. To do this, you will need to install all the libraries you want to use for Cucumber-JVM into your Eclipse project's build-path libraries. The list of required dependencies can be found here [cucumber-jvm-installation](https://docs.cucumber.io/installation/java/). Another good resource for reference is the [cucumber-java-skeleton](https://github.com/cucumber/cucumber-java-skeleton/) example at GitHub.
 
 - If the output to the console has jumbled characters in it, you may want to install the [ANSI Escape in Console plugin](https://marketplace.eclipse.org/content/ansi-escape-console). This interprets the jumbled characters to create nicely colored text in the console output.
 
