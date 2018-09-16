@@ -45,8 +45,8 @@ public class GherkinKeywordScanner extends RuleBasedScanner {
 		rules.add(new EndOfLineRule("#", comment)); //$NON-NLS-1$
 
 		// Add rule for strings and character constants.
-		rules.add(new SingleLineRule("\"", "\"", string, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
-		rules.add(new SingleLineRule("'", "'", string, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
+		rules.add(new SingleLineRule(" \"", "\" ", string, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
+		rules.add(new SingleLineRule(" '", "' ", string, '\\')); //$NON-NLS-2$ //$NON-NLS-1$
 
 		// Add rule for tags.
 		rules.add(new GherkinTagRule(tag));
