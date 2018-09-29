@@ -28,14 +28,13 @@ public class GherkinFormatterUtil {
 		// set up
 		StringWriter output = new StringWriter();
 		PrintWriter out = new PrintWriter(output);
-		
-		PrettyFormatter formatter = new PrettyFormatter(out, true, false);
-
 		// configurable preferences
-		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-		formatter.setRightAlignNumericValues(store.getBoolean(ICucumberPreferenceConstants.PREF_FORMAT_RIGHT_ALIGN_NUMERIC_VALUES_IN_TABLES));
-		formatter.setCenterSteps(store.getBoolean(ICucumberPreferenceConstants.PREF_FORMAT_CENTER_STEPS));
-		formatter.setPreserveBlankLineBetweenSteps(store.getBoolean(ICucumberPreferenceConstants.PREF_FORMAT_PRESERVE_BLANK_LINE_BETWEEN_STEPS));
+		IPreferenceStore store = Activator.getDefault().getPreferenceStore();		
+		PrettyFormatter formatter = PrettyFormatter.builder().output(out).monochrome(true).executing(false)
+				.rightAlignNumeric(store.getBoolean(ICucumberPreferenceConstants.PREF_FORMAT_RIGHT_ALIGN_NUMERIC_VALUES_IN_TABLES))
+				.centerSteps(store.getBoolean(ICucumberPreferenceConstants.PREF_FORMAT_CENTER_STEPS))
+				.preserveBlankLineBetweenSteps(store.getBoolean(ICucumberPreferenceConstants.PREF_FORMAT_PRESERVE_BLANK_LINE_BETWEEN_STEPS))
+				.indentation(store.getString(ICucumberPreferenceConstants.PREF_INDENTATION_STYLE)).build();
 		
 		List<String> trailingComments = getTrailingComments(contents);
 		// parse
