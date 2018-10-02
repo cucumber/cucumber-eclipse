@@ -13,6 +13,7 @@ class StepMatcher {
 	private Pattern groupPatternNonParameterMatch = Pattern.compile("(\\(\\?:.+?\\))");
 	private Pattern groupPattern = Pattern.compile("(\\(.+?\\))");
 
+	
 	public Step matchSteps(String languageCode, Set<Step> steps, String currentLine) {
 
 		//System.out.println("StepMatcher matchSteps() steps = " + steps);
