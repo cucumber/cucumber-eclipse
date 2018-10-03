@@ -158,10 +158,20 @@ public class StepMatcherTest {
 			stepMatcher.matchSteps("en", Collections.singleton(s), "  Given I have a red ball");
 		} 
 		catch (Exception e) {
-			fail("Ooops !");
+			fail("Ooops ! I do not except exception");
 		}
 	}
-		
+
+	@Test
+	public void shouldNotThrowExceptionWhenPatternIsMalformed() {
+		try {
+		Step s = createStep("^(<p>|?>region|regions) of type (.*) (?>are|is) covering all references$");
+		stepMatcher.matchSteps("en", Collections.singleton(s), "  Given I have a red ball");
+		} 
+		catch (Exception e) {
+			fail("Ooops ! I do not except exception");
+		}
+	}
 	
 	private Step createStep(String text) {
 

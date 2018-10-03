@@ -2,6 +2,7 @@ package cucumber.eclipse.steps.integration;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.PatternSyntaxException;
 
 import org.eclipse.core.resources.IResource;
 
@@ -35,8 +36,21 @@ public class Step {
 		try {
 			this.expression = new ExpressionFactory(new ParameterTypeRegistry(locale)).createExpression(text);
 		}
+		
 		catch (UndefinedParameterTypeException e) {
-			// noop
+			// the cucumber expression have a custom parameter type
+			// without definition.
+			// For example, "I have a {color} ball" 
+			// But the "color" parameter type was not register 
+			// thanks to a TypeRegistryConfigurer.
+			this.expression = null;
+		}
+		catch (PatternSyntaxException e) {
+			// This fix #286
+			// the regular expression is wrong
+			// we do not expect to match something with it
+			// but we do not want to crash the F3
+			this.expression = null;
 		}
 	}
 	public IResource getSource() {
