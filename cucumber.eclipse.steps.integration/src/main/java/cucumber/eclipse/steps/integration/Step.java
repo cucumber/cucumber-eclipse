@@ -9,6 +9,7 @@ import io.cucumber.cucumberexpressions.Argument;
 import io.cucumber.cucumberexpressions.Expression;
 import io.cucumber.cucumberexpressions.ExpressionFactory;
 import io.cucumber.cucumberexpressions.ParameterTypeRegistry;
+import io.cucumber.cucumberexpressions.UndefinedParameterTypeException;
 
 public class Step {
 
@@ -30,8 +31,13 @@ public class Step {
 	}
 	public void setText(String text) {
 		this.text = text;
-		Locale locale = this.lang == null ? Locale.getDefault() : new Locale(this.lang); 
-		this.expression = new ExpressionFactory(new ParameterTypeRegistry(locale)).createExpression(text);
+		Locale locale = this.lang == null ? Locale.getDefault() : new Locale(this.lang);
+		try {
+			this.expression = new ExpressionFactory(new ParameterTypeRegistry(locale)).createExpression(text);
+		}
+		catch (UndefinedParameterTypeException e) {
+			// noop
+		}
 	}
 	public IResource getSource() {
 		return source;
@@ -48,6 +54,8 @@ public class Step {
 	}
 	
 	public boolean matches(String s) {
+		if(this.expression == null)
+			return false;
 		List<Argument<?>> match = this.expression.match(s);
 		return match != null;
 	}

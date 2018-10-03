@@ -2,6 +2,7 @@ package cucumber.eclipse.editor.editors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -145,8 +146,20 @@ public class StepMatcherTest {
 	@Ignore("custom cucumber expressions are not detected but do not crash the editor anymore")
 	public void customCucumberExpressionStepMatches() {
 
-		Step s = createStep("I have a red ball");
-		assertEquals(s, stepMatcher.matchSteps("en", Collections.singleton(s), "Given I have a {color} ball"));
+		Step s = createStep("I have a {color} ball");
+		assertEquals(s, stepMatcher.matchSteps("en", Collections.singleton(s), "  Given I have a red ball"));
+	}
+	
+	@Test
+	public void customCucumberExpressionStepMatchesButDoesNotThrowException() {
+
+		Step s = createStep("I have a {color} ball");
+		try {
+			stepMatcher.matchSteps("en", Collections.singleton(s), "  Given I have a red ball");
+		} 
+		catch (Exception e) {
+			fail("Ooops !");
+		}
 	}
 		
 	
