@@ -56,8 +56,9 @@ public class JDTStepDefinitions extends StepDefinitions implements IStepDefiniti
 			IProject project = featurefile.getProject();
 			projects.add(project);
 			projects.addAll(Arrays.asList(project.getReferencedProjects()));
+			SubMonitor subMonitor = SubMonitor.convert(progressMonitor, projects.size());
 			for (IProject projectToScan : projects) {
-				scanProject(projectToScan, featurefile, steps, progressMonitor);
+				scanProject(projectToScan, featurefile, steps, subMonitor.split(1));
 			}
 		} finally {
 			SubMonitor.done(progressMonitor);
@@ -66,49 +67,56 @@ public class JDTStepDefinitions extends StepDefinitions implements IStepDefiniti
 	}
 
 	private void scanProject(IProject project, IFile featurefile, Set<Step> steps, IProgressMonitor progressMonitor) throws JavaModelException, CoreException {
-		// Get Package name/s from 'User-Settings' preference
-		final String externalPackageName = this.userSettingsPage.getPackageName();
-		//System.out.println("Package Names = " + externalPackageName);
-		String[] extPackages = externalPackageName.trim().split(COMMA);
-		
-		//#239:Only match step implementation in same package as feature file
-		final boolean onlyPackages = this.userSettingsPage.getOnlyPackages();
-		final String onlySpeficicPackagesValue = this.userSettingsPage.getOnlySpecificPackage().trim();
-		final boolean onlySpeficicPackages= onlySpeficicPackagesValue.length() == 0 ? false : true;
-		String featurefilePackage = featurefile.getParent().getFullPath().toString();
-
-		if (project.isNatureEnabled(JAVA_PROJECT)) {
-
-			IJavaProject javaProject = JavaCore.create(project);
-			IPackageFragment[] packages = javaProject.getPackageFragments();
-
-			for (IPackageFragment javaPackage : packages) {
-				// Get Packages from source folder of current project
-				// #239:Only match step implementation in same package as feature file
-				if (javaPackage.getKind() == JAVA_SOURCE ) {
-					if 	((!onlyPackages || featurefilePackage.startsWith(javaPackage.getPath().toString())) && 
-						(!onlySpeficicPackages || javaPackage.getElementName().startsWith(onlySpeficicPackagesValue))) {
-						
-						// System.out.println("Package Name-1
-						// :"+javaPackage.getElementName());
-						// Collect All Steps From Source
-						collectCukeStepsFromSource(javaProject, javaPackage, steps, progressMonitor);
-					}
-				}
-
-				// Get Packages from JAR exists in class-path
-				if ((javaPackage.getKind() == JAVA_JAR_BINARY) && !externalPackageName.equals("")) {
-					// Iterate all external packages
-					for (String extPackageName : extPackages) {
-						// Check package from external JAR/class file
-						if (javaPackage.getElementName().equals(extPackageName.trim())
-								|| javaPackage.getElementName().startsWith(extPackageName.trim())) {
-							// Collect All Steps From JAR
-							collectCukeStepsFromJar(javaPackage, steps);
+		try {
+			// Get Package name/s from 'User-Settings' preference
+			final String externalPackageName = this.userSettingsPage.getPackageName();
+			//System.out.println("Package Names = " + externalPackageName);
+			String[] extPackages = externalPackageName.trim().split(COMMA);
+			
+			//#239:Only match step implementation in same package as feature file
+			final boolean onlyPackages = this.userSettingsPage.getOnlyPackages();
+			final String onlySpeficicPackagesValue = this.userSettingsPage.getOnlySpecificPackage().trim();
+			final boolean onlySpeficicPackages= onlySpeficicPackagesValue.length() == 0 ? false : true;
+			String featurefilePackage = featurefile.getParent().getFullPath().toString();
+	
+			if (project.isNatureEnabled(JAVA_PROJECT)) {
+				
+				IJavaProject javaProject = JavaCore.create(project);
+				IPackageFragment[] packages = javaProject.getPackageFragments();
+				SubMonitor subMonitor = SubMonitor.convert(progressMonitor, packages.length);
+				for (IPackageFragment javaPackage : packages) {
+					// Get Packages from source folder of current project
+					// #239:Only match step implementation in same package as feature file
+					if (javaPackage.getKind() == JAVA_SOURCE ) {
+						subMonitor.subTask("Scanning "+javaPackage.getPath().toString());
+						if 	((!onlyPackages || featurefilePackage.startsWith(javaPackage.getPath().toString())) && 
+							(!onlySpeficicPackages || javaPackage.getElementName().startsWith(onlySpeficicPackagesValue))) {
+							
+							// System.out.println("Package Name-1
+							// :"+javaPackage.getElementName());
+							// Collect All Steps From Source
+							collectCukeStepsFromSource(javaProject, javaPackage, steps, progressMonitor);
 						}
 					}
+	
+					// Get Packages from JAR exists in class-path
+					if ((javaPackage.getKind() == JAVA_JAR_BINARY) && !externalPackageName.equals("")) {
+						subMonitor.subTask("Scanning package "+javaPackage.getElementName());
+						// Iterate all external packages
+						for (String extPackageName : extPackages) {
+							// Check package from external JAR/class file
+							if (javaPackage.getElementName().equals(extPackageName.trim())
+									|| javaPackage.getElementName().startsWith(extPackageName.trim())) {
+								// Collect All Steps From JAR
+								collectCukeStepsFromJar(javaPackage, steps);
+							}
+						}
+					}
+					subMonitor.worked(1);
 				}
 			}
+		} finally {
+			SubMonitor.done(progressMonitor);
 		}
 	}
 
