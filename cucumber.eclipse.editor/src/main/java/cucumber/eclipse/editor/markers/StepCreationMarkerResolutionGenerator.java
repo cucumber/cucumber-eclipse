@@ -33,7 +33,6 @@ import cucumber.eclipse.editor.snippet.IStepGeneratorProvider;
 import cucumber.eclipse.editor.snippet.SnippetApplicator;
 import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
 import cucumber.eclipse.steps.integration.Step;
-import cucumber.eclipse.steps.jdt.StepDefinitions;
 
 public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionGenerator {
 	
@@ -43,8 +42,7 @@ public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionG
 		Set<IFile> files = new HashSet<IFile>();
 		
 		ExtensionRegistryStepProvider prof = new ExtensionRegistryStepProvider((IFile) marker.getResource());
-		
-		Set<Step> steps = prof.getStepsInEncompassingProject();
+		Set<Step> steps = prof.getSteps(null);
 		
 		for (Step step : steps) {
 			files.add((IFile) step.getSource());
@@ -63,8 +61,6 @@ public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionG
 		for (int i = 0; i < resolutions.length; i ++) {
 			resolutions[i] = new StepCreationMarkerResolution(filesList.get(i));
 		}
-		
-		StepDefinitions.getInstance().removeStepListener(prof);
 		
 		return resolutions;
 	}

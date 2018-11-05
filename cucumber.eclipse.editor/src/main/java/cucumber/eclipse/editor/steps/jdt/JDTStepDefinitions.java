@@ -1,5 +1,6 @@
 package cucumber.eclipse.editor.steps.jdt;
 
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -7,6 +8,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
@@ -37,22 +39,33 @@ import cucumber.eclipse.steps.jdt.StepDefinitions;
  */
 public class JDTStepDefinitions extends StepDefinitions implements IStepDefinitions {
 
-	// To Collect all Steps as Set for ContentAssistance
-	public static Set<Step> steps = null;
-
 	private CucumberUserSettingsPage userSettingsPage = new CucumberUserSettingsPage();
 	
 	// 1. To get Steps as Set from both Java-Source and JAR file
 	@Override
-	public Set<Step> getSteps(IFile featurefile, IProgressMonitor progressMonitor) {
+	public Set<Step> getSteps(IFile featurefile, IProgressMonitor progressMonitor) throws JavaModelException, CoreException {
 
 		// Commented By Girija to use LinkedHashSet Instead of HashSet
 		// Set<Step> steps = new HashSet<Step>();
 
 		// Used LinkedHashSet : Import all steps from step-definition File
-		steps = new LinkedHashSet<Step>();
-		IProject project = featurefile.getProject();
+		Set<Step> steps = new LinkedHashSet<Step>();
+		try {
+			//Scan project and direct referenced projects...
+			Set<IProject> projects = new LinkedHashSet<IProject>();
+			IProject project = featurefile.getProject();
+			projects.add(project);
+			projects.addAll(Arrays.asList(project.getReferencedProjects()));
+			for (IProject projectToScan : projects) {
+				scanProject(projectToScan, featurefile, steps, progressMonitor);
+			}
+		} finally {
+			SubMonitor.done(progressMonitor);
+		}
+		return steps;
+	}
 
+	private void scanProject(IProject project, IFile featurefile, Set<Step> steps, IProgressMonitor progressMonitor) throws JavaModelException, CoreException {
 		// Get Package name/s from 'User-Settings' preference
 		final String externalPackageName = this.userSettingsPage.getPackageName();
 		//System.out.println("Package Names = " + externalPackageName);
@@ -64,45 +77,39 @@ public class JDTStepDefinitions extends StepDefinitions implements IStepDefiniti
 		final boolean onlySpeficicPackages= onlySpeficicPackagesValue.length() == 0 ? false : true;
 		String featurefilePackage = featurefile.getParent().getFullPath().toString();
 
-		try {
+		if (project.isNatureEnabled(JAVA_PROJECT)) {
 
-			if (project.isNatureEnabled(JAVA_PROJECT)) {
+			IJavaProject javaProject = JavaCore.create(project);
+			IPackageFragment[] packages = javaProject.getPackageFragments();
 
-				IJavaProject javaProject = JavaCore.create(project);
-				IPackageFragment[] packages = javaProject.getPackageFragments();
-
-				for (IPackageFragment javaPackage : packages) {
-					// Get Packages from source folder of current project
-					// #239:Only match step implementation in same package as feature file
-					if (javaPackage.getKind() == JAVA_SOURCE ) {
-						if 	((!onlyPackages || featurefilePackage.startsWith(javaPackage.getPath().toString())) && 
-							(!onlySpeficicPackages || javaPackage.getElementName().startsWith(onlySpeficicPackagesValue))) {
-							
-							// System.out.println("Package Name-1
-							// :"+javaPackage.getElementName());
-							// Collect All Steps From Source
-							collectCukeStepsFromSource(javaProject, javaPackage, steps, progressMonitor);
-						}
+			for (IPackageFragment javaPackage : packages) {
+				// Get Packages from source folder of current project
+				// #239:Only match step implementation in same package as feature file
+				if (javaPackage.getKind() == JAVA_SOURCE ) {
+					if 	((!onlyPackages || featurefilePackage.startsWith(javaPackage.getPath().toString())) && 
+						(!onlySpeficicPackages || javaPackage.getElementName().startsWith(onlySpeficicPackagesValue))) {
+						
+						// System.out.println("Package Name-1
+						// :"+javaPackage.getElementName());
+						// Collect All Steps From Source
+						collectCukeStepsFromSource(javaProject, javaPackage, steps, progressMonitor);
 					}
+				}
 
-					// Get Packages from JAR exists in class-path
-					if ((javaPackage.getKind() == JAVA_JAR_BINARY) && !externalPackageName.equals("")) {
-						// Iterate all external packages
-						for (String extPackageName : extPackages) {
-							// Check package from external JAR/class file
-							if (javaPackage.getElementName().equals(extPackageName.trim())
-									|| javaPackage.getElementName().startsWith(extPackageName.trim())) {
-								// Collect All Steps From JAR
-								collectCukeStepsFromJar(javaPackage, steps);
-							}
+				// Get Packages from JAR exists in class-path
+				if ((javaPackage.getKind() == JAVA_JAR_BINARY) && !externalPackageName.equals("")) {
+					// Iterate all external packages
+					for (String extPackageName : extPackages) {
+						// Check package from external JAR/class file
+						if (javaPackage.getElementName().equals(extPackageName.trim())
+								|| javaPackage.getElementName().startsWith(extPackageName.trim())) {
+							// Collect All Steps From JAR
+							collectCukeStepsFromJar(javaPackage, steps);
 						}
 					}
 				}
 			}
-		} catch (CoreException e) {
-			e.printStackTrace();
 		}
-		return steps;
 	}
 
 	/**

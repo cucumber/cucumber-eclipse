@@ -50,7 +50,7 @@ public class Editor extends TextEditor implements IStepListener {
 	private Annotation[] oldAnnotations;
 	private GherkinOutlinePage outlinePage;
 	private GherkinModel model;
-	private IStepProvider stepProvider;
+	private ExtensionRegistryStepProvider stepProvider;
 	
 	public Editor() {
 		super();
@@ -176,6 +176,7 @@ public class Editor extends TextEditor implements IStepListener {
 		
 		stepProvider = new ExtensionRegistryStepProvider(((IFileEditorInput) newInput).getFile());
 		stepProvider.addStepListener(this);
+		stepProvider.reload();
 	}
 
 	public void dispose() {
