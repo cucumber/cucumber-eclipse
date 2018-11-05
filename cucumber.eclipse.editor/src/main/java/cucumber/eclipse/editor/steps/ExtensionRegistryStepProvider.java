@@ -89,13 +89,15 @@ public class ExtensionRegistryStepProvider implements IStepProvider, IStepListen
 		SubMonitor subMonitor = SubMonitor.convert(progressMonitor, "Reloading steps", stepDefinitions.size());
 		try {
 			for (IStepDefinitions stepDef : stepDefinitions) {
-				newSteps.addAll(stepDef.getSteps(file, subMonitor.split(1)));
+				newSteps.addAll(stepDef.getSteps(file, subMonitor.newChild(1)));
 				if (subMonitor.isCanceled()) {
 					return Collections.emptySet();
 				}
 			}
 		} finally {
-			SubMonitor.done(progressMonitor);
+			 if (progressMonitor != null) {
+				 progressMonitor.done();
+	         }
 		}
 		return newSteps;
 	}

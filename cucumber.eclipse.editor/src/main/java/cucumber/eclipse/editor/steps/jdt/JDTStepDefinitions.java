@@ -58,10 +58,12 @@ public class JDTStepDefinitions extends StepDefinitions implements IStepDefiniti
 			projects.addAll(Arrays.asList(project.getReferencedProjects()));
 			SubMonitor subMonitor = SubMonitor.convert(progressMonitor, projects.size());
 			for (IProject projectToScan : projects) {
-				scanProject(projectToScan, featurefile, steps, subMonitor.split(1));
+				scanProject(projectToScan, featurefile, steps, subMonitor.newChild(1));
 			}
 		} finally {
-			SubMonitor.done(progressMonitor);
+			if (progressMonitor != null) {
+				 progressMonitor.done();
+	         }
 		}
 		return steps;
 	}
@@ -116,7 +118,9 @@ public class JDTStepDefinitions extends StepDefinitions implements IStepDefiniti
 				}
 			}
 		} finally {
-			SubMonitor.done(progressMonitor);
+			if (progressMonitor != null) {
+				 progressMonitor.done();
+	         }
 		}
 	}
 
