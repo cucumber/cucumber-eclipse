@@ -12,8 +12,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
-
+import org.eclipse.core.runtime.jobs.Job;
 import cucumber.eclipse.steps.integration.IStepDefinitions;
 import cucumber.eclipse.steps.integration.IStepListener;
 import cucumber.eclipse.steps.integration.Step;
@@ -49,27 +52,44 @@ public class ExtensionRegistryStepProvider implements IStepProvider, IStepListen
 	 * Asyncrounous load steps and notify listeners
 	 */
 	public void reload() {
-		//TODO can we obtain a progressmonitor somewhere?
-		Set<Step> set = getSteps(null);
-		steps.set(set);
-		for (IStepListener listener : listeners) {
-			if (listener == this) {
-				continue;
+		final Job job = new Job("Scanning for step definitions") {
+
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				try {
+					try {
+						Set<Step> set = getSteps(monitor);
+						steps.set(set);
+						for (IStepListener listener : listeners) {
+							if (listener == ExtensionRegistryStepProvider.this) {
+								continue;
+							}
+							listener.onStepsChanged(new StepsChangedEvent());
+						}
+					} catch (CoreException e) {
+						return new Status(IStatus.ERROR, "cucumber.eclipse.editor", "reloading step definitions failed ("+e+")", e);
+					}
+					
+				} catch(OperationCanceledException oce) {
+					return Status.CANCEL_STATUS;
+				}
+				
+				if (monitor.isCanceled()) {
+					return Status.CANCEL_STATUS;
+				}
+				return Status.OK_STATUS;
 			}
-			listener.onStepsChanged(new StepsChangedEvent());
-		}
+	     };
+	     job.setUser(true);
+	     job.schedule();
 	}
 
-	public Set<Step> getSteps(IProgressMonitor progressMonitor) {
+	public Set<Step> getSteps(IProgressMonitor progressMonitor) throws CoreException {
 		Set<Step> newSteps = new LinkedHashSet<Step>();
 		SubMonitor subMonitor = SubMonitor.convert(progressMonitor, "Reloading steps", stepDefinitions.size());
 		try {
 			for (IStepDefinitions stepDef : stepDefinitions) {
-				try {
-					newSteps.addAll(stepDef.getSteps(file, subMonitor.split(1)));
-				} catch (CoreException e) {
-					e.printStackTrace();
-				}
+				newSteps.addAll(stepDef.getSteps(file, subMonitor.split(1)));
 				if (subMonitor.isCanceled()) {
 					return Collections.emptySet();
 				}
