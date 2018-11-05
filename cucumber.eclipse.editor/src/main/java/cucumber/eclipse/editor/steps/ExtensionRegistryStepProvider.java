@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 
 import cucumber.eclipse.steps.integration.IStepDefinitions;
 import cucumber.eclipse.steps.integration.IStepListener;
@@ -41,8 +43,20 @@ public class ExtensionRegistryStepProvider implements IStepProvider, IStepListen
 
 	private void reloadSteps(IProgressMonitor progressMonitor) {
 		steps.clear();
-		for (IStepDefinitions stepDef : stepDefinitions) {
-			steps.addAll(stepDef.getSteps(file, progressMonitor));
+		SubMonitor subMonitor = SubMonitor.convert(progressMonitor, "Reloading steps", stepDefinitions.size());
+		try {
+			for (IStepDefinitions stepDef : stepDefinitions) {
+				try {
+					steps.addAll(stepDef.getSteps(file, subMonitor.split(1)));
+				} catch (CoreException e) {
+					e.printStackTrace();
+				}
+				if (subMonitor.isCanceled()) {
+					return;
+				}
+			}
+		} finally {
+			SubMonitor.done(progressMonitor);
 		}
 	}
 
