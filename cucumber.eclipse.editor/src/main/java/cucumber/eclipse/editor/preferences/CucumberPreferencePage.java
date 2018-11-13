@@ -1,6 +1,7 @@
 package cucumber.eclipse.editor.preferences;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -15,6 +16,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import cucumber.eclipse.editor.Activator;
+import cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants.CucumberIndentationStyle;
 
 public class CucumberPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
@@ -60,7 +62,10 @@ public class CucumberPreferencePage extends FieldEditorPreferencePage implements
 		addField(new BooleanFieldEditor(
 			ICucumberPreferenceConstants.PREF_FORMAT_PRESERVE_BLANK_LINE_BETWEEN_STEPS,
 			getString("&Preserve blank lines between steps"), parent));
-
+		
+		addField(new ComboFieldEditor(ICucumberPreferenceConstants.PREF_INDENTATION_STYLE, 
+			getString("&Indentation Style:"), CucumberIndentationStyle.getLabelsAndValues(), 
+			new Composite(parent, SWT.NONE)));
 	}
 
 	public static Image getImage(String imagePath) {
