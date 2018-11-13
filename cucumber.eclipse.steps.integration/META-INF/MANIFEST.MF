@@ -11,14 +11,22 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ClassPath: .,
  META-INF/lib/cucumber-core-1.2.5.jar,
- META-INF/lib/gherkin-2.12.2.jar
+ META-INF/lib/gherkin-2.12.2.jar,
+ META-INF/lib/cucumber-expressions-6.1.0.jar
 Export-Package: cucumber.eclipse.steps.integration,
  cucumber.runtime,
+ cucumber.runtime.autocomplete,
+ cucumber.runtime.formatter,
  cucumber.runtime.io,
+ cucumber.runtime.model,
  cucumber.runtime.snippets,
+ cucumber.runtime.table,
+ cucumber.runtime.xstream,
  gherkin,
  gherkin.formatter,
+ gherkin.formatter.ansi,
  gherkin.formatter.model,
- gherkin.parser,
  gherkin.lexer,
- gherkin.util
+ gherkin.parser,
+ gherkin.util,
+ io.cucumber.cucumberexpressions

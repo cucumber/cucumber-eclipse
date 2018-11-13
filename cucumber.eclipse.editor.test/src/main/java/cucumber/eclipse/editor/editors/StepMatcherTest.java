@@ -1,11 +1,15 @@
 package cucumber.eclipse.editor.editors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import cucumber.eclipse.steps.integration.Step;
@@ -22,6 +26,15 @@ public class StepMatcherTest {
 		assertEquals(s, stepMatcher.matchSteps("en", Collections.singleton(s), "When I run a test"));
 	}
 
+	@Test
+	public void noStepMatches() {
+
+		Step s1 = createStep("^I run a test$");
+		Step s2 = createStep("^This is an other step$");
+
+		assertNull(stepMatcher.matchSteps("en", new HashSet<Step>(Arrays.asList(s1, s2)), "When I write anything"));
+	}
+	
 	@Test
 	public void otherLanguageStepMatches() {
 
@@ -118,6 +131,48 @@ public class StepMatcherTest {
 				"Given there are two cucumbers and fifteen gherkins"));
 	}
 
+	@Test
+	public void cucumberExpressionStepMatches() {
+
+		Step s = createStep("I run a {word}");
+		assertEquals(s, stepMatcher.matchSteps("en", Collections.singleton(s), "When I run a test"));
+		
+		s = createStep("I expect {int} cucumber(s)");
+		assertEquals(s, stepMatcher.matchSteps("en", Collections.singleton(s), "Then I expect 5 cucumbers"));
+		assertEquals(s, stepMatcher.matchSteps("en", Collections.singleton(s), "Then I expect 1 cucumber"));
+	}
+	
+	@Test
+	@Ignore("custom cucumber expressions are not detected but do not crash the editor anymore")
+	public void customCucumberExpressionStepMatches() {
+
+		Step s = createStep("I have a {color} ball");
+		assertEquals(s, stepMatcher.matchSteps("en", Collections.singleton(s), "  Given I have a red ball"));
+	}
+	
+	@Test
+	public void customCucumberExpressionStepMatchesButDoesNotThrowException() {
+
+		Step s = createStep("I have a {color} ball");
+		try {
+			stepMatcher.matchSteps("en", Collections.singleton(s), "  Given I have a red ball");
+		} 
+		catch (Exception e) {
+			fail("Ooops ! I do not except exception");
+		}
+	}
+
+	@Test
+	public void shouldNotThrowExceptionWhenPatternIsMalformed() {
+		try {
+		Step s = createStep("^(<p>|?>region|regions) of type (.*) (?>are|is) covering all references$");
+		stepMatcher.matchSteps("en", Collections.singleton(s), "  Given I have a red ball");
+		} 
+		catch (Exception e) {
+			fail("Ooops ! I do not except exception");
+		}
+	}
+	
 	private Step createStep(String text) {
 
 		Step s = new Step();
