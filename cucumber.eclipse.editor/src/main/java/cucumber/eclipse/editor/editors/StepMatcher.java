@@ -13,16 +13,39 @@ class StepMatcher {
 	private Pattern groupPatternNonParameterMatch = Pattern.compile("(\\(\\?:.+?\\))");
 	private Pattern groupPattern = Pattern.compile("(\\(.+?\\))");
 
+	public String getTextStatement(String language, String expression) {
+		Matcher matcher = getBasicStatementMatcher(language, expression);
+		if(matcher == null) {
+			return null;
+		}
+		if(matcher.matches()) {
+			return matcher.group(1);
+		}
+		return null;
+	}
 	
-	public Step matchSteps(String languageCode, Set<Step> steps, String currentLine) {
-
-		//System.out.println("StepMatcher matchSteps() steps = " + steps);
-		Pattern cukePattern = getLanguageKeyWordMatcher(languageCode);
+	/**
+	 * Get a matcher to ensure text starts with a basic step keyword : Given, When,
+	 * Then, etc
+	 * 
+	 * @param language the document language
+	 * @param text the text to match
+	 * @return a matcher
+	 */
+	private Matcher getBasicStatementMatcher(String language, String text) {
+		Pattern cukePattern = getLanguageKeyWordMatcher(language);
 
 		if (cukePattern == null)
 			return null;
 
-		Matcher matcher = cukePattern.matcher(currentLine);
+		return cukePattern.matcher(text.trim());
+	}
+	
+	public Step matchSteps(String languageCode, Set<Step> steps, String currentLine) {
+
+		//System.out.println("StepMatcher matchSteps() steps = " + steps);
+		
+		Matcher matcher = getBasicStatementMatcher(languageCode, currentLine);
 
 		if (matcher.matches()) {
 

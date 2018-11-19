@@ -1,6 +1,9 @@
 package cucumber.eclipse.editor.editors;
 
 import org.eclipse.jface.preference.IPreferenceStore;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import org.eclipse.core.resources.IMarker;
@@ -10,6 +13,7 @@ import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
+import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
@@ -160,5 +164,14 @@ public class GherkinConfiguration extends TextSourceViewerConfiguration {
 	@Override
 	public int getTabWidth(ISourceViewer sourceViewer) {
 		return 2;
+	}
+	
+	@Override
+	public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
+		IHyperlinkDetector[] hyperlinkDetectors = super.getHyperlinkDetectors(sourceViewer);
+		StepHyperlinkDetector stepHyperlinkDetector = new StepHyperlinkDetector(this.editor);
+		IHyperlinkDetector[] gherkinHyperlinkDetectors = Arrays.copyOf(hyperlinkDetectors, hyperlinkDetectors.length + 1);
+		gherkinHyperlinkDetectors[hyperlinkDetectors.length] = stepHyperlinkDetector;
+		return gherkinHyperlinkDetectors;
 	}
 }

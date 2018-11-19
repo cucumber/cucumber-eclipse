@@ -1,7 +1,9 @@
 package cucumber.eclipse.editor.editors;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
@@ -180,4 +182,18 @@ public class StepMatcherTest {
 		return s;
 	}
 
+	@Test
+	public void shouldReturnExpressionWithoutStartingKeyword() {
+		String statement = stepMatcher.getTextStatement("en", "Given I have a cat");
+		assertThat(statement, equalTo("I have a cat"));
+		
+		statement = stepMatcher.getTextStatement("en", "When I carress him");
+		assertThat(statement, equalTo("I carress him"));
+		
+		statement = stepMatcher.getTextStatement("en", "Then he purrs");
+		assertThat(statement, equalTo("he purrs"));
+		
+		statement = stepMatcher.getTextStatement("en", "And I am happy");
+		assertThat(statement, equalTo("I am happy"));
+	}
 }
