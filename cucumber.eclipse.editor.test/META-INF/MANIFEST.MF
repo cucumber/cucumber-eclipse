@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Cucumber Editor Test
 Bundle-SymbolicName: cucumber.eclipse.editor.test
-Bundle-Version: 0.0.22.qualifier
+Bundle-Version: 0.0.23.qualifier
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Fragment-Host: cucumber.eclipse.editor
