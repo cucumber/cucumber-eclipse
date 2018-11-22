@@ -27,10 +27,11 @@ New release 0.0.23
 ### Bug fixes
 
  * Fix gherkin editor crash on wrong regexp in a step definition #286
+ * Fix gherkin editor crash when using cucumber expressions #267 #278
  * Fix string literal syntax highlighting #280
 
 ### Known limitations
 
- * Custom parameter types in cucumber expressions are not detected. Thus, the expression `I have a {word} cat` is supported, but `I have a {color} cat` will not. 
+ * Custom parameter types in cucumber expressions are not detected. Thus, the expression `I have a {word} cat` is supported, but `I have a {color} cat` will not. #291 
 
 ![Support cucumber expression limitation](/images/_posts/2018-11-22/cucumber_expression_limitation.png)
