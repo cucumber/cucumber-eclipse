@@ -3,7 +3,7 @@ layout: post
 title: New release 0.0.23
 ---
 Version: 0.0.23.201811220126 
-November updates !
+New release 0.0.23
 ---
 
 ### New features
@@ -14,7 +14,7 @@ November updates !
 
  * go to step definition from a feature file with <kbd>CTRL</kbd>+<kbd>click</kbd> #290
 
-![Go to step definition](/images/_posts/2018-11-22/goto_ctrl_click.png)
+![Go to step definition](/images/_posts/2018-11-22/goto_ctrl_click.gif)
 
 ### Improvements
 
