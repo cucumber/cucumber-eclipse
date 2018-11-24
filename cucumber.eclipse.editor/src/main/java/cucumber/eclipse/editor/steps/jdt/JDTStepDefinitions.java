@@ -41,6 +41,7 @@ public class JDTStepDefinitions extends StepDefinitions implements IStepDefiniti
 
 	private CucumberUserSettingsPage userSettingsPage = new CucumberUserSettingsPage();
 	
+	
 	// 1. To get Steps as Set from both Java-Source and JAR file
 	@Override
 	public Set<Step> getSteps(IFile featurefile, IProgressMonitor progressMonitor) throws JavaModelException, CoreException {
@@ -54,11 +55,13 @@ public class JDTStepDefinitions extends StepDefinitions implements IStepDefiniti
 			//Scan project and direct referenced projects...
 			Set<IProject> projects = new LinkedHashSet<IProject>();
 			IProject project = featurefile.getProject();
-			projects.add(project);
-			projects.addAll(Arrays.asList(project.getReferencedProjects()));
-			SubMonitor subMonitor = SubMonitor.convert(progressMonitor, projects.size());
-			for (IProject projectToScan : projects) {
-				scanProject(projectToScan, featurefile, steps, subMonitor.newChild(1));
+			if(project.isAccessible()) { // skip closed project
+				projects.add(project);
+				projects.addAll(Arrays.asList(project.getReferencedProjects()));
+				SubMonitor subMonitor = SubMonitor.convert(progressMonitor, projects.size());
+				for (IProject projectToScan : projects) {
+					scanProject(projectToScan, featurefile, steps, subMonitor.newChild(1));
+				}
 			}
 		} finally {
 			if (progressMonitor != null) {
