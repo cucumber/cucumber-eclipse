@@ -10,11 +10,11 @@ New release 0.0.23
 
  * add preference to configure indentation style #284
 
-![Indentation preference](/images/_posts/2018-11-22/indentation_preference.png)
+![Indentation preference](/cucumber-eclipse/assets/indentation_preference.png)
 
  * go to step definition from a feature file with <kbd>CTRL</kbd>+<kbd>click</kbd> #290
 
-![Go to step definition](/images/_posts/2018-11-22/goto_ctrl_click.gif)
+![Go to step definition](/cucumber-eclipse/assets/goto_ctrl_click.gif)
 
 ### Improvements
 
@@ -22,7 +22,7 @@ New release 0.0.23
  * resolution of step definitions from parent projects #289 
  * support of cucumber expressions #285
 
-![Support cucumber expression](/images/_posts/2018-11-22/cucumber_expression.png)
+![Support cucumber expression](/cucumber-eclipse/assets/cucumber_expression.png)
 
 ### Bug fixes
 
@@ -34,4 +34,4 @@ New release 0.0.23
 
  * Custom parameter types in cucumber expressions are not detected. Thus, the expression `I have a {word} cat` is supported, but `I have a {color} cat` will not. #291 
 
-![Support cucumber expression limitation](/images/_posts/2018-11-22/cucumber_expression_limitation.png)
+![Support cucumber expression limitation](/cucumber-eclipse/assets/cucumber_expression_limitation.png)
