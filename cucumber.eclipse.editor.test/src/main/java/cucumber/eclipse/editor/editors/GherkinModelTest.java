@@ -141,4 +141,24 @@ public class GherkinModelTest {
 
 		assertThat(statement.getName(), is("y"));
 	}
+	
+	@Test
+	public void supportI18NFeature() throws BadLocationException {
+		String source = "# language: fr\n"
+				+ "Fonctionnalité: x\n" + "\n"
+				+ "  Scénario: 1\n"
+				+ "    Soit y\n" // line 3
+				+ "    Alors z\n";
+
+		Document document = new Document(source);
+		GherkinModel model = new GherkinModel();
+		model.updateFromDocument(document);
+
+		int stepOffset = source.indexOf("Soit");
+		BasicStatement statement = model.getStepElement(stepOffset)
+				.getStatement();
+
+		assertThat(statement.getName(), is("y"));
+	}
+	
 }
