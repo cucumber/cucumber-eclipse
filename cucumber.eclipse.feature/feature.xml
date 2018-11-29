@@ -2,7 +2,7 @@
 <feature
       id="cucumber.eclipse.feature"
       label="Cucumber Eclipse Feature"
-      version="0.0.22.qualifier">
+      version="0.0.23.qualifier">
 
    <description>
       Eclipse plugin for Cucumber

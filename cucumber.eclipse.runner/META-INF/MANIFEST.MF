@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Cucumber Runner
 Bundle-SymbolicName: cucumber.eclipse.runner
-Bundle-Version: 0.0.22.qualifier
+Bundle-Version: 0.0.23.qualifier
 Bundle-Activator: cucumber.eclipse.runner.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime
