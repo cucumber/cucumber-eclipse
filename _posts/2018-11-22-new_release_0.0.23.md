@@ -14,7 +14,7 @@ New release 0.0.23
 
  * go to step definition from a feature file with <kbd>CTRL</kbd>+<kbd>click</kbd> #290
 
-<img src="/cucumber-eclipse/assets/goto_ctrl_click.png" alt="Go to step definition" width="680px" />
+<img src="/cucumber-eclipse/assets/goto_ctrl_click.gif" alt="Go to step definition" width="680px" />
 
 ### Improvements
 
