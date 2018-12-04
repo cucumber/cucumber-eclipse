@@ -19,6 +19,7 @@ import org.eclipse.jface.text.IRegion;
 import cucumber.eclipse.editor.Activator;
 import cucumber.eclipse.editor.markers.IMarkerManager;
 import cucumber.eclipse.editor.markers.MarkerIds;
+import cucumber.eclipse.editor.markers.MarkerManager;
 import cucumber.eclipse.editor.steps.IStepProvider;
 import cucumber.eclipse.steps.integration.StepPreferences;
 import gherkin.formatter.Formatter;
@@ -35,6 +36,7 @@ import gherkin.formatter.model.Step;
  *
  */
 public class GherkinErrorMarker implements Formatter {
+	
 	private final IMarkerManager markerManager;
 	private final IFile file;
 	private final IDocument document;
@@ -54,9 +56,7 @@ public class GherkinErrorMarker implements Formatter {
 	}
 
 	public void removeExistingMarkers() {
-		markerManager.removeAll(MarkerIds.LEXING_ERROR, file);
-		markerManager.removeAll(MarkerIds.SYNTAX_ERROR, file);
-		markerManager.removeAll(MarkerIds.UNMATCHED_STEP, file);
+		cleanMarkers(file);
 	}
 
 	/*
@@ -307,5 +307,12 @@ public class GherkinErrorMarker implements Formatter {
 	public void startOfScenarioLifeCycle(Scenario arg0) {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	public static void cleanMarkers(IFile featureFile) {
+		MarkerManager markerManager = new MarkerManager();
+		markerManager.removeAll(MarkerIds.LEXING_ERROR, featureFile);
+		markerManager.removeAll(MarkerIds.SYNTAX_ERROR, featureFile);
+		markerManager.removeAll(MarkerIds.UNMATCHED_STEP, featureFile);
 	}
 }

@@ -52,7 +52,7 @@ public class JavaParser extends AbstractHandler {
 		// For unused import declarations[TBD]
 		astParser.setCompilerOptions(Collections.singletonMap(JavaCore.COMPILER_PB_UNUSED_IMPORT, JavaCore.ERROR));
 		astParser.setSource(iCompilationUnit);
-		astParser.setResolveBindings(true);
+		astParser.setResolveBindings(false);
 		compUnit = (CompilationUnit) astParser.createAST(progressMonitor);
 	}
 

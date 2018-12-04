@@ -240,19 +240,22 @@ public class Editor extends TextEditor implements IStepListener {
 		return super.getAdapter(required);
 	}
 
+	private IFile getFeatureFile() {
+		IFileEditorInput fileEditorInput = (IFileEditorInput) input;
+		return fileEditorInput.getFile();
+	}
 	
-	
-	
+	public void cleanMarkers() {
+		GherkinErrorMarker.cleanMarkers(this.getFeatureFile());
+	}
 	
 	private void validateAndMark() {
 		
 		IDocument doc = getDocumentProvider().getDocument(input);
-		IFileEditorInput fileEditorInput = (IFileEditorInput) input;
-		IFile featureFile = fileEditorInput.getFile();
+		IFile featureFile = this.getFeatureFile();
 		
 		MarkerManager markerManager = new MarkerManager();
-		GherkinErrorMarker marker = new GherkinErrorMarker(stepProvider, markerManager, featureFile, doc);
-		marker.removeExistingMarkers();
+		GherkinErrorMarker marker = cleanMarkers(doc, featureFile, markerManager);
 
 		assertIsACucumberProject(featureFile.getProject());
 		
@@ -262,6 +265,12 @@ public class Editor extends TextEditor implements IStepListener {
 		} catch (LexingError l) {
 			markerManager.add(MarkerIds.LEXING_ERROR, featureFile, IMarker.SEVERITY_ERROR, l.getLocalizedMessage(), 1, 0, 0);
 		}
+	}
+
+	protected GherkinErrorMarker cleanMarkers(IDocument doc, IFile featureFile, MarkerManager markerManager) {
+		GherkinErrorMarker marker = new GherkinErrorMarker(stepProvider, markerManager, featureFile, doc);
+		marker.removeExistingMarkers();
+		return marker;
 	}
 	
 	private void assertIsACucumberProject(IProject project) {
