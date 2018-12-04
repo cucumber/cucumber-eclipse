@@ -11,19 +11,19 @@
       </stepDefinitionIntegration>
    </extension>
    <extension 
-    id="stepsNature" 
-    name="Cucumber Steps Nature" 
+    id="cucumber.eclipse.steps.jdt.stepsNature" 
+    name="Cucumber Java" 
     point="org.eclipse.core.resources.natures">
     <requires-nature
           id="org.eclipse.jdt.core.javanature">
-    </requires-nature> 
+    </requires-nature>
       <runtime> 
          <run class="cucumber.eclipse.steps.jdt.CucumberProjectNature"/> 
       </runtime> 
-      <builder id="cucumber.eclipse.steps.jdt.stepsBuilder"/> 
+      <builder id="cucumber.eclipse.steps.jdt.stepsBuilder"/>
    </extension> 
-<extension id="cucumber.eclipse.steps.jdt.stepsBuilder" name="Cucumber Step Builder" point="org.eclipse.core.resources.builders"> 
-      <builder hasNature="true"> 
+   <extension id="cucumber.eclipse.steps.jdt.stepsBuilder" name="Cucumber Builder" point="org.eclipse.core.resources.builders"> 
+      <builder hasNature="true" callOnEmptyDelta="false"> 
          <run class="cucumber.eclipse.steps.jdt.StepsBuilder"/> 
       </builder> 
    </extension>

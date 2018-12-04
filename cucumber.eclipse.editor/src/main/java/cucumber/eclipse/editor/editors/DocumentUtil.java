@@ -12,7 +12,7 @@ import org.eclipse.jface.text.IRegion;
 public class DocumentUtil {
 
 	static String getDocumentLanguage(IDocument document) {
-		String lang = null;
+		String lang = "en"; // default
 		try {
 			IRegion lineInfo = document.getLineInformation(0);
 			int length = lineInfo.getLength();

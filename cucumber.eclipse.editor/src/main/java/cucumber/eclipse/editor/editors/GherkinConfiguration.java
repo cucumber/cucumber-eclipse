@@ -34,9 +34,8 @@ import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import cucumber.eclipse.editor.markers.MarkerResolutionProposal;
 import cucumber.eclipse.editor.markers.StepCreationMarkerResolutionGenerator;
-
+import cucumber.eclipse.steps.integration.StepPreferences;
 import cucumber.eclipse.editor.Activator;
-import cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants;
 
 public class GherkinConfiguration extends TextSourceViewerConfiguration {
 
@@ -125,7 +124,7 @@ public class GherkinConfiguration extends TextSourceViewerConfiguration {
 	public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
-		if (store.getBoolean(ICucumberPreferenceConstants.PREF_CHECK_STEP_DEFINITIONS)) {
+		if (store.getBoolean(StepPreferences.PREF_CHECK_STEP_DEFINITIONS)) {
 			ContentAssistant ca = new ContentAssistant();
 			IContentAssistProcessor cap = new GherkinKeywordsAssistProcessor(editor);
 				ca.setContentAssistProcessor(cap, IDocument.DEFAULT_CONTENT_TYPE);

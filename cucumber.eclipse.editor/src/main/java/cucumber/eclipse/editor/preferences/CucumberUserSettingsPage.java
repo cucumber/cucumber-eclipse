@@ -23,6 +23,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import cucumber.eclipse.editor.Activator;
+import cucumber.eclipse.steps.integration.StepPreferences;
 
 /**
  * @author girija.panda@nokia.com
@@ -123,7 +124,7 @@ public class CucumberUserSettingsPage extends PreferencePage implements IWorkben
 	// Initialize values
 	private void initializeValues() {
 		IPreferenceStore store = getPreferenceStore();
-		packageTextBox.setText(store.getString(ICucumberPreferenceConstants.PREF_ADD_PACKAGE));
+		packageTextBox.setText(store.getString(StepPreferences.PREF_ADD_PACKAGE));
 	}
 
 	// Perform Apply/OK
@@ -146,7 +147,7 @@ public class CucumberUserSettingsPage extends PreferencePage implements IWorkben
 	// Store Values
 	private void storeValues() {
 		IPreferenceStore store = getPreferenceStore();
-		store.setValue(ICucumberPreferenceConstants.PREF_ADD_PACKAGE, getText(this.packageTextBox));
+		store.setValue(StepPreferences.PREF_ADD_PACKAGE, getText(this.packageTextBox));
 	}
 
 	// Get Text From TextBox
@@ -161,23 +162,6 @@ public class CucumberUserSettingsPage extends PreferencePage implements IWorkben
 		ImageDescriptor imageDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(Activator.PLUGIN_ID, imagePath);
 		Image image = manager.createImage(imageDescriptor);
 		return image;
-	}
-
-	// Get Package Name(s) From User-Settings Page
-	public String getPackageName() {
-		IPreferenceStore store = getPreferenceStore();
-		return store.getString(ICucumberPreferenceConstants.PREF_ADD_PACKAGE);
-	}
-
-	//#239:Only match step implementation in same package as feature file	
-	public Boolean getOnlyPackages() {
-		IPreferenceStore store = getPreferenceStore();
-		return store.getBoolean(ICucumberPreferenceConstants.PREF_ONLY_SEARCH_PACKAGE);
-	}
-	
-	public String getOnlySpecificPackage() {
-		IPreferenceStore store = getPreferenceStore();
-		return store.getString(ICucumberPreferenceConstants.PREF_ONLY_SEARCH_SPECIFIC_PACKAGE);
 	}
 	
 	public static String getString(String key) {

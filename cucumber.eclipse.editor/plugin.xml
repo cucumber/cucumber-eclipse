@@ -222,6 +222,12 @@
     </shortcut>
 </extension>
     <extension
+           id="cucumber.eclipse.markers.project.cucumber_nature_missing"
+           point="org.eclipse.core.resources.markers"
+           name="Cucumber nature missing">
+           <super type="org.eclipse.core.resources.problemmarker"/>
+    </extension>
+    <extension
            id="cucumber.eclipse.editor.editors.Editor.syntaxerror"
            point="org.eclipse.core.resources.markers"
            name="Gherkin Syntax Error Marker">
@@ -329,17 +335,5 @@
           name="Step-Definition class">
     </wizard>
  </extension> 
- 
- <!-- Newly added  By Girija
- 	  Defining 'JDTStepDefinitions' class by inheriting 'cucumber.eclipse.editor.steps.jdt.StepDefinitions' class .
- 	  Used for the feature : 'Reading Step-Definitions from external JAR'
- 	  Commented in 'cucumber.eclipse.steps.jdt/plugin.xml' in order to avoid plugin-dependency conflicts
- -->
- <extension
-         point="cucumber.eclipse.steps.integration">
-      <stepDefinitionIntegration
-            class="cucumber.eclipse.editor.steps.jdt.JDTStepDefinitions">
-      </stepDefinitionIntegration>
-  </extension>
- 
+
 </plugin>

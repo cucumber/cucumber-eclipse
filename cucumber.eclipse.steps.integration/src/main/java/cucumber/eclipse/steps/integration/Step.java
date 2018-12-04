@@ -59,7 +59,6 @@ public class Step {
 	public void setSource(IResource source) {
 		this.source = source;
 	}
-	
 	public int getLineNumber() {
 		return lineNumber;
 	}
@@ -127,6 +126,51 @@ public class Step {
 		//For Steps From External-ClassPath JAR
 		else		
 			return "Step [text=" + text + ", source=" + sourceName+", package="+ packageName +"]";
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((lang == null) ? 0 : lang.hashCode());
+		result = prime * result + lineNumber;
+		result = prime * result + ((packageName == null) ? 0 : packageName.hashCode());
+		result = prime * result + ((sourceName == null) ? 0 : sourceName.hashCode());
+		result = prime * result + ((text == null) ? 0 : text.hashCode());
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Step other = (Step) obj;
+		if (lang == null) {
+			if (other.lang != null)
+				return false;
+		} else if (!lang.equals(other.lang))
+			return false;
+		if (lineNumber != other.lineNumber)
+			return false;
+		if (packageName == null) {
+			if (other.packageName != null)
+				return false;
+		} else if (!packageName.equals(other.packageName))
+			return false;
+		if (sourceName == null) {
+			if (other.sourceName != null)
+				return false;
+		} else if (!sourceName.equals(other.sourceName))
+			return false;
+		if (text == null) {
+			if (other.text != null)
+				return false;
+		} else if (!text.equals(other.text))
+			return false;
+		return true;
 	}
 	
 }

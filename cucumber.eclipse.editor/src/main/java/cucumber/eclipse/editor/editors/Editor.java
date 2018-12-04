@@ -6,9 +6,14 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.IJobChangeListener;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
@@ -28,6 +33,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.editors.text.TextEditor;
+import org.eclipse.ui.texteditor.MarkerUtilities;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import cucumber.eclipse.editor.Activator;
@@ -38,6 +44,7 @@ import cucumber.eclipse.editor.steps.IStepProvider;
 import cucumber.eclipse.editor.template.GherkinSampleTemplate;
 import cucumber.eclipse.steps.integration.IStepListener;
 import cucumber.eclipse.steps.integration.StepsChangedEvent;
+import cucumber.eclipse.steps.jdt.CucumberProjectNature;
 import gherkin.lexer.LexingError;
 import gherkin.parser.Parser;
 
@@ -119,8 +126,19 @@ public class Editor extends TextEditor implements IStepListener {
 	 */
 	@Override
 	public void onStepsChanged(StepsChangedEvent event) {
-		validateAndMark();
+		this.refresh();
 	}
+	
+	
+	public void refresh() {
+		this.stepProvider.reload(new JobChangeAdapter() {
+			@Override
+			public void done(IJobChangeEvent event) {
+				validateAndMark();
+			}
+		});
+	}
+	
 	
 	public GherkinModel getModel() {
 		return model;
@@ -131,7 +149,7 @@ public class Editor extends TextEditor implements IStepListener {
 	}
 	
 	public void updateGherkinModel(GherkinModel model) {
-		validateAndMark();
+//		validateAndMark();
 		updateOutline(model.getFeatureElement());
 		updateFoldingStructure(model.getFoldRanges());
 	}
@@ -176,9 +194,12 @@ public class Editor extends TextEditor implements IStepListener {
 		
 		stepProvider = new ExtensionRegistryStepProvider(((IFileEditorInput) newInput).getFile());
 		stepProvider.addStepListener(this);
-		stepProvider.reload();
+		this.refresh();
+
 	}
 
+	
+	
 	public void dispose() {
 		super.dispose();
 
@@ -219,19 +240,54 @@ public class Editor extends TextEditor implements IStepListener {
 		return super.getAdapter(required);
 	}
 
+	
+	
+	
+	
 	private void validateAndMark() {
+		
 		IDocument doc = getDocumentProvider().getDocument(input);
 		IFileEditorInput fileEditorInput = (IFileEditorInput) input;
 		IFile featureFile = fileEditorInput.getFile();
+		
 		MarkerManager markerManager = new MarkerManager();
 		GherkinErrorMarker marker = new GherkinErrorMarker(stepProvider, markerManager, featureFile, doc);
 		marker.removeExistingMarkers();
 
+		assertIsACucumberProject(featureFile.getProject());
+		
 		Parser p = new Parser(marker, false);
 		try {
 			p.parse(doc.get(), "", 0);
 		} catch (LexingError l) {
 			markerManager.add(MarkerIds.LEXING_ERROR, featureFile, IMarker.SEVERITY_ERROR, l.getLocalizedMessage(), 1, 0, 0);
+		}
+	}
+	
+	private void assertIsACucumberProject(IProject project) {
+		try {
+			boolean hasCucumberNature = project.hasNature(CucumberProjectNature.CUCUMBER_NATURE);
+			if(!hasCucumberNature) {
+				
+				IMarker[] markers = project.findMarkers(CucumberProjectNature.CUCUMBER_NATURE, false, IResource.DEPTH_ZERO);
+				boolean isAlreadyMarked = markers.length > 0;
+				if(isAlreadyMarked) {
+					return ;
+				}
+				
+				Map<String, Object> attributes = new HashMap<String, Object>();
+				attributes.put(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+				String message = String.format(
+						"The project %s contains features files but is not a 'Cucumber Project'. Configure the project to enable step definitions detection.",
+						project.getName());
+				MarkerUtilities.setMessage(attributes, message);
+				MarkerUtilities.createMarker(project, attributes, MarkerIds.CUCUMBER_NATURE_MISSING);
+			}
+		}
+		catch (CoreException exception) {
+			exception.printStackTrace();
+			Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+				String.format("Couldn't write marker %s for %s", MarkerIds.CUCUMBER_NATURE_MISSING, project.getName()), exception));
 		}
 	}
 }

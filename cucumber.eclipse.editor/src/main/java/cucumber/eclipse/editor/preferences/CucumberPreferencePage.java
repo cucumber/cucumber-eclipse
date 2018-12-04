@@ -17,6 +17,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import cucumber.eclipse.editor.Activator;
 import cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants.CucumberIndentationStyle;
+import cucumber.eclipse.steps.integration.StepPreferences;
 
 public class CucumberPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
@@ -35,16 +36,16 @@ public class CucumberPreferencePage extends FieldEditorPreferencePage implements
 		label.setImage(getImage("icons/cukes.gif"));
 
 		addField(new BooleanFieldEditor(
-			ICucumberPreferenceConstants.PREF_CHECK_STEP_DEFINITIONS,
+			StepPreferences.PREF_CHECK_STEP_DEFINITIONS,
 			getString("&Match Steps with Java Step code"), parent));
 			
 		//#239:Only match step implementation in same package as feature file	
 		addField(new BooleanFieldEditor(
-			ICucumberPreferenceConstants.PREF_ONLY_SEARCH_PACKAGE,
+			StepPreferences.PREF_ONLY_SEARCH_PACKAGE,
 			getString("&Only match steps from package and sub-packages"), parent));
 		
 		addField(new StringFieldEditor(
-			ICucumberPreferenceConstants.PREF_ONLY_SEARCH_SPECIFIC_PACKAGE, 
+			StepPreferences.PREF_ONLY_SEARCH_SPECIFIC_PACKAGE, 
 			getString("&Only match steps from specific package and sub-packages"), parent));
 		
 		label = new CLabel(parent, SWT.NULL);

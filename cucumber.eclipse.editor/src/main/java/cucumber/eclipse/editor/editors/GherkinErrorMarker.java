@@ -19,8 +19,8 @@ import org.eclipse.jface.text.IRegion;
 import cucumber.eclipse.editor.Activator;
 import cucumber.eclipse.editor.markers.IMarkerManager;
 import cucumber.eclipse.editor.markers.MarkerIds;
-import cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants;
 import cucumber.eclipse.editor.steps.IStepProvider;
+import cucumber.eclipse.steps.integration.StepPreferences;
 import gherkin.formatter.Formatter;
 import gherkin.formatter.model.Background;
 import gherkin.formatter.model.Examples;
@@ -234,7 +234,7 @@ public class GherkinErrorMarker implements Formatter {
 		
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 		
-		if (store.getBoolean(ICucumberPreferenceConstants.PREF_CHECK_STEP_DEFINITIONS)) {
+		if (store.getBoolean(StepPreferences.PREF_CHECK_STEP_DEFINITIONS)) {
 			
 			if ("".equals(stepLine.getName())) {
 				try {

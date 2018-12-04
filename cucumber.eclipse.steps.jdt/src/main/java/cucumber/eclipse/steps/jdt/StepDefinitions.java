@@ -4,16 +4,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -38,9 +43,13 @@ import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.core.search.SearchRequestor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
+import org.osgi.service.log.Logger;
+import org.osgi.service.log.LoggerFactory;
 
+import cucumber.eclipse.steps.integration.IStepDefinitions;
 import cucumber.eclipse.steps.integration.IStepListener;
 import cucumber.eclipse.steps.integration.Step;
+import cucumber.eclipse.steps.integration.StepPreferences;
 import cucumber.eclipse.steps.integration.StepsChangedEvent;
 
 /*
@@ -52,9 +61,9 @@ import cucumber.eclipse.steps.integration.StepsChangedEvent;
 //Commented for Issue #211 : Duplicate Step definitions
 //public class StepDefinitions implements IStepDefinitions {
 
-public class StepDefinitions extends MethodDefinition {
+public class StepDefinitions extends MethodDefinition implements IStepDefinitions {
 
-	public static volatile StepDefinitions INSTANCE;
+	protected static StepDefinitions INSTANCE = new StepDefinitions();
 
 	private final Pattern cukeAnnotationMatcher = Pattern.compile("cucumber\\.api\\.java\\.([a-z_]+)\\.(.*)$");
 	private static final String CUCUMBER_API_JAVA = "cucumber.api.java.";
@@ -69,10 +78,10 @@ public class StepDefinitions extends MethodDefinition {
 	//public List<IStepListener> listeners = new ArrayList<IStepListener>();
 	
 	//#240:For Changes in step implementation is reflected in feature file
-	protected static List<IStepListener> listeners = new ArrayList<IStepListener>();
-	
-	public StepDefinitions() {
+	private List<IStepListener> listeners = new ArrayList<IStepListener>();
 
+	// secure usage of the singleton
+	private StepDefinitions() {
 	}
 
 	/**
@@ -80,18 +89,15 @@ public class StepDefinitions extends MethodDefinition {
 	 * 
 	 * @return StepDefinitions
 	 */
-	public static StepDefinitions getInstance() {
-		if (INSTANCE == null) {
-			synchronized (StepDefinitions.class) {
-				if (INSTANCE == null) {
-					INSTANCE = new StepDefinitions();
-				}
-			}
-		}
-
+	protected static StepDefinitions getInstance() {
 		return INSTANCE;
 	}
 
+	@Override
+	public String supportedLanguage() {
+		return "java";
+	}
+	
 	/*
 	 * Commented due to Issue #211 : Duplicate Step definitions Redefined in
 	 * cucumber.eclipse.editor.steps.jdt.JDTStepDefinitions child class
@@ -120,8 +126,10 @@ public class StepDefinitions extends MethodDefinition {
 
 	// From Java-Source-File(.java) : Collect All Steps as List based on
 	// Cucumber-Annotations
-	public List<Step> getCukeSteps(IJavaProject javaProject, ICompilationUnit iCompUnit, IProgressMonitor progressMonitor)
+	public List<Step> getCukeSteps(ICompilationUnit iCompUnit, IProgressMonitor progressMonitor)
 			throws JavaModelException, CoreException {
+		
+		long start = System.currentTimeMillis();
 
 		List<Step> steps = new ArrayList<Step>();
 		List<CucumberAnnotation> importedAnnotations = new ArrayList<CucumberAnnotation>();
@@ -134,7 +142,7 @@ public class StepDefinitions extends MethodDefinition {
 			if (m.find()) {
 				if ("*".equals(m.group(2))) {
 					importedAnnotations.addAll(
-							getAllAnnotationsInPackage(javaProject, CUCUMBER_API_JAVA + m.group(1), m.group(1)));
+							getAllAnnotationsInPackage(iCompUnit.getJavaProject(), CUCUMBER_API_JAVA + m.group(1), m.group(1)));
 				} else {
 					importedAnnotations.add(new CucumberAnnotation(m.group(2), m.group(1)));
 				}
@@ -231,6 +239,10 @@ public class StepDefinitions extends MethodDefinition {
 
 			}
 		}
+		
+		long end = System.currentTimeMillis();
+		System.out.println("getCukeSteps " + iCompUnit.getJavaProject().getElementName() + ": " + iCompUnit.getElementName() + " " + (end - start) + " ms.");
+		
 		return steps;
 	}
 
@@ -428,7 +440,7 @@ public class StepDefinitions extends MethodDefinition {
 			if (javaPackage.getKind() == IPackageFragmentRoot.K_SOURCE) {
 
 				for (ICompilationUnit compUnit : javaPackage.getCompilationUnits()) {
-					collectedSteps.addAll(getCukeSteps(projectToScan, compUnit, progressMonitor));
+					collectedSteps.addAll(getCukeSteps(compUnit, progressMonitor));
 				}
 			}
 		}
@@ -444,14 +456,179 @@ public class StepDefinitions extends MethodDefinition {
 	 */
 
 	
-	public void removeStepListener(IStepListener listener) {
-		listeners.remove(listener); 
-	}
+	
 	
 	public void notifyListeners(StepsChangedEvent event) {
 		for (IStepListener listener : listeners) {
 			listener.onStepsChanged(event);
 		}
 	}
+	
+	@Override
+	public void scan(IFile stepDefinitionFile) {
+		long start = System.currentTimeMillis();
+		this.notifyListeners(new StepsChangedEvent(stepDefinitionFile));
+		long end = System.currentTimeMillis();
+		System.out.println("StepDefinitions for Java " + (stepDefinitionFile == null ? "" : stepDefinitionFile.getName() + " ") + "scanned in " + (end - start) + " ms.");
+	}
+	
+	@Override
+	public void scan() {
+		this.scan(null);
+	}
+
+	private StepPreferences stepPreferences = StepPreferences.INSTANCE;
+	
+	private void scanProject(IProject project, IFile featurefile, Set<Step> steps, IProgressMonitor progressMonitor) throws JavaModelException, CoreException {
+		try {
+			// Get Package name/s from 'User-Settings' preference
+			final String externalPackageName = this.stepPreferences.getPackageName();
+			//System.out.println("Package Names = " + externalPackageName);
+			String[] extPackages = externalPackageName.trim().split(COMMA);
+			
+			//#239:Only match step implementation in same package as feature file
+			final boolean onlyPackages = this.stepPreferences.getOnlyPackages();
+			final String onlySpeficicPackagesValue = this.stepPreferences.getOnlySpecificPackage().trim();
+			final boolean onlySpeficicPackages= onlySpeficicPackagesValue.length() == 0 ? false : true;
+			String featurefilePackage = featurefile.getParent().getFullPath().toString();
+	
+			if (project.isNatureEnabled(JAVA_PROJECT)) {
+				
+				IJavaProject javaProject = JavaCore.create(project);
+				IPackageFragment[] packages = javaProject.getPackageFragments();
+				SubMonitor subMonitor = SubMonitor.convert(progressMonitor, packages.length);
+				for (IPackageFragment javaPackage : packages) {
+					// Get Packages from source folder of current project
+					// #239:Only match step implementation in same package as feature file
+					if (javaPackage.getKind() == JAVA_SOURCE ) {
+						subMonitor.subTask("Scanning "+javaPackage.getPath().toString());
+						if 	((!onlyPackages || featurefilePackage.startsWith(javaPackage.getPath().toString())) && 
+							(!onlySpeficicPackages || javaPackage.getElementName().startsWith(onlySpeficicPackagesValue))) {
+							
+							// System.out.println("Package Name-1
+							// :"+javaPackage.getElementName());
+							// Collect All Steps From Source
+							collectCukeStepsFromSource(javaPackage, steps, progressMonitor);
+						}
+					}
+	
+					// Get Packages from JAR exists in class-path
+					if ((javaPackage.getKind() == JAVA_JAR_BINARY) && !externalPackageName.equals("")) {
+						subMonitor.subTask("Scanning package "+javaPackage.getElementName());
+						// Iterate all external packages
+						for (String extPackageName : extPackages) {
+							// Check package from external JAR/class file
+							if (javaPackage.getElementName().equals(extPackageName.trim())
+									|| javaPackage.getElementName().startsWith(extPackageName.trim())) {
+								// Collect All Steps From JAR
+								collectCukeStepsFromJar(javaPackage, steps);
+							}
+						}
+					}
+					subMonitor.worked(1);
+				}
+			}
+		} finally {
+			if (progressMonitor != null) {
+				 progressMonitor.done();
+	         }
+		}
+	}
+	
+	/**
+	 * Collect all cuke-steps from java-source Files
+	 * 
+	 * @param javaProject
+	 * @param javaPackage
+	 * @param steps
+	 * @param progressMonitor 
+	 * @throws JavaModelException
+	 * @throws CoreException
+	 */
+	private void collectCukeStepsFromSource(IPackageFragment javaPackage, Set<Step> steps, IProgressMonitor progressMonitor)
+			throws JavaModelException, CoreException {
+
+		long start = System.currentTimeMillis();
+		for (ICompilationUnit iCompUnit : javaPackage.getCompilationUnits()) {
+			// Collect and add Steps
+			steps.addAll(getCukeSteps(iCompUnit, progressMonitor));
+		}
+		long end = System.currentTimeMillis();
+		System.out.println("collectCukeStepsFromSource " + javaPackage.getJavaProject().getElementName() + ": " + javaPackage.getElementName() + " " + (end - start) + " ms.");
+	}
+	
+	/**
+	 * Collect all cuke-steps from .class file of Jar
+	 * 
+	 * @param javaPackage
+	 * @param steps
+	 * @throws JavaModelException
+	 * @throws CoreException
+	 */
+	private void collectCukeStepsFromJar(IPackageFragment javaPackage, Set<Step> steps)
+			throws JavaModelException, CoreException {
+		
+		long start = System.currentTimeMillis();
+		@SuppressWarnings("deprecation")
+		IClassFile[] classFiles = javaPackage.getClassFiles();
+		for (IClassFile classFile : classFiles) {
+			// System.out.println("----classFile: "
+			// +classFile.getElementName());
+			steps.addAll(getCukeSteps(javaPackage, classFile));
+		}
+		long end = System.currentTimeMillis();
+
+		System.out.println("collectCukeStepsFromJar " + javaPackage.getJavaProject().getElementName() + ": " + javaPackage.getElementName() + " " + (end - start) + " ms.");
+
+	}
+	
+	@Override
+	public void addStepListener(IStepListener listener) {
+		this.listeners.add(listener);	
+	}
+	
+	@Override
+	public void removeStepListener(IStepListener listener) {
+		this.listeners.remove(listener);
+	}
+
+	@Override
+	public Set<Step> getSteps(IFile featureFile, IProgressMonitor progressMonitor) throws CoreException {
+
+		IProject project = featureFile.getProject();
+
+		
+		Set<Step> steps = new LinkedHashSet<Step>();
+		
+		try {
+			//Scan project and direct referenced projects...
+			Set<IProject> projects = new LinkedHashSet<IProject>();
+			if(project.isAccessible()) { // skip closed project
+				projects.add(project);
+				projects.addAll(Arrays.asList(project.getReferencedProjects()));
+				SubMonitor subMonitor = SubMonitor.convert(progressMonitor, projects.size());
+				for (IProject projectToScan : projects) {
+					scanProject(projectToScan, featureFile, steps, subMonitor.newChild(1));
+				}
+			}
+		} finally {
+			if (progressMonitor != null) {
+				 progressMonitor.done();
+	         }
+		}
+		return steps;
+	}
+	
+	@Override
+	public boolean support(IProject project) {
+		IJavaProject javaProject= JavaCore.create(project);
+        if (javaProject == null) {
+            // the project is not configured for Java (has no Java nature)
+            return false;
+        }
+	        
+		return true;
+	}
+	
 
 }
