@@ -13,7 +13,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ClassPath: .,
  META-INF/lib/cucumber-core-1.2.5.jar,
  META-INF/lib/gherkin-2.12.2.jar,
- META-INF/lib/cucumber-expressions-6.1.0.jar
+ META-INF/lib/cucumber-expressions-6.2.0.jar
 Export-Package: cucumber.eclipse.steps.integration,
  cucumber.runtime,
  cucumber.runtime.autocomplete,
