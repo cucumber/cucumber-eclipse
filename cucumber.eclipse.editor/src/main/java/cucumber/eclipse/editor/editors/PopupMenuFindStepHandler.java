@@ -43,8 +43,6 @@ public class PopupMenuFindStepHandler extends AbstractHandler {
 			return null;
 		}
 		
-//        StepDefinitions.getInstance().scan();
-		
 		Editor editor = (Editor) editorPart;
 		Set<Step> steps = editor.getStepProvider().getStepsInEncompassingProject();
 		
