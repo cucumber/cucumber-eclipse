@@ -1,5 +1,7 @@
 package cucumber.eclipse.steps.jdt;
 
+import static org.eclipse.core.resources.IncrementalProjectBuilder.*;
+
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
@@ -31,7 +33,28 @@ public class StepsBuilder extends IncrementalProjectBuilder {
 		if (!StepPreferences.INSTANCE.isCheckStepDefinitionsEnabled()) {
 			return null;
 		}
-		StepDefinitions.getInstance().scan();
+//		StepDefinitions.getInstance().scan();
+		
+		switch (kind) {
+		case FULL_BUILD:
+			System.out.println("full build");
+			StepDefinitions.getInstance().scan();	
+			break;
+		case AUTO_BUILD:
+		case INCREMENTAL_BUILD:
+			IResourceDelta delta = getDelta(getProject());
+			System.out.println("incrementale build on " + delta.getResource().getName());
+			
+			// TODO should replace by scanning only changed resources thanks getDelta(getProject())
+			StepDefinitions.getInstance().scan();
+			break;
+		case CLEAN_BUILD:
+			System.out.println("clean build");
+			break;
+		default:
+			break;
+		}
+		
 //		if (kind == IncrementalProjectBuilder.FULL_BUILD) {
 //			fullBuild(monitor);
 //		} else {

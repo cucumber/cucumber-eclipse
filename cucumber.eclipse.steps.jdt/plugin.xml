@@ -23,7 +23,7 @@
       <builder id="cucumber.eclipse.steps.jdt.stepsBuilder"/>
    </extension> 
    <extension id="cucumber.eclipse.steps.jdt.stepsBuilder" name="Cucumber Builder" point="org.eclipse.core.resources.builders"> 
-      <builder hasNature="true" callOnEmptyDelta="false"> 
+      <builder hasNature="false" callOnEmptyDelta="false"> 
          <run class="cucumber.eclipse.steps.jdt.StepsBuilder"/> 
       </builder> 
    </extension>

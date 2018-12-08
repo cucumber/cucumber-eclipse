@@ -37,5 +37,7 @@ public interface IStepDefinitions {
 	 * @return a friendly name of the language parsed to detect step definitions
 	 */
 	String supportedLanguage();
+	
+	Set<Step> getLatestStepsDefinitionsScanResult();
 
 }

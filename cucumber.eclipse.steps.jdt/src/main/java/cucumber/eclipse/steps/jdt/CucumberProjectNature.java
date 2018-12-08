@@ -22,6 +22,10 @@ public class CucumberProjectNature implements IProjectNature {
     
     public void configure() throws CoreException {
         addBuilder(project);
+        IProject[] projects = project.getReferencedProjects();
+    	for (IProject referencedProject : projects) {
+    		addBuilder(referencedProject);
+		}
     }
 
     public void deconfigure() throws CoreException {
@@ -36,8 +40,8 @@ public class CucumberProjectNature implements IProjectNature {
         this.project = project;
     }
 
-    private void addBuilder(IProject project) throws CoreException {
-        IProjectDescription description = project.getDescription();
+    private void addBuilder(IProject projectToUpdate) throws CoreException {
+        IProjectDescription description = projectToUpdate.getDescription();
         
         // Avoid using a Set since ICommand does not have 
         // a hash + equalTo methods to avoid duplicates
@@ -52,7 +56,7 @@ public class CucumberProjectNature implements IProjectNature {
         builders.put(detectStepDefinitionsBuilder.getBuilderName(), detectStepDefinitionsBuilder);
         
         description.setBuildSpec(builders.values().toArray(new ICommand[builders.size()]));
-        project.setDescription(description, new NullProgressMonitor());
+        projectToUpdate.setDescription(description, new NullProgressMonitor());
     }
     
     private void removeBuilder(IProject project) throws CoreException {

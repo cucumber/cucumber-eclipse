@@ -7,10 +7,10 @@ import java.util.regex.PatternSyntaxException;
 import org.eclipse.core.resources.IResource;
 
 import io.cucumber.cucumberexpressions.Argument;
+import io.cucumber.cucumberexpressions.CucumberExpressionException;
 import io.cucumber.cucumberexpressions.Expression;
 import io.cucumber.cucumberexpressions.ExpressionFactory;
 import io.cucumber.cucumberexpressions.ParameterTypeRegistry;
-import io.cucumber.cucumberexpressions.UndefinedParameterTypeException;
 
 public class Step {
 
@@ -36,8 +36,8 @@ public class Step {
 		try {
 			this.expression = new ExpressionFactory(new ParameterTypeRegistry(locale)).createExpression(text);
 		}
-		
-		catch (UndefinedParameterTypeException e) {
+		catch (CucumberExpressionException e) {
+			// TODO All this exceptions should be trapped and add a marker in eclipse
 			// the cucumber expression have a custom parameter type
 			// without definition.
 			// For example, "I have a {color} ball" 
