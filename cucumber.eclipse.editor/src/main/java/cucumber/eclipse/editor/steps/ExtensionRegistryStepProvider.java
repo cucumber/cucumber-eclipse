@@ -4,15 +4,16 @@ import static cucumber.eclipse.editor.util.ExtensionRegistryUtil.getStepDefiniti
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -25,70 +26,94 @@ import org.eclipse.core.runtime.jobs.Job;
 import cucumber.eclipse.steps.integration.IStepDefinitions;
 import cucumber.eclipse.steps.integration.IStepListener;
 import cucumber.eclipse.steps.integration.Step;
+import cucumber.eclipse.steps.integration.StepDefinitionsRepository;
+import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 
 public class ExtensionRegistryStepProvider implements IStepProvider {
 
-	private AtomicReference<Set<Step>> steps = new AtomicReference<Set<Step>>(Collections.<Step>emptySet());
-
+	public static final ExtensionRegistryStepProvider INSTANCE = new ExtensionRegistryStepProvider();
+	
+	private StepDefinitionsRepository stepDefinitionsRepository = StepDefinitionsRepository.INSTANCE;
+	
 	private List<IStepDefinitions> stepDefinitions = getStepDefinitions();
 	
 	private List<IStepListener> stepDefinitionsListeners = new CopyOnWriteArrayList<IStepListener>();
 
 	private IFile file;
 	
-	
-	public ExtensionRegistryStepProvider(IFile file) {
-		this.file = file;
+	private ExtensionRegistryStepProvider() {
 	}
-
+	
 	public void addStepListener(IStepListener listener) {
 		stepDefinitionsListeners.add(listener);
 		for (IStepDefinitions stepDef : stepDefinitions) {
 			stepDef.addStepListener(listener);
 		}
 	}
-
+	
 	public Set<Step> getStepsInEncompassingProject() {
-		return steps.get();
+		return this.stepDefinitionsRepository.getAllStepDefinitions();
 	}
 	
-	/**
-	 * Asyncrounous load steps 
-	 */
-	public void reload(IJobChangeListener jobChangeListener) {
-		final Job job = new Job("Scanning for step definitions") {
+	public Set<IFile> getAllStepDefinitionsFile() {
+		return this.stepDefinitionsRepository.getAllStepDefinitionsFiles();
+	}
+	
+//	/**
+//	 * Asyncrounous load steps 
+//	 * @deprecated the builder do the job now
+//	 */
+//	public void reload(IJobChangeListener jobChangeListener) {
+//		final Job job = new Job("Scanning for step definitions") {
+//
+//			@Override
+//			protected IStatus run(IProgressMonitor monitor) {
+//				try {
+//					getSteps(monitor);
+//				} catch (CoreException e) {
+//					return new Status(IStatus.ERROR, "cucumber.eclipse.editor", "reloading step definitions failed ("+e+")", e);
+//					
+//				} catch(OperationCanceledException oce) {
+//					return Status.CANCEL_STATUS;
+//				}
+//				
+//				if (monitor.isCanceled()) {
+//					return Status.CANCEL_STATUS;
+//				}
+//				return Status.OK_STATUS;
+//			}
+//	     };
+//	     if(jobChangeListener != null) {
+//	    	 job.addJobChangeListener(jobChangeListener);
+//	     }
+//	     job.setUser(true);
+//	     job.schedule();
+//	}
 
-			@Override
-			protected IStatus run(IProgressMonitor monitor) {
-				
-				try {
-					try {
-						Set<Step> set = getSteps(monitor);
-						steps.set(set);
-						for (IStepListener listener : stepDefinitionsListeners) {
-							if (listener == ExtensionRegistryStepProvider.this) {
-								continue;
-							}
-						}
-					} catch (CoreException e) {
-						return new Status(IStatus.ERROR, "cucumber.eclipse.editor", "reloading step definitions failed ("+e+")", e);
-					}
-					
-				} catch(OperationCanceledException oce) {
-					return Status.CANCEL_STATUS;
-				}
-				
-				if (monitor.isCanceled()) {
-					return Status.CANCEL_STATUS;
-				}
-				return Status.OK_STATUS;
+	public Set<Step> findStepDefinitions(IResource resource, MarkerFactory markerFactory, IProgressMonitor monitor) throws CoreException {
+		long start = System.currentTimeMillis();
+		boolean isFile = resource instanceof IFile;
+		if(!isFile) {
+			return new HashSet<Step>();
+		}
+		IFile stepDefinitionFile = (IFile) resource;
+		SubMonitor subMonitor = SubMonitor.convert(monitor, "Scan steps definitions for " + resource.getName(), stepDefinitions.size());
+
+		int stepDefinitionsCounter = 0;
+		for (IStepDefinitions stepDefinitionsService : stepDefinitions) {
+			Set<Step> stepDefs = stepDefinitionsService.findStepDefintions(stepDefinitionFile, markerFactory, subMonitor);
+			if(!stepDefs.isEmpty()) {
+				stepDefinitionsCounter += stepDefs.size();
+	//			System.out.println(stepDefinitionsService.supportedLanguage() + " found " + stepDefs.size() + " step definitions in " + stepDefinitionFile.getName());
+				this.stepDefinitionsRepository.add(stepDefinitionFile, stepDefs);
 			}
-	     };
-	     if(jobChangeListener != null) {
-	    	 job.addJobChangeListener(jobChangeListener);
-	     }
-	     job.setUser(true);
-	     job.schedule();
+		}
+		long end = System.currentTimeMillis();
+		long duration = end - start;
+		if(stepDefinitionsCounter > 0 || duration > 0) {
+			System.out.println("findStepDefs (" + resource.getName() + ") return " + stepDefinitionsCounter + " step definitions in " + (duration) + "ms.");
+		}
+		return this.stepDefinitionsRepository.getAllStepDefinitions();
 	}
 	
 	public Set<Step> getSteps(IProgressMonitor progressMonitor) throws CoreException {
@@ -115,7 +140,7 @@ public class ExtensionRegistryStepProvider implements IStepProvider {
 			 for (Entry<String, Long> metric : metrics.entrySet()) {
 				stringBuffer.append(metric.getKey()).append("=").append(metric.getValue()).append(" ");
 			 }
-			 System.out.println("ExtensionRegistryStepProvider scans step definitions for " + file.getName() + " in " + (end - start) + " ms. " + stringBuffer.toString());
+			 System.out.println("ExtensionRegistryStepProvider scans step definitions in " + (end - start) + " ms. " + stringBuffer.toString());
 		}
 		return newSteps;
 	}
@@ -127,4 +152,8 @@ public class ExtensionRegistryStepProvider implements IStepProvider {
 		}
 	}
 
+	public void clean() {
+		this.stepDefinitionsRepository.reset();
+		GlueRepository.INSTANCE.clean();
+	}
 }

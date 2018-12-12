@@ -33,34 +33,47 @@ import cucumber.eclipse.editor.snippet.IStepGeneratorProvider;
 import cucumber.eclipse.editor.snippet.SnippetApplicator;
 import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
 import cucumber.eclipse.steps.integration.Step;
+import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 
 public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionGenerator {
 	
 	@Override
 	public IMarkerResolution[] getResolutions(IMarker marker) {
 		
-		Set<IFile> files = new HashSet<IFile>();
-		
-		ExtensionRegistryStepProvider prof = new ExtensionRegistryStepProvider((IFile) marker.getResource());
-		Set<Step> steps;
+		boolean isUnmatchedStepMarker;
 		try {
-			steps = prof.getSteps(null);
+			isUnmatchedStepMarker = MarkerFactory.UNMATCHED_STEP.equals(marker.getType());
 		} catch (CoreException e) {
-			e.printStackTrace();
+			return new IMarkerResolution[0];
+		}
+		if(!isUnmatchedStepMarker) {
 			return new IMarkerResolution[0];
 		}
 		
-		for (Step step : steps) {
-			files.add((IFile) step.getSource());
-		}
 		
-		List<IFile> filesList = new ArrayList<IFile>(files);
-		Collections.sort(filesList, new Comparator<IFile>() {
-			@Override
-			public int compare(IFile o1, IFile o2) {
-				return o1.getName().compareTo(o2.getName());
-			}
-		});
+		Set<IFile> files = new HashSet<IFile>();
+		
+//		ExtensionRegistryStepProvider prof = new ExtensionRegistryStepProvider((IFile) marker.getResource());
+		ExtensionRegistryStepProvider prof = ExtensionRegistryStepProvider.INSTANCE;
+//		Set<Step> steps;
+//		try {
+//			steps = prof.getSteps(null);
+//		} catch (CoreException e) {
+//			e.printStackTrace();
+//			return new IMarkerResolution[0];
+//		}
+		
+
+		List<IFile> filesList = new ArrayList<IFile>(prof.getAllStepDefinitionsFile());
+		
+		
+//		List<IFile> filesList = new ArrayList<IFile>(files);
+//		Collections.sort(filesList, new Comparator<IFile>() {
+//			@Override
+//			public int compare(IFile o1, IFile o2) {
+//				return o1.getName().compareTo(o2.getName());
+//			}
+//		});
 		
 		IMarkerResolution[] resolutions = new IMarkerResolution[filesList.size()];
 		

@@ -4,9 +4,10 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+
+import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 
 public interface IStepDefinitions {
 
@@ -19,9 +20,10 @@ public interface IStepDefinitions {
 	 * 
 	 * @param project a project where step definitions are located
 	 * @return true if the IStepDefinition supports this type of file.
+	 * @throws CoreException 
 	 * 
 	 */
-	boolean support(IProject project);
+	boolean support(IProject project) throws CoreException;
 	
 	void addStepListener(IStepListener listener);
 
@@ -40,4 +42,7 @@ public interface IStepDefinitions {
 	
 	Set<Step> getLatestStepsDefinitionsScanResult();
 
+	
+	Set<Step> findStepDefintions(IFile stepDefinitionFile, MarkerFactory markerFactory, IProgressMonitor monitor) throws CoreException;
+	
 }

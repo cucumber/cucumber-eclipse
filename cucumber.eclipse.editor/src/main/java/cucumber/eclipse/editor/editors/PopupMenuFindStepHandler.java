@@ -26,6 +26,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import cucumber.eclipse.editor.markers.MarkerIds;
 import cucumber.eclipse.editor.markers.MarkerManager;
+import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
 import cucumber.eclipse.steps.integration.Step;
 import cucumber.eclipse.steps.integration.StepsChangedEvent;
 import cucumber.eclipse.steps.jdt.StepDefinitions;
@@ -44,7 +45,7 @@ public class PopupMenuFindStepHandler extends AbstractHandler {
 		}
 		
 		Editor editor = (Editor) editorPart;
-		Set<Step> steps = editor.getStepProvider().getStepsInEncompassingProject();
+		Set<Step> steps = ExtensionRegistryStepProvider.INSTANCE.getStepsInEncompassingProject();
 		
 		IDocumentProvider docProvider = editor.getDocumentProvider();
 		List<String> selectedLineResolvedSteps = resolveSelectedLineStep(editorPart);

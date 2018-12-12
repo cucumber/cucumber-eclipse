@@ -8,7 +8,7 @@ import java.util.regex.PatternSyntaxException;
 import cucumber.eclipse.steps.integration.Step;
 import gherkin.I18n;
 
-class StepMatcher {
+public class StepMatcher {
 	private Pattern variablePattern = Pattern.compile("<([^>]+)>");
 	private Pattern groupPatternNonParameterMatch = Pattern.compile("(\\(\\?:.+?\\))");
 	private Pattern groupPattern = Pattern.compile("(\\(.+?\\))");
@@ -40,6 +40,7 @@ class StepMatcher {
 
 		return cukePattern.matcher(text.trim());
 	}
+	
 	
 	public Step matchSteps(String languageCode, Set<Step> steps, String currentLine) {
 

@@ -39,16 +39,16 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import cucumber.eclipse.editor.Activator;
 import cucumber.eclipse.editor.markers.MarkerIds;
 import cucumber.eclipse.editor.markers.MarkerManager;
+import cucumber.eclipse.editor.nature.CucumberProjectNature;
 import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
 import cucumber.eclipse.editor.steps.IStepProvider;
 import cucumber.eclipse.editor.template.GherkinSampleTemplate;
 import cucumber.eclipse.steps.integration.IStepListener;
 import cucumber.eclipse.steps.integration.StepsChangedEvent;
-import cucumber.eclipse.steps.jdt.CucumberProjectNature;
 import gherkin.lexer.LexingError;
 import gherkin.parser.Parser;
 
-public class Editor extends TextEditor implements IStepListener {
+public class Editor extends TextEditor /* implements IStepListener */{
 
 	private ColorManager colorManager;
 	private IEditorInput input;
@@ -57,7 +57,7 @@ public class Editor extends TextEditor implements IStepListener {
 	private Annotation[] oldAnnotations;
 	private GherkinOutlinePage outlinePage;
 	private GherkinModel model;
-	private ExtensionRegistryStepProvider stepProvider;
+//	private ExtensionRegistryStepProvider stepProvider;
 	
 	public Editor() {
 		super();
@@ -124,29 +124,29 @@ public class Editor extends TextEditor implements IStepListener {
 	 * @see cucumber.eclipse.steps.integration.StepListener#onStepsChanged
 	 * (cucumber.eclipse.steps.integration.StepsChangedEvent)
 	 */
-	@Override
-	public void onStepsChanged(StepsChangedEvent event) {
-		this.refresh();
-	}
+//	@Override
+//	public void onStepsChanged(StepsChangedEvent event) {
+////		this.refresh();
+//	}
 	
 	
-	public void refresh() {
-		this.stepProvider.reload(new JobChangeAdapter() {
-			@Override
-			public void done(IJobChangeEvent event) {
-				validateAndMark();
-			}
-		});
-	}
+//	public void refresh() {
+//		this.stepProvider.reload(new JobChangeAdapter() {
+//			@Override
+//			public void done(IJobChangeEvent event) {
+//				validateAndMark();
+//			}
+//		});
+//	}
 	
 	
 	public GherkinModel getModel() {
 		return model;
 	}
 	
-	public IStepProvider getStepProvider() {
-		return stepProvider;
-	}
+//	public IStepProvider getStepProvider() {
+//		return stepProvider;
+//	}
 	
 	public void updateGherkinModel(GherkinModel model) {
 //		validateAndMark();
@@ -192,23 +192,27 @@ public class Editor extends TextEditor implements IStepListener {
 		input = newInput;
 		model = new GherkinModel();
 		
-		stepProvider = new ExtensionRegistryStepProvider(((IFileEditorInput) newInput).getFile());
-		stepProvider.addStepListener(this);
-		this.refresh();
+//		stepProvider = new ExtensionRegistryStepProvider(((IFileEditorInput) newInput).getFile());
+//		stepProvider = ExtensionRegistryStepProvider.INSTANCE;
+//		stepProvider.addStepListener(this);
+//		this.refresh();
 
 	}
 
-	
+	public IFile getFile() {
+		IFileEditorInput fileEditorInput = (IFileEditorInput) this.getEditorInput();
+		return fileEditorInput.getFile();
+	}
 	
 	public void dispose() {
 		super.dispose();
 
 		colorManager.dispose();
 
-		if (stepProvider != null) {
-			stepProvider.removeStepListener(this);
-			stepProvider = null;
-		}
+//		if (stepProvider != null) {
+//			stepProvider.removeStepListener(this);
+//			stepProvider = null;
+//		}
 	}
 
 	public Object getAdapter(Class required) {
@@ -268,17 +272,18 @@ public class Editor extends TextEditor implements IStepListener {
 	}
 
 	protected GherkinErrorMarker cleanMarkers(IDocument doc, IFile featureFile, MarkerManager markerManager) {
-		GherkinErrorMarker marker = new GherkinErrorMarker(stepProvider, markerManager, featureFile, doc);
+//		GherkinErrorMarker marker = new GherkinErrorMarker(stepProvider, markerManager, featureFile, doc);
+		GherkinErrorMarker marker = new GherkinErrorMarker(null, markerManager, featureFile, doc);
 		marker.removeExistingMarkers();
 		return marker;
 	}
 	
 	private void assertIsACucumberProject(IProject project) {
 		try {
-			boolean hasCucumberNature = project.hasNature(CucumberProjectNature.CUCUMBER_NATURE);
+			boolean hasCucumberNature = project.hasNature(CucumberProjectNature.ID);
 			if(!hasCucumberNature) {
 				
-				IMarker[] markers = project.findMarkers(CucumberProjectNature.CUCUMBER_NATURE, false, IResource.DEPTH_ZERO);
+				IMarker[] markers = project.findMarkers(CucumberProjectNature.ID, false, IResource.DEPTH_ZERO);
 				boolean isAlreadyMarked = markers.length > 0;
 				if(isAlreadyMarked) {
 					return ;

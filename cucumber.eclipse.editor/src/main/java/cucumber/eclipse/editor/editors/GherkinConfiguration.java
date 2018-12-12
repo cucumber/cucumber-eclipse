@@ -168,7 +168,7 @@ public class GherkinConfiguration extends TextSourceViewerConfiguration {
 	@Override
 	public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
 		IHyperlinkDetector[] hyperlinkDetectors = super.getHyperlinkDetectors(sourceViewer);
-		StepHyperlinkDetector stepHyperlinkDetector = new StepHyperlinkDetector(this.editor);
+		StepHyperlinkDetector stepHyperlinkDetector = new StepHyperlinkDetector();
 		IHyperlinkDetector[] gherkinHyperlinkDetectors = Arrays.copyOf(hyperlinkDetectors, hyperlinkDetectors.length + 1);
 		gherkinHyperlinkDetectors[hyperlinkDetectors.length] = stepHyperlinkDetector;
 		return gherkinHyperlinkDetectors;

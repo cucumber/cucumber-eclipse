@@ -1,4 +1,4 @@
-package cucumber.eclipse.steps.jdt;
+package cucumber.eclipse.editor.nature;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -13,9 +13,12 @@ import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
+import cucumber.eclipse.editor.builder.CucumberBuilder;
+import cucumber.eclipse.editor.builder.CucumberGherkinBuilder;
+
 public class CucumberProjectNature implements IProjectNature {
 	
-	public static final String CUCUMBER_NATURE = "cucumber.eclipse.steps.jdt.stepsNature";
+	public static final String ID = "cucumber.eclipse.nature";
 	public static final String CUCUMBER_NATURE_MISSING_MARKER = "cucumber.eclipse.markers.project.cucumber_nature_missing";
 	
     private IProject project;
@@ -23,9 +26,9 @@ public class CucumberProjectNature implements IProjectNature {
     public void configure() throws CoreException {
         addBuilder(project);
         IProject[] projects = project.getReferencedProjects();
-    	for (IProject referencedProject : projects) {
-    		addBuilder(referencedProject);
-		}
+//    	for (IProject referencedProject : projects) {
+//    		addBuilder(referencedProject);
+//		}
     }
 
     public void deconfigure() throws CoreException {
@@ -51,9 +54,15 @@ public class CucumberProjectNature implements IProjectNature {
 			builders.put(builder.getBuilderName(), builder);
 		}
         
-        ICommand detectStepDefinitionsBuilder = description.newCommand();
-        detectStepDefinitionsBuilder.setBuilderName(StepsBuilder.BUILDER_ID);
-        builders.put(detectStepDefinitionsBuilder.getBuilderName(), detectStepDefinitionsBuilder);
+        // First build step definitions
+        ICommand stepDefinitionsBuilder = description.newCommand();
+        stepDefinitionsBuilder.setBuilderName(CucumberBuilder.ID);
+        builders.put(stepDefinitionsBuilder.getBuilderName(), stepDefinitionsBuilder);
+        
+        // Then build gherkins
+        ICommand gherkinBuilder = description.newCommand();
+        gherkinBuilder.setBuilderName(CucumberGherkinBuilder.ID);
+        builders.put(gherkinBuilder.getBuilderName(), gherkinBuilder);
         
         description.setBuildSpec(builders.values().toArray(new ICommand[builders.size()]));
         projectToUpdate.setDescription(description, new NullProgressMonitor());
@@ -65,7 +74,7 @@ public class CucumberProjectNature implements IProjectNature {
 
     	Set<ICommand> toRemove = new HashSet<ICommand>();
         for (ICommand builder : builders) {
-			if(StepsBuilder.BUILDER_ID.equals(builder.getBuilderName())) {
+			if(CucumberBuilder.ID.equals(builder.getBuilderName())) {
 				toRemove.remove(builder);
 			}
 		}
@@ -76,3 +85,4 @@ public class CucumberProjectNature implements IProjectNature {
         project.setDescription(description, new NullProgressMonitor());
     }
 }
+

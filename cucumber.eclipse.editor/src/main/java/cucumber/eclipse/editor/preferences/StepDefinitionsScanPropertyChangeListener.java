@@ -34,7 +34,7 @@ public class StepDefinitionsScanPropertyChangeListener implements IPropertyChang
 				if (editorPart instanceof Editor) {
 					Editor editor = (Editor) editorPart;
 					if (checkStepDefinitionsEnabled) {
-						editor.refresh();
+//						editor.refresh();
 					} else {
 						editor.cleanMarkers();
 					}
@@ -49,7 +49,7 @@ public class StepDefinitionsScanPropertyChangeListener implements IPropertyChang
 				IEditorPart editorPart = editorReference.getEditor(false);
 				if (editorPart instanceof Editor) {
 					Editor editor = (Editor) editorPart;
-					editor.refresh();
+//					editor.refresh();
 				}
 			}
 			

@@ -23,6 +23,8 @@ Export-Package: cucumber.eclipse.steps.jdt;
    org.eclipse.jdt.core,
    org.eclipse.jdt.core.dom,
    cucumber.eclipse.steps.integration,
+   cucumber.eclipse.steps.integration.exception,
+   cucumber.eclipse.steps.integration.marker,
    org.eclipse.core.resources,
    org.eclipse.core.commands,
    org.eclipse.ui.plugin"

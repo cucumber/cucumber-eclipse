@@ -18,6 +18,7 @@ import org.eclipse.swt.graphics.Image;
 
 import cucumber.eclipse.editor.Activator;
 import cucumber.eclipse.editor.contentassist.CucumberContentAssist;
+import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
 import gherkin.I18n;
 
 public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
@@ -55,7 +56,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 			I18n i18n = new I18n(lang);
 
 			//Initialize CucumberContentAssist
-			this.contentAssist = new CucumberContentAssist(lang, editor.getStepProvider());
+			this.contentAssist = new CucumberContentAssist(lang, ExtensionRegistryStepProvider.INSTANCE);
 			List<String> stepKeyWords = contentAssist.getStepKeyWords(i18n);
 			// line of cursor locate,and from begin to cursor.
 			IRegion line = viewer.getDocument().getLineInformationOfOffset(offset);

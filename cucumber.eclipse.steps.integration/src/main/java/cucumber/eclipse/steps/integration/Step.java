@@ -33,25 +33,25 @@ public class Step {
 	public void setText(String text) {
 		this.text = text;
 		Locale locale = this.lang == null ? Locale.getDefault() : new Locale(this.lang);
-		try {
+//		try {
 			this.expression = new ExpressionFactory(new ParameterTypeRegistry(locale)).createExpression(text);
-		}
-		catch (CucumberExpressionException e) {
-			// TODO All this exceptions should be trapped and add a marker in eclipse
-			// the cucumber expression have a custom parameter type
-			// without definition.
-			// For example, "I have a {color} ball" 
-			// But the "color" parameter type was not register 
-			// thanks to a TypeRegistryConfigurer.
-			this.expression = null;
-		}
-		catch (PatternSyntaxException e) {
-			// This fix #286
-			// the regular expression is wrong
-			// we do not expect to match something with it
-			// but we do not want to crash the F3
-			this.expression = null;
-		}
+//		}
+//		catch (CucumberExpressionException e) {
+//			// TODO All this exceptions should be trapped and add a marker in eclipse
+//			// the cucumber expression have a custom parameter type
+//			// without definition.
+//			// For example, "I have a {color} ball" 
+//			// But the "color" parameter type was not register 
+//			// thanks to a TypeRegistryConfigurer.
+//			this.expression = null;
+//		}
+//		catch (PatternSyntaxException e) {
+//			// This fix #286
+//			// the regular expression is wrong
+//			// we do not expect to match something with it
+//			// but we do not want to crash the F3
+//			this.expression = null;
+//		}
 	}
 	public IResource getSource() {
 		return source;

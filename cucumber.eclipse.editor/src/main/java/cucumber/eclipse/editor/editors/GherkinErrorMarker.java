@@ -3,6 +3,7 @@ package cucumber.eclipse.editor.editors;
 import static cucumber.eclipse.editor.editors.DocumentUtil.getDocumentLanguage;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +53,13 @@ public class GherkinErrorMarker implements Formatter {
 		this.markerManager = markerManager;
 		this.file = inputfile;
 		this.document = doc;
-        this.foundSteps = stepProvider.getStepsInEncompassingProject();
+		if(stepProvider == null) {
+			this.foundSteps = new HashSet<cucumber.eclipse.steps.integration.Step>();
+		}
+		else {
+			this.foundSteps = stepProvider.getStepsInEncompassingProject();
+		}
+//        this.foundSteps = stepProvider.getStepsInEncompassingProject();
 	}
 
 	public void removeExistingMarkers() {

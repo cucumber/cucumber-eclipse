@@ -221,11 +221,18 @@
      </contextualLaunch>
     </shortcut>
 </extension>
+	<extension id="cucumber.eclipse.marker.stepDefinitionMatched"
+           point="org.eclipse.core.resources.markers"
+           name="Step definition matched">
+           <super type="org.eclipse.core.resources.textmarker"/>
+           <persistent value="true"/>
+	</extension>
     <extension
            id="cucumber.eclipse.markers.project.cucumber_nature_missing"
            point="org.eclipse.core.resources.markers"
            name="Cucumber nature missing">
            <super type="org.eclipse.core.resources.problemmarker"/>
+           <persistent value="true"/>
     </extension>
     <extension
            id="cucumber.eclipse.editor.editors.Editor.syntaxerror"
@@ -240,8 +247,15 @@
 	    name="Unmatched step"
 	    point="org.eclipse.core.resources.markers">
 	    <super type="org.eclipse.core.resources.problemmarker"/>
-	  <super
-	    type="org.eclipse.core.resources.textmarker">
+	  	<super type="org.eclipse.core.resources.textmarker">
+	  </super>
+	</extension>
+	<extension
+	    id="cucumber.eclipse.marker.scenario_outline_example_unmatch"
+	    name="Unmatched step"
+	    point="org.eclipse.core.resources.markers">
+	    <super type="org.eclipse.core.resources.problemmarker"/>
+	  	<super type="org.eclipse.core.resources.textmarker">
 	  </super>
 	</extension>
     <extension
@@ -280,6 +294,34 @@
             textPreferenceValue="true"
             textStylePreferenceValue="BOX"
             verticalRulerPreferenceKey="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror.ruler"
+            verticalRulerPreferenceValue="true">
+      </specification>
+   </extension>
+   <extension
+	  point="org.eclipse.ui.editors.annotationTypes">
+	  <type
+	        markerType="cucumber.eclipse.marker.scenario_outline_example_unmatch"
+	        name="cucumber.eclipse.marker.scenario_outline_example_unmatch">
+	  </type>
+	</extension>
+   <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="cucumber.eclipse.marker.scenario_outline_example_unmatch"
+            colorPreferenceKey="cucumber.eclipse.marker.scenario_outline_example_unmatch.color"
+            colorPreferenceValue="247,207,84"
+            contributesToHeader="false"
+            highlightPreferenceKey="cucumber.eclipse.marker.scenario_outline_example_unmatch.highlight"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="true"
+            label="Unmatched step error"
+            overviewRulerPreferenceKey="cucumber.eclipse.marker.scenario_outline_example_unmatch.overview"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="0"
+            textPreferenceKey="cucumber.eclipse.marker.scenario_outline_example_unmatch.text"
+            textPreferenceValue="true"
+            textStylePreferenceValue="BOX"
+            verticalRulerPreferenceKey="cucumber.eclipse.marker.scenario_outline_example_unmatch.ruler"
             verticalRulerPreferenceValue="true">
       </specification>
    </extension>
@@ -334,6 +376,78 @@
           id="cucumber.eclipse.editor.wizard.NewFeatureFileWizard"
           name="Step-Definition class">
     </wizard>
+ </extension>
+ <extension
+       id="cucumber.eclipse.builder.stepdefinition"
+       name="Cucumber step definition builder"
+       point="org.eclipse.core.resources.builders">
+    <builder
+          callOnEmptyDelta="false"
+          hasNature="false"
+          isConfigurable="false"
+          supportsConfigurations="false">
+          <run
+                class="cucumber.eclipse.editor.builder.CucumberBuilder">
+          </run>
+    </builder>
+ </extension>
+ <extension
+       id="cucumber.eclipse.builder.gherkin"
+       name="Cucumber gherkin builder"
+       point="org.eclipse.core.resources.builders">
+    <builder
+          callOnEmptyDelta="false"
+          hasNature="true"
+          isConfigurable="false"
+          supportsConfigurations="false">
+          <run
+                class="cucumber.eclipse.editor.builder.CucumberGherkinBuilder">
+          </run>
+    </builder>
  </extension> 
-
+ <extension 
+    id="cucumber.eclipse.nature" 
+    name="Cucumber Incremental" 
+    point="org.eclipse.core.resources.natures">
+	<runtime>
+		<run class="cucumber.eclipse.editor.nature.CucumberProjectNature"/> 
+    </runtime> 
+    <builder id="cucumber.eclipse.builder.stepdefinition"/>
+    <builder id="cucumber.eclipse.builder.gherkin"/>
+ </extension>
+ <extension
+      point="org.eclipse.ui.ide.projectNatureImages">
+   <image
+         icon="icons/cukes_nature.gif"
+         id="cucumber.eclipse.nature.projectNatureImages"
+         natureId="cucumber.eclipse.nature">
+   </image>
+</extension> 
+<extension
+      point="org.eclipse.ui.commands">
+   <category id="cucumber.eclipse.category" name="Cucumber">
+   </category>
+   <command
+         categoryId="cucumber.eclipse.category"
+         id="cucumber.eclipse.commands.addNatureCommand"
+         name="NEW Convert to Cucumber Project...">
+   </command>
+</extension>
+<extension
+      point="org.eclipse.ui.handlers">
+   <handler
+         class="cucumber.eclipse.editor.handler.AddNatureHandler"
+         commandId="cucumber.eclipse.commands.addNatureCommand">
+   </handler>
+</extension>
+<extension
+      point="org.eclipse.ui.menus">
+   <menuContribution
+         locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
+         <command
+               commandId="cucumber.eclipse.commands.addNatureCommand"
+               >
+         </command>
+   </menuContribution>
+</extension>
 </plugin>

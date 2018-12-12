@@ -1,4 +1,4 @@
-package cucumber.eclipse.steps.jdt.handlers;
+package cucumber.eclipse.editor.handler;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -15,15 +15,11 @@ import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jdt.ui.IPackagesViewPart;
-import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.ui.IViewPart;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import cucumber.eclipse.steps.jdt.CucumberProjectNature;
+import cucumber.eclipse.editor.nature.CucumberProjectNature;
+
 
 public class AddNatureHandler extends AbstractHandler {
 
@@ -47,10 +43,9 @@ public class AddNatureHandler extends AbstractHandler {
         IProjectDescription description = project.getDescription();
 	    String[] oldNatures = description.getNatureIds();
 	    Set<String> natures = new HashSet<String>(Arrays.asList(oldNatures));
-	    natures.add(CucumberProjectNature.CUCUMBER_NATURE);
+	    natures.add(CucumberProjectNature.ID);
 	    description.setNatureIds(natures.toArray(new String[natures.size()]));
 	    project.setDescription(description, new NullProgressMonitor());
-	    updatePackageExplorer();
 	    removeCucumberNatureMissingMarkers(project);
     }
     
@@ -60,17 +55,5 @@ public class AddNatureHandler extends AbstractHandler {
 	    	marker.delete();
 		}
 	    project.build(IncrementalProjectBuilder.FULL_BUILD, null);
-    }
-    
-    private void updatePackageExplorer() {
-        final IViewPart foundView = PlatformUI.getWorkbench()
-                        .getActiveWorkbenchWindow().getActivePage()
-                        .findView(JavaUI.ID_PACKAGES);
-
-        if (foundView instanceof IPackagesViewPart) {
-                final IPackagesViewPart packageExplorerView = (IPackagesViewPart) foundView;
-                final TreeViewer treeViewer = packageExplorerView.getTreeViewer();
-                treeViewer.refresh();
-        }
     }
 }

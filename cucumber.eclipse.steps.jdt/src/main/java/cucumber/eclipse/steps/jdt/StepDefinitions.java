@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -45,9 +45,11 @@ import org.eclipse.jface.text.Document;
 import cucumber.eclipse.steps.integration.IStepDefinitions;
 import cucumber.eclipse.steps.integration.IStepListener;
 import cucumber.eclipse.steps.integration.Step;
-import cucumber.eclipse.steps.integration.StepDefinitionsStorage;
+import cucumber.eclipse.steps.integration.StepDefinitionsRepository;
 import cucumber.eclipse.steps.integration.StepPreferences;
 import cucumber.eclipse.steps.integration.StepsChangedEvent;
+import cucumber.eclipse.steps.integration.exception.SyntaxErrorException;
+import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 
 /*
  * Modified for Issue #211 : Duplicate Step definitions
@@ -62,7 +64,7 @@ public class StepDefinitions extends MethodDefinition implements IStepDefinition
 
 	protected static StepDefinitions INSTANCE = new StepDefinitions();
 
-	private StepDefinitionsStorage stepDefinitionsStorage = new StepDefinitionsStorage();
+	private StepDefinitionsRepository stepDefinitionsRepository = StepDefinitionsRepository.INSTANCE;
 	private final Pattern cukeAnnotationMatcher = Pattern.compile("cucumber\\.api\\.java\\.([a-z_]+)\\.(.*)$");
 	private static final String CUCUMBER_API_JAVA = "cucumber.api.java.";
 	private static final String CUCUMBER_API_JAVA8 = "cucumber.api.java8.";
@@ -78,6 +80,8 @@ public class StepDefinitions extends MethodDefinition implements IStepDefinition
 	//#240:For Changes in step implementation is reflected in feature file
 	private List<IStepListener> listeners = new ArrayList<IStepListener>();
 
+	private MarkerFactory markerFactory = new MarkerFactory();
+	
 	// secure usage of the singleton
 	private StepDefinitions() {
 	}
@@ -124,7 +128,7 @@ public class StepDefinitions extends MethodDefinition implements IStepDefinition
 
 	// From Java-Source-File(.java) : Collect All Steps as List based on
 	// Cucumber-Annotations
-	public List<Step> getCukeSteps(ICompilationUnit iCompUnit, IProgressMonitor progressMonitor)
+	public List<Step> getCukeSteps(ICompilationUnit iCompUnit, MarkerFactory markerFactory, IProgressMonitor progressMonitor)
 			throws JavaModelException, CoreException {
 		
 		long start = System.currentTimeMillis();
@@ -200,20 +204,19 @@ public class StepDefinitions extends MethodDefinition implements IStepDefinition
 									// Add all lambda-steps to Step
 									Step step = new Step();
 									step.setSource(iCompUnit.getResource());	//source
+									String lambdaStep = method.getLambdaStep(statement, keyWords);
+									if (lambdaStep == null) {
+										continue;
+									}
+									int lineNumber = javaParser.getLineNumber(statement);
 									try {
-										String lambdaStep = method.getLambdaStep(statement, keyWords);
-										if (lambdaStep == null) {
-											continue;
-										}
 										step.setText(lambdaStep);	//step
-										step.setLineNumber(javaParser.getLineNumber(statement));	//line-number
+										step.setLineNumber(lineNumber);	//line-number
 										step.setLang(method.getCukeLang());	//Language
 										steps.add(step);
-									} catch(PatternSyntaxException e) {
-										//we can't parse the pattern so we can't use the step!
-										System.out.println(e);
+									} catch(RuntimeException e) {
+										markerFactory.syntaxErrorOnStepDefinition(iCompUnit.getResource(), e, lineNumber);
 									}
-									
 									
 								}
 							}
@@ -226,12 +229,17 @@ public class StepDefinitions extends MethodDefinition implements IStepDefinition
 				for (IAnnotation annotation : method.getAnnotations()) {
 					CucumberAnnotation cukeAnnotation = getCukeAnnotation(importedAnnotations, annotation);
 					if (cukeAnnotation != null) {
+						int lineNumber = getLineNumber(iCompUnit, annotation);
 						Step step = new Step();
 						step.setSource(method.getResource());
-						step.setText(getAnnotationText(annotation));
-						step.setLineNumber(getLineNumber(iCompUnit, annotation));
+						step.setLineNumber(lineNumber);
 						step.setLang(cukeAnnotation.getLang());
 						steps.add(step);
+						try {
+							step.setText(getAnnotationText(annotation));
+						} catch(RuntimeException e) {
+							markerFactory.syntaxErrorOnStepDefinition(iCompUnit.getResource(), e, lineNumber);
+						}
 					}
 				}
 
@@ -239,7 +247,7 @@ public class StepDefinitions extends MethodDefinition implements IStepDefinition
 		}
 		
 		long end = System.currentTimeMillis();
-		System.out.println("getCukeSteps " + iCompUnit.getJavaProject().getElementName() + ": " + iCompUnit.getElementName() + " " + (end - start) + " ms.");
+//		System.out.println("getCukeSteps " + iCompUnit.getJavaProject().getElementName() + ": " + iCompUnit.getElementName() + " " + (end - start) + " ms.");
 		
 		return steps;
 	}
@@ -428,7 +436,7 @@ public class StepDefinitions extends MethodDefinition implements IStepDefinition
 	 * @throws JavaModelException
 	 * @throws CoreException
 	 */
-	public void scanJavaProjectForStepDefinitions(IJavaProject projectToScan, Collection<Step> collectedSteps, IProgressMonitor progressMonitor)
+	public void scanJavaProjectForStepDefinitions(IJavaProject projectToScan, Collection<Step> collectedSteps, MarkerFactory markerFactory, IProgressMonitor progressMonitor)
 			throws JavaModelException, CoreException {
 
 		IPackageFragment[] packages = projectToScan.getPackageFragments();
@@ -438,7 +446,7 @@ public class StepDefinitions extends MethodDefinition implements IStepDefinition
 			if (javaPackage.getKind() == IPackageFragmentRoot.K_SOURCE) {
 
 				for (ICompilationUnit compUnit : javaPackage.getCompilationUnits()) {
-					collectedSteps.addAll(getCukeSteps(compUnit, progressMonitor));
+					collectedSteps.addAll(getCukeSteps(compUnit, markerFactory, progressMonitor));
 				}
 			}
 		}
@@ -477,7 +485,7 @@ public class StepDefinitions extends MethodDefinition implements IStepDefinition
 
 	private StepPreferences stepPreferences = StepPreferences.INSTANCE;
 	
-	private void scanProject(IProject project, IFile featurefile, Set<Step> steps, IProgressMonitor progressMonitor) throws JavaModelException, CoreException {
+	private void scanProject(IProject project, IFile featurefile, Set<Step> steps, MarkerFactory markerFactory, IProgressMonitor progressMonitor) throws JavaModelException, CoreException {
 		try {
 			System.out.println("Scanning project " + project.getName());
 			
@@ -490,7 +498,11 @@ public class StepDefinitions extends MethodDefinition implements IStepDefinition
 			final boolean onlyPackages = this.stepPreferences.getOnlyPackages();
 			final String onlySpeficicPackagesValue = this.stepPreferences.getOnlySpecificPackage().trim();
 			final boolean onlySpeficicPackages= onlySpeficicPackagesValue.length() == 0 ? false : true;
-			String featurefilePackage = featurefile.getParent().getFullPath().toString();
+//			String featurefilePackage = featurefile.getParent().getFullPath().toString();
+			String featurefilePackage = "";
+			if(featurefile != null) {
+				featurefilePackage = featurefile.getParent().getFullPath().toString();
+			}
 	
 			if (project.isNatureEnabled(JAVA_PROJECT)) {
 				
@@ -505,7 +517,7 @@ public class StepDefinitions extends MethodDefinition implements IStepDefinition
 					// Get Packages from source folder of current project
 					// #239:Only match step implementation in same package as feature file
 					if (javaPackage.getKind() == JAVA_SOURCE ) {
-						System.out.println("Scanning package " + packageName);
+//						System.out.println("Scanning package " + packageName);
 						subMonitor.subTask("Scanning "+javaPackage.getPath().toString());
 						if 	((!onlyPackages || featurefilePackage.startsWith(javaPackage.getPath().toString())) && 
 							(!onlySpeficicPackages || javaPackage.getElementName().startsWith(onlySpeficicPackagesValue))) {
@@ -513,7 +525,7 @@ public class StepDefinitions extends MethodDefinition implements IStepDefinition
 							// System.out.println("Package Name-1
 							// :"+javaPackage.getElementName());
 							// Collect All Steps From Source
-							collectCukeStepsFromSource(javaPackage, steps, progressMonitor);
+							collectCukeStepsFromSource(javaPackage, steps, markerFactory, progressMonitor);
 						}
 					}
 	
@@ -554,17 +566,17 @@ public class StepDefinitions extends MethodDefinition implements IStepDefinition
 	 * @throws JavaModelException
 	 * @throws CoreException
 	 */
-	private void collectCukeStepsFromSource(IPackageFragment javaPackage, Set<Step> steps, IProgressMonitor progressMonitor)
+	private void collectCukeStepsFromSource(IPackageFragment javaPackage, Set<Step> steps, MarkerFactory markerFactory, IProgressMonitor progressMonitor)
 			throws JavaModelException, CoreException {
 
 		long start = System.currentTimeMillis();
 		ICompilationUnit[] compilationUnits = javaPackage.getCompilationUnits();
 		for (ICompilationUnit iCompUnit : compilationUnits) {
 			// Collect and add Steps
-			steps.addAll(getCukeSteps(iCompUnit, progressMonitor));
+			steps.addAll(getCukeSteps(iCompUnit, markerFactory, progressMonitor));
 		}
 		long end = System.currentTimeMillis();
-		System.out.println("collectCukeStepsFromSource " + javaPackage.getJavaProject().getElementName() + ": " + javaPackage.getElementName() + " " + (end - start) + " ms.");
+//		System.out.println("collectCukeStepsFromSource " + javaPackage.getJavaProject().getElementName() + ": " + javaPackage.getElementName() + " " + (end - start) + " ms.");
 	}
 	
 	/**
@@ -593,6 +605,35 @@ public class StepDefinitions extends MethodDefinition implements IStepDefinition
 	}
 	
 	@Override
+	public Set<Step> findStepDefintions(IFile stepDefinitionFile, MarkerFactory markerFactory, IProgressMonitor monitor) throws CoreException {
+//		System.out.println("jdt.findStepDefintions on " + stepDefinitionFile.getName());
+		// This IStepDefinitions scans only Java files from Java project
+		IProject project = stepDefinitionFile.getProject();
+		
+		boolean isJavaProject = this.support(project);
+		if(!isJavaProject) {
+			return new HashSet<Step>();
+		}
+
+		// is a Java compilation unit
+		IJavaElement javaElement = JavaCore.create(stepDefinitionFile);
+		boolean isCompilationUnit = javaElement instanceof ICompilationUnit;
+		if(!isCompilationUnit) {
+			return new HashSet<Step>();
+		}
+		
+		ICompilationUnit compilationUnit = (ICompilationUnit) javaElement;
+		List<Step> stepDefinitions = this.getCukeSteps(compilationUnit, markerFactory, monitor);
+		
+		return new HashSet<Step>(stepDefinitions);
+		
+//		this.stepDefinitionsRepository.add(stepDefinitions);
+//		
+//		return this.stepDefinitionsRepository.getAllStepDefinitions();
+	}
+	
+	
+	@Override
 	public void addStepListener(IStepListener listener) {
 		this.listeners.add(listener);	
 	}
@@ -602,23 +643,43 @@ public class StepDefinitions extends MethodDefinition implements IStepDefinition
 		this.listeners.remove(listener);
 	}
 
+	
+	private List<IJavaProject> getJavaProjects() {
+	      List<IJavaProject> projectList = new ArrayList<IJavaProject>();
+	      try {
+	         IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
+	         IProject[] projects = workspaceRoot.getProjects();
+	         for(int i = 0; i < projects.length; i++) {
+	            IProject project = projects[i];
+	            if(project.isOpen() && project.hasNature(JavaCore.NATURE_ID)) {
+	               projectList.add(JavaCore.create(project));
+	            }
+	         }
+	      }
+	      catch(CoreException ce) {
+	         ce.printStackTrace();
+	      }
+	      return projectList;
+	   }
+
 	@Override
 	public Set<Step> getSteps(IFile featureFile, IProgressMonitor progressMonitor) throws CoreException {
 
-		IProject project = featureFile.getProject();
+		Set<IProject> projects = new LinkedHashSet<IProject>();
+		
+		List<IJavaProject> javaProjects = getJavaProjects();
+		for (IJavaProject javaProject : javaProjects) {
+			IProject project = javaProject.getProject();
+			IProject[] referencedProjects = project.getReferencedProjects();
+			projects.add(project);
+			projects.addAll(Arrays.asList(referencedProjects));
+		}
 		
 		Set<Step> steps = new LinkedHashSet<Step>();
-		
 		try {
-			//Scan project and direct referenced projects...
-			Set<IProject> projects = new LinkedHashSet<IProject>();
-			if(project.isAccessible()) { // skip closed project
-				projects.add(project);
-				projects.addAll(Arrays.asList(project.getReferencedProjects()));
-				SubMonitor subMonitor = SubMonitor.convert(progressMonitor, projects.size());
-				for (IProject projectToScan : projects) {
-					scanProject(projectToScan, featureFile, steps, subMonitor.newChild(1));
-				}
+			SubMonitor subMonitor = SubMonitor.convert(progressMonitor, projects.size());
+			for (IProject projectToScan : projects) {
+				scanProject(projectToScan, featureFile, steps, markerFactory, subMonitor.newChild(1));
 			}
 		} finally {
 			if (progressMonitor != null) {
@@ -626,24 +687,46 @@ public class StepDefinitions extends MethodDefinition implements IStepDefinition
 	         }
 		}
 		
-		stepDefinitionsStorage.add(steps);
 		return steps;
 	}
 	
+//	@Override
+//	public Set<Step> getSteps(IFile featureFile, IProgressMonitor progressMonitor) throws CoreException {
+//
+//		// TODO the projects to scans should be the list of opened projects
+//		// with the cucumber nature
+//		
+//		IProject project = featureFile.getProject();
+//		Set<Step> steps = new LinkedHashSet<Step>();
+//		try {
+//			//Scan project and direct referenced projects...
+//			Set<IProject> projects = new LinkedHashSet<IProject>();
+//			if(project.isAccessible()) { // skip closed project
+//				projects.add(project);
+//				projects.addAll(Arrays.asList(project.getReferencedProjects()));
+//				SubMonitor subMonitor = SubMonitor.convert(progressMonitor, projects.size());
+//				for (IProject projectToScan : projects) {
+//					scanProject(projectToScan, featureFile, steps, subMonitor.newChild(1));
+//				}
+//			}
+//		} finally {
+//			if (progressMonitor != null) {
+//				 progressMonitor.done();
+//	         }
+//		}
+//		
+//		stepDefinitionsRepository.add(steps);
+//		return steps;
+//	}
+	
 	@Override
-	public boolean support(IProject project) {
-		IJavaProject javaProject= JavaCore.create(project);
-        if (javaProject == null) {
-            // the project is not configured for Java (has no Java nature)
-            return false;
-        }
-	        
-		return true;
+	public boolean support(IProject project) throws CoreException {
+        return project.isOpen() && project.hasNature(JavaCore.NATURE_ID);
 	}
 	
 	@Override
 	public Set<Step> getLatestStepsDefinitionsScanResult() {
-		return this.stepDefinitionsStorage.getAllSteps();
+		return this.stepDefinitionsRepository.getAllStepDefinitions();
 	}
 
 }
