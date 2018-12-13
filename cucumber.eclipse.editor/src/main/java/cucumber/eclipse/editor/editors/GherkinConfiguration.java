@@ -36,6 +36,7 @@ import cucumber.eclipse.editor.markers.MarkerResolutionProposal;
 import cucumber.eclipse.editor.markers.StepCreationMarkerResolutionGenerator;
 import cucumber.eclipse.steps.integration.StepPreferences;
 import cucumber.eclipse.editor.Activator;
+import cucumber.eclipse.editor.editors.jumpto.StepHyperlinkDetector;
 
 public class GherkinConfiguration extends TextSourceViewerConfiguration {
 

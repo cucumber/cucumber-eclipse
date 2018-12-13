@@ -9,6 +9,7 @@ import org.eclipse.jface.text.Region;
 import org.junit.Before;
 import org.junit.Test;
 
+import cucumber.eclipse.editor.editors.jumpto.StepHyperlink;
 import cucumber.eclipse.steps.integration.Step;
 
 public class StepHyperlinkTest {
