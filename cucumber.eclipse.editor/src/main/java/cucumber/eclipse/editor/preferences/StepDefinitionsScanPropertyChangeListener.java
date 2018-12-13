@@ -5,13 +5,11 @@ import static cucumber.eclipse.steps.integration.StepPreferences.PREF_CHECK_STEP
 import static cucumber.eclipse.steps.integration.StepPreferences.PREF_ONLY_SEARCH_PACKAGE;
 import static cucumber.eclipse.steps.integration.StepPreferences.PREF_ONLY_SEARCH_SPECIFIC_PACKAGE;
 
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.PlatformUI;
 
-import cucumber.eclipse.editor.editors.Editor;
+import cucumber.eclipse.editor.builder.BuilderUtil;
 
 
 public class StepDefinitionsScanPropertyChangeListener implements IPropertyChangeListener {
@@ -20,45 +18,19 @@ public class StepDefinitionsScanPropertyChangeListener implements IPropertyChang
 	public void propertyChange(PropertyChangeEvent event) {
 		String propertyChanged = event.getProperty();
 		
-		
-		
 		if (PREF_CHECK_STEP_DEFINITIONS.equals(propertyChanged)) {
-			// TODO This should be completed by remove or add the StepsBuilder for each projects 
-			
-			IEditorReference[] editorReferences = editorReferences();
 
-			boolean checkStepDefinitionsEnabled = INSTANCE.isCheckStepDefinitionsEnabled();
+			boolean checkStepDefinitionsEnabled = INSTANCE.isStepDefinitionsMatchingEnabled();
 
-			for (IEditorReference editorReference : editorReferences) {
-				IEditorPart editorPart = editorReference.getEditor(false);
-				if (editorPart instanceof Editor) {
-					Editor editor = (Editor) editorPart;
-					if (checkStepDefinitionsEnabled) {
-//						editor.refresh();
-					} else {
-						editor.cleanMarkers();
-					}
-				}
+			int buildType = IncrementalProjectBuilder.CLEAN_BUILD;
+			if(checkStepDefinitionsEnabled) {
+				buildType = IncrementalProjectBuilder.FULL_BUILD;
 			}
+			BuilderUtil.buildWorkspace(buildType);
 		}
 		else if (PREF_ONLY_SEARCH_PACKAGE.equals(propertyChanged) || PREF_ONLY_SEARCH_SPECIFIC_PACKAGE.equals(propertyChanged)) {
-			
-			IEditorReference[] editorReferences = editorReferences();
-			
-			for (IEditorReference editorReference : editorReferences) {
-				IEditorPart editorPart = editorReference.getEditor(false);
-				if (editorPart instanceof Editor) {
-					Editor editor = (Editor) editorPart;
-//					editor.refresh();
-				}
-			}
-			
+			BuilderUtil.buildWorkspace(IncrementalProjectBuilder.FULL_BUILD);
 		}
-	}
-
-	private IEditorReference[] editorReferences() {
-		return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
-				.getEditorReferences();
 	}
 	
 }

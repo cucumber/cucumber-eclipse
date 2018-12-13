@@ -30,16 +30,17 @@ import cucumber.eclipse.steps.integration.marker.MarkerFactory;
  * @author qvdk
  *
  */
-public class CucumberBuilder extends IncrementalProjectBuilder {
+public class CucumberStepDefinitionsBuilder extends IncrementalProjectBuilder {
 
 	public static final String ID = "cucumber.eclipse.builder.stepdefinition";
 
 	private final ExtensionRegistryStepProvider stepDefinitionsProvider = ExtensionRegistryStepProvider.INSTANCE;
 	private MarkerFactory markerFactory = new MarkerFactory();
-
+	private StepPreferences cucumberPreferences = StepPreferences.INSTANCE;
+	
 	@Override
 	protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
-		if (!StepPreferences.INSTANCE.isCheckStepDefinitionsEnabled()) {
+		if (!cucumberPreferences.isStepDefinitionsMatchingEnabled()) {
 			return null;
 		}
 		switch (kind) {
@@ -77,6 +78,7 @@ public class CucumberBuilder extends IncrementalProjectBuilder {
 		try {
 			// the visitor does the work.
 			delta.accept(new CucumberStepDefinitionsIncrementalBuildVisitor(markerFactory, monitor));
+			
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
@@ -98,7 +100,11 @@ public class CucumberBuilder extends IncrementalProjectBuilder {
 			// resource.getName());
 			// build the specified resource.
 			// return true to continue visiting children.
-
+			
+			if(monitor.isCanceled()) {
+				return false;
+			}
+			
 			this.markerFactory.cleanMarkers(resource);
 			stepDefinitionsProvider.findStepDefinitions(resource, markerFactory, monitor);
 
@@ -119,6 +125,12 @@ public class CucumberBuilder extends IncrementalProjectBuilder {
 
 		@Override
 		public boolean visit(IResourceDelta delta) throws CoreException {
+			
+			// stop the visitor pattern if a cancellation was requested
+			if(monitor.isCanceled()) {
+				return false;
+			}
+			
 //			System.out.println("CucumberIncrementalBuildVisitor is building " + delta.getResource().getName());
 			IResource resource = delta.getResource();
 			this.markerFactory.cleanMarkers(resource);
@@ -128,10 +140,35 @@ public class CucumberBuilder extends IncrementalProjectBuilder {
 		}
 
 	}
+	
+	class CucumberStepDefinitionsCleanBuildVisitor implements IResourceVisitor {
+
+		private IProgressMonitor monitor;
+		private MarkerFactory markerFactory;
+
+		public CucumberStepDefinitionsCleanBuildVisitor(MarkerFactory markerFactory, IProgressMonitor monitor) {
+			this.monitor = monitor;
+			this.markerFactory = markerFactory;
+		}
+
+		@Override
+		public boolean visit(IResource resource) throws CoreException {
+			// stop the visitor pattern if a cancellation was requested
+			if(monitor.isCanceled()) {
+				return false;
+			}
+			this.markerFactory.cleanMarkers(resource);
+			return true;
+		}
+
+	}
+	
 
 	@Override
 	protected void clean(IProgressMonitor monitor) throws CoreException {
-		System.out.println("CucumberBuilder.clean");
+		// stop the visitor pattern if a cancellation was requested
+		System.out.println("CucumberStepDefinitionsBuilder.clean");
 		this.stepDefinitionsProvider.clean();
+		getProject().accept(new CucumberStepDefinitionsCleanBuildVisitor(markerFactory, monitor));
 	}
 }

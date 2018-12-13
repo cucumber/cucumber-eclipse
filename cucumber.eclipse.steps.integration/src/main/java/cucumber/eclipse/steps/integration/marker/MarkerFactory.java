@@ -15,7 +15,6 @@ import org.eclipse.jface.text.Region;
 
 import cucumber.eclipse.steps.integration.Activator;
 import cucumber.eclipse.steps.integration.Step;
-import gherkin.formatter.model.ExamplesTableRow;
 
 public class MarkerFactory {
 	
@@ -182,7 +181,7 @@ public class MarkerFactory {
 				
 				try {
 					marker = gherkinResource.createMarker(SCENARIO_OUTLINE_EXAMPLE_UNMATCH);
-					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
 					marker.setAttribute(IMarker.MESSAGE, String.format("No compatible step definition with %s", currentLineTrim));
 					marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
 					marker.setAttribute(IMarker.CHAR_START, stepRegion.getOffset());

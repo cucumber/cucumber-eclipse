@@ -37,7 +37,7 @@ public class CucumberPreferencePage extends FieldEditorPreferencePage implements
 
 		addField(new BooleanFieldEditor(
 			StepPreferences.PREF_CHECK_STEP_DEFINITIONS,
-			getString("&Match Steps with Java Step definitions"), parent));
+			getString("&Enable step definitions glue detection"), parent));
 			
 		//#239:Only match step implementation in same package as feature file	
 		addField(new BooleanFieldEditor(

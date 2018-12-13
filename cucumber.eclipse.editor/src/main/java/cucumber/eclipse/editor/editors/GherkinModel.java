@@ -21,6 +21,10 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
 
+/**
+ * @author qvdk
+ * @deprecated
+ */
 public class GherkinModel {
 
 	private List<PositionedElement> elements = new ArrayList<PositionedElement>();

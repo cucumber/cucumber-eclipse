@@ -13,7 +13,7 @@ import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
-import cucumber.eclipse.editor.builder.CucumberBuilder;
+import cucumber.eclipse.editor.builder.CucumberStepDefinitionsBuilder;
 import cucumber.eclipse.editor.builder.CucumberGherkinBuilder;
 
 public class CucumberProjectNature implements IProjectNature {
@@ -56,7 +56,7 @@ public class CucumberProjectNature implements IProjectNature {
         
         // First build step definitions
         ICommand stepDefinitionsBuilder = description.newCommand();
-        stepDefinitionsBuilder.setBuilderName(CucumberBuilder.ID);
+        stepDefinitionsBuilder.setBuilderName(CucumberStepDefinitionsBuilder.ID);
         builders.put(stepDefinitionsBuilder.getBuilderName(), stepDefinitionsBuilder);
         
         // Then build gherkins
@@ -74,7 +74,7 @@ public class CucumberProjectNature implements IProjectNature {
 
     	Set<ICommand> toRemove = new HashSet<ICommand>();
         for (ICommand builder : builders) {
-			if(CucumberBuilder.ID.equals(builder.getBuilderName())) {
+			if(CucumberStepDefinitionsBuilder.ID.equals(builder.getBuilderName())) {
 				toRemove.remove(builder);
 			}
 		}

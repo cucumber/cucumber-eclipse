@@ -322,7 +322,8 @@
             textPreferenceValue="true"
             textStylePreferenceValue="BOX"
             verticalRulerPreferenceKey="cucumber.eclipse.marker.scenario_outline_example_unmatch.ruler"
-            verticalRulerPreferenceValue="true">
+            verticalRulerPreferenceValue="true"
+            >
       </specification>
    </extension>
    <extension point="org.eclipse.ui.ide.markerResolution">
@@ -379,7 +380,7 @@
  </extension>
  <extension
        id="cucumber.eclipse.builder.stepdefinition"
-       name="Cucumber step definition builder"
+       name="Cucumber step definitions builder"
        point="org.eclipse.core.resources.builders">
     <builder
           callOnEmptyDelta="false"
@@ -387,13 +388,13 @@
           isConfigurable="false"
           supportsConfigurations="false">
           <run
-                class="cucumber.eclipse.editor.builder.CucumberBuilder">
+                class="cucumber.eclipse.editor.builder.CucumberStepDefinitionsBuilder">
           </run>
     </builder>
  </extension>
  <extension
        id="cucumber.eclipse.builder.gherkin"
-       name="Cucumber gherkin builder"
+       name="Cucumber gherkins builder"
        point="org.eclipse.core.resources.builders">
     <builder
           callOnEmptyDelta="false"

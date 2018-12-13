@@ -42,7 +42,8 @@
             textPreferenceValue="true"
             textStylePreferenceValue="BOX"
             verticalRulerPreferenceKey="cucumber.eclipse.marker.stepdef.matches.ruler"
-            verticalRulerPreferenceValue="true">
+            verticalRulerPreferenceValue="true"
+            icon="icons/glue.gif">
       </specification>
    </extension>
 	

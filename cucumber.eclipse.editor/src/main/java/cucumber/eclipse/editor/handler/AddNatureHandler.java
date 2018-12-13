@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import cucumber.eclipse.editor.builder.BuilderUtil;
 import cucumber.eclipse.editor.nature.CucumberProjectNature;
 
 
@@ -54,6 +55,6 @@ public class AddNatureHandler extends AbstractHandler {
 	    for (IMarker marker : markers) {
 	    	marker.delete();
 		}
-	    project.build(IncrementalProjectBuilder.FULL_BUILD, null);
+	    BuilderUtil.buildProject(project, IncrementalProjectBuilder.FULL_BUILD);
     }
 }

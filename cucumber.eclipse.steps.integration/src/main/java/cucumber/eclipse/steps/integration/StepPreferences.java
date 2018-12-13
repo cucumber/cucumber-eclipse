@@ -5,8 +5,6 @@ import org.eclipse.core.runtime.preferences.IPreferencesService;
 
 public class StepPreferences {
 
-	// TODO I think is not a good pratice to use singleton, probably I should use
-	// another mecanism
 	public static StepPreferences INSTANCE = new StepPreferences();
 
 	// Plugin Settings
@@ -23,7 +21,7 @@ public class StepPreferences {
 		preferencesService = Platform.getPreferencesService();
 	}
 
-	public boolean isCheckStepDefinitionsEnabled() {
+	public boolean isStepDefinitionsMatchingEnabled() {
 		return preferencesService.getBoolean("cucumber.eclipse.editor", PREF_CHECK_STEP_DEFINITIONS, false, null);
 	}
 	
