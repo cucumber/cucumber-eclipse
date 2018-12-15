@@ -12,7 +12,7 @@ import io.cucumber.cucumberexpressions.Expression;
 import io.cucumber.cucumberexpressions.ExpressionFactory;
 import io.cucumber.cucumberexpressions.ParameterTypeRegistry;
 
-public class Step {
+public class StepDefinition {
 
 	private String text;
 	private IResource source;
@@ -30,28 +30,10 @@ public class Step {
 	public String getText() {
 		return text;
 	}
-	public void setText(String text) {
+	public void setText(String text) throws CucumberExpressionException {
 		this.text = text;
 		Locale locale = this.lang == null ? Locale.getDefault() : new Locale(this.lang);
-//		try {
-			this.expression = new ExpressionFactory(new ParameterTypeRegistry(locale)).createExpression(text);
-//		}
-//		catch (CucumberExpressionException e) {
-//			// TODO All this exceptions should be trapped and add a marker in eclipse
-//			// the cucumber expression have a custom parameter type
-//			// without definition.
-//			// For example, "I have a {color} ball" 
-//			// But the "color" parameter type was not register 
-//			// thanks to a TypeRegistryConfigurer.
-//			this.expression = null;
-//		}
-//		catch (PatternSyntaxException e) {
-//			// This fix #286
-//			// the regular expression is wrong
-//			// we do not expect to match something with it
-//			// but we do not want to crash the F3
-//			this.expression = null;
-//		}
+		this.expression = new ExpressionFactory(new ParameterTypeRegistry(locale)).createExpression(text);
 	}
 	public IResource getSource() {
 		return source;
@@ -147,7 +129,7 @@ public class Step {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Step other = (Step) obj;
+		StepDefinition other = (StepDefinition) obj;
 		if (lang == null) {
 			if (other.lang != null)
 				return false;

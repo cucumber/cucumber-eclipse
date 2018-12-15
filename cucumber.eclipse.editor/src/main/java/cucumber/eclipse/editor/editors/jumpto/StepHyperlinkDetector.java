@@ -8,12 +8,17 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 
+import cucumber.eclipse.editor.editors.Editor;
 import cucumber.eclipse.editor.steps.GlueRepository;
 import cucumber.eclipse.editor.steps.GlueRepository.Glue;
+import cucumber.eclipse.editor.steps.GlueStorage;
 
 public class StepHyperlinkDetector implements IHyperlinkDetector {
 
-	public StepHyperlinkDetector() {
+	private Editor editor;
+	
+	public StepHyperlinkDetector(Editor editor) {
+		this.editor = editor;
 	}
 
 	@Override
@@ -40,13 +45,14 @@ public class StepHyperlinkDetector implements IHyperlinkDetector {
 			return null;
 		}
 
-		
 		// find the gherkin step
 		// get the related step definition
 		// get the related step definitions file
 		// open this last one
 		
-		Glue glue = GlueRepository.INSTANCE.findGlue(currentLine.trim());
+		GlueRepository glueRepository = GlueStorage.findGlueRepository(this.editor);
+		
+		Glue glue = glueRepository.findGlue(currentLine.trim());
 		if(glue == null) {
 			// no glue found
 			return null;
@@ -61,6 +67,4 @@ public class StepHyperlinkDetector implements IHyperlinkDetector {
 		return new IHyperlink[] { new StepHyperlink(stepRegion, glue.getStepDefinition()) };
 	}
 	
-	
-		
 }

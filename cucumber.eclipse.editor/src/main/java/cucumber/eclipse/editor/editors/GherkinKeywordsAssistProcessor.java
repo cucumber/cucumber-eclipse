@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
@@ -52,11 +53,11 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 			if (lang == null) {
 				lang = "en";
 			}
-
+			IProject project = this.editor.getFile().getProject();
 			I18n i18n = new I18n(lang);
 
 			//Initialize CucumberContentAssist
-			this.contentAssist = new CucumberContentAssist(lang, ExtensionRegistryStepProvider.INSTANCE);
+			this.contentAssist = new CucumberContentAssist(lang, project);
 			List<String> stepKeyWords = contentAssist.getStepKeyWords(i18n);
 			// line of cursor locate,and from begin to cursor.
 			IRegion line = viewer.getDocument().getLineInformationOfOffset(offset);

@@ -1,5 +1,7 @@
 package cucumber.eclipse.steps.integration.marker;
 
+import java.io.IOException;
+
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
@@ -14,22 +16,30 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 
 import cucumber.eclipse.steps.integration.Activator;
-import cucumber.eclipse.steps.integration.Step;
+import cucumber.eclipse.steps.integration.StepDefinition;
+import cucumber.eclipse.steps.integration.StepSerialization;
 
 public class MarkerFactory {
 	
-	public static final String SYNTAX_ERROR = "cucumber.eclipse.marker.stepdef.syntaxerror";
+	public static final MarkerFactory INSTANCE = new MarkerFactory();
+	
+	public static final String STEPDEF_SYNTAX_ERROR = "cucumber.eclipse.marker.stepdef.syntaxerror";
+	public static final String GHERKIN_SYNTAX_ERROR = "cucumber.eclipse.marker.gherkin.syntaxerror";
 	public static final String STEP_DEFINTION_MATCH = "cucumber.eclipse.marker.stepdef.matches";
 	public static final String SCENARIO_OUTLINE_EXAMPLE_UNMATCH = "cucumber.eclipse.marker.scenario_outline_example_unmatch";
 	public static final String MULTIPLE_STEP_DEFINTIONS_MATCH = "cucumber.eclipse.marker.stepdef.multiple_matches";
-	public static final String UNMATCHED_STEP = "cucumber.eclipse.editor.editors.Editor.unmatchedsteperror";
 
-
+	public static final String UNMATCHED_STEP = "cucumber.eclipse.marker.gherkin.unmatched_step";
+	public static final String UNMATCHED_STEP_STEP_ATTRIBUTE = UNMATCHED_STEP + ".step";
+	public static final String UNMATCHED_STEP_PATH_ATTRIBUTE = UNMATCHED_STEP + ".path";
+	
+	private MarkerFactory() {}
+	
 	public void syntaxErrorOnStepDefinition(IResource stepDefinitionResource, Exception e) {
 		syntaxErrorOnStepDefinition(stepDefinitionResource, e, 0);
 	}
 
-	public void multipleStepDefinitionsMatched(final IResource gherkinFile, final gherkin.formatter.model.Step gherkinStep, final Step... stepDefinitions) {
+	public void multipleStepDefinitionsMatched(final IResource gherkinFile, final gherkin.formatter.model.Step gherkinStep, final StepDefinition... stepDefinitions) {
 		this.mark(gherkinFile, new IMarkerBuilder() {
 			@Override
 			public IMarker build() {
@@ -45,7 +55,7 @@ public class MarkerFactory {
 					StringBuffer stepDefinitionsFullPathsStringBuffer = new StringBuffer();
 
 					for (int it = 0 ; it < stepDefinitions.length; it++) {
-						Step stepDefinition = stepDefinitions[it];
+						StepDefinition stepDefinition = stepDefinitions[it];
 						stepDefinitionsNamesStringBuffer.append(stepDefinition.getSource().getName()).append(":")
 								.append(stepDefinition.getLineNumber());
 						
@@ -99,7 +109,6 @@ public class MarkerFactory {
 				int statementStartOffset = lineStartOffset + currentLine.indexOf(textStatement);
 
 				IRegion stepRegion = new Region(statementStartOffset, textStatement.length());
-						
 				try {
 					marker = gherkinFile.createMarker(UNMATCHED_STEP);
 					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
@@ -107,13 +116,18 @@ public class MarkerFactory {
 					marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
 					marker.setAttribute(IMarker.CHAR_START, stepRegion.getOffset());
 					marker.setAttribute(IMarker.CHAR_END, stepRegion.getOffset() + stepRegion.getLength());
+					marker.setAttribute(UNMATCHED_STEP_STEP_ATTRIBUTE, StepSerialization.serialize(gherkinStep));
+					marker.setAttribute(UNMATCHED_STEP_PATH_ATTRIBUTE, gherkinFile.getFullPath().toString());
 				} catch (CoreException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
 					e.printStackTrace();
 				}
 				return marker;
 			}
 		});
 	}
+	
 	
 	public void syntaxErrorOnStepDefinition(final IResource stepDefinitionResource, final Exception e, final int lineNumber) {
 		
@@ -122,7 +136,31 @@ public class MarkerFactory {
 			public IMarker build() {
 				IMarker marker = null;
 				try {
-					marker = stepDefinitionResource.createMarker(SYNTAX_ERROR);
+					marker = stepDefinitionResource.createMarker(STEPDEF_SYNTAX_ERROR);
+					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+					marker.setAttribute(IMarker.MESSAGE, e.getMessage());
+					marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
+				} catch (CoreException e) {
+					e.printStackTrace();
+				}
+				return marker;
+			}
+		});
+		
+	}
+
+	public void syntaxErrorOnGherkin(IResource stepDefinitionResource, Exception e) {
+		syntaxErrorOnGherkin(stepDefinitionResource, e, 0);
+	}
+	
+	public void syntaxErrorOnGherkin(final IResource gherkinResource, final Exception e, final int lineNumber) {
+		
+		this.mark(gherkinResource, new IMarkerBuilder() {
+			@Override
+			public IMarker build() {
+				IMarker marker = null;
+				try {
+					marker = gherkinResource.createMarker(GHERKIN_SYNTAX_ERROR);
 					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
 					marker.setAttribute(IMarker.MESSAGE, e.getMessage());
 					marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
@@ -135,7 +173,7 @@ public class MarkerFactory {
 		
 	}
 	
-	public void gherkinStepWithDefinitionFound(final IResource gherkinResource, final Step stepDefinition, final int lineNumber) {
+	public void gherkinStepWithDefinitionFound(final IResource gherkinResource, final StepDefinition stepDefinition, final int lineNumber) {
 		
 		this.mark(gherkinResource, new IMarkerBuilder() {
 			@Override
@@ -198,7 +236,8 @@ public class MarkerFactory {
 	
 	public void cleanMarkers(IResource resource) {
 		try {
-			resource.deleteMarkers(SYNTAX_ERROR, false, IResource.DEPTH_ZERO);
+			resource.deleteMarkers(STEPDEF_SYNTAX_ERROR, false, IResource.DEPTH_ZERO);
+			resource.deleteMarkers(GHERKIN_SYNTAX_ERROR, false, IResource.DEPTH_ZERO);
 			resource.deleteMarkers(STEP_DEFINTION_MATCH, false, IResource.DEPTH_ZERO);
 			resource.deleteMarkers(SCENARIO_OUTLINE_EXAMPLE_UNMATCH, false, IResource.DEPTH_ZERO);
 			resource.deleteMarkers(MULTIPLE_STEP_DEFINTIONS_MATCH, false, IResource.DEPTH_ZERO);

@@ -1,4 +1,4 @@
-package cucumber.eclipse.steps.integration;
+package cucumber.eclipse.editor.steps;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -7,7 +7,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
+
+import cucumber.eclipse.steps.integration.StepDefinition;
+import cucumber.eclipse.steps.integration.StepDefinitionsChanged;
+import cucumber.eclipse.steps.integration.StepDefinitionsResetEvent;
 
 /**
  * Storage class for step definitions.
@@ -26,31 +29,34 @@ import org.eclipse.core.resources.IResource;
  */
 public class StepDefinitionsRepository {
 
-	public static final StepDefinitionsRepository INSTANCE = new StepDefinitionsRepository();
-
-	private Map<IFile, Set<Step>> stepsByResourceName;
+	private Map<IFile, Set<StepDefinition>> stepsByResourceName;
 	private Set<StepDefinitionsRepositoryListener> listeners;
 
-	private StepDefinitionsRepository() {
+	protected StepDefinitionsRepository() {
 		this.reset();
 		this.listeners = new HashSet<StepDefinitionsRepositoryListener>();
 	}
 
-	public void add(IFile stepDefinitionsFile, List<Step> steps) {
-		this.stepsByResourceName.put(stepDefinitionsFile, new HashSet<Step>(steps));
+	public void add(IFile stepDefinitionsFile, List<StepDefinition> steps) {
+		this.stepsByResourceName.put(stepDefinitionsFile, new HashSet<StepDefinition>(steps));
 	}
 
-	public void add(IFile stepDefinitionsFile, Set<Step> steps) {
-		this.stepsByResourceName.put(stepDefinitionsFile, steps);
+	public void add(IFile stepDefinitionsFile, Set<StepDefinition> steps) {
+		if(steps.isEmpty()) {
+			this.stepsByResourceName.remove(stepDefinitionsFile);
+		}
+		else {
+			this.stepsByResourceName.put(stepDefinitionsFile, steps);
+		}
 	}
 
 	public Set<IFile> getAllStepDefinitionsFiles() {
 		return this.stepsByResourceName.keySet();
 	}
 	
-	public Set<Step> getAllStepDefinitions() {
-		Set<Step> allSteps = new HashSet<Step>();
-		for (Set<Step> steps : stepsByResourceName.values()) {
+	public Set<StepDefinition> getAllStepDefinitions() {
+		Set<StepDefinition> allSteps = new HashSet<StepDefinition>();
+		for (Set<StepDefinition> steps : stepsByResourceName.values()) {
 			allSteps.addAll(steps);
 		}
 		return allSteps;
@@ -61,14 +67,14 @@ public class StepDefinitionsRepository {
 	}
 
 	public void reset() {
-		this.stepsByResourceName = new HashMap<IFile, Set<Step>>();
+		this.stepsByResourceName = new HashMap<IFile, Set<StepDefinition>>();
 	}
 
 	public void addListener(StepDefinitionsRepositoryListener listener) {
 		this.listeners.add(listener);
 	}
 
-	protected void fireStepDefinitionsChangedEvent(Set<Step> stepDefinitions) {
+	protected void fireStepDefinitionsChangedEvent(Set<StepDefinition> stepDefinitions) {
 		StepDefinitionsChanged event = new StepDefinitionsChanged(stepDefinitions);
 		for (StepDefinitionsRepositoryListener listener : listeners) {
 			listener.onStepDefinitionsChanged(event);

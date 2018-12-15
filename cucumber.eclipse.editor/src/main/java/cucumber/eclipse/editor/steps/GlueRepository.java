@@ -1,5 +1,6 @@
 package cucumber.eclipse.editor.steps;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -11,36 +12,38 @@ import java.util.regex.PatternSyntaxException;
 
 import org.eclipse.core.resources.IFile;
 
-import cucumber.eclipse.steps.integration.Step;
+import cucumber.eclipse.steps.integration.GherkinStepWrapper;
+import cucumber.eclipse.steps.integration.StepDefinition;
 import gherkin.I18n;
+import gherkin.formatter.model.Step;
 
 
-public class GlueRepository {
+public class GlueRepository implements Serializable {
 	
-	public static final GlueRepository INSTANCE = new GlueRepository();
+	private static final long serialVersionUID = -3784224573706686779L;
+
 	
+	private Map<GherkinStepWrapper, StepDefinition> glues = new HashMap<GherkinStepWrapper, StepDefinition>();
 	
-	private Map<GherkinStepWrapper, Step> glueStorage = new HashMap<GherkinStepWrapper, Step>();
-	
-	private GlueRepository() {
+	protected GlueRepository() {
 	}
 	
 	public Glue get(GherkinStepWrapper gherkinStep) {
-		Step stepDefinition = this.glueStorage.get(gherkinStep);
+		StepDefinition stepDefinition = this.glues.get(gherkinStep);
 		if(stepDefinition == null) {
 			return null;
 		}
 		return new Glue(gherkinStep, stepDefinition);
 	}
 	
-	public void add(GherkinStepWrapper gherkinStep, Step stepDefinition) {
-		this.glueStorage.put(gherkinStep, stepDefinition);
+	public void add(GherkinStepWrapper gherkinStep, StepDefinition stepDefinition) {
+		this.glues.put(gherkinStep, stepDefinition);
 	}
 	
 	public Set<IFile> getGherkinSources() {
 		Set<IFile> gherkinSources = new HashSet<IFile>();
 		
-		for (GherkinStepWrapper gherkinStep : this.glueStorage.keySet()) {
+		for (GherkinStepWrapper gherkinStep : this.glues.keySet()) {
 			gherkinSources.add((IFile) gherkinStep.getSource());
 		}
 		
@@ -50,7 +53,7 @@ public class GlueRepository {
 	public Set<IFile> getStepDefinitionsSources() {
 		Set<IFile> stepDefinitionsSources = new HashSet<IFile>();
 		
-		for (Step stepDefinition : this.glueStorage.values()) {
+		for (StepDefinition stepDefinition : this.glues.values()) {
 			stepDefinitionsSources.add((IFile) stepDefinition.getSource());
 		}
 		
@@ -62,10 +65,10 @@ public class GlueRepository {
 	 * @return the step definition related to this gherkin step. Or, null when not found
 	 */
 	public Glue findGlue(String fromGherkinStepText) {
-		Entry<GherkinStepWrapper,Step> glue = null;
+		Entry<GherkinStepWrapper,StepDefinition> glue = null;
 		
-		Set<Entry<GherkinStepWrapper,Step>> entrySet = this.glueStorage.entrySet();
-		for (Entry<GherkinStepWrapper, Step> entry : entrySet) {
+		Set<Entry<GherkinStepWrapper,StepDefinition>> entrySet = this.glues.entrySet();
+		for (Entry<GherkinStepWrapper, StepDefinition> entry : entrySet) {
 			
 			GherkinStepWrapper gherkinStepWrapper = entry.getKey();
 			gherkin.formatter.model.Step gherkinStep = gherkinStepWrapper.getStep();
@@ -86,7 +89,17 @@ public class GlueRepository {
 	}
 	
 	public void clean() {
-		this.glueStorage.clear();
+		this.glues.clear();
+	}
+	
+	public void clean(Step step) {
+		for (GherkinStepWrapper gherkinStepWrapper : this.glues.keySet()) {
+			Integer lineNumber = gherkinStepWrapper.getStep().getLine();
+			if(step.getLine().equals(lineNumber)) {
+				this.glues.remove(gherkinStepWrapper);
+				break;
+			}
+		}
 	}
 	
 	/** Get the text statement of a gherkin step.
@@ -154,9 +167,9 @@ public class GlueRepository {
 	public class Glue {
 
 		private GherkinStepWrapper gherkinStepWrapper;
-		private Step stepDefinition;
+		private StepDefinition stepDefinition;
 
-		public Glue(GherkinStepWrapper gherkinStepWrapper, Step stepDefinition) {
+		public Glue(GherkinStepWrapper gherkinStepWrapper, StepDefinition stepDefinition) {
 			super();
 			this.gherkinStepWrapper = gherkinStepWrapper;
 			this.stepDefinition = stepDefinition;
@@ -166,7 +179,7 @@ public class GlueRepository {
 			return gherkinStepWrapper;
 		}
 
-		public Step getStepDefinition() {
+		public StepDefinition getStepDefinition() {
 			return stepDefinition;
 		}
 

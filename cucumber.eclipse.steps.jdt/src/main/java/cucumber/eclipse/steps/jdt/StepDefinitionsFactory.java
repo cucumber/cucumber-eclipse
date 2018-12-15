@@ -7,6 +7,6 @@ public class StepDefinitionsFactory implements IExecutableExtensionFactory {
 
 	@Override
 	public Object create() throws CoreException {
-		return StepDefinitions.getInstance();
+		return JavaStepDefinitionsProvider.getInstance();
 	}
 }

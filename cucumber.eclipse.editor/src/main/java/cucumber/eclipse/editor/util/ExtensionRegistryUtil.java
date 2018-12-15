@@ -9,7 +9,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 
 import cucumber.eclipse.editor.Activator;
-import cucumber.eclipse.steps.integration.IStepDefinitions;
+import cucumber.eclipse.steps.integration.IStepDefinitionsProvider;
 
 public class ExtensionRegistryUtil {
 
@@ -41,7 +41,7 @@ public class ExtensionRegistryUtil {
 		return extensions;
 	}
 	
-	public static List<IStepDefinitions> getStepDefinitions() {
-		return getIntegrationExtensionsOfType(IStepDefinitions.class);
+	public static List<IStepDefinitionsProvider> getStepDefinitionsProvider() {
+		return getIntegrationExtensionsOfType(IStepDefinitionsProvider.class);
 	}
 }

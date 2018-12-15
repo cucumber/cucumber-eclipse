@@ -3,14 +3,14 @@ package cucumber.eclipse.editor.editors.jumpto;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 
-import cucumber.eclipse.steps.integration.Step;
+import cucumber.eclipse.steps.integration.StepDefinition;
 
 public class StepHyperlink implements IHyperlink {
 
 	private IRegion region;
-	private Step stepDefintion;
+	private StepDefinition stepDefintion;
 
-	public StepHyperlink(IRegion region, Step step) {
+	public StepHyperlink(IRegion region, StepDefinition step) {
 		this.region = region;
 		this.stepDefintion = step;
 	}

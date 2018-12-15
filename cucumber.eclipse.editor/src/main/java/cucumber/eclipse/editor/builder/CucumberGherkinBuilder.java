@@ -24,11 +24,14 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 
 import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
-import cucumber.eclipse.editor.steps.GherkinStepWrapper;
 import cucumber.eclipse.editor.steps.GlueRepository;
+import cucumber.eclipse.editor.steps.GlueStorage;
+import cucumber.eclipse.editor.steps.StepDefinitionsRepository;
+import cucumber.eclipse.editor.steps.StepDefinitionsStorage;
+import cucumber.eclipse.editor.steps.Storage;
 import cucumber.eclipse.editor.util.FileUtil;
 import cucumber.eclipse.steps.integration.Activator;
-import cucumber.eclipse.steps.integration.StepDefinitionsRepository;
+import cucumber.eclipse.steps.integration.GherkinStepWrapper;
 import cucumber.eclipse.steps.integration.StepPreferences;
 import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 import gherkin.formatter.Formatter;
@@ -55,13 +58,14 @@ import gherkin.parser.Parser;
  * 
  * Thus, this builder compiles gherkin file to extract steps and compiles step
  * definitions to maintain glue. This builder HAVE NOT the responsibility of the
- * compilation of step definitions itself. For this work see {#CucumberStepDefinitionsBuilder}
+ * compilation of step definitions itself. For this work see
+ * {#CucumberStepDefinitionsBuilder}
  * 
- * To maintain the glue, this builder compiles step defintions file to notify 
+ * To maintain the glue, this builder compiles step defintions file to notify
  * gherkin files to check if they are impacted by the step definitions update.
  * 
- * This builder MUST USED AFTER the {#CucumberStepDefinitionsBuilder}, and assume the
- * StepDefinitionsRepository to be populated.
+ * This builder MUST USED AFTER the {#CucumberStepDefinitionsBuilder}, and
+ * assume the StepDefinitionsRepository to be populated.
  * 
  * @author qvdk
  *
@@ -69,10 +73,9 @@ import gherkin.parser.Parser;
 public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 
 	public static final String ID = "cucumber.eclipse.builder.gherkin";
-	private MarkerFactory markerFactory = new MarkerFactory();
+	private MarkerFactory markerFactory = MarkerFactory.INSTANCE;
 	private final ExtensionRegistryStepProvider stepDefinitionsProvider = ExtensionRegistryStepProvider.INSTANCE;
-	private StepDefinitionsRepository stepDefinitionsRepository = StepDefinitionsRepository.INSTANCE;
-	private final GlueRepository glueRepository = GlueRepository.INSTANCE;
+	private final Storage<GlueRepository> glueStorage = GlueStorage.INSTANCE;
 
 	@Override
 	protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
@@ -122,7 +125,8 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 		private MarkerFactory markerFactory;
 		private boolean glueDetectionEnabled;
 
-		public CucumberGherkinBuildVisitor(MarkerFactory markerFactory, boolean glueDetectionEnabled, IProgressMonitor monitor) {
+		public CucumberGherkinBuildVisitor(MarkerFactory markerFactory, boolean glueDetectionEnabled,
+				IProgressMonitor monitor) {
 			this.monitor = monitor;
 			this.markerFactory = markerFactory;
 			this.glueDetectionEnabled = glueDetectionEnabled;
@@ -136,20 +140,19 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 		@Override
 		public boolean visit(IResourceDelta delta) throws CoreException {
 			IResource resource = delta.getResource();
-			System.out.println("gherkin builder compile: "+resource);
 			return buildGherkin(resource, true, glueDetectionEnabled);
 		}
 
-		protected boolean buildGherkin(IResource resource, boolean isIncrementalBuild, boolean glueDetectionEnabled) throws CoreException {
-			
+		protected boolean buildGherkin(IResource resource, boolean isIncrementalBuild, boolean glueDetectionEnabled)
+				throws CoreException {
+
 			// stop the visitor pattern if a cancellation was requested
-			if(monitor.isCanceled()) {
+			if (monitor.isCanceled()) {
 				return false;
 			}
-			
+
 			long start = System.currentTimeMillis();
-			//System.out.println("gherkin build " + resource.getName());
-			
+
 			if (!(resource instanceof IFile)) {
 				return true;
 			}
@@ -157,36 +160,44 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			// start of a very bad hack...
 			// Resources from test-classes generate a scan of non necessary files
 			// but I don't know how to identity them. For the moment filter with the path.
-			// Commonly, features are stored in `src/test/resources` for java projects 
-			// and this files are copied by the Java compiler into `${project.build.directory}/test-classes`
+			// Commonly, features are stored in `src/test/resources` for java projects
+			// and this files are copied by the Java compiler into
+			// `${project.build.directory}/test-classes`
 			// but we do not need this files since we already parse sources.
-			if(resource.getFullPath().toString().contains("test-classes")) {
+			if (resource.getFullPath().toString().contains("test-classes")) {
 				return true;
 			}
 			// end of the very bad hack...
-			
+
 			IFile file = (IFile) resource;
 
 			// Compile only gherkin files
 			String fileExtension = file.getFileExtension();
 			boolean isGherkinFile = "feature".equals(fileExtension) || "story".equals(fileExtension);
-			if (!isGherkinFile && glueDetectionEnabled) {
-				// If this is not a gherkin file AND it is a step definitions file
-				// then we shall rebuild all gherkins file because this step definitions file
-				// could add glue to any of gherkins steps.
-				if(isIncrementalBuild && stepDefinitionsRepository.isStepDefinitions(file)) {
-					// force a full build of gherkin
-					file.getProject().build(FULL_BUILD, monitor);
+			if (!isGherkinFile) {
+				if (!glueDetectionEnabled) {
+					// in this case there are nothing to do
+					return true;
 				}
+				// If this is not a gherkin file AND it is a step definitions file
+				// then we shall rebuild all gherkins files because this step definitions file
+				// could add glue to any of gherkins steps.
 				
+				if (isIncrementalBuild && stepDefinitionsProvider.support(getProject())) {
+					// force a full build of gherkin files
+					fullBuild(glueDetectionEnabled, monitor);
+				}
+
 				return true;
 			}
 
+			System.out.println(String.format("gherkin %s builder compile: %s", (isIncrementalBuild? "incremental":"full"), resource));
 			this.markerFactory.cleanMarkers(resource);
 
 			try {
 				String gherkinSource = FileUtil.read(file);
-				MarkerFormatter formatter = new MarkerFormatter(new Document(gherkinSource), resource, markerFactory, glueDetectionEnabled);
+				MarkerFormatter formatter = new MarkerFormatter(new Document(gherkinSource), resource, markerFactory,
+						glueDetectionEnabled);
 				Parser gherkinParser = new Parser(formatter, false);
 				gherkinParser.parse(gherkinSource, file.getFullPath().toString(), 0);
 			} catch (LexingError e) {
@@ -194,18 +205,17 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 				Pattern pattern = Pattern.compile("Lexing error on line (\\d+): '(.*)");
 				Matcher matcher = pattern.matcher(firstLine);
 				String error;
-				int lineNumber = 0; 
-				if(matcher.matches()) {
+				int lineNumber = 0;
+				if (matcher.matches()) {
 					lineNumber = Integer.valueOf(matcher.group(1));
 					error = matcher.group(2);
-				}
-				else {
+				} else {
 					lineNumber = 0;
 					error = e.getMessage();
 				}
-				RuntimeException runtimeException = new RuntimeException("Syntax error on " + error);
+				RuntimeException runtimeException = new RuntimeException("Syntax error: " + error);
 
-				markerFactory.syntaxErrorOnStepDefinition(resource, runtimeException, lineNumber);
+				markerFactory.syntaxErrorOnGherkin(resource, runtimeException, lineNumber);
 			} catch (IOException e) {
 				e.printStackTrace();
 				throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage()));
@@ -218,25 +228,36 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 
 	}
 
+	/**
+	 * The formatter is misnamed. It is a implementation of the visitor pattern.
+	 * Thus, format is not the only possibility for this class. In our case, we will
+	 * use it to build the glue between gherkin steps and thiers definitions. More,
+	 * we will place markers.
+	 */
 	protected class MarkerFormatter implements Formatter {
 
 		private IResource gherkinFile;
 		private IDocument gherkinDocument;
+		private IProject project;
 		private MarkerFactory markerFactory;
 		private boolean inScenarioOutline = false;
 		private List<gherkin.formatter.model.Step> scenarioOutlineSteps;
 		private boolean isGlueDetectionEnabled;
+		private GlueRepository glueRepository;
 
-		public MarkerFormatter(IDocument document, IResource gherkinFile, MarkerFactory markerFactory, boolean isGlueDetectionEnabled) {
+		public MarkerFormatter(IDocument document, IResource gherkinFile, MarkerFactory markerFactory,
+				boolean isGlueDetectionEnabled) {
 			this.gherkinFile = gherkinFile;
+			this.project = gherkinFile.getProject();
 			this.gherkinDocument = document;
 			this.markerFactory = markerFactory;
 			this.isGlueDetectionEnabled = isGlueDetectionEnabled;
+			this.glueRepository = glueStorage.getOrCreate(this.project);
 		}
 
 		@Override
 		public void syntaxError(String state, String event, List<String> legalEvents, String uri, Integer line) {
-			this.markerFactory.syntaxErrorOnStepDefinition(this.gherkinFile, new ParseException(event, line));
+			this.markerFactory.syntaxErrorOnGherkin(this.gherkinFile, new ParseException(event, line));
 		}
 
 		@Override
@@ -276,17 +297,17 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 		 */
 		private void validate(Step scenarioOutlineStepLine, Map<String, String> exampleVariablesMap,
 				Integer exampleLine) {
-			if(!isGlueDetectionEnabled) {
+			if (!isGlueDetectionEnabled) {
 				return;
 			}
 			String derivateGherkinStepSource = getResolvedStepStringForExample(scenarioOutlineStepLine,
 					exampleVariablesMap);
-			
-			Set<cucumber.eclipse.steps.integration.Step> allStepDefinitions = stepDefinitionsProvider
-					.getStepsInEncompassingProject();
-			cucumber.eclipse.steps.integration.Step glueStepDefinition = null;
 
-			for (cucumber.eclipse.steps.integration.Step stepDefinition : allStepDefinitions) {
+			Set<cucumber.eclipse.steps.integration.StepDefinition> allStepDefinitions = stepDefinitionsProvider
+					.getStepDefinitions(project);
+			cucumber.eclipse.steps.integration.StepDefinition glueStepDefinition = null;
+
+			for (cucumber.eclipse.steps.integration.StepDefinition stepDefinition : allStepDefinitions) {
 				boolean matches = stepDefinition.matches(derivateGherkinStepSource);
 				if (matches) {
 					glueStepDefinition = stepDefinition;
@@ -295,12 +316,13 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			}
 			boolean isFound = glueStepDefinition != null;
 			if (isFound) {
-				markerFactory.gherkinStepWithDefinitionFound(gherkinFile, glueStepDefinition, scenarioOutlineStepLine.getLine());
+				markerFactory.gherkinStepWithDefinitionFound(gherkinFile, glueStepDefinition,
+						scenarioOutlineStepLine.getLine());
 				glueRepository.add(new GherkinStepWrapper(scenarioOutlineStepLine, gherkinFile), glueStepDefinition);
 			} else {
 				markerFactory.gherkinStepExampleUnmatch(gherkinDocument, gherkinFile, exampleLine);
 			}
-			
+
 		}
 
 		private String getResolvedStepStringForExample(Step stepLine, Map<String, String> examplesLineMap) {
@@ -315,21 +337,20 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			return derivateGherkinStep;
 		}
 
-		
 		/**
 		 * Check if the step have a matching step definitions.
 		 * 
 		 * @param step a gherkin step
 		 */
 		protected void validate(Step step) {
-			if(!isGlueDetectionEnabled) {
+			if (!isGlueDetectionEnabled) {
 				return;
 			}
-			Set<cucumber.eclipse.steps.integration.Step> allStepDefinitions = stepDefinitionsProvider
-					.getStepsInEncompassingProject();
-			cucumber.eclipse.steps.integration.Step glueStepDefinition = null;
+			Set<cucumber.eclipse.steps.integration.StepDefinition> allStepDefinitions = stepDefinitionsProvider
+					.getStepDefinitions(this.project);
+			cucumber.eclipse.steps.integration.StepDefinition glueStepDefinition = null;
 
-			for (cucumber.eclipse.steps.integration.Step stepDefinition : allStepDefinitions) {
+			for (cucumber.eclipse.steps.integration.StepDefinition stepDefinition : allStepDefinitions) {
 				boolean matches = stepDefinition.matches(step.getName());
 				if (matches) {
 					glueStepDefinition = stepDefinition;
@@ -342,6 +363,8 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 				glueRepository.add(new GherkinStepWrapper(step, gherkinFile), glueStepDefinition);
 			} else {
 				markerFactory.unmatchedStep(gherkinDocument, gherkinFile, step, step.getLine());
+				// if the step was definied before, we need to remove its glue
+				glueRepository.clean(step);
 			}
 		}
 
@@ -397,7 +420,6 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 
 	}
 
-	
 	class CucumberGherkinCleanBuildVisitor implements IResourceVisitor {
 
 		private IProgressMonitor monitor;
@@ -411,20 +433,22 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 		@Override
 		public boolean visit(IResource resource) throws CoreException {
 			// stop the visitor pattern if a cancellation was requested
-			if(monitor.isCanceled()) {
+			if (monitor.isCanceled()) {
 				return false;
 			}
+			
 			this.markerFactory.cleanMarkers(resource);
 			return true;
 		}
 
 	}
-	
+
 	@Override
 	protected void clean(IProgressMonitor monitor) throws CoreException {
 		System.out.println("CucumberGherkinBuilder.clean");
-		GlueRepository.INSTANCE.clean();
-		
+		GlueRepository glueRepository = glueStorage.getOrCreate(getProject());
+		glueRepository.clean();
+
 		getProject().accept(new CucumberGherkinCleanBuildVisitor(markerFactory, monitor));
 	}
 }

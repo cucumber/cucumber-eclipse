@@ -13,6 +13,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import cucumber.eclipse.editor.editors.Editor;
 import cucumber.eclipse.editor.steps.GlueRepository;
+import cucumber.eclipse.editor.steps.GlueStorage;
 import cucumber.eclipse.editor.steps.GlueRepository.Glue;
 
 public class JumpToStepDefinitionHandler extends AbstractHandler {
@@ -51,7 +52,9 @@ public class JumpToStepDefinitionHandler extends AbstractHandler {
 		// get the related step definitions file
 		// open this last one
 		
-		Glue glue = GlueRepository.INSTANCE.findGlue(currentLine.trim());
+		GlueRepository glueRepository = GlueStorage.findGlueRepository((Editor) editor);
+		
+		Glue glue = glueRepository.findGlue(currentLine.trim());
 		if(glue == null) {
 			// no glue found
 			return null;

@@ -4,14 +4,14 @@ import java.util.Set;
 
 public class StepDefinitionsChanged implements IStepDefinitionsRepositoryEvent {
 
-	private Set<Step> stepDefinitions;
+	private Set<StepDefinition> stepDefinitions;
 
-	public StepDefinitionsChanged(Set<Step> stepDefinitions) {
+	public StepDefinitionsChanged(Set<StepDefinition> stepDefinitions) {
 		super();
 		this.stepDefinitions = stepDefinitions;
 	}
 
-	public Set<Step> getStepDefinitions() {
+	public Set<StepDefinition> getStepDefinitions() {
 		return stepDefinitions;
 	}
 	

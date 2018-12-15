@@ -10,12 +10,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.swt.graphics.Image;
 
-import cucumber.eclipse.editor.steps.IStepProvider;
-import cucumber.eclipse.steps.integration.Step;
+import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
+import cucumber.eclipse.steps.integration.StepDefinition;
 import gherkin.I18n;
 
 /**
@@ -89,11 +90,11 @@ public class CucumberContentAssist {
 	private CompletionProposal allStepsProposal = null;
 	private CompletionProposal noProposal = null;
 	CompletionProposal matchedStepsProposal = null;
-	private Set<Step> importedSteps = null;
+	private Set<StepDefinition> importedSteps = null;
 
 	// Initialize
-	public CucumberContentAssist(String lang, IStepProvider stepProvider) {
-		this.importedSteps = stepProvider.getStepsInEncompassingProject();
+	public CucumberContentAssist(String lang, IProject project) {
+		this.importedSteps = ExtensionRegistryStepProvider.INSTANCE.getStepDefinitions(project);
 
 		// System.out.println("CucumberContentAssist:importedSteps:"
 		// +importedSteps);
@@ -126,7 +127,7 @@ public class CucumberContentAssist {
 		if (!importedSteps.isEmpty()) {
 
 			// To Collect All Steps
-			for (Step step : importedSteps) {
+			for (StepDefinition step : importedSteps) {
 
 				// Get Step-Text
 				String stepText = getStepName(step.getText());
