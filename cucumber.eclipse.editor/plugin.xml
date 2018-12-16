@@ -243,12 +243,13 @@
            <persistent value="true"/>
     </extension>
     <extension
-	    id="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror"
+	    id="cucumber.eclipse.marker.gherkin.unmatched_step"
 	    name="Unmatched step"
 	    point="org.eclipse.core.resources.markers">
 	    <super type="org.eclipse.core.resources.problemmarker"/>
-	  	<super type="org.eclipse.core.resources.textmarker">
-	  </super>
+	  	<super type="org.eclipse.core.resources.textmarker"/>
+	  	<attribute name="cucumber.eclipse.marker.gherkin.unmatched_step.step"/>
+	   <persistent value="true"/>
 	</extension>
 	<extension
 	    id="cucumber.eclipse.marker.scenario_outline_example_unmatch"
@@ -257,6 +258,7 @@
 	    <super type="org.eclipse.core.resources.problemmarker"/>
 	  	<super type="org.eclipse.core.resources.textmarker">
 	  </super>
+	  <persistent value="true"/>
 	</extension>
     <extension
           id="cucumber.eclipse.editor.editors.Editor.lexingerror"
@@ -268,32 +270,33 @@
        <super
              type="org.eclipse.core.resources.textmarker">
        </super>
+       <persistent value="true"/>
     </extension>
     <extension
 	  point="org.eclipse.ui.editors.annotationTypes">
 	  <type
-	        markerType="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror"
-	        name="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror">
+	        markerType="cucumber.eclipse.marker.gherkin.unmatched_step"
+	        name="cucumber.eclipse.marker.gherkin.unmatched_step">
 	  </type>
 	</extension>
    <extension
          point="org.eclipse.ui.editors.markerAnnotationSpecification">
       <specification
-            annotationType="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror"
-            colorPreferenceKey="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror.color"
+            annotationType="cucumber.eclipse.marker.gherkin.unmatched_step"
+            colorPreferenceKey="cucumber.eclipse.marker.gherkin.unmatched_step.color"
             colorPreferenceValue="247,207,84"
             contributesToHeader="false"
-            highlightPreferenceKey="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror.highlight"
+            highlightPreferenceKey="cucumber.eclipse.marker.gherkin.unmatched_step.highlight"
             highlightPreferenceValue="true"
             includeOnPreferencePage="true"
             label="Unmatched step error"
-            overviewRulerPreferenceKey="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror.overview"
+            overviewRulerPreferenceKey="cucumber.eclipse.marker.gherkin.unmatched_step.overview"
             overviewRulerPreferenceValue="true"
             presentationLayer="0"
-            textPreferenceKey="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror.text"
+            textPreferenceKey="cucumber.eclipse.marker.gherkin.unmatched_step.text"
             textPreferenceValue="true"
             textStylePreferenceValue="BOX"
-            verticalRulerPreferenceKey="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror.ruler"
+            verticalRulerPreferenceKey="cucumber.eclipse.marker.gherkin.unmatched_step.ruler"
             verticalRulerPreferenceValue="true">
       </specification>
    </extension>
@@ -328,7 +331,7 @@
    </extension>
    <extension point="org.eclipse.ui.ide.markerResolution">
       <markerResolutionGenerator
-         markerType="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror"
+         markerType="cucumber.eclipse.marker.gherkin.unmatched_step"
          class="cucumber.eclipse.editor.markers.StepCreationMarkerResolutionGenerator"/>
    </extension>
     <extension
@@ -431,7 +434,7 @@
    <command
          categoryId="cucumber.eclipse.category"
          id="cucumber.eclipse.commands.addNatureCommand"
-         name="NEW Convert to Cucumber Project...">
+         name="Convert to Cucumber Project...">
    </command>
 </extension>
 <extension

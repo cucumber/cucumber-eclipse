@@ -9,8 +9,6 @@ import java.util.Set;
 import org.eclipse.core.resources.IFile;
 
 import cucumber.eclipse.steps.integration.StepDefinition;
-import cucumber.eclipse.steps.integration.StepDefinitionsChanged;
-import cucumber.eclipse.steps.integration.StepDefinitionsResetEvent;
 
 /**
  * Storage class for step definitions.
@@ -30,11 +28,9 @@ import cucumber.eclipse.steps.integration.StepDefinitionsResetEvent;
 public class StepDefinitionsRepository {
 
 	private Map<IFile, Set<StepDefinition>> stepsByResourceName;
-	private Set<StepDefinitionsRepositoryListener> listeners;
 
 	protected StepDefinitionsRepository() {
 		this.reset();
-		this.listeners = new HashSet<StepDefinitionsRepositoryListener>();
 	}
 
 	public void add(IFile stepDefinitionsFile, List<StepDefinition> steps) {
@@ -70,21 +66,5 @@ public class StepDefinitionsRepository {
 		this.stepsByResourceName = new HashMap<IFile, Set<StepDefinition>>();
 	}
 
-	public void addListener(StepDefinitionsRepositoryListener listener) {
-		this.listeners.add(listener);
-	}
 
-	protected void fireStepDefinitionsChangedEvent(Set<StepDefinition> stepDefinitions) {
-		StepDefinitionsChanged event = new StepDefinitionsChanged(stepDefinitions);
-		for (StepDefinitionsRepositoryListener listener : listeners) {
-			listener.onStepDefinitionsChanged(event);
-		}
-	}
-
-	protected void fireStepDefinitionsReset() {
-		StepDefinitionsResetEvent event = new StepDefinitionsResetEvent();
-		for (StepDefinitionsRepositoryListener listener : listeners) {
-			listener.onReset(event);
-		}
-	}
 }

@@ -10,20 +10,29 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 
 public interface IStepDefinitionsProvider {
-	
-	/** Find step definitions from a file.
+
+	/**
+	 * Find step definitions into a file.
 	 * 
-	 * By convention this method should return 
-	 * 
-	 * @param stepDefinitionFile
-	 * @param markerFactory
-	 * @param monitor
-	 * @return
-	 * @throws CoreException
+	 * @param stepDefinitionFile the file where to search step definition.
+	 * @param markerFactory      factory of markers supported by this plugin
+	 * @param monitor            the progress monitor
+	 * @return a set of StepDefinition or an empty array. Should NEVER return null.
+	 * @throws CoreException if an error occurs
 	 */
 	Set<StepDefinition> findStepDefinitions(IFile stepDefinitionFile, MarkerFactory markerFactory,
 			IProgressMonitor monitor) throws CoreException;
 
+	/**
+	 * Indicate if this step definitions provider support the current kind of
+	 * project. For example, the JDT step definition provider supports only Java
+	 * project.
+	 * 
+	 * @param project a project
+	 * @return true when the step definitions provider is able to search step
+	 *         definitions in this project
+	 * @throws CoreException if an error occurs
+	 */
 	boolean support(IProject project) throws CoreException;
-	
+
 }
