@@ -2,7 +2,6 @@ package cucumber.eclipse.steps.integration;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.regex.PatternSyntaxException;
 
 import org.eclipse.core.resources.IResource;
 

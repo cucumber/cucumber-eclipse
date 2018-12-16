@@ -31,7 +31,7 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import cucumber.eclipse.editor.Activator;
 import cucumber.eclipse.editor.template.GherkinSampleTemplate;
 
-public class Editor extends TextEditor /* implements IStepListener */{
+public class Editor extends TextEditor {
 
 	private ColorManager colorManager;
 	private ProjectionSupport projectionSupport;
