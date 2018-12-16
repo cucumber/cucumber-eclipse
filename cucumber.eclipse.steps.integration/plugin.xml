@@ -11,6 +11,14 @@
            <persistent value="true"/>
 	</extension>
 	<extension
+           id="cucumber.eclipse.marker.gherkin.syntaxerror"
+           point="org.eclipse.core.resources.markers"
+           name="Gherkin syntax error">
+           <super type="org.eclipse.core.resources.problemmarker"/>
+           <super type="org.eclipse.core.resources.textmarker"/>
+           <persistent value="true"/>
+	</extension>
+	<extension
            id="cucumber.eclipse.marker.stepdef.matches"
            point="org.eclipse.core.resources.markers"
            name="Step definition matches">
