@@ -33,7 +33,7 @@ import cucumber.eclipse.editor.snippet.IStepGeneratorProvider;
 import cucumber.eclipse.editor.snippet.SnippetApplicator;
 import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
 import cucumber.eclipse.steps.integration.GherkinStepWrapper;
-import cucumber.eclipse.steps.integration.StepSerialization;
+import cucumber.eclipse.steps.integration.SerializationHelper;
 import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 import gherkin.formatter.model.Step;
 
@@ -58,7 +58,7 @@ public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionG
 			}
 			
 			String gherkinStepSerialized = (String) marker.getAttribute(UNMATCHED_STEP_STEP_ATTRIBUTE);
-			Step gherkinStep = StepSerialization.deserialize(gherkinStepSerialized);
+			Step gherkinStep = SerializationHelper.deserialize(gherkinStepSerialized);
 
 			String gherkinFilePath = (String) marker.getAttribute(UNMATCHED_STEP_PATH_ATTRIBUTE);
 			IWorkspace workspace = ResourcesPlugin.getWorkspace();

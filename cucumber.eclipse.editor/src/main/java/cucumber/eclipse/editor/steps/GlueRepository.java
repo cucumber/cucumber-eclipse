@@ -13,6 +13,7 @@ import java.util.regex.PatternSyntaxException;
 import org.eclipse.core.resources.IFile;
 
 import cucumber.eclipse.steps.integration.GherkinStepWrapper;
+import cucumber.eclipse.steps.integration.Glue;
 import cucumber.eclipse.steps.integration.StepDefinition;
 import gherkin.I18n;
 import gherkin.formatter.model.Step;
@@ -36,8 +37,9 @@ public class GlueRepository implements Serializable {
 		return new Glue(gherkinStep, stepDefinition);
 	}
 	
-	public void add(GherkinStepWrapper gherkinStep, StepDefinition stepDefinition) {
+	public Glue add(GherkinStepWrapper gherkinStep, StepDefinition stepDefinition) {
 		this.glues.put(gherkinStep, stepDefinition);
+		return new Glue(gherkinStep, stepDefinition);
 	}
 	
 	public Set<IFile> getGherkinSources() {
@@ -161,28 +163,6 @@ public class GlueRepository implements Serializable {
 			e.printStackTrace();
 			return null;
 		}
-	}
-	
-	
-	public class Glue {
-
-		private GherkinStepWrapper gherkinStepWrapper;
-		private StepDefinition stepDefinition;
-
-		public Glue(GherkinStepWrapper gherkinStepWrapper, StepDefinition stepDefinition) {
-			super();
-			this.gherkinStepWrapper = gherkinStepWrapper;
-			this.stepDefinition = stepDefinition;
-		}
-
-		public GherkinStepWrapper getGherkinStepWrapper() {
-			return gherkinStepWrapper;
-		}
-
-		public StepDefinition getStepDefinition() {
-			return stepDefinition;
-		}
-
 	}
 	
 }

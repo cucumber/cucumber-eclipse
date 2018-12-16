@@ -1,5 +1,6 @@
 package cucumber.eclipse.steps.integration;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Locale;
 
@@ -11,13 +12,16 @@ import io.cucumber.cucumberexpressions.Expression;
 import io.cucumber.cucumberexpressions.ExpressionFactory;
 import io.cucumber.cucumberexpressions.ParameterTypeRegistry;
 
-public class StepDefinition {
+public class StepDefinition implements Serializable {
 
+	private static final long serialVersionUID = 8357491927598467891L;
+	
 	private String text;
-	private IResource source;
+	private transient IResource source;
+	private String sourcePath;
 	private int lineNumber;
 	private String lang;
-	private Expression expression;
+	private transient Expression expression;
 	
 	//Added By Girija
 	//For Reading Steps from External-ClassPath-JAR
@@ -35,10 +39,17 @@ public class StepDefinition {
 		this.expression = new ExpressionFactory(new ParameterTypeRegistry(locale)).createExpression(text);
 	}
 	public IResource getSource() {
+		// For marker, the plugin need to serialize StepDefinition
+		// however IResource is not serializable
+		// in this case we will retrieve it from its path
+		if(source == null && sourcePath != null) {
+			source = ResourceUtil.find(this.sourcePath);
+		}
 		return source;
 	}
 	public void setSource(IResource source) {
 		this.source = source;
+		this.sourcePath = source.getFullPath().toString();
 	}
 	public int getLineNumber() {
 		return lineNumber;
@@ -47,11 +58,15 @@ public class StepDefinition {
 		this.lineNumber = lineNumber;
 	}
 	
-	public boolean matches(String s) {
+	public boolean matches(String stepDefinitionText) {
 		if(this.expression == null)
 			return false;
-		List<Argument<?>> match = this.expression.match(s);
+		List<Argument<?>> match = this.match(stepDefinitionText);
 		return match != null;
+	}
+	
+	public List<Argument<?>> match(String s) {
+		return this.expression.match(s);
 	}
 	
 	public String getLang() {

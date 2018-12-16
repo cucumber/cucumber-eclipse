@@ -7,16 +7,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Base64;
 
-import gherkin.formatter.model.Step;
+public abstract class SerializationHelper {
 
-public abstract class StepSerialization {
-
-	public static String serialize(Step step) throws IOException {
+	public static <T> String serialize(T object) throws IOException {
 		ObjectOutputStream objectOutputStream = null;
 		try {
 			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 			objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
-			objectOutputStream.writeObject(step);
+			objectOutputStream.writeObject(object);
 			objectOutputStream.close();
 			byteArrayOutputStream.close();
 			
@@ -26,13 +24,14 @@ public abstract class StepSerialization {
 		}
 	}
 	
-	public static Step deserialize(String gherkinStep) throws IOException, ClassNotFoundException {
+	@SuppressWarnings("unchecked")
+	public static <T> T deserialize(String serializedObject) throws IOException, ClassNotFoundException {
 		ObjectInputStream objectInputStream = null;
 		try {
-			byte[] gherkinStepBytes = Base64.getDecoder().decode(gherkinStep);
+			byte[] gherkinStepBytes = Base64.getDecoder().decode(serializedObject);
 			ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(gherkinStepBytes);
 			objectInputStream = new ObjectInputStream(byteArrayInputStream);
-			return (Step) objectInputStream.readObject();
+			return (T) objectInputStream.readObject();
 		}
 		finally {
 			if(objectInputStream != null) {

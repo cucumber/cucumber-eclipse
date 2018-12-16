@@ -1,20 +1,21 @@
 package cucumber.eclipse.editor.editors.jumpto;
 
+import java.io.IOException;
+
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.eclipse.ui.texteditor.ITextEditor;
 
 import cucumber.eclipse.editor.editors.Editor;
-import cucumber.eclipse.editor.steps.GlueRepository;
-import cucumber.eclipse.editor.steps.GlueStorage;
-import cucumber.eclipse.editor.steps.GlueRepository.Glue;
+import cucumber.eclipse.steps.integration.SerializationHelper;
+import cucumber.eclipse.steps.integration.StepDefinition;
+import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 
 public class JumpToStepDefinitionHandler extends AbstractHandler {
 	
@@ -27,42 +28,34 @@ public class JumpToStepDefinitionHandler extends AbstractHandler {
 			return null;
 		}
 		
-		ITextEditor editor = (ITextEditor) editorPart;
+		Editor editor = (Editor) editorPart;
+
 		TextSelection selection = (TextSelection) editor.getSelectionProvider().getSelection();
+		
+		int selectionLineNumber = selection.getStartLine() + 1;
+		
+		IFile gherkinFile = editor.getFile();
 
-
-		IDocument document = editor.getDocumentProvider().getDocument(editorPart.getEditorInput());
-		
-		int offset = selection.getOffset();
-		
-		int lineStartOffset = 0;
-		
-		IRegion lineInfo = null;
-		String currentLine = null;
+		// Search a step definition match marker on this file at the selected line
 		try {
-			lineInfo = document.getLineInformationOfOffset(offset);
-			lineStartOffset = lineInfo.getOffset();
-			currentLine = document.get(lineStartOffset, lineInfo.getLength());
-		} catch (BadLocationException e) {
-			return null;
+			IMarker stepDefinitionMatchMarker = JumpToStepDefinition.findStepDefinitionMatchMarker(selectionLineNumber, gherkinFile);
+			
+			String serializedStepDefinition = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_STEPDEF_ATTRIBUTE);
+			StepDefinition stepDefinition = SerializationHelper.deserialize(serializedStepDefinition);
+			
+			JumpToStepDefinition.openEditor(stepDefinition);
+			
+		} catch (CoreException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		
-		// find the gherkin step
-		// get the related step definition
-		// get the related step definitions file
-		// open this last one
-		
-		GlueRepository glueRepository = GlueStorage.findGlueRepository((Editor) editor);
-		
-		Glue glue = glueRepository.findGlue(currentLine.trim());
-		if(glue == null) {
-			// no glue found
-			return null;
-		}
-		
-		JumpToStepDefinition.openEditor(glue.getStepDefinition());
 		
 		return null;
 	}
+
+	
 
 }

@@ -2,6 +2,7 @@ package cucumber.eclipse.editor.editors.jumpto;
 
 import java.util.HashMap;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -13,8 +14,26 @@ import org.eclipse.ui.ide.IDE;
 
 import cucumber.eclipse.editor.Activator;
 import cucumber.eclipse.steps.integration.StepDefinition;
+import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 
 class JumpToStepDefinition {
+	
+	public static IMarker findStepDefinitionMatchMarker(int selectionLineNumber, IFile gherkinFile) throws CoreException {
+		IMarker stepDefinitionMatchMarker = null; 
+		IMarker[] markers = gherkinFile.findMarkers(MarkerFactory.STEP_DEFINTION_MATCH, false, IResource.DEPTH_ZERO);
+		for (IMarker marker : markers) {
+			Integer lineNumber = (Integer) marker.getAttribute(IMarker.LINE_NUMBER);
+			if(lineNumber.equals(selectionLineNumber)) {
+				stepDefinitionMatchMarker = marker;
+				break;
+			}
+		}
+
+		if(stepDefinitionMatchMarker == null) {
+			return null;
+		}
+		return stepDefinitionMatchMarker;
+	}
 
 	public static void openEditor(StepDefinition stepDefinition) {
 		try {
@@ -34,5 +53,6 @@ class JumpToStepDefinition {
 		}
 
 	}
+
 
 }
