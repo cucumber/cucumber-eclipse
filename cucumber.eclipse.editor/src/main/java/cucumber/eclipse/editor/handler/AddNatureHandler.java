@@ -1,7 +1,7 @@
 package cucumber.eclipse.editor.handler;
 
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -43,7 +43,7 @@ public class AddNatureHandler extends AbstractHandler {
     private void addNature(IProject project) throws CoreException {
         IProjectDescription description = project.getDescription();
 	    String[] oldNatures = description.getNatureIds();
-	    Set<String> natures = new HashSet<String>(Arrays.asList(oldNatures));
+	    Set<String> natures = new LinkedHashSet<String>(Arrays.asList(oldNatures));
 	    natures.add(CucumberProjectNature.ID);
 	    description.setNatureIds(natures.toArray(new String[natures.size()]));
 	    project.setDescription(description, new NullProgressMonitor());
