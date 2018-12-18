@@ -39,15 +39,15 @@ public class Editor extends TextEditor {
 	private Annotation[] oldAnnotations;
 	private GherkinOutlinePage outlinePage;
 	private GherkinModel model;
-	
+
 	public Editor() {
 		super();
 		colorManager = new ColorManager();
 		setSourceViewerConfiguration(new GherkinConfiguration(this, colorManager));
-		
+
 		// Commented By Girija to override any blank feature file with sample template
-		//setDocumentProvider(new GherkinDocumentProvider());		
-		
+		// setDocumentProvider(new GherkinDocumentProvider());
+
 		// Added By Girija
 		// Used to create a Sample Template for any Blank Feature File
 		setDocumentProvider(new GherkinDocumentProvider(GherkinSampleTemplate.getFeatureTemplate()));
@@ -56,8 +56,7 @@ public class Editor extends TextEditor {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * org.eclipse.ui.texteditor.AbstractDecoratedTextEditor#createSourceViewer
+	 * @see org.eclipse.ui.texteditor.AbstractDecoratedTextEditor#createSourceViewer
 	 * (org.eclipse.swt.widgets.Composite,
 	 * org.eclipse.jface.text.source.IVerticalRuler, int)
 	 */
@@ -66,19 +65,19 @@ public class Editor extends TextEditor {
 		fAnnotationAccess = getAnnotationAccess();
 		fOverviewRuler = createOverviewRuler(getSharedColors());
 
-		ISourceViewer viewer = new ProjectionViewer(parent, ruler, getOverviewRuler(), isOverviewRulerVisible(), styles);
+		ISourceViewer viewer = new ProjectionViewer(parent, ruler, getOverviewRuler(), isOverviewRulerVisible(),
+				styles);
 
 		// ensure decoration support has been created and configured.
 		getSourceViewerDecorationSupport(viewer);
 
 		return viewer;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * org.eclipse.ui.texteditor.AbstractDecoratedTextEditor#createPartControl
+	 * @see org.eclipse.ui.texteditor.AbstractDecoratedTextEditor#createPartControl
 	 * (org.eclipse.swt.widgets.Composite)
 	 */
 	@Override
@@ -104,7 +103,7 @@ public class Editor extends TextEditor {
 	public GherkinModel getModel() {
 		return model;
 	}
-	
+
 	public void updateGherkinModel(GherkinModel model) {
 		updateOutline(model.getFeatureElement());
 		updateFoldingStructure(model.getFoldRanges());
@@ -118,7 +117,7 @@ public class Editor extends TextEditor {
 		annotationModel.modifyAnnotations(oldAnnotations, newAnnotations, null);
 		oldAnnotations = newAnnotations.keySet().toArray(new Annotation[0]);
 	}
-	
+
 	TextSelection getSelection() {
 		return (TextSelection) getSelectionProvider().getSelection();
 	}
@@ -145,7 +144,6 @@ public class Editor extends TextEditor {
 	@Override
 	protected void doSetInput(IEditorInput newInput) throws CoreException {
 		super.doSetInput(newInput);
-		//input = newInput;
 		model = new GherkinModel();
 
 	}
@@ -154,7 +152,7 @@ public class Editor extends TextEditor {
 		IFileEditorInput fileEditorInput = (IFileEditorInput) this.getEditorInput();
 		return fileEditorInput.getFile();
 	}
-	
+
 	public void dispose() {
 		super.dispose();
 
@@ -167,19 +165,18 @@ public class Editor extends TextEditor {
 			if (outlinePage == null) {
 				outlinePage = new GherkinOutlinePage();
 				outlinePage.addSelectionChangedListener(new ISelectionChangedListener() {
-					
+
 					@Override
 					public void selectionChanged(SelectionChangedEvent event) {
-						PositionedElement firstElement = (PositionedElement) ((IStructuredSelection)
-								event.getSelection()).getFirstElement();
-						
+						PositionedElement firstElement = (PositionedElement) ((IStructuredSelection) event
+								.getSelection()).getFirstElement();
+
 						if (firstElement != null) {
 							try {
 								selectAndReveal(firstElement.toPosition().getOffset(), 0);
 							} catch (BadLocationException e) {
-								Activator.getDefault().getLog().log(new Status(IStatus.ERROR,
-										Activator.PLUGIN_ID, "Couldn't set editor selection "
-												+ "from outline", e));
+								Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+										"Couldn't set editor selection " + "from outline", e));
 							}
 						}
 					}

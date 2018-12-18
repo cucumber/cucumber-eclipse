@@ -162,8 +162,10 @@ public class GherkinModel {
 		try {
 			p.parse(document.get(), "", 0);
 		} catch (LexingError le) {
+			le.printStackTrace();
 			// TODO: log
 		} catch (ParseError pe) {
+			pe.printStackTrace();
 			// TODO: log
 		}
 	}

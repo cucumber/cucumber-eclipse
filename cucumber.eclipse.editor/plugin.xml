@@ -131,7 +131,7 @@
                commandId="cucumber.eclipse.editor.navigation.findstep"
                helpContextId="cucumber.eclipse.editor.findsteps_action_context"
                icon="icons/cukes.gif"
-               label="Find Step"
+               label="Find step definition"
                style="push">
          </command>
          <command

@@ -1,5 +1,6 @@
 package cucumber.eclipse.editor.builder;
 
+import java.io.IOException;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
@@ -11,8 +12,10 @@ import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Status;
 
-import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
+import cucumber.eclipse.editor.Activator;
+import cucumber.eclipse.editor.steps.UniversalStepDefinitionsProvider;
 import cucumber.eclipse.steps.integration.StepPreferences;
 import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 
@@ -35,7 +38,7 @@ public class CucumberStepDefinitionsBuilder extends IncrementalProjectBuilder {
 
 	public static final String ID = "cucumber.eclipse.builder.stepdefinition";
 
-	private final ExtensionRegistryStepProvider stepDefinitionsProvider = ExtensionRegistryStepProvider.INSTANCE;
+	private final UniversalStepDefinitionsProvider stepDefinitionsProvider = UniversalStepDefinitionsProvider.INSTANCE;
 	private MarkerFactory markerFactory = MarkerFactory.INSTANCE;
 	private StepPreferences cucumberPreferences = StepPreferences.INSTANCE;
 	
@@ -68,10 +71,15 @@ public class CucumberStepDefinitionsBuilder extends IncrementalProjectBuilder {
 	protected void fullBuild(MarkerFactory markerFactory, final IProgressMonitor monitor) throws CoreException {
 		try {
 			IProject project = getProject();
-			//stepDefinitionsProvider.clean(project);
+			stepDefinitionsProvider.clean(project);
 			project.accept(new CucumberStepDefinitionsFullBuildVisitor(markerFactory, monitor));
+			stepDefinitionsProvider.persist(project, monitor);
 		} catch (CoreException e) {
 			e.printStackTrace();
+			throw e;
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
 		}
 	}
 
@@ -80,9 +88,12 @@ public class CucumberStepDefinitionsBuilder extends IncrementalProjectBuilder {
 		try {
 			// the visitor does the work.
 			delta.accept(new CucumberStepDefinitionsIncrementalBuildVisitor(markerFactory, monitor));
-			
+			stepDefinitionsProvider.persist(getProject(), monitor);
 		} catch (CoreException e) {
 			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
 		}
 	}
 
@@ -107,10 +118,12 @@ public class CucumberStepDefinitionsBuilder extends IncrementalProjectBuilder {
 				return false;
 			}
 			
+			
 			if(resource instanceof IFile) {
 				this.markerFactory.cleanMarkers(resource);
 				stepDefinitionsProvider.findStepDefinitions((IFile) resource, markerFactory, monitor);
 			}
+			
 			return true;
 		}
 

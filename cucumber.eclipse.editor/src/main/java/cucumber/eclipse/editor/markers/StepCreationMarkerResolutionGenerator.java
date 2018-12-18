@@ -31,7 +31,7 @@ import cucumber.eclipse.editor.editors.GherkinModel;
 import cucumber.eclipse.editor.snippet.ExtensionRegistryStepGeneratorProvider;
 import cucumber.eclipse.editor.snippet.IStepGeneratorProvider;
 import cucumber.eclipse.editor.snippet.SnippetApplicator;
-import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
+import cucumber.eclipse.editor.steps.UniversalStepDefinitionsProvider;
 import cucumber.eclipse.steps.integration.GherkinStepWrapper;
 import cucumber.eclipse.steps.integration.SerializationHelper;
 import cucumber.eclipse.steps.integration.marker.MarkerFactory;
@@ -66,7 +66,7 @@ public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionG
 			IProject project = gherkinFile.getProject();
 			
 			
-			ExtensionRegistryStepProvider stepProvider = ExtensionRegistryStepProvider.INSTANCE;
+			UniversalStepDefinitionsProvider stepProvider = UniversalStepDefinitionsProvider.INSTANCE;
 			
 			Set<IFile> stepDefinitionsFiles = stepProvider.getStepDefinitionsFiles(project);
 			
@@ -103,8 +103,6 @@ public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionG
 			IStepGeneratorProvider generatorProvider = new ExtensionRegistryStepGeneratorProvider();
 		
 			new SnippetApplicator(generatorProvider).generateSnippet(gherkinStep, stepDefinitionsFile);
-			
-			BuilderUtil.buildProject(stepDefinitionsFile.getProject(), IncrementalProjectBuilder.INCREMENTAL_BUILD);
 			
 		}
 		

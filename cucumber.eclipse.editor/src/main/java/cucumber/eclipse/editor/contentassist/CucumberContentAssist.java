@@ -11,11 +11,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.contentassist.CompletionProposal;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.swt.graphics.Image;
 
-import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
+import cucumber.eclipse.editor.steps.UniversalStepDefinitionsProvider;
 import cucumber.eclipse.steps.integration.StepDefinition;
 import gherkin.I18n;
 
@@ -93,8 +94,8 @@ public class CucumberContentAssist {
 	private Set<StepDefinition> importedSteps = null;
 
 	// Initialize
-	public CucumberContentAssist(String lang, IProject project) {
-		this.importedSteps = ExtensionRegistryStepProvider.INSTANCE.getStepDefinitions(project);
+	public CucumberContentAssist(String lang, IProject project) throws CoreException {
+		this.importedSteps = UniversalStepDefinitionsProvider.INSTANCE.getStepDefinitions(project);
 
 		// System.out.println("CucumberContentAssist:importedSteps:"
 		// +importedSteps);

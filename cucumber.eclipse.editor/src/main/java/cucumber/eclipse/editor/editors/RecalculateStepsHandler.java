@@ -5,6 +5,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 
@@ -24,6 +25,11 @@ public class RecalculateStepsHandler extends AbstractHandler {
 		Editor editor = (Editor) editorPart;
 		
 		IFile file = editor.getFile();
+		try {
+			file.touch(null);
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
 		BuilderUtil.buildProject(file.getProject(), IncrementalProjectBuilder.INCREMENTAL_BUILD);
 		
 		return null;

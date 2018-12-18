@@ -23,10 +23,10 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 
-import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
+import cucumber.eclipse.editor.steps.UniversalStepDefinitionsProvider;
 import cucumber.eclipse.editor.steps.GlueRepository;
 import cucumber.eclipse.editor.steps.GlueStorage;
-import cucumber.eclipse.editor.steps.Storage;
+import cucumber.eclipse.editor.steps.BuildStorage;
 import cucumber.eclipse.editor.util.FileUtil;
 import cucumber.eclipse.steps.integration.Activator;
 import cucumber.eclipse.steps.integration.GherkinStepWrapper;
@@ -73,8 +73,8 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 
 	public static final String ID = "cucumber.eclipse.builder.gherkin";
 	private MarkerFactory markerFactory = MarkerFactory.INSTANCE;
-	private final ExtensionRegistryStepProvider stepDefinitionsProvider = ExtensionRegistryStepProvider.INSTANCE;
-	private final Storage<GlueRepository> glueStorage = GlueStorage.INSTANCE;
+	private final UniversalStepDefinitionsProvider stepDefinitionsProvider = UniversalStepDefinitionsProvider.INSTANCE;
+	private final BuildStorage<GlueRepository> glueStorage = GlueStorage.INSTANCE;
 
 	@Override
 	protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
@@ -100,21 +100,23 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 		return null;
 	}
 
-	private void incrementalBuild(IResourceDelta delta, boolean glueDetectionEnabled, IProgressMonitor monitor) {
+	private void incrementalBuild(IResourceDelta delta, boolean glueDetectionEnabled, IProgressMonitor monitor) throws CoreException {
 		try {
 			// the visitor does the work.
 			delta.accept(new CucumberGherkinBuildVisitor(markerFactory, glueDetectionEnabled, monitor));
+			glueStorage.persist(getProject(), monitor);
 		} catch (CoreException e) {
-			e.printStackTrace();
+			throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
 		}
 
 	}
 
-	private void fullBuild(boolean glueDetectionEnabled, IProgressMonitor monitor) {
+	private void fullBuild(boolean glueDetectionEnabled, IProgressMonitor monitor) throws CoreException {
 		try {
 			getProject().accept(new CucumberGherkinBuildVisitor(markerFactory, glueDetectionEnabled, monitor));
+			glueStorage.persist(getProject(), monitor);
 		} catch (CoreException e) {
-			e.printStackTrace();
+			throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
 		}
 	}
 
@@ -192,6 +194,8 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 
 			System.out.println(String.format("gherkin %s builder compile: %s",
 					(isIncrementalBuild ? "incremental" : "full"), resource));
+			GlueRepository glueRepository = glueStorage.getOrCreate(resource.getProject());
+			glueRepository.clean(resource);
 			this.markerFactory.cleanMarkers(resource);
 
 			try {
@@ -246,7 +250,7 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 		private GlueRepository glueRepository;
 
 		public MarkerFormatter(IDocument document, IResource gherkinFile, MarkerFactory markerFactory,
-				boolean isGlueDetectionEnabled) {
+				boolean isGlueDetectionEnabled) throws CoreException {
 			this.gherkinFile = gherkinFile;
 			this.project = gherkinFile.getProject();
 			this.gherkinDocument = document;
@@ -279,11 +283,15 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			ExamplesTableRow examplesHeader = examples.getRows().get(0);
 			for (int i = 1; i < examples.getRows().size(); i++) {
 				ExamplesTableRow currentExample = examples.getRows().get(i);
-				matchScenarioOutlineExample(examplesHeader, currentExample);
+				try {
+					matchScenarioOutlineExample(examplesHeader, currentExample);
+				} catch (CoreException e) {
+					throw new RuntimeException(e);
+				}
 			}
 		}
 
-		private void matchScenarioOutlineExample(ExamplesTableRow header, ExamplesTableRow example) {
+		private void matchScenarioOutlineExample(ExamplesTableRow header, ExamplesTableRow example) throws CoreException {
 			Map<String, String> exampleVariablesMap = getExampleVariablesMap(header, example);
 			for (gherkin.formatter.model.Step scenarioOutlineStepLine : scenarioOutlineSteps) {
 				validate(scenarioOutlineStepLine, exampleVariablesMap, example.getLine());
@@ -297,9 +305,10 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 		 * @param scenarioOutlineStepLine the scenario outline
 		 * @param exampleVariablesMap     the examples
 		 * @param exampleLine             the line
+		 * @throws CoreException 
 		 */
 		private void validate(Step scenarioOutlineStepLine, Map<String, String> exampleVariablesMap,
-				Integer exampleLine) {
+				Integer exampleLine) throws CoreException {
 			if (!isGlueDetectionEnabled) {
 				return;
 			}
@@ -344,8 +353,9 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 		 * Check if the step have a matching step definitions.
 		 * 
 		 * @param step a gherkin step
+		 * @throws CoreException 
 		 */
-		protected void validate(Step step) {
+		protected void validate(Step step) throws CoreException {
 			if (!isGlueDetectionEnabled) {
 				return;
 			}
@@ -367,7 +377,7 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 				markerFactory.glueFound(glue);
 			} else {
 				markerFactory.unmatchedStep(gherkinDocument, gherkinStepWrapper);
-				// if the step was definied before, we need to remove its glue
+				// if the step was defined before, we need to remove its glue
 				glueRepository.clean(step);
 			}
 		}
@@ -400,7 +410,11 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 				return;
 			}
 
-			validate(step);
+			try {
+				validate(step);
+			} catch (CoreException e) {
+				throw new RuntimeException(e);
+			}
 		}
 
 		@Override

@@ -1,8 +1,11 @@
 package cucumber.eclipse.editor.steps;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -11,9 +14,11 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 
 import cucumber.eclipse.steps.integration.GherkinStepWrapper;
 import cucumber.eclipse.steps.integration.Glue;
+import cucumber.eclipse.steps.integration.SerializationHelper;
 import cucumber.eclipse.steps.integration.StepDefinition;
 import gherkin.I18n;
 import gherkin.formatter.model.Step;
@@ -97,10 +102,23 @@ public class GlueRepository implements Serializable {
 	public void clean(Step step) {
 		for (GherkinStepWrapper gherkinStepWrapper : this.glues.keySet()) {
 			Integer lineNumber = gherkinStepWrapper.getStep().getLine();
+			
 			if(step.getLine().equals(lineNumber)) {
 				this.glues.remove(gherkinStepWrapper);
 				break;
 			}
+		}
+	}
+
+	public void clean(IResource gherkinFile) {
+		List<GherkinStepWrapper> toRemove = new ArrayList<GherkinStepWrapper>();
+		for (GherkinStepWrapper gherkinStepWrapper : this.glues.keySet()) {
+			if(gherkinStepWrapper.getSource().equals(gherkinFile)) {
+				toRemove.add(gherkinStepWrapper);
+			}
+		}
+		for (GherkinStepWrapper gherkinStepWrapperInDeletion : toRemove) {
+			this.glues.remove(gherkinStepWrapperInDeletion);
 		}
 	}
 	
@@ -165,4 +183,14 @@ public class GlueRepository implements Serializable {
 		}
 	}
 	
+	public static String serialize(GlueRepository glueRepository) throws IOException {
+		return SerializationHelper.serialize(glueRepository.glues);
+	}
+	
+	public static GlueRepository deserialize(String glueRepositorySerialized) throws ClassNotFoundException, IOException {
+		Map<GherkinStepWrapper, StepDefinition> glues = SerializationHelper.deserialize(glueRepositorySerialized);
+		GlueRepository glueRepository = new GlueRepository();
+		glueRepository.glues = glues;
+		return glueRepository;
+	}
 }

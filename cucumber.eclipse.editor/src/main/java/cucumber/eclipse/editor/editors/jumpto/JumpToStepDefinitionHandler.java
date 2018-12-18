@@ -39,12 +39,12 @@ public class JumpToStepDefinitionHandler extends AbstractHandler {
 		// Search a step definition match marker on this file at the selected line
 		try {
 			IMarker stepDefinitionMatchMarker = JumpToStepDefinition.findStepDefinitionMatchMarker(selectionLineNumber, gherkinFile);
-			
-			String serializedStepDefinition = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_STEPDEF_ATTRIBUTE);
-			StepDefinition stepDefinition = SerializationHelper.deserialize(serializedStepDefinition);
-			
-			JumpToStepDefinition.openEditor(stepDefinition);
-			
+			if(stepDefinitionMatchMarker != null) {
+				String serializedStepDefinition = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_STEPDEF_ATTRIBUTE);
+				StepDefinition stepDefinition = SerializationHelper.deserialize(serializedStepDefinition);
+				
+				JumpToStepDefinition.openEditor(stepDefinition);
+			}
 		} catch (CoreException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {

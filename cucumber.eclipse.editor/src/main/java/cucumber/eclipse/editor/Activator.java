@@ -7,6 +7,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
 import cucumber.eclipse.editor.preferences.StepDefinitionsScanPropertyChangeListener;
+import cucumber.eclipse.editor.steps.UniversalStepDefinitionsProvider;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -79,7 +80,7 @@ public class Activator extends AbstractUIPlugin {
 		return bundle;
 	}
 
-	public void setupPreferenceChangesListeners() {
+	private void setupPreferenceChangesListeners() {
 		Activator.getDefault().getPreferenceStore().addPropertyChangeListener(new StepDefinitionsScanPropertyChangeListener());
 	}
 	

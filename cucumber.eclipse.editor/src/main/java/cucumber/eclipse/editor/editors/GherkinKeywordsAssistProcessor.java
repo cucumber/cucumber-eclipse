@@ -19,7 +19,7 @@ import org.eclipse.swt.graphics.Image;
 
 import cucumber.eclipse.editor.Activator;
 import cucumber.eclipse.editor.contentassist.CucumberContentAssist;
-import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
+import cucumber.eclipse.editor.steps.UniversalStepDefinitionsProvider;
 import gherkin.I18n;
 
 public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {

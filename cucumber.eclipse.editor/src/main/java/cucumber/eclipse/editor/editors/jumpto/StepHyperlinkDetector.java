@@ -43,22 +43,23 @@ public class StepHyperlinkDetector implements IHyperlinkDetector {
 		try {
 			int selectionLineNumber = document.getLineOfOffset(offset) + 1;
 			IMarker stepDefinitionMatchMarker = JumpToStepDefinition.findStepDefinitionMatchMarker(selectionLineNumber, gherkinFile);
+			
+			if(stepDefinitionMatchMarker != null) {
+				IRegion lineInfo = document.getLineInformationOfOffset(offset);
+				int lineStartOffset = lineInfo.getOffset();
+				String currentLine = document.get(lineStartOffset, lineInfo.getLength());
 				
-			IRegion lineInfo = document.getLineInformationOfOffset(offset);
-			int lineStartOffset = lineInfo.getOffset();
-			String currentLine = document.get(lineStartOffset, lineInfo.getLength());
-			
-			String serializedStepDefinition = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_STEPDEF_ATTRIBUTE);
-			StepDefinition stepDefinition = SerializationHelper.deserialize(serializedStepDefinition);
-
-			// define the hyperlink region
-			String textStatement = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_TEXT_ATTRIBUTE);
-			int statementStartOffset = lineStartOffset + currentLine.indexOf(textStatement);
-
-			IRegion stepRegion = new Region(statementStartOffset, textStatement.length());
-			
-			return new IHyperlink[] { new StepHyperlink(stepRegion, stepDefinition) };
-			
+				String serializedStepDefinition = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_STEPDEF_ATTRIBUTE);
+				StepDefinition stepDefinition = SerializationHelper.deserialize(serializedStepDefinition);
+	
+				// define the hyperlink region
+				String textStatement = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_TEXT_ATTRIBUTE);
+				int statementStartOffset = lineStartOffset + currentLine.indexOf(textStatement);
+	
+				IRegion stepRegion = new Region(statementStartOffset, textStatement.length());
+				
+				return new IHyperlink[] { new StepHyperlink(stepRegion, stepDefinition) };
+			}
 		} catch (BadLocationException e1) {
 			e1.printStackTrace();
 		} catch (CoreException e) {

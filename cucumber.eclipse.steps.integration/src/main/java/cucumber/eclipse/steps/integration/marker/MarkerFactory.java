@@ -18,9 +18,9 @@ import org.eclipse.jface.text.Region;
 import cucumber.eclipse.steps.integration.Activator;
 import cucumber.eclipse.steps.integration.GherkinStepWrapper;
 import cucumber.eclipse.steps.integration.Glue;
+import cucumber.eclipse.steps.integration.SerializationHelper;
 import cucumber.eclipse.steps.integration.StepDefinition;
 import gherkin.formatter.model.Step;
-import cucumber.eclipse.steps.integration.SerializationHelper;
 
 public class MarkerFactory {
 	
@@ -295,4 +295,5 @@ public class MarkerFactory {
 	private interface IMarkerBuilder {
 		IMarker build();
 	}
+	
 }
