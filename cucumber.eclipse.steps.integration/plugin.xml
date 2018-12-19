@@ -23,7 +23,8 @@
            point="org.eclipse.core.resources.markers"
            name="Step definition matches">
            <super type="org.eclipse.core.resources.textmarker"/>
-           <attribute name="cucumber.eclipse.marker.stepdef.matches.object"/>
+           <attribute name="cucumber.eclipse.marker.stepdef.matches.path"/>
+           <attribute name="cucumber.eclipse.marker.stepdef.matches.line_number"/>
            <attribute name="cucumber.eclipse.marker.stepdef.matches.text"/>
            <persistent value="true"/>
 	</extension>
