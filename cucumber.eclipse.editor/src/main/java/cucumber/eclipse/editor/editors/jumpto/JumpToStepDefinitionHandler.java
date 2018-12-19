@@ -1,7 +1,5 @@
 package cucumber.eclipse.editor.editors.jumpto;
 
-import java.io.IOException;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -13,7 +11,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import cucumber.eclipse.editor.editors.Editor;
-import cucumber.eclipse.steps.integration.SerializationHelper;
+import cucumber.eclipse.steps.integration.ResourceUtil;
 import cucumber.eclipse.steps.integration.StepDefinition;
 import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 
@@ -40,16 +38,18 @@ public class JumpToStepDefinitionHandler extends AbstractHandler {
 		try {
 			IMarker stepDefinitionMatchMarker = JumpToStepDefinition.findStepDefinitionMatchMarker(selectionLineNumber, gherkinFile);
 			if(stepDefinitionMatchMarker != null) {
-				String serializedStepDefinition = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_STEPDEF_ATTRIBUTE);
-				StepDefinition stepDefinition = SerializationHelper.deserialize(serializedStepDefinition);
+				String stepDefinitionPath = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_PATH_ATTRIBUTE);
+				String stepDefinitionText = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_TEXT_ATTRIBUTE);
+				Integer stepDefinitionLineNumber = (Integer) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_LINE_NUMBER_ATTRIBUTE);
+				
+				StepDefinition stepDefinition = new StepDefinition();
+				stepDefinition.setSource(ResourceUtil.find(stepDefinitionPath));
+				stepDefinition.setText(stepDefinitionText);
+				stepDefinition.setLineNumber(stepDefinitionLineNumber);
 				
 				JumpToStepDefinition.openEditor(stepDefinition);
 			}
 		} catch (CoreException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		

@@ -1,9 +1,5 @@
 package cucumber.eclipse.editor.handler;
 
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -43,9 +39,16 @@ public class AddNatureHandler extends AbstractHandler {
     private void addNature(IProject project) throws CoreException {
         IProjectDescription description = project.getDescription();
 	    String[] oldNatures = description.getNatureIds();
-	    Set<String> natures = new LinkedHashSet<String>(Arrays.asList(oldNatures));
-	    natures.add(CucumberProjectNature.ID);
-	    description.setNatureIds(natures.toArray(new String[natures.size()]));
+	    String[] newNatures = new String[oldNatures.length+1];
+	    newNatures[0] = CucumberProjectNature.ID;
+	    for (int it=0; it<oldNatures.length; it++) {
+	    	String nature = oldNatures[it];
+			if(CucumberProjectNature.ID.equals(nature)) {
+				return ; // change nothing
+			}
+			newNatures[it+1] = nature;
+		}
+	    description.setNatureIds(newNatures);
 	    project.setDescription(description, new NullProgressMonitor());
 	    removeCucumberNatureMissingMarkers(project);
     }

@@ -66,7 +66,14 @@ public class StepDefinition implements Serializable {
 	}
 	
 	public List<Argument<?>> match(String s) {
-		return this.expression.match(s);
+		try {
+			return this.expression.match(s);
+		} catch (Throwable e) {
+			// if an exception occurs, this means the cucumber expression
+			// have an error.
+			e.printStackTrace();
+			return null;
+		}
 	}
 	
 	public String getLang() {

@@ -10,9 +10,9 @@ public class StepHyperlink implements IHyperlink {
 	private IRegion region;
 	private StepDefinition stepDefintion;
 
-	public StepHyperlink(IRegion region, StepDefinition step) {
+	public StepHyperlink(IRegion region, StepDefinition stepDefinition) {
 		this.region = region;
-		this.stepDefintion = step;
+		this.stepDefintion = stepDefinition;
 	}
 
 	@Override

@@ -7,8 +7,11 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Base64;
 
+import gherkin.formatter.model.Step;
+
 public abstract class SerializationHelper {
 
+	
 	public static <T> String serialize(T object) throws IOException {
 		ObjectOutputStream objectOutputStream = null;
 		try {
@@ -17,13 +20,13 @@ public abstract class SerializationHelper {
 			objectOutputStream.writeObject(object);
 			objectOutputStream.close();
 			byteArrayOutputStream.close();
-			
+
 			return Base64.getEncoder().encodeToString(byteArrayOutputStream.toByteArray());
 		} finally {
 			objectOutputStream.close();
 		}
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public static <T> T deserialize(String serializedObject) throws IOException, ClassNotFoundException {
 		ObjectInputStream objectInputStream = null;
@@ -32,13 +35,11 @@ public abstract class SerializationHelper {
 			ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(gherkinStepBytes);
 			objectInputStream = new ObjectInputStream(byteArrayInputStream);
 			return (T) objectInputStream.readObject();
-		}
-		finally {
-			if(objectInputStream != null) {
+		} finally {
+			if (objectInputStream != null) {
 				objectInputStream.close();
 			}
 		}
-		
 	}
-	
+
 }

@@ -424,7 +424,7 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 	 * @throws JavaModelException
 	 * @throws CoreException
 	 */
-	public void scanJavaProjectForStepDefinitions(IJavaProject projectToScan, Collection<StepDefinition> collectedSteps, MarkerFactory markerFactory, IProgressMonitor progressMonitor)
+	private void scanJavaProjectForStepDefinitions(IJavaProject projectToScan, Collection<StepDefinition> collectedSteps, MarkerFactory markerFactory, IProgressMonitor progressMonitor)
 			throws JavaModelException, CoreException {
 
 		IPackageFragment[] packages = projectToScan.getPackageFragments();
@@ -581,6 +581,7 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 		}
 		
 		ICompilationUnit compilationUnit = (ICompilationUnit) javaElement;
+		
 		List<StepDefinition> stepDefinitions = this.getCukeSteps(compilationUnit, markerFactory, monitor);
 		
 		return new HashSet<StepDefinition>(stepDefinitions);

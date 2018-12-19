@@ -23,14 +23,15 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 
-import cucumber.eclipse.editor.steps.UniversalStepDefinitionsProvider;
+import cucumber.eclipse.editor.steps.BuildStorage;
 import cucumber.eclipse.editor.steps.GlueRepository;
 import cucumber.eclipse.editor.steps.GlueStorage;
-import cucumber.eclipse.editor.steps.BuildStorage;
+import cucumber.eclipse.editor.steps.UniversalStepDefinitionsProvider;
 import cucumber.eclipse.editor.util.FileUtil;
 import cucumber.eclipse.steps.integration.Activator;
 import cucumber.eclipse.steps.integration.GherkinStepWrapper;
 import cucumber.eclipse.steps.integration.Glue;
+import cucumber.eclipse.steps.integration.StepDefinition;
 import cucumber.eclipse.steps.integration.StepPreferences;
 import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 import gherkin.formatter.Formatter;
@@ -359,11 +360,11 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			if (!isGlueDetectionEnabled) {
 				return;
 			}
-			Set<cucumber.eclipse.steps.integration.StepDefinition> allStepDefinitions = stepDefinitionsProvider
+			Set<StepDefinition> allStepDefinitions = stepDefinitionsProvider
 					.getStepDefinitions(this.project);
-			cucumber.eclipse.steps.integration.StepDefinition glueStepDefinition = null;
+			StepDefinition glueStepDefinition = null;
 
-			for (cucumber.eclipse.steps.integration.StepDefinition stepDefinition : allStepDefinitions) {
+			for (StepDefinition stepDefinition : allStepDefinitions) {
 				boolean matches = stepDefinition.matches(step.getName());
 				if (matches) {
 					glueStepDefinition = stepDefinition;
@@ -381,6 +382,7 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 				glueRepository.clean(step);
 			}
 		}
+		
 
 		private Map<String, String> getExampleVariablesMap(ExamplesTableRow header, ExamplesTableRow values) {
 			Map<String, String> result = new LinkedHashMap<String, String>();

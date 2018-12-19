@@ -1,7 +1,5 @@
 package cucumber.eclipse.editor.editors.jumpto;
 
-import java.io.IOException;
-
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
@@ -14,7 +12,7 @@ import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 
 import cucumber.eclipse.editor.editors.Editor;
-import cucumber.eclipse.steps.integration.SerializationHelper;
+import cucumber.eclipse.steps.integration.ResourceUtil;
 import cucumber.eclipse.steps.integration.StepDefinition;
 import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 
@@ -49,8 +47,14 @@ public class StepHyperlinkDetector implements IHyperlinkDetector {
 				int lineStartOffset = lineInfo.getOffset();
 				String currentLine = document.get(lineStartOffset, lineInfo.getLength());
 				
-				String serializedStepDefinition = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_STEPDEF_ATTRIBUTE);
-				StepDefinition stepDefinition = SerializationHelper.deserialize(serializedStepDefinition);
+				String stepDefinitionPath = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_PATH_ATTRIBUTE);
+				String stepDefinitionText = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_TEXT_ATTRIBUTE);
+				Integer stepDefinitionLineNumber = (Integer) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_LINE_NUMBER_ATTRIBUTE);
+				
+				StepDefinition stepDefinition = new StepDefinition();
+				stepDefinition.setSource(ResourceUtil.find(stepDefinitionPath));
+				stepDefinition.setText(stepDefinitionText);
+				stepDefinition.setLineNumber(stepDefinitionLineNumber);
 	
 				// define the hyperlink region
 				String textStatement = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_TEXT_ATTRIBUTE);
@@ -63,10 +67,6 @@ public class StepHyperlinkDetector implements IHyperlinkDetector {
 		} catch (BadLocationException e1) {
 			e1.printStackTrace();
 		} catch (CoreException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		

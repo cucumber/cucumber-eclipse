@@ -1,7 +1,5 @@
 package cucumber.eclipse.steps.integration.marker;
 
-import java.io.IOException;
-
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
@@ -18,7 +16,6 @@ import org.eclipse.jface.text.Region;
 import cucumber.eclipse.steps.integration.Activator;
 import cucumber.eclipse.steps.integration.GherkinStepWrapper;
 import cucumber.eclipse.steps.integration.Glue;
-import cucumber.eclipse.steps.integration.SerializationHelper;
 import cucumber.eclipse.steps.integration.StepDefinition;
 import gherkin.formatter.model.Step;
 
@@ -30,7 +27,8 @@ public class MarkerFactory {
 	public static final String GHERKIN_SYNTAX_ERROR = "cucumber.eclipse.marker.gherkin.syntaxerror";
 	
 	public static final String STEP_DEFINTION_MATCH = "cucumber.eclipse.marker.stepdef.matches";	
-	public static final String STEP_DEFINITION_MATCH_STEPDEF_ATTRIBUTE = STEP_DEFINTION_MATCH + ".object";
+	public static final String STEP_DEFINITION_MATCH_PATH_ATTRIBUTE = STEP_DEFINTION_MATCH + ".path";
+	public static final String STEP_DEFINITION_MATCH_LINE_NUMBER_ATTRIBUTE = STEP_DEFINTION_MATCH + ".line_number";
 	public static final String STEP_DEFINITION_MATCH_TEXT_ATTRIBUTE = STEP_DEFINTION_MATCH + ".text";
 	
 	
@@ -38,7 +36,8 @@ public class MarkerFactory {
 	public static final String MULTIPLE_STEP_DEFINTIONS_MATCH = "cucumber.eclipse.marker.stepdef.multiple_matches";
 
 	public static final String UNMATCHED_STEP = "cucumber.eclipse.marker.gherkin.unmatched_step";
-	public static final String UNMATCHED_STEP_STEP_ATTRIBUTE = UNMATCHED_STEP + ".step";
+	public static final String UNMATCHED_STEP_KEYWORD_ATTRIBUTE = UNMATCHED_STEP + ".keyword";
+	public static final String UNMATCHED_STEP_NAME_ATTRIBUTE = UNMATCHED_STEP + ".name";
 	public static final String UNMATCHED_STEP_PATH_ATTRIBUTE = UNMATCHED_STEP + ".path";
 	
 	private MarkerFactory() {}
@@ -129,11 +128,10 @@ public class MarkerFactory {
 					marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
 					marker.setAttribute(IMarker.CHAR_START, stepRegion.getOffset());
 					marker.setAttribute(IMarker.CHAR_END, stepRegion.getOffset() + stepRegion.getLength());
-					marker.setAttribute(UNMATCHED_STEP_STEP_ATTRIBUTE, SerializationHelper.serialize(gherkinStep));
+					marker.setAttribute(UNMATCHED_STEP_KEYWORD_ATTRIBUTE, gherkinStep.getKeyword());
+					marker.setAttribute(UNMATCHED_STEP_NAME_ATTRIBUTE, gherkinStep.getName());
 					marker.setAttribute(UNMATCHED_STEP_PATH_ATTRIBUTE, gherkinFile.getFullPath().toString());
 				} catch (CoreException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
 					e.printStackTrace();
 				}
 				return marker;
@@ -207,11 +205,10 @@ public class MarkerFactory {
 					String message = String.format("Glued with %s:%s", stepDefinition.getSource().getName(), stepDefinition.getLineNumber());
 					marker.setAttribute(IMarker.MESSAGE, message);
 					marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
-					marker.setAttribute(STEP_DEFINITION_MATCH_STEPDEF_ATTRIBUTE, SerializationHelper.serialize(stepDefinition));
+					marker.setAttribute(STEP_DEFINITION_MATCH_PATH_ATTRIBUTE, stepDefinition.getSource().getFullPath().toString());
+					marker.setAttribute(STEP_DEFINITION_MATCH_LINE_NUMBER_ATTRIBUTE, stepDefinition.getLineNumber());
 					marker.setAttribute(STEP_DEFINITION_MATCH_TEXT_ATTRIBUTE, stepDefinitionText);
 				} catch (CoreException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
 					e.printStackTrace();
 				}
 				return marker;

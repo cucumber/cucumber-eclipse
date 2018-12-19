@@ -1,7 +1,9 @@
 package cucumber.eclipse.editor.markers;
 
 import static cucumber.eclipse.editor.editors.DocumentUtil.read;
-import static cucumber.eclipse.steps.integration.marker.MarkerFactory.*;
+import static cucumber.eclipse.steps.integration.marker.MarkerFactory.UNMATCHED_STEP_KEYWORD_ATTRIBUTE;
+import static cucumber.eclipse.steps.integration.marker.MarkerFactory.UNMATCHED_STEP_NAME_ATTRIBUTE;
+import static cucumber.eclipse.steps.integration.marker.MarkerFactory.UNMATCHED_STEP_PATH_ATTRIBUTE;
 
 import java.io.IOException;
 import java.util.Set;
@@ -9,9 +11,7 @@ import java.util.Set;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
@@ -25,15 +25,12 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 
 import cucumber.eclipse.editor.Activator;
-import cucumber.eclipse.editor.builder.BuilderUtil;
 import cucumber.eclipse.editor.editors.Editor;
 import cucumber.eclipse.editor.editors.GherkinModel;
 import cucumber.eclipse.editor.snippet.ExtensionRegistryStepGeneratorProvider;
 import cucumber.eclipse.editor.snippet.IStepGeneratorProvider;
 import cucumber.eclipse.editor.snippet.SnippetApplicator;
 import cucumber.eclipse.editor.steps.UniversalStepDefinitionsProvider;
-import cucumber.eclipse.steps.integration.GherkinStepWrapper;
-import cucumber.eclipse.steps.integration.SerializationHelper;
 import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 import gherkin.formatter.model.Step;
 
@@ -57,9 +54,12 @@ public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionG
 				return new IMarkerResolution[0];
 			}
 			
-			String gherkinStepSerialized = (String) marker.getAttribute(UNMATCHED_STEP_STEP_ATTRIBUTE);
-			Step gherkinStep = SerializationHelper.deserialize(gherkinStepSerialized);
-
+			String gherkinStepKeyword = (String) marker.getAttribute(UNMATCHED_STEP_KEYWORD_ATTRIBUTE);
+			String gherkinStepName = (String) marker.getAttribute(UNMATCHED_STEP_NAME_ATTRIBUTE);
+			String gherkinStepPath = (String) marker.getAttribute(UNMATCHED_STEP_PATH_ATTRIBUTE);
+			
+			Step gherkinStep = new Step(null, gherkinStepKeyword, gherkinStepName, null, null, null);
+			
 			String gherkinFilePath = (String) marker.getAttribute(UNMATCHED_STEP_PATH_ATTRIBUTE);
 			IWorkspace workspace = ResourcesPlugin.getWorkspace();
 			IFile gherkinFile = (IFile) workspace.getRoot().findMember(gherkinFilePath);
@@ -79,10 +79,6 @@ public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionG
 			
 			return resolutions;
 		} catch (CoreException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 		return new IMarkerResolution[0];
