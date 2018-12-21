@@ -153,6 +153,11 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 				return false;
 			}
 
+			if(!resource.exists()) {
+				// skip 
+				return true;
+			}
+			
 			long start = System.currentTimeMillis();
 
 			if (!(resource instanceof IFile)) {

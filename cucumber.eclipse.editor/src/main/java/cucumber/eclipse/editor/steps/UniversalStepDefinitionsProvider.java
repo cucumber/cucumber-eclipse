@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -98,10 +99,23 @@ public class UniversalStepDefinitionsProvider implements IStepDefinitionsProvide
 
 	@Override
 	public boolean support(IProject project) throws CoreException {
-		boolean isSupported = false;
 		for (IStepDefinitionsProvider stepDefinitionsProvider : stepDefinitionsProviders) {
-			isSupported = isSupported || stepDefinitionsProvider.support(project);
+			if(stepDefinitionsProvider.support(project)) {
+				return true;
+			} // else try the next
 		}
-		return isSupported;
+		return false;
+	}
+
+	@Override
+	public boolean support(IResource resource) throws CoreException {
+		if(resource instanceof IFile) {
+			for (IStepDefinitionsProvider stepDefinitionsProvider : stepDefinitionsProviders) {
+				if(stepDefinitionsProvider.support(resource)) {
+					return true;
+				} // else try the next
+			}
+		}
+		return false;
 	}
 }

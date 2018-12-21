@@ -72,7 +72,7 @@ public class CucumberStepDefinitionsBuilder extends IncrementalProjectBuilder {
 		try {
 			IProject project = getProject();
 			stepDefinitionsProvider.clean(project);
-			project.accept(new CucumberStepDefinitionsFullBuildVisitor(markerFactory, monitor));
+			project.accept(new CucumberStepDefinitionsBuildVisitor(markerFactory, monitor));
 			stepDefinitionsProvider.persist(project, monitor);
 		} catch (CoreException e) {
 			e.printStackTrace();
@@ -87,7 +87,7 @@ public class CucumberStepDefinitionsBuilder extends IncrementalProjectBuilder {
 			throws CoreException {
 		try {
 			// the visitor does the work.
-			delta.accept(new CucumberStepDefinitionsIncrementalBuildVisitor(markerFactory, monitor));
+			delta.accept(new CucumberStepDefinitionsBuildVisitor(markerFactory, monitor));
 			stepDefinitionsProvider.persist(getProject(), monitor);
 		} catch (CoreException e) {
 			e.printStackTrace();
@@ -97,12 +97,12 @@ public class CucumberStepDefinitionsBuilder extends IncrementalProjectBuilder {
 		}
 	}
 
-	class CucumberStepDefinitionsFullBuildVisitor implements IResourceVisitor {
+	class CucumberStepDefinitionsBuildVisitor implements IResourceVisitor, IResourceDeltaVisitor {
 
 		private IProgressMonitor monitor;
 		private MarkerFactory markerFactory;
 
-		public CucumberStepDefinitionsFullBuildVisitor(MarkerFactory markerFactory, IProgressMonitor monitor) {
+		public CucumberStepDefinitionsBuildVisitor(MarkerFactory markerFactory, IProgressMonitor monitor) {
 			this.monitor = monitor;
 			this.markerFactory = markerFactory;
 		}
@@ -118,45 +118,33 @@ public class CucumberStepDefinitionsBuilder extends IncrementalProjectBuilder {
 				return false;
 			}
 			
-			
-			if(resource instanceof IFile) {
+			if(!resource.exists()) {
+				// skip 
+				return true;
+			}
+			if(stepDefinitionsProvider.support(resource)) {
 				this.markerFactory.cleanMarkers(resource);
 				stepDefinitionsProvider.findStepDefinitions((IFile) resource, markerFactory, monitor);
 			}
 			
 			return true;
 		}
-
-	}
-
-	class CucumberStepDefinitionsIncrementalBuildVisitor implements IResourceDeltaVisitor {
-
-		private IProgressMonitor monitor;
-		private MarkerFactory markerFactory;
-
-		public CucumberStepDefinitionsIncrementalBuildVisitor(MarkerFactory markerFactory, IProgressMonitor monitor) {
-			this.monitor = monitor;
-			this.markerFactory = markerFactory;
-		}
-
+		
 		@Override
 		public boolean visit(IResourceDelta delta) throws CoreException {
-			
 			// stop the visitor pattern if a cancellation was requested
 			if(monitor.isCanceled()) {
 				return false;
 			}
-			
-//			System.out.println("CucumberIncrementalBuildVisitor is building " + delta.getResource().getName());
+						
 			IResource resource = delta.getResource();
-			if(resource instanceof IFile) {
-				this.markerFactory.cleanMarkers(resource);
-				stepDefinitionsProvider.findStepDefinitions((IFile) resource, markerFactory, monitor);
-			}
-			return true;
+//			System.out.println("CucumberIncrementalBuildVisitor is building " + delta.getResource().getName());
+
+			return visit(resource);
 		}
 
 	}
+
 	
 	class CucumberStepDefinitionsCleanBuildVisitor implements IResourceVisitor {
 

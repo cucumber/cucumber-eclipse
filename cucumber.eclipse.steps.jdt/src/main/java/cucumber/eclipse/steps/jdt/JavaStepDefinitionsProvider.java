@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -590,6 +591,13 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 	@Override
 	public boolean support(IProject project) throws CoreException {
         return project.isOpen() && project.hasNature(JavaCore.NATURE_ID);
+	}
+	
+	@Override
+	public boolean support(IResource resource) throws CoreException {
+		IJavaElement javaElement = JavaCore.create(resource);
+		boolean isCompilationUnit = javaElement instanceof ICompilationUnit;
+		return isCompilationUnit;
 	}
 	
 }
