@@ -23,19 +23,20 @@ public class MarkerFactory {
 	
 	public static final MarkerFactory INSTANCE = new MarkerFactory();
 	
-	public static final String STEPDEF_SYNTAX_ERROR = "cucumber.eclipse.marker.stepdef.syntaxerror";
-	public static final String GHERKIN_SYNTAX_ERROR = "cucumber.eclipse.marker.gherkin.syntaxerror";
+	public static final String CUCUMBER_MARKER = "cucumber.eclipse.marker";
+	public static final String STEPDEF_SYNTAX_ERROR = CUCUMBER_MARKER + ".stepdef.syntaxerror";
+	public static final String GHERKIN_SYNTAX_ERROR = CUCUMBER_MARKER + ".gherkin.syntaxerror";
 	
-	public static final String STEP_DEFINTION_MATCH = "cucumber.eclipse.marker.stepdef.matches";	
+	public static final String STEP_DEFINTION_MATCH = CUCUMBER_MARKER + ".stepdef.matches";	
 	public static final String STEP_DEFINITION_MATCH_PATH_ATTRIBUTE = STEP_DEFINTION_MATCH + ".path";
 	public static final String STEP_DEFINITION_MATCH_LINE_NUMBER_ATTRIBUTE = STEP_DEFINTION_MATCH + ".line_number";
 	public static final String STEP_DEFINITION_MATCH_TEXT_ATTRIBUTE = STEP_DEFINTION_MATCH + ".text";
 	
 	
-	public static final String SCENARIO_OUTLINE_EXAMPLE_UNMATCH = "cucumber.eclipse.marker.scenario_outline_example_unmatch";
-	public static final String MULTIPLE_STEP_DEFINTIONS_MATCH = "cucumber.eclipse.marker.stepdef.multiple_matches";
+	public static final String SCENARIO_OUTLINE_EXAMPLE_UNMATCH = CUCUMBER_MARKER + ".scenario_outline_example_unmatch";
+	public static final String MULTIPLE_STEP_DEFINTIONS_MATCH = CUCUMBER_MARKER + ".stepdef.multiple_matches";
 
-	public static final String UNMATCHED_STEP = "cucumber.eclipse.marker.gherkin.unmatched_step";
+	public static final String UNMATCHED_STEP = CUCUMBER_MARKER + ".gherkin.unmatched_step";
 	public static final String UNMATCHED_STEP_KEYWORD_ATTRIBUTE = UNMATCHED_STEP + ".keyword";
 	public static final String UNMATCHED_STEP_NAME_ATTRIBUTE = UNMATCHED_STEP + ".name";
 	public static final String UNMATCHED_STEP_PATH_ATTRIBUTE = UNMATCHED_STEP + ".path";
@@ -259,12 +260,7 @@ public class MarkerFactory {
 	
 	public void cleanMarkers(IResource resource) {
 		try {
-			resource.deleteMarkers(STEPDEF_SYNTAX_ERROR, false, IResource.DEPTH_ZERO);
-			resource.deleteMarkers(GHERKIN_SYNTAX_ERROR, false, IResource.DEPTH_ZERO);
-			resource.deleteMarkers(STEP_DEFINTION_MATCH, false, IResource.DEPTH_ZERO);
-			resource.deleteMarkers(SCENARIO_OUTLINE_EXAMPLE_UNMATCH, false, IResource.DEPTH_ZERO);
-			resource.deleteMarkers(MULTIPLE_STEP_DEFINTIONS_MATCH, false, IResource.DEPTH_ZERO);
-			resource.deleteMarkers(UNMATCHED_STEP, false, IResource.DEPTH_ZERO);
+			resource.deleteMarkers(CUCUMBER_MARKER, true, IResource.DEPTH_ZERO);
 		} catch (CoreException e) {
 			Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
 					String.format("Couldn't remove markers from %s", resource), e));
