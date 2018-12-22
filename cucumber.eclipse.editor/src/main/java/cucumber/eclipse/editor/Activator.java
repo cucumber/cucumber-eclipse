@@ -7,7 +7,6 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
 import cucumber.eclipse.editor.preferences.StepDefinitionsScanPropertyChangeListener;
-import cucumber.eclipse.editor.steps.UniversalStepDefinitionsProvider;
 
 /**
  * The activator class controls the plug-in life cycle

@@ -86,6 +86,10 @@ public class CucumberStepDefinitionsBuilder extends IncrementalProjectBuilder {
 	protected void incrementalBuild(IResourceDelta delta, MarkerFactory markerFactory, IProgressMonitor monitor)
 			throws CoreException {
 		try {
+			IProject project = delta.getResource().getProject();
+			if(!stepDefinitionsProvider.isInitialized(project)) {
+				stepDefinitionsProvider.load(project);
+			}
 			// the visitor does the work.
 			delta.accept(new CucumberStepDefinitionsBuildVisitor(markerFactory, monitor));
 			stepDefinitionsProvider.persist(getProject(), monitor);

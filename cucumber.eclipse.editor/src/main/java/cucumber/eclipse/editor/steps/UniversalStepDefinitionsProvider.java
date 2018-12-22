@@ -3,6 +3,7 @@ package cucumber.eclipse.editor.steps;
 import static cucumber.eclipse.editor.util.ExtensionRegistryUtil.getStepDefinitionsProvider;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,6 +34,8 @@ public class UniversalStepDefinitionsProvider implements IStepDefinitionsProvide
 
 	private transient List<IStepDefinitionsProvider> stepDefinitionsProviders = getStepDefinitionsProvider();
 
+	private transient List<IProject> initializedProjects = new ArrayList<IProject>();
+	
 	private UniversalStepDefinitionsProvider() {
 	}
 
@@ -95,6 +98,7 @@ public class UniversalStepDefinitionsProvider implements IStepDefinitionsProvide
 
 	public void load(IProject project) throws CoreException {
 		this.stepDefinitionsStorage.load(project, null);
+		this.initializedProjects.add(project);
 	}
 
 	@Override
@@ -118,4 +122,9 @@ public class UniversalStepDefinitionsProvider implements IStepDefinitionsProvide
 		}
 		return false;
 	}
+
+	public boolean isInitialized(IProject project) {
+		return initializedProjects.contains(project);
+	}
+
 }

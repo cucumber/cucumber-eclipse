@@ -35,6 +35,8 @@ public class GlueStorage implements BuildStorage<GlueRepository> {
 
 	private Map<IProject, GlueRepository> glueRepositoryByProject = new HashMap<IProject, GlueRepository>();
 
+	private boolean isInitialized = false;
+	
 	private GlueStorage() {
 	}
 
@@ -51,7 +53,6 @@ public class GlueStorage implements BuildStorage<GlueRepository> {
 		if (glueRepository == null) {
 			glueRepository = new GlueRepository();
 			this.add(project, glueRepository);
-			this.load(project, null);
 		}
 		return glueRepository;
 	};
@@ -117,4 +118,13 @@ public class GlueStorage implements BuildStorage<GlueRepository> {
 			throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
 		}
 	}
+
+	public boolean isInitialized() {
+		return isInitialized;
+	}
+
+	public void setInitialized(boolean isInitialized) {
+		this.isInitialized = isInitialized;
+	}
+	
 }

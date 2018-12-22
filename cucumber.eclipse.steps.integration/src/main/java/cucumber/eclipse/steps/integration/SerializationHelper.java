@@ -7,11 +7,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Base64;
 
-import gherkin.formatter.model.Step;
-
 public abstract class SerializationHelper {
 
-	
 	public static <T> String serialize(T object) throws IOException {
 		ObjectOutputStream objectOutputStream = null;
 		try {

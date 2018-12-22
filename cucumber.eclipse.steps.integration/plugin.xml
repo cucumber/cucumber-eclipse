@@ -14,6 +14,7 @@
            name="Step definition syntax error">
            <super type="org.eclipse.core.resources.problemmarker"/>
            <super type="cucumber.eclipse.marker"/>
+           <persistent value="true"/>
 	</extension>
 	<extension
            id="cucumber.eclipse.marker.gherkin.syntaxerror"
@@ -21,6 +22,7 @@
            name="Gherkin syntax error">
            <super type="org.eclipse.core.resources.problemmarker"/>
            <super type="cucumber.eclipse.marker"/>
+           <persistent value="true"/>
 	</extension>
 	<extension
            id="cucumber.eclipse.marker.stepdef.matches"
@@ -33,16 +35,78 @@
            <persistent value="true"/>
 	</extension>
 	<extension
+           id="cucumber.eclipse.markers.project.cucumber_nature_missing"
+           point="org.eclipse.core.resources.markers"
+           name="Cucumber nature missing">
+           <super type="org.eclipse.core.resources.problemmarker"/>
+           <super type="cucumber.eclipse.marker"/>
+           <persistent value="true"/>
+    </extension>
+    <extension
+	    id="cucumber.eclipse.marker.gherkin.unmatched_step"
+	    name="Unmatched step"
+	    point="org.eclipse.core.resources.markers">
+	    <super type="org.eclipse.core.resources.problemmarker"/>
+	  	<super type="cucumber.eclipse.marker"/>
+	  	<attribute name="cucumber.eclipse.marker.gherkin.unmatched_step.keyword"/>
+	  	<attribute name="cucumber.eclipse.marker.gherkin.unmatched_step.name"/>
+	  	<attribute name="cucumber.eclipse.marker.gherkin.unmatched_step.path"/>
+	  	<persistent value="true"/>
+	</extension>
+	<extension
+	    id="cucumber.eclipse.marker.scenario_outline_example_unmatch"
+	    name="Unmatched step"
+	    point="org.eclipse.core.resources.markers">
+	    <super type="org.eclipse.core.resources.problemmarker"/>
+	  	<super type="cucumber.eclipse.marker"/>
+	  	<persistent value="true"/>
+	</extension>
+   <extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="cucumber.eclipse.annotation.gherkin.unmatched_step"
+            colorPreferenceKey="cucumber.eclipse.marker.gherkin.unmatched_step.color"
+            colorPreferenceValue="247,207,84"
+            contributesToHeader="false"
+            highlightPreferenceKey="cucumber.eclipse.marker.gherkin.unmatched_step.highlight"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="true"
+            label="Cucumber unmatched step"
+            overviewRulerPreferenceKey="cucumber.eclipse.marker.gherkin.unmatched_step.overview"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="0"
+            textPreferenceKey="cucumber.eclipse.marker.gherkin.unmatched_step.text"
+            textPreferenceValue="true"
+            textStylePreferenceValue="BOX"
+            verticalRulerPreferenceKey="cucumber.eclipse.marker.gherkin.unmatched_step.ruler"
+            verticalRulerPreferenceValue="true">
+      </specification>
+   </extension>
+   <extension
 	  point="org.eclipse.ui.editors.annotationTypes">
 	  <type
-	        markerType="cucumber.eclipse.marker.stepdef.matches"
-	        name="cucumber.eclipse.marker.stepdef.matches">
+	        markerType="cucumber.eclipse.marker.gherkin.unmatched_step"
+	        name="cucumber.eclipse.annotation.gherkin.unmatched_step">
 	  </type>
 	</extension>
 	<extension
+	  point="org.eclipse.ui.editors.annotationTypes">
+	  <type
+	        markerType="cucumber.eclipse.marker.scenario_outline_example_unmatch"
+	        name="cucumber.eclipse.annotation.gherkin.unmatched_step">
+	  </type>
+	</extension>
+	<extension
+         point="org.eclipse.ui.editors.annotationTypes">
+         <type
+               markerType="cucumber.eclipse.marker.stepdef.matches"
+               name="cucumber.eclipse.annotation.stepdef.matches">
+         </type>
+       </extension>
+       <extension
          point="org.eclipse.ui.editors.markerAnnotationSpecification">
       <specification
-            annotationType="cucumber.eclipse.marker.stepdef.matches"
+            annotationType="cucumber.eclipse.annotation.stepdef.matches"
             colorPreferenceKey="cucumber.eclipse.marker.stepdef.matches.color"
             colorPreferenceValue="0,204,0"
             contributesToHeader="false"

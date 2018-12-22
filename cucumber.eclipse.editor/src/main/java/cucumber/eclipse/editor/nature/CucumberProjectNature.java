@@ -20,7 +20,6 @@ import cucumber.eclipse.editor.builder.CucumberStepDefinitionsBuilder;
 public class CucumberProjectNature implements IProjectNature {
 	
 	public static final String ID = "cucumber.eclipse.nature";
-	public static final String CUCUMBER_NATURE_MISSING_MARKER = "cucumber.eclipse.markers.project.cucumber_nature_missing";
 	
     private IProject project;
     

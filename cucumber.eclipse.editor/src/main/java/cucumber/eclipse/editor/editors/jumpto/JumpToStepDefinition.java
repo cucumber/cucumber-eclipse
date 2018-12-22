@@ -13,10 +13,27 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 
 import cucumber.eclipse.editor.Activator;
+import cucumber.eclipse.steps.integration.ResourceUtil;
 import cucumber.eclipse.steps.integration.StepDefinition;
 import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 
 class JumpToStepDefinition {
+	
+	public static StepDefinition findStepDefinitionMatch(int selectionLineNumber, IFile gherkinFile) throws CoreException {
+		StepDefinition stepDefinition = null;
+		IMarker stepDefinitionMatchMarker = JumpToStepDefinition.findStepDefinitionMatchMarker(selectionLineNumber, gherkinFile);
+		if(stepDefinitionMatchMarker != null) {
+			String stepDefinitionPath = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_PATH_ATTRIBUTE);
+			String stepDefinitionText = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_TEXT_ATTRIBUTE);
+			Integer stepDefinitionLineNumber = (Integer) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_LINE_NUMBER_ATTRIBUTE);
+			
+			stepDefinition = new StepDefinition();
+			stepDefinition.setSource(ResourceUtil.find(stepDefinitionPath));
+			stepDefinition.setText(stepDefinitionText);
+			stepDefinition.setLineNumber(stepDefinitionLineNumber);
+		}
+		return stepDefinition;
+	}
 	
 	public static IMarker findStepDefinitionMatchMarker(int selectionLineNumber, IFile gherkinFile) throws CoreException {
 		IMarker stepDefinitionMatchMarker = null; 

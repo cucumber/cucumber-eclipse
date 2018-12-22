@@ -16,6 +16,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import cucumber.eclipse.editor.builder.BuilderUtil;
 import cucumber.eclipse.editor.nature.CucumberProjectNature;
+import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 
 
 public class AddNatureHandler extends AbstractHandler {
@@ -50,14 +51,10 @@ public class AddNatureHandler extends AbstractHandler {
 		}
 	    description.setNatureIds(newNatures);
 	    project.setDescription(description, new NullProgressMonitor());
-	    removeCucumberNatureMissingMarkers(project);
+	    MarkerFactory.INSTANCE.cleanCucumberNatureMissing(project);
+		BuilderUtil.buildProject(project, IncrementalProjectBuilder.FULL_BUILD);
+
     }
     
-    private void removeCucumberNatureMissingMarkers(IProject project) throws CoreException {
-    	IMarker[] markers = project.findMarkers(CucumberProjectNature.CUCUMBER_NATURE_MISSING_MARKER, false, IResource.DEPTH_ZERO);
-	    for (IMarker marker : markers) {
-	    	marker.delete();
-		}
-	    BuilderUtil.buildProject(project, IncrementalProjectBuilder.FULL_BUILD);
-    }
+   
 }

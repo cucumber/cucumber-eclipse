@@ -35,9 +35,14 @@ public class StepDefinition implements Serializable {
 	}
 	public void setText(String text) throws CucumberExpressionException {
 		this.text = text;
+		this.initExpressionFactory();
+	}
+	
+	private void initExpressionFactory() {
 		Locale locale = this.lang == null ? Locale.getDefault() : new Locale(this.lang);
 		this.expression = new ExpressionFactory(new ParameterTypeRegistry(locale)).createExpression(text);
 	}
+	
 	public IResource getSource() {
 		// For marker, the plugin need to serialize StepDefinition
 		// however IResource is not serializable
@@ -59,8 +64,9 @@ public class StepDefinition implements Serializable {
 	}
 	
 	public boolean matches(String stepDefinitionText) {
-		if(this.expression == null)
-			return false;
+		if(this.expression == null) {
+			this.initExpressionFactory();
+		}
 		List<Argument<?>> match = this.match(stepDefinitionText);
 		return match != null;
 	}

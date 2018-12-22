@@ -3,7 +3,6 @@ package cucumber.eclipse.editor.markers;
 import static cucumber.eclipse.editor.editors.DocumentUtil.read;
 import static cucumber.eclipse.steps.integration.marker.MarkerFactory.UNMATCHED_STEP_KEYWORD_ATTRIBUTE;
 import static cucumber.eclipse.steps.integration.marker.MarkerFactory.UNMATCHED_STEP_NAME_ATTRIBUTE;
-import static cucumber.eclipse.steps.integration.marker.MarkerFactory.UNMATCHED_STEP_PATH_ATTRIBUTE;
 
 import java.io.IOException;
 import java.util.Set;
@@ -11,11 +10,11 @@ import java.util.Set;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IMarkerResolution;
@@ -56,20 +55,23 @@ public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionG
 			
 			String gherkinStepKeyword = (String) marker.getAttribute(UNMATCHED_STEP_KEYWORD_ATTRIBUTE);
 			String gherkinStepName = (String) marker.getAttribute(UNMATCHED_STEP_NAME_ATTRIBUTE);
-			String gherkinStepPath = (String) marker.getAttribute(UNMATCHED_STEP_PATH_ATTRIBUTE);
 			
 			Step gherkinStep = new Step(null, gherkinStepKeyword, gherkinStepName, null, null, null);
 			
-			String gherkinFilePath = (String) marker.getAttribute(UNMATCHED_STEP_PATH_ATTRIBUTE);
-			IWorkspace workspace = ResourcesPlugin.getWorkspace();
-			IFile gherkinFile = (IFile) workspace.getRoot().findMember(gherkinFilePath);
+			IFile gherkinFile = (IFile) marker.getResource();
 			IProject project = gherkinFile.getProject();
 			
-			
 			UniversalStepDefinitionsProvider stepProvider = UniversalStepDefinitionsProvider.INSTANCE;
+			if(!stepProvider.isInitialized(project)) {
+				try {
+					stepProvider.load(project);
+				} catch (CoreException e) {
+					Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+					ErrorDialog.openError(shell, "Any cucumber build results found.", "Build the project to get resolution suggestions.", e.getStatus());
+				}
+			}
 			
 			Set<IFile> stepDefinitionsFiles = stepProvider.getStepDefinitionsFiles(project);
-			
 			
 			IMarkerResolution[] resolutions = new IMarkerResolution[stepDefinitionsFiles.size()];
 			int it = 0;

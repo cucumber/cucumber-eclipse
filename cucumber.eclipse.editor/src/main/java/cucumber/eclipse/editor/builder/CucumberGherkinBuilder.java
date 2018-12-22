@@ -97,7 +97,6 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 		default:
 			break;
 		}
-
 		return null;
 	}
 
@@ -463,6 +462,9 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			}
 
 			this.markerFactory.cleanMarkers(resource);
+			GlueRepository glueRepository = glueStorage.getOrCreate(getProject());
+			glueRepository.clean(resource);
+
 			return true;
 		}
 
@@ -471,8 +473,6 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 	@Override
 	protected void clean(IProgressMonitor monitor) throws CoreException {
 		System.out.println("CucumberGherkinBuilder.clean");
-		GlueRepository glueRepository = glueStorage.getOrCreate(getProject());
-		glueRepository.clean();
 
 		getProject().accept(new CucumberGherkinCleanBuildVisitor(markerFactory, monitor));
 	}

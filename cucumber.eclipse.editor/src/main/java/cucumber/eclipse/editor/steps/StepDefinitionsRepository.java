@@ -34,7 +34,7 @@ public class StepDefinitionsRepository {
 	private Map<IFile, Set<StepDefinition>> stepDefinitionsByResourceName;
 
 	protected StepDefinitionsRepository() {
-		this.reset();
+		this.stepDefinitionsByResourceName = new HashMap<IFile, Set<StepDefinition>>();
 	}
 
 	public void add(IFile stepDefinitionsFile, List<StepDefinition> steps) {
@@ -68,6 +68,7 @@ public class StepDefinitionsRepository {
 
 	public void reset() {
 		this.stepDefinitionsByResourceName = new HashMap<IFile, Set<StepDefinition>>();
+		System.out.println("Reset step definitions");
 	}
 	
 

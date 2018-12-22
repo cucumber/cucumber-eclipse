@@ -2,7 +2,9 @@ package cucumber.eclipse.editor.steps;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
@@ -23,18 +25,24 @@ public class StepDefinitionsStorage implements BuildStorage<StepDefinitionsRepos
 
 	private Map<IProject, StepDefinitionsRepository> stepDefinitionsByProject = new HashMap<IProject, StepDefinitionsRepository>();
 
+	private List<IProject> initializedProjects = new ArrayList<IProject>();
+	
 	private StepDefinitionsStorage() {
 	}
 
 	@Override
 	public StepDefinitionsRepository getOrCreate(IProject project) throws CoreException {
-		StepDefinitionsRepository stepProvider = stepDefinitionsByProject.get(project);
-		if (stepProvider == null) {
-			stepProvider = new StepDefinitionsRepository();
-			this.add(project, stepProvider);
+		if(!initializedProjects.contains(project)) {
 			this.load(project, null);
+			this.initializedProjects.add(project);
 		}
-		return stepProvider;
+		StepDefinitionsRepository stepDefinitionRepository = stepDefinitionsByProject.get(project);
+		if (stepDefinitionRepository == null) {
+			stepDefinitionRepository = new StepDefinitionsRepository();
+			this.add(project, stepDefinitionRepository);
+			this.initializedProjects.add(project);
+		}
+		return stepDefinitionRepository;
 	}
 
 	@Override
@@ -80,6 +88,7 @@ public class StepDefinitionsStorage implements BuildStorage<StepDefinitionsRepos
 			this.add(project, stepDefinitionsRepository);
 			subMonitor.newChild(1);
 			subMonitor.done();
+			System.out.println(stepDefinitionsRepository.getAllStepDefinitions().size() + " step definitions loaded for "+project.getName());
 		} catch (IOException e) {
 			throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
 		} catch (ClassNotFoundException e) {
