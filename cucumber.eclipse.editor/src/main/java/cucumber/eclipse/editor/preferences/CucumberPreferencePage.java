@@ -41,8 +41,8 @@ public class CucumberPreferencePage extends FieldEditorPreferencePage implements
 			
 		//#239:Only match step implementation in same package as feature file	
 		addField(new BooleanFieldEditor(
-			StepPreferences.PREF_ONLY_SEARCH_PACKAGE,
-			getString("&Only match steps from package and sub-packages"), parent));
+			StepPreferences.PREF_GLUE_ONLY_IN_SAME_LOCATION,
+			getString("&Glue only gherkins and step definitions files in the same location"), parent));
 		
 		addField(new StringFieldEditor(
 			StepPreferences.PREF_ONLY_SEARCH_SPECIFIC_PACKAGE, 

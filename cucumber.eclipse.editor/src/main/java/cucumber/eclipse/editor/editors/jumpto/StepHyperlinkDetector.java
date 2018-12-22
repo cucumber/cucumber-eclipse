@@ -12,7 +12,7 @@ import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 
 import cucumber.eclipse.editor.editors.Editor;
-import cucumber.eclipse.steps.integration.ResourceUtil;
+import cucumber.eclipse.steps.integration.ResourceHelper;
 import cucumber.eclipse.steps.integration.StepDefinition;
 import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 
@@ -52,7 +52,7 @@ public class StepHyperlinkDetector implements IHyperlinkDetector {
 				Integer stepDefinitionLineNumber = (Integer) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_LINE_NUMBER_ATTRIBUTE);
 				
 				StepDefinition stepDefinition = new StepDefinition();
-				stepDefinition.setSource(ResourceUtil.find(stepDefinitionPath));
+				stepDefinition.setSource(new ResourceHelper().find(stepDefinitionPath));
 				stepDefinition.setText(stepDefinitionText);
 				stepDefinition.setLineNumber(stepDefinitionLineNumber);
 	

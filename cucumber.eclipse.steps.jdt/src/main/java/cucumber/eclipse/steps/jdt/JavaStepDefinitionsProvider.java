@@ -453,7 +453,7 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 			String[] extPackages = externalPackageName.trim().split(COMMA);
 			
 			//#239:Only match step implementation in same package as feature file
-			final boolean onlyPackages = this.stepPreferences.getOnlyPackages();
+			final boolean onlyPackages = this.stepPreferences.isGlueOnlyInSameLocationEnabled();
 			final String onlySpeficicPackagesValue = this.stepPreferences.getOnlySpecificPackage().trim();
 			final boolean onlySpeficicPackages= onlySpeficicPackagesValue.length() == 0 ? false : true;
 //			String featurefilePackage = featurefile.getParent().getFullPath().toString();

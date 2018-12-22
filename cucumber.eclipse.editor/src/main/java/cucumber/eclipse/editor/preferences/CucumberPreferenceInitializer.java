@@ -22,7 +22,7 @@ public class CucumberPreferenceInitializer extends
 			CucumberIndentationStyle.TWO_SPACES.getValue());
 		
 		//#239:Only match step implementation in same package as feature file
-		store.setDefault(StepPreferences.PREF_ONLY_SEARCH_PACKAGE, false);
+		store.setDefault(StepPreferences.PREF_GLUE_ONLY_IN_SAME_LOCATION, false);
 	}
 
 }

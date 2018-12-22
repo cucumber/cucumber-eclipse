@@ -3,6 +3,7 @@ package cucumber.eclipse.editor.builder;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 
+import cucumber.eclipse.editor.filter.FilterUtil;
+import cucumber.eclipse.editor.filter.SameLocationFilter;
 import cucumber.eclipse.editor.steps.BuildStorage;
 import cucumber.eclipse.editor.steps.GlueRepository;
 import cucumber.eclipse.editor.steps.GlueStorage;
@@ -64,7 +67,7 @@ import gherkin.parser.Parser;
  * To maintain the glue, this builder compiles step defintions file to notify
  * gherkin files to check if they are impacted by the step definitions update.
  * 
- * This builder MUST USED AFTER the {#CucumberStepDefinitionsBuilder}, and
+ * This builder MUST BE USED AFTER the {#CucumberStepDefinitionsBuilder}, and
  * assume the StepDefinitionsRepository to be populated.
  * 
  * @author qvdk
@@ -92,7 +95,7 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			incrementalBuild(delta, glueDetectionEnabled, monitor);
 			break;
 		case CLEAN_BUILD:
-			System.out.println("clean build");
+			System.out.println("gherkin clean build");
 			break;
 		default:
 			break;
@@ -253,6 +256,7 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 		private List<gherkin.formatter.model.Step> scenarioOutlineSteps;
 		private boolean isGlueDetectionEnabled;
 		private GlueRepository glueRepository;
+		private StepPreferences stepPreferences = StepPreferences.INSTANCE;
 
 		public MarkerFormatter(IDocument document, IResource gherkinFile, MarkerFactory markerFactory,
 				boolean isGlueDetectionEnabled) throws CoreException {
@@ -366,9 +370,10 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			}
 			Set<StepDefinition> allStepDefinitions = stepDefinitionsProvider
 					.getStepDefinitions(this.project);
+			Set<StepDefinition> stepDefinitionsScope = this.filter((IFile) gherkinFile, allStepDefinitions);
 			StepDefinition glueStepDefinition = null;
 
-			for (StepDefinition stepDefinition : allStepDefinitions) {
+			for (StepDefinition stepDefinition : stepDefinitionsScope) {
 				boolean matches = stepDefinition.matches(step.getName());
 				if (matches) {
 					glueStepDefinition = stepDefinition;
@@ -386,7 +391,22 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 				glueRepository.clean(step);
 			}
 		}
-		
+
+		private Set<StepDefinition> filter(IFile gherkinFile, Set<StepDefinition> stepDefinitions) {
+			
+			Set<StepDefinition> filtered = new HashSet<StepDefinition>();
+			String gherkinLocation = gherkinFile.getParent().getFullPath().toString();
+			
+			boolean shouldFilterInSameLocation = this.stepPreferences.isGlueOnlyInSameLocationEnabled();
+			if(!shouldFilterInSameLocation) {
+				return stepDefinitions;
+			}
+			
+			SameLocationFilter sameLocationFilter = new SameLocationFilter(gherkinLocation);
+			FilterUtil.filter(stepDefinitions, sameLocationFilter, filtered);
+			
+			return filtered;
+		}
 
 		private Map<String, String> getExampleVariablesMap(ExamplesTableRow header, ExamplesTableRow values) {
 			Map<String, String> result = new LinkedHashMap<String, String>();
@@ -476,4 +496,6 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 
 		getProject().accept(new CucumberGherkinCleanBuildVisitor(markerFactory, monitor));
 	}
+	
+	
 }

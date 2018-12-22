@@ -48,7 +48,7 @@ public class StepDefinition implements Serializable {
 		// however IResource is not serializable
 		// in this case we will retrieve it from its path
 		if(source == null && sourcePath != null) {
-			source = ResourceUtil.find(this.sourcePath);
+			source = new ResourceHelper().find(this.sourcePath);
 		}
 		return source;
 	}

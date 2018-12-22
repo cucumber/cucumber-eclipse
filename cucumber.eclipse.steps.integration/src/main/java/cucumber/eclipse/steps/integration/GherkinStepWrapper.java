@@ -41,7 +41,7 @@ public class GherkinStepWrapper implements Serializable {
 
 	public IResource getSource() {
 		if(this.source == null && this.sourcePath != null) {
-			source = ResourceUtil.find(sourcePath);
+			source = new ResourceHelper().find(sourcePath);
 		}
 		return source;
 	}

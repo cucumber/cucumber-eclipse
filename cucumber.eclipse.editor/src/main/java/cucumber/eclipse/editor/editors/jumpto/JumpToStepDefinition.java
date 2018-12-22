@@ -13,7 +13,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 
 import cucumber.eclipse.editor.Activator;
-import cucumber.eclipse.steps.integration.ResourceUtil;
+import cucumber.eclipse.steps.integration.ResourceHelper;
 import cucumber.eclipse.steps.integration.StepDefinition;
 import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 
@@ -28,7 +28,7 @@ class JumpToStepDefinition {
 			Integer stepDefinitionLineNumber = (Integer) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_LINE_NUMBER_ATTRIBUTE);
 			
 			stepDefinition = new StepDefinition();
-			stepDefinition.setSource(ResourceUtil.find(stepDefinitionPath));
+			stepDefinition.setSource(new ResourceHelper().find(stepDefinitionPath));
 			stepDefinition.setText(stepDefinitionText);
 			stepDefinition.setLineNumber(stepDefinitionLineNumber);
 		}

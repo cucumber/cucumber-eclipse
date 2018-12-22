@@ -2,7 +2,7 @@ package cucumber.eclipse.editor.preferences;
 
 import static cucumber.eclipse.steps.integration.StepPreferences.INSTANCE;
 import static cucumber.eclipse.steps.integration.StepPreferences.PREF_CHECK_STEP_DEFINITIONS;
-import static cucumber.eclipse.steps.integration.StepPreferences.PREF_ONLY_SEARCH_PACKAGE;
+import static cucumber.eclipse.steps.integration.StepPreferences.PREF_GLUE_ONLY_IN_SAME_LOCATION;
 import static cucumber.eclipse.steps.integration.StepPreferences.PREF_ONLY_SEARCH_SPECIFIC_PACKAGE;
 
 import org.eclipse.core.resources.IncrementalProjectBuilder;
@@ -28,7 +28,7 @@ public class StepDefinitionsScanPropertyChangeListener implements IPropertyChang
 			}
 			BuilderUtil.buildWorkspace(buildType);
 		}
-		else if (PREF_ONLY_SEARCH_PACKAGE.equals(propertyChanged) || PREF_ONLY_SEARCH_SPECIFIC_PACKAGE.equals(propertyChanged)) {
+		else if (PREF_GLUE_ONLY_IN_SAME_LOCATION.equals(propertyChanged) || PREF_ONLY_SEARCH_SPECIFIC_PACKAGE.equals(propertyChanged)) {
 			BuilderUtil.buildWorkspace(IncrementalProjectBuilder.FULL_BUILD);
 		}
 	}

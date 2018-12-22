@@ -3,14 +3,13 @@ package cucumber.eclipse.editor.steps;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 
-import cucumber.eclipse.steps.integration.ResourceUtil;
+import cucumber.eclipse.steps.integration.ResourceHelper;
 import cucumber.eclipse.steps.integration.SerializationHelper;
 import cucumber.eclipse.steps.integration.StepDefinition;
 
@@ -35,10 +34,6 @@ public class StepDefinitionsRepository {
 
 	protected StepDefinitionsRepository() {
 		this.stepDefinitionsByResourceName = new HashMap<IFile, Set<StepDefinition>>();
-	}
-
-	public void add(IFile stepDefinitionsFile, List<StepDefinition> steps) {
-		this.stepDefinitionsByResourceName.put(stepDefinitionsFile, new HashSet<StepDefinition>(steps));
 	}
 
 	public void add(IFile stepDefinitionsFile, Set<StepDefinition> steps) {
@@ -68,7 +63,7 @@ public class StepDefinitionsRepository {
 
 	public void reset() {
 		this.stepDefinitionsByResourceName = new HashMap<IFile, Set<StepDefinition>>();
-		System.out.println("Reset step definitions");
+//		System.out.println("Reset step definitions");
 	}
 	
 
@@ -84,13 +79,17 @@ public class StepDefinitionsRepository {
 	}
 	
 	public static StepDefinitionsRepository deserialize(String stepDefinitionsRepositorySerialized) throws ClassNotFoundException, IOException {
+		return deserialize(stepDefinitionsRepositorySerialized, new ResourceHelper());
+	}
+	
+	protected static StepDefinitionsRepository deserialize(String stepDefinitionsRepositorySerialized, ResourceHelper resourceHelper) throws ClassNotFoundException, IOException {
 		Map<String, Set<StepDefinition>> stepDefinitionsByResourceName = SerializationHelper.deserialize(stepDefinitionsRepositorySerialized);
 		
 		Map<IFile,Set<StepDefinition>> stepDefinitionsByResource = new HashMap<IFile, Set<StepDefinition>>(stepDefinitionsByResourceName.size());
 
 		Set<Entry<String,Set<StepDefinition>>> entrySet = stepDefinitionsByResourceName.entrySet();
 		for (Entry<String, Set<StepDefinition>> entry : entrySet) {
-			stepDefinitionsByResource.put((IFile) ResourceUtil.find(entry.getKey()), entry.getValue());
+			stepDefinitionsByResource.put((IFile) resourceHelper.find(entry.getKey()), entry.getValue());
 		}
 		
 		StepDefinitionsRepository stepDefinitionsRepository = new StepDefinitionsRepository();

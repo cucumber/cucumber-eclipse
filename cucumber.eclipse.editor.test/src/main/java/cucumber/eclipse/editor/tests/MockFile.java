@@ -25,10 +25,16 @@ import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 
-public class TestFile implements IFile {
+public class MockFile implements IFile {
     
+	private String path;
+	
+	public MockFile(String path) {
+		this.path = path;
+	}
+	
     public IPath getFullPath() {
-        return new Path("/file");
+        return new Path(this.path);
     }
     
     // default implementations
@@ -382,4 +388,31 @@ public class TestFile implements IFile {
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((path == null) ? 0 : path.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MockFile other = (MockFile) obj;
+		if (path == null) {
+			if (other.path != null)
+				return false;
+		} else if (!path.equals(other.path))
+			return false;
+		return true;
+	}
+	
+	
 }
