@@ -41,7 +41,15 @@ public class UniversalStepDefinitionsProvider implements IStepDefinitionsProvide
 
 	public Set<StepDefinition> getStepDefinitions(IProject project) throws CoreException {
 		StepDefinitionsRepository stepDefinitionsRepository = this.stepDefinitionsStorage.getOrCreate(project);
-		return stepDefinitionsRepository.getAllStepDefinitions();
+		Set<StepDefinition> stepDefinitions = stepDefinitionsRepository.getAllStepDefinitions(); // step definitions of the current projects
+		
+		IProject[] referencedProjects = project.getReferencedProjects();
+		for (IProject referencedProject : referencedProjects) {
+			Set<StepDefinition> stepDefinitionsFromReferencedProject = getStepDefinitions(referencedProject);
+			stepDefinitions.addAll(stepDefinitionsFromReferencedProject);
+		}
+		
+		return stepDefinitions;
 	}
 
 	public Set<IFile> getStepDefinitionsFiles(IProject project) throws CoreException {
