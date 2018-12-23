@@ -6,5 +6,13 @@
       </stepDefinitionIntegration>
       <stepDefinitionIntegration class="cucumber.eclipse.steps.jdt.StepGenerator">
       </stepDefinitionIntegration>
-   </extension> 
+   </extension>
+   
+   <extension point="org.eclipse.ui.preferencePages">
+		<page
+			id="cucumber.eclipse.editor.jdt.preferences.page1"
+			class="cucumber.eclipse.steps.jdt.ui.CucumberJavaPreferencesPage"
+			name="Java"
+			category="cucumber.eclipse.editor.preferences.Page1" />
+   </extension>
 </plugin>

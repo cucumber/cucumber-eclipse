@@ -1,4 +1,4 @@
-package cucumber.eclipse.editor.builder;
+package cucumber.eclipse.steps.integration.builder;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;

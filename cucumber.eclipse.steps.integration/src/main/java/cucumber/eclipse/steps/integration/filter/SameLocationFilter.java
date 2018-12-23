@@ -1,4 +1,4 @@
-package cucumber.eclipse.editor.filter;
+package cucumber.eclipse.steps.integration.filter;
 
 import cucumber.eclipse.steps.integration.StepDefinition;
 

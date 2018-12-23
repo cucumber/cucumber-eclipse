@@ -24,8 +24,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 
-import cucumber.eclipse.editor.filter.FilterUtil;
-import cucumber.eclipse.editor.filter.SameLocationFilter;
 import cucumber.eclipse.editor.steps.BuildStorage;
 import cucumber.eclipse.editor.steps.GlueRepository;
 import cucumber.eclipse.editor.steps.GlueStorage;
@@ -36,6 +34,8 @@ import cucumber.eclipse.steps.integration.GherkinStepWrapper;
 import cucumber.eclipse.steps.integration.Glue;
 import cucumber.eclipse.steps.integration.StepDefinition;
 import cucumber.eclipse.steps.integration.StepPreferences;
+import cucumber.eclipse.steps.integration.filter.FilterUtil;
+import cucumber.eclipse.steps.integration.filter.SameLocationFilter;
 import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 import gherkin.formatter.Formatter;
 import gherkin.formatter.model.Background;
@@ -307,45 +307,6 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			}
 		}
 
-		/**
-		 * There are a particular way to process scenario outline step, since the
-		 * validation of examples should match with the previously parsed step.
-		 * 
-		 * @param scenarioOutlineStepLine the scenario outline
-		 * @param exampleVariablesMap     the examples
-		 * @param exampleLine             the line
-		 * @throws CoreException 
-		 */
-		private void validate(Step scenarioOutlineStepLine, Map<String, String> exampleVariablesMap,
-				Integer exampleLine) throws CoreException {
-			if (!isGlueDetectionEnabled) {
-				return;
-			}
-			String derivateGherkinStepSource = getResolvedStepStringForExample(scenarioOutlineStepLine,
-					exampleVariablesMap);
-
-			Set<cucumber.eclipse.steps.integration.StepDefinition> allStepDefinitions = stepDefinitionsProvider
-					.getStepDefinitions(project);
-			cucumber.eclipse.steps.integration.StepDefinition glueStepDefinition = null;
-
-			for (cucumber.eclipse.steps.integration.StepDefinition stepDefinition : allStepDefinitions) {
-				boolean matches = stepDefinition.matches(derivateGherkinStepSource);
-				if (matches) {
-					glueStepDefinition = stepDefinition;
-					break;
-				}
-			}
-			boolean isFound = glueStepDefinition != null;
-			if (isFound) {
-				Glue glue = glueRepository.add(new GherkinStepWrapper(scenarioOutlineStepLine, gherkinFile),
-						glueStepDefinition);
-				markerFactory.glueFound(glue);
-			} else {
-				markerFactory.gherkinStepExampleUnmatch(gherkinDocument, gherkinFile, exampleLine);
-			}
-
-		}
-
 		private String getResolvedStepStringForExample(Step stepLine, Map<String, String> examplesLineMap) {
 			String derivateGherkinStep = stepLine.getName();
 			if (examplesLineMap != null) {
@@ -392,6 +353,46 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			}
 		}
 
+		/**
+		 * There are a particular way to process scenario outline step, since the
+		 * validation of examples should match with the previously parsed step.
+		 * 
+		 * @param scenarioOutlineStepLine the scenario outline
+		 * @param exampleVariablesMap     the examples
+		 * @param exampleLine             the line
+		 * @throws CoreException 
+		 */
+		private void validate(Step scenarioOutlineStepLine, Map<String, String> exampleVariablesMap,
+				Integer exampleLine) throws CoreException {
+			if (!isGlueDetectionEnabled) {
+				return;
+			}
+			String derivateGherkinStepSource = getResolvedStepStringForExample(scenarioOutlineStepLine,
+					exampleVariablesMap);
+
+			Set<cucumber.eclipse.steps.integration.StepDefinition> allStepDefinitions = stepDefinitionsProvider
+					.getStepDefinitions(project);
+			Set<StepDefinition> stepDefinitionsScope = this.filter((IFile) gherkinFile, allStepDefinitions);
+			cucumber.eclipse.steps.integration.StepDefinition glueStepDefinition = null;
+
+			for (StepDefinition stepDefinition : stepDefinitionsScope) {
+				boolean matches = stepDefinition.matches(derivateGherkinStepSource);
+				if (matches) {
+					glueStepDefinition = stepDefinition;
+					break;
+				}
+			}
+			boolean isFound = glueStepDefinition != null;
+			if (isFound) {
+				Glue glue = glueRepository.add(new GherkinStepWrapper(scenarioOutlineStepLine, gherkinFile),
+						glueStepDefinition);
+				markerFactory.glueFound(glue);
+			} else {
+				markerFactory.gherkinStepExampleUnmatch(gherkinDocument, gherkinFile, exampleLine);
+			}
+
+		}
+		
 		private Set<StepDefinition> filter(IFile gherkinFile, Set<StepDefinition> stepDefinitions) {
 			
 			Set<StepDefinition> filtered = new HashSet<StepDefinition>();

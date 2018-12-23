@@ -9,7 +9,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import cucumber.eclipse.editor.builder.BuilderUtil;
+import cucumber.eclipse.steps.integration.builder.BuilderUtil;
 
 public class RecalculateStepsHandler extends AbstractHandler {
 

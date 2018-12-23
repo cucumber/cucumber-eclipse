@@ -11,7 +11,6 @@ public class StepPreferences {
 	public static String PREF_CHECK_STEP_DEFINITIONS = "check_step_definitions"; //$NON-NLS-1$
 	// #239:Only match step implementation in same package as feature file
 	public static String PREF_GLUE_ONLY_IN_SAME_LOCATION = "glue_only_in_same_location"; //$NON-NLS-1$
-	public static String PREF_ONLY_SEARCH_SPECIFIC_PACKAGE = "only_search_specific_package"; //$NON-NLS-1$
 	// Newly Declared By Girija for User-Settings Cucumber Preference Page
 	public static String PREF_ADD_PACKAGE = "add_package"; //$NON-NLS-1$
 
@@ -33,10 +32,6 @@ public class StepPreferences {
 	// #239:Only match step implementation in same package as feature file
 	public Boolean isGlueOnlyInSameLocationEnabled() {
 		return preferencesService.getBoolean("cucumber.eclipse.editor", PREF_GLUE_ONLY_IN_SAME_LOCATION, false, null);
-	}
-
-	public String getOnlySpecificPackage() {
-		return preferencesService.getString("cucumber.eclipse.editor", PREF_ONLY_SEARCH_SPECIFIC_PACKAGE, "", null);
 	}
 
 }

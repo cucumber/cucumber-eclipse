@@ -253,11 +253,6 @@
 			id="cucumber.eclipse.editor.preferences.Page1"
 			class="cucumber.eclipse.editor.preferences.CucumberPreferencePage"
 			name="Cucumber" />
-		<page
-			id="cucumber.eclipse.editor.preferences.Page2"
-			category="cucumber.eclipse.editor.preferences.Page1"
-			class="cucumber.eclipse.editor.preferences.CucumberUserSettingsPage"
-			name="User Settings" />	
    </extension>
  <extension
        point="org.eclipse.ui.newWizards">

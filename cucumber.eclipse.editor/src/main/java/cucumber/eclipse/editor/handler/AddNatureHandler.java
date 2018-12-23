@@ -14,8 +14,8 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import cucumber.eclipse.editor.builder.BuilderUtil;
 import cucumber.eclipse.editor.nature.CucumberProjectNature;
+import cucumber.eclipse.steps.integration.builder.BuilderUtil;
 import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 
 
