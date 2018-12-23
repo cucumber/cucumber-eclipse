@@ -383,11 +383,12 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 				}
 			}
 			boolean isFound = glueStepDefinition != null;
+			GherkinStepWrapper gherkinStepWrapper = new GherkinStepWrapper(scenarioOutlineStepLine, gherkinFile);
 			if (isFound) {
-				Glue glue = glueRepository.add(new GherkinStepWrapper(scenarioOutlineStepLine, gherkinFile),
-						glueStepDefinition);
+				Glue glue = glueRepository.add(gherkinStepWrapper, glueStepDefinition);
 				markerFactory.glueFound(glue);
 			} else {
+				markerFactory.unmatchedStep(gherkinDocument, gherkinStepWrapper);
 				markerFactory.gherkinStepExampleUnmatch(gherkinDocument, gherkinFile, exampleLine);
 			}
 
