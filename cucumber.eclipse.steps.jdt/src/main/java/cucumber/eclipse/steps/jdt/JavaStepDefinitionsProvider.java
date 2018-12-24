@@ -62,8 +62,6 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 	private static final String CUCUMBER_API_JAVA8 = "cucumber.api.java8.";
 	private static final String REGEX_JAVA8_CUKEAPI = "cucumber\\.api\\.java8\\.(.*)";
 
-	private static final IResource IProject = null;
-
 	// secure usage of the singleton
 	private JavaStepDefinitionsProvider() {
 	}
