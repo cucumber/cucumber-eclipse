@@ -22,6 +22,8 @@ public class StepDefinition implements Serializable {
 	private int lineNumber;
 	private String lang;
 	private transient Expression expression;
+	private String handleIdentifier;
+	private String label;
 	
 	//Added By Girija
 	//For Reading Steps from External-ClassPath-JAR
@@ -124,7 +126,22 @@ public class StepDefinition implements Serializable {
 		return packageName;
 	}
 	
+	public String getHandleIdentifier() {
+		return handleIdentifier;
+	}
+	public void setHandleIdentifier(String handleIdentifier) {
+		this.handleIdentifier = handleIdentifier;
+	}
 	
+	public String getLabel() {
+		if(label == null) {
+			label = this.getSource().getName() + ":" + this.lineNumber;
+		}
+		return label;
+	}
+	public void setLabel(String label) {
+		this.label = label;
+	}
 	@Override
 	public String toString() {
 		

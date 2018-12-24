@@ -204,12 +204,13 @@ public class MarkerFactory {
 				try {
 					marker = gherkinResource.createMarker(STEP_DEFINTION_MATCH);
 					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
-					String message = String.format("Glued with %s:%s", stepDefinition.getSource().getName(),
-							stepDefinition.getLineNumber());
+					String message = String.format("Glued with %s", stepDefinition.getLabel());
 					marker.setAttribute(IMarker.MESSAGE, message);
 					marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
-					marker.setAttribute(STEP_DEFINITION_MATCH_PATH_ATTRIBUTE,
-							stepDefinition.getSource().getFullPath().toString());
+					if(stepDefinition.getSource() != null) {
+						marker.setAttribute(STEP_DEFINITION_MATCH_PATH_ATTRIBUTE,
+								stepDefinition.getSource().getFullPath().toString());
+					}
 					marker.setAttribute(STEP_DEFINITION_MATCH_LINE_NUMBER_ATTRIBUTE, stepDefinition.getLineNumber());
 					marker.setAttribute(STEP_DEFINITION_MATCH_TEXT_ATTRIBUTE, stepDefinitionText);
 				} catch (CoreException e) {

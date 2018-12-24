@@ -4,7 +4,6 @@ import static cucumber.eclipse.editor.util.ExtensionRegistryUtil.getStepDefiniti
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -58,38 +57,33 @@ public class UniversalStepDefinitionsProvider implements IStepDefinitionsProvide
 	}
 
 	@Override
-	public Set<StepDefinition> findStepDefinitions(IFile resource, MarkerFactory markerFactory,
+	public Set<StepDefinition> findStepDefinitions(IResource stepDefinitionResource, MarkerFactory markerFactory,
 			IProgressMonitor monitor) throws CoreException {
 		long start = System.currentTimeMillis();
-		boolean isFile = resource instanceof IFile;
-		if (!isFile) {
-			return new HashSet<StepDefinition>();
-		}
-
-		IFile stepDefinitionFile = (IFile) resource;
-		SubMonitor subMonitor = SubMonitor.convert(monitor, "Scan steps definitions for " + resource.getName(),
+		
+		SubMonitor subMonitor = SubMonitor.convert(monitor, "Scan steps definitions for " + stepDefinitionResource.getName(),
 				stepDefinitionsProviders.size());
 
-		IProject project = resource.getProject();
+		IProject project = stepDefinitionResource.getProject();
 		StepDefinitionsRepository stepDefinitionsRepository = this.stepDefinitionsStorage.getOrCreate(project);
 
 		int stepDefinitionsCounter = 0;
 		for (IStepDefinitionsProvider stepDefinitionsService : stepDefinitionsProviders) {
 			if (stepDefinitionsService.support(project)) {
-				Set<StepDefinition> stepDefs = stepDefinitionsService.findStepDefinitions(stepDefinitionFile,
+				Set<StepDefinition> stepDefs = stepDefinitionsService.findStepDefinitions(stepDefinitionResource,
 						markerFactory, subMonitor);
 				if (!stepDefs.isEmpty()) {
 					stepDefinitionsCounter += stepDefs.size();
 					// System.out.println(stepDefinitionsService.supportedLanguage() + " found " +
 					// stepDefs.size() + " step definitions in " + stepDefinitionFile.getName());
 				}
-				stepDefinitionsRepository.add(stepDefinitionFile, stepDefs);
+				stepDefinitionsRepository.add(stepDefinitionResource, stepDefs);
 			}
 		}
 		long end = System.currentTimeMillis();
 		long duration = end - start;
 		if (stepDefinitionsCounter > 0 || duration > 0) {
-			System.out.println("findStepDefs (" + resource.getName() + ") return " + stepDefinitionsCounter
+			System.out.println("findStepDefs (" + stepDefinitionResource.getName() + ") return " + stepDefinitionsCounter
 					+ " step definitions in " + (duration) + "ms.");
 		}
 		return stepDefinitionsRepository.getAllStepDefinitions();
@@ -121,13 +115,13 @@ public class UniversalStepDefinitionsProvider implements IStepDefinitionsProvide
 
 	@Override
 	public boolean support(IResource resource) throws CoreException {
-		if(resource instanceof IFile) {
+		//if(resource instanceof IFile) {
 			for (IStepDefinitionsProvider stepDefinitionsProvider : stepDefinitionsProviders) {
 				if(stepDefinitionsProvider.support(resource)) {
 					return true;
 				} // else try the next
 			}
-		}
+//		}
 		return false;
 	}
 

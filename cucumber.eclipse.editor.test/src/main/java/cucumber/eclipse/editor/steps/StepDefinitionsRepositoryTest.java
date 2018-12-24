@@ -78,10 +78,10 @@ public class StepDefinitionsRepositoryTest {
 	@Test
 	public void identityStepDefinitionsFile() {
 		
-		boolean isstepDefinitionsFile = stepDefinitionsRepository.isStepDefinitions(new MockFile("file2"));
+		boolean isstepDefinitionsFile = stepDefinitionsRepository.isStepDefinitionsResource(new MockFile("file2"));
 		assertThat(isstepDefinitionsFile, is(true));
 		
-		isstepDefinitionsFile = stepDefinitionsRepository.isStepDefinitions(new MockFile("file3"));
+		isstepDefinitionsFile = stepDefinitionsRepository.isStepDefinitionsResource(new MockFile("file3"));
 		assertThat(isstepDefinitionsFile, is(false));
 		
 	}

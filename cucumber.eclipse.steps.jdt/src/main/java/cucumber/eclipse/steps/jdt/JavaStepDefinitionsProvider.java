@@ -7,11 +7,11 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IClassFile;
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -42,12 +42,13 @@ import org.eclipse.jface.text.Document;
 import cucumber.eclipse.steps.integration.AbstractStepDefinitionsProvider;
 import cucumber.eclipse.steps.integration.StepDefinition;
 import cucumber.eclipse.steps.integration.marker.MarkerFactory;
-import cucumber.eclipse.steps.jdt.filter.JavaStepDefinitionsPreferencesFilter;
+import cucumber.eclipse.steps.jdt.filter.CompilationUnitStepDefinitionsPreferencesFilter;
+import cucumber.eclipse.steps.jdt.filter.MethodStepDefinitionsPreferencesFilter;
 import cucumber.eclipse.steps.jdt.ui.CucumberJavaPreferences;
 import io.cucumber.cucumberexpressions.CucumberExpressionException;
 
-
-/** Find step definitions on Java elements.
+/**
+ * Find step definitions on Java elements.
  * 
  * @author qvdk
  *
@@ -60,6 +61,8 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 	private static final String CUCUMBER_API_JAVA = "cucumber.api.java.";
 	private static final String CUCUMBER_API_JAVA8 = "cucumber.api.java8.";
 	private static final String REGEX_JAVA8_CUKEAPI = "cucumber\\.api\\.java8\\.(.*)";
+
+	private static final IResource IProject = null;
 
 	// secure usage of the singleton
 	private JavaStepDefinitionsProvider() {
@@ -74,26 +77,25 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 		return INSTANCE;
 	}
 
-
 	// From Java-Source-File(.java) : Collect All Steps as List based on
 	// Cucumber-Annotations
-	private List<StepDefinition> getCukeSteps(ICompilationUnit iCompUnit, MarkerFactory markerFactory, IProgressMonitor progressMonitor)
-			throws JavaModelException, CoreException {
-		
+	private List<StepDefinition> getCukeSteps(ICompilationUnit iCompUnit, MarkerFactory markerFactory,
+			IProgressMonitor progressMonitor) throws JavaModelException, CoreException {
+
 		long start = System.currentTimeMillis();
 
 		List<StepDefinition> steps = new ArrayList<StepDefinition>();
 		List<CucumberAnnotation> importedAnnotations = new ArrayList<CucumberAnnotation>();
 		IImportDeclaration[] allimports = iCompUnit.getImports();
-		
+
 		for (IImportDeclaration decl : allimports) {
 
 			// Match Package name
 			Matcher m = cukeAnnotationMatcher.matcher(decl.getElementName());
 			if (m.find()) {
 				if ("*".equals(m.group(2))) {
-					importedAnnotations.addAll(
-							getAllAnnotationsInPackage(iCompUnit.getJavaProject(), CUCUMBER_API_JAVA + m.group(1), m.group(1)));
+					importedAnnotations.addAll(getAllAnnotationsInPackage(iCompUnit.getJavaProject(),
+							CUCUMBER_API_JAVA + m.group(1), m.group(1)));
 				} else {
 					importedAnnotations.add(new CucumberAnnotation(m.group(2), m.group(1)));
 				}
@@ -110,17 +112,17 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 		List<MethodDeclaration> methodDeclList = null;
 		JavaParser javaParser = null;
 		for (IType t : iCompUnit.getTypes()) {
-			//collect all steps from java8 lamdas
+			// collect all steps from java8 lamdas
 			for (IType ifType : t.newTypeHierarchy(progressMonitor).getAllInterfaces()) {
-				
+
 				if (ifType.isInterface() && ifType.getFullyQualifiedName().startsWith(CUCUMBER_API_JAVA8)) {
 					String[] superInterfaceNames = ifType.getSuperInterfaceNames();
 					for (String superIfName : superInterfaceNames) {
 						if (superIfName.endsWith(".LambdaGlueBase")) {
-							//we found a possible interface, now try to load the language...
+							// we found a possible interface, now try to load the language...
 //							String lang = ifType.getElementName().toLowerCase();
-							//init if not done in previous step..
-							if (javaParser == null)  {
+							// init if not done in previous step..
+							if (javaParser == null) {
 								javaParser = new JavaParser(iCompUnit, progressMonitor);
 							}
 							if (methodDeclList == null) {
@@ -133,47 +135,50 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 							List<MethodDefinition> methodDefList = new ArrayList<MethodDefinition>();
 							// Visiting Methods/Constructors
 							for (MethodDeclaration method : methodDeclList) {
-								
+
 								// Get Method/Constructor-Block{...}
 								if (isCukeLambdaExpr(method, keyWords)) {
 									// Collect method-body as List of Statements
 									@SuppressWarnings("unchecked")
 									List<Statement> statementList = method.getBody().statements();
 									if (!statementList.isEmpty()) {
-										MethodDefinition definition = new MethodDefinition(method.getName(), method.getReturnType2(), statementList);
+										MethodDefinition definition = new MethodDefinition(method.getName(),
+												method.getReturnType2(), statementList);
 										methodDefList.add(definition);
 //										definition.setJava8CukeLang(lang);
 									}
 								}
 							}
-							//Iterate MethodDefinition
+							// Iterate MethodDefinition
 							for (MethodDefinition method : methodDefList) {
-								//Iterate Method-Statements
-								for (Statement statement : method.getMethodBodyList()) {					
+								// Iterate Method-Statements
+								for (Statement statement : method.getMethodBodyList()) {
 									// Add all lambda-steps to Step
 									StepDefinition step = new StepDefinition();
-									step.setSource(iCompUnit.getResource());	//source
+									step.setSource(iCompUnit.getResource()); // source
 									String lambdaStep = method.getLambdaStep(statement, keyWords);
 									if (lambdaStep == null) {
 										continue;
 									}
 									int lineNumber = javaParser.getLineNumber(statement);
 									try {
-										step.setText(lambdaStep);	//step
-										step.setLineNumber(lineNumber);	//line-number
-										step.setLang(method.getCukeLang());	//Language
+										step.setText(lambdaStep); // step
+										step.setLineNumber(lineNumber); // line-number
+										step.setLang(method.getCukeLang()); // Language
 										steps.add(step);
-									} catch(CucumberExpressionException e) {
-										markerFactory.syntaxErrorOnStepDefinition(iCompUnit.getResource(), e, lineNumber);
+									} catch (CucumberExpressionException e) {
+										markerFactory.syntaxErrorOnStepDefinition(iCompUnit.getResource(), e,
+												lineNumber);
 									}
-									
+
 								}
 							}
 						}
 					}
 				}
 			}
-			// Collect all steps from Annotations used in the methods as per imported Annotations
+			// Collect all steps from Annotations used in the methods as per imported
+			// Annotations
 			for (IMethod method : t.getMethods()) {
 				for (IAnnotation annotation : method.getAnnotations()) {
 					CucumberAnnotation cukeAnnotation = getCukeAnnotation(importedAnnotations, annotation);
@@ -186,7 +191,7 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 						steps.add(step);
 						try {
 							step.setText(getAnnotationText(annotation));
-						} catch(CucumberExpressionException e) {
+						} catch (CucumberExpressionException e) {
 							markerFactory.syntaxErrorOnStepDefinition(iCompUnit.getResource(), e, lineNumber);
 						}
 					}
@@ -194,16 +199,16 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 
 			}
 		}
-		
+
 		long end = System.currentTimeMillis();
 //		System.out.println("getCukeSteps " + iCompUnit.getJavaProject().getElementName() + ": " + iCompUnit.getElementName() + " " + (end - start) + " ms.");
-		
+
 		return steps;
 	}
 
 	/**
 	 * @param method
-	 * @param i18n 
+	 * @param i18n
 	 * @return boolean
 	 */
 	private boolean isCukeLambdaExpr(MethodDeclaration method, Set<String> keywords) {
@@ -216,16 +221,16 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 				if (expression instanceof MethodInvocation) {
 					String identifier = ((MethodInvocation) expression).getName().getIdentifier();
 					if (keywords.contains(identifier)) {
-						//we found a lamda
+						// we found a lamda
 						return true;
 					}
 				}
 			}
-			
+
 		}
 		return false;
 	}
-	
+
 	/**
 	 * @param compUnit
 	 * @param annotation
@@ -250,8 +255,8 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 	 * @throws CoreException
 	 * @throws JavaModelException
 	 */
-	private List<CucumberAnnotation> getAllAnnotationsInPackage(final IJavaProject javaProject, final String packageFrag,
-			final String lang) throws CoreException, JavaModelException {
+	private List<CucumberAnnotation> getAllAnnotationsInPackage(final IJavaProject javaProject,
+			final String packageFrag, final String lang) throws CoreException, JavaModelException {
 
 		SearchPattern pattern = SearchPattern.createPattern(packageFrag, IJavaSearchConstants.PACKAGE,
 				IJavaSearchConstants.IMPORT_DECLARATION_TYPE_REFERENCE, SearchPattern.R_EXACT_MATCH);
@@ -318,51 +323,157 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 		return "";
 	}
 
+	
+	
 	@Override
-	protected Set<StepDefinition> findStepDefinitionsFromSupportedResource(IFile stepDefinitionFile,
+	protected Set<StepDefinition> findStepDefinitionsFromSupportedResource(IResource stepDefinitionResource,
 			MarkerFactory markerFactory, IProgressMonitor monitor) throws CoreException {
 //		System.out.println("jdt.findStepDefintions on " + stepDefinitionFile.getName());
 		// This IStepDefinitions scans only Java files from Java project
-		IProject project = stepDefinitionFile.getProject();
 		
+		if(stepDefinitionResource instanceof IProject) {
+			IProject project = (IProject) stepDefinitionResource;
+			boolean isJavaProject = this.support(project);
+			if(isJavaProject) {
+				IJavaProject javaProject = JavaCore.create(project);
+				return findStepDefinitionsInClasspath(javaProject);
+			}
+		}
+		
+		IProject project = stepDefinitionResource.getProject();
+
 		boolean isJavaProject = this.support(project);
-		if(!isJavaProject) {
+		if (!isJavaProject) {
 			return new HashSet<StepDefinition>();
 		}
 
 		// is a Java compilation unit
-		IJavaElement javaElement = JavaCore.create(stepDefinitionFile);
+		IJavaElement javaElement = JavaCore.create(stepDefinitionResource);
 		boolean isCompilationUnit = javaElement instanceof ICompilationUnit;
-		if(!isCompilationUnit) {
+		if (!isCompilationUnit) {
 			return new HashSet<StepDefinition>();
 		}
-		
+
 		ICompilationUnit compilationUnit = (ICompilationUnit) javaElement;
-		
-		if(CucumberJavaPreferences.isUseStepDefinitionsFilters()) {
+
+		if (CucumberJavaPreferences.isUseStepDefinitionsFilters()) {
 			String[] filters = CucumberJavaPreferences.getStepDefinitionsFilters();
-			JavaStepDefinitionsPreferencesFilter filter = new JavaStepDefinitionsPreferencesFilter(filters);
-			if(!filter.accept(compilationUnit)) {
+			CompilationUnitStepDefinitionsPreferencesFilter filter = new CompilationUnitStepDefinitionsPreferencesFilter(filters);
+			if (!filter.accept(compilationUnit)) {
 				// skip
 				return new HashSet<StepDefinition>();
 			}
 		}
-		
+
 		List<StepDefinition> stepDefinitions = this.getCukeSteps(compilationUnit, markerFactory, monitor);
-		
+
 		return new HashSet<StepDefinition>(stepDefinitions);
 	}
-	
+
 	@Override
 	public boolean support(IProject project) throws CoreException {
-        return project.isOpen() && project.hasNature(JavaCore.NATURE_ID);
+		return project.isOpen() && project.hasNature(JavaCore.NATURE_ID);
 	}
-	
+
 	@Override
 	public boolean support(IResource resource) throws CoreException {
 		IJavaElement javaElement = JavaCore.create(resource);
-		boolean isCompilationUnit = javaElement instanceof ICompilationUnit;
-		return isCompilationUnit;
+		return javaElement != null;
 	}
-	
+
+
+	private Set<StepDefinition> findStepDefinitionsInClasspath(IJavaProject javaProject) throws CoreException {
+
+		SearchPattern searchPattern = SearchPattern.createPattern("cucumber.api.java.*.*", IJavaSearchConstants.TYPE,
+				IJavaSearchConstants.IMPORT_DECLARATION_TYPE_REFERENCE,
+				SearchPattern.R_PATTERN_MATCH | SearchPattern.R_CASE_SENSITIVE);
+
+		IJavaSearchScope scope;
+		try {
+
+			scope = SearchEngine.createJavaSearchScope(new IJavaElement[] { javaProject },
+					IJavaSearchScope.APPLICATION_LIBRARIES);
+			final Set<StepDefinition> stepDefinitions = new HashSet<StepDefinition>();
+			SearchRequestor requestor = new SearchRequestor() {
+				private long start, end;
+
+				@Override
+				public void beginReporting() {
+					super.beginReporting();
+					start = System.currentTimeMillis();
+				}
+
+				@Override
+				public void endReporting() {
+					super.endReporting();
+					end = System.currentTimeMillis();
+					System.out.println(
+							"Search ended " + (end - start) + " ms - " + stepDefinitions.size() + " stepdefs found");
+				}
+
+				public void acceptSearchMatch(SearchMatch match) {
+					try {
+
+						if (match.getAccuracy() == SearchMatch.A_ACCURATE) {
+
+							if (match.getElement() instanceof IMethod) {
+								IMethod method = (IMethod) match.getElement();
+								
+								if (CucumberJavaPreferences.isUseStepDefinitionsFilters()) {
+									String[] filters = CucumberJavaPreferences.getStepDefinitionsFilters();
+									MethodStepDefinitionsPreferencesFilter filter = new MethodStepDefinitionsPreferencesFilter(filters);
+									if (!filter.accept(method)) {
+										// skip
+										return ;
+									}
+								}
+								
+								IAnnotation[] annotations = method.getAnnotations();
+								for (IAnnotation annotation : annotations) {
+									CucumberAnnotation cukeAnnotation = getCukeAnnotation(
+											new ArrayList<CucumberAnnotation>(), annotation);
+									if (cukeAnnotation != null) {
+										StepDefinition stepDefinition = new StepDefinition();
+										stepDefinition.setText(getAnnotationText(annotation));
+										IClassFile classFile = method.getClassFile();
+										IJavaElement pkg = classFile.getParent();
+										IJavaElement jar = pkg.getParent();
+										String classFileName = classFile.getElementName();
+										String packageName = pkg.getElementName();
+										String jarName = jar.getElementName();
+										stepDefinition.setSourceName(classFileName);
+										stepDefinition.setPackageName(packageName);
+//										stepDefinition.setHandleIdentifier(method.getHandleIdentifier());
+//										stepDefinition.setLabel(method.getKey());
+										stepDefinition.setLabel(String.format("%s > %s.%s#%s%s", jarName, packageName, classFileName, method.getElementName(), method.getSignature()));
+										// step.setLineNumber(getLineNumber(compUnit,annotation));
+										stepDefinition.setLang(cukeAnnotation.getLang());
+										stepDefinitions.add(stepDefinition);
+									}
+								}
+
+							}
+						}
+
+					} catch (CucumberExpressionException e) {
+						e.printStackTrace();
+					} catch (JavaModelException e) {
+						e.printStackTrace();
+					}
+				}
+			};
+
+			SearchEngine engine = new SearchEngine();
+			engine.search(searchPattern, new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() }, scope,
+					requestor, null);
+			return stepDefinitions;
+		} catch (JavaModelException e) {
+			e.printStackTrace();
+			throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
+		} catch (CoreException e) {
+			e.printStackTrace();
+			throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
+		}
+	}
+
 }

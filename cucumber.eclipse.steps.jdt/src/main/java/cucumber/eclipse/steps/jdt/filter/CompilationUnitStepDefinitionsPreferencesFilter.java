@@ -11,11 +11,11 @@ import org.eclipse.jdt.core.JavaModelException;
 
 import cucumber.eclipse.steps.integration.filter.Filter;
 
-public class JavaStepDefinitionsPreferencesFilter implements Filter<ICompilationUnit> {
+public class CompilationUnitStepDefinitionsPreferencesFilter implements Filter<ICompilationUnit> {
 
 	private String[] filters;
 	
-	public JavaStepDefinitionsPreferencesFilter(String[] filters) {
+	public CompilationUnitStepDefinitionsPreferencesFilter(String[] filters) {
 		this.filters = filters;
 	}
 	

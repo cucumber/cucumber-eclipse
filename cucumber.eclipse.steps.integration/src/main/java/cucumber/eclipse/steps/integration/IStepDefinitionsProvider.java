@@ -2,7 +2,6 @@ package cucumber.eclipse.steps.integration;
 
 import java.util.Set;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -21,9 +20,9 @@ public interface IStepDefinitionsProvider {
 	 * @return a set of StepDefinition or an empty array. Should NEVER return null.
 	 * @throws CoreException if an error occurs
 	 */
-	Set<StepDefinition> findStepDefinitions(IFile stepDefinitionFile, MarkerFactory markerFactory,
+	Set<StepDefinition> findStepDefinitions(IResource stepDefinitionResource, MarkerFactory markerFactory,
 			IProgressMonitor monitor) throws CoreException;
-
+	
 	/**
 	 * Indicate if this step definitions provider support the current kind of
 	 * project. For example, the JDT step definition provider supports only Java

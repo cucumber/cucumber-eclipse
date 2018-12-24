@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 
 import cucumber.eclipse.steps.integration.ResourceHelper;
 import cucumber.eclipse.steps.integration.SerializationHelper;
@@ -30,13 +31,13 @@ import cucumber.eclipse.steps.integration.StepDefinition;
  */
 public class StepDefinitionsRepository {
 
-	private Map<IFile, Set<StepDefinition>> stepDefinitionsByResourceName;
+	private Map<IResource, Set<StepDefinition>> stepDefinitionsByResourceName;
 
 	protected StepDefinitionsRepository() {
-		this.stepDefinitionsByResourceName = new HashMap<IFile, Set<StepDefinition>>();
+		this.stepDefinitionsByResourceName = new HashMap<IResource, Set<StepDefinition>>();
 	}
 
-	public void add(IFile stepDefinitionsFile, Set<StepDefinition> steps) {
+	public void add(IResource stepDefinitionsFile, Set<StepDefinition> steps) {
 		if(steps.isEmpty()) {
 			this.stepDefinitionsByResourceName.remove(stepDefinitionsFile);
 		}
@@ -46,7 +47,13 @@ public class StepDefinitionsRepository {
 	}
 
 	public Set<IFile> getAllStepDefinitionsFiles() {
-		return this.stepDefinitionsByResourceName.keySet();
+		Set<IFile> fromFilesOnly = new HashSet<IFile>();
+		for (IResource resource : this.stepDefinitionsByResourceName.keySet()) {
+			if(resource instanceof IFile) {
+				fromFilesOnly.add((IFile) resource);
+			}
+		}
+		return fromFilesOnly;
 	}
 	
 	public Set<StepDefinition> getAllStepDefinitions() {
@@ -57,12 +64,12 @@ public class StepDefinitionsRepository {
 		return allSteps;
 	}
 	
-	public boolean isStepDefinitions(IFile file) {
-		return this.stepDefinitionsByResourceName.containsKey(file);
+	public boolean isStepDefinitionsResource(IResource resource) {
+		return this.stepDefinitionsByResourceName.containsKey(resource);
 	}
 
 	public void reset() {
-		this.stepDefinitionsByResourceName = new HashMap<IFile, Set<StepDefinition>>();
+		this.stepDefinitionsByResourceName = new HashMap<IResource, Set<StepDefinition>>();
 //		System.out.println("Reset step definitions");
 	}
 	
@@ -71,8 +78,8 @@ public class StepDefinitionsRepository {
 		// since IFile is not serializable, we need to transform them into string path
 		Map<String, Set<StepDefinition>> stepDefinitionsByResourceName = new HashMap<String, Set<StepDefinition>>(stepDefinitionsRepository.stepDefinitionsByResourceName.size());
 		
-		Set<Entry<IFile,Set<StepDefinition>>> entrySet = stepDefinitionsRepository.stepDefinitionsByResourceName.entrySet();
-		for (Entry<IFile, Set<StepDefinition>> entry : entrySet) {
+		Set<Entry<IResource,Set<StepDefinition>>> entrySet = stepDefinitionsRepository.stepDefinitionsByResourceName.entrySet();
+		for (Entry<IResource, Set<StepDefinition>> entry : entrySet) {
 			stepDefinitionsByResourceName.put(entry.getKey().getFullPath().toString(), entry.getValue());
 		}
 		return SerializationHelper.serialize(stepDefinitionsByResourceName);
@@ -85,11 +92,11 @@ public class StepDefinitionsRepository {
 	protected static StepDefinitionsRepository deserialize(String stepDefinitionsRepositorySerialized, ResourceHelper resourceHelper) throws ClassNotFoundException, IOException {
 		Map<String, Set<StepDefinition>> stepDefinitionsByResourceName = SerializationHelper.deserialize(stepDefinitionsRepositorySerialized);
 		
-		Map<IFile,Set<StepDefinition>> stepDefinitionsByResource = new HashMap<IFile, Set<StepDefinition>>(stepDefinitionsByResourceName.size());
+		Map<IResource,Set<StepDefinition>> stepDefinitionsByResource = new HashMap<IResource, Set<StepDefinition>>(stepDefinitionsByResourceName.size());
 
 		Set<Entry<String,Set<StepDefinition>>> entrySet = stepDefinitionsByResourceName.entrySet();
 		for (Entry<String, Set<StepDefinition>> entry : entrySet) {
-			stepDefinitionsByResource.put((IFile) resourceHelper.find(entry.getKey()), entry.getValue());
+			stepDefinitionsByResource.put((IResource) resourceHelper.find(entry.getKey()), entry.getValue());
 		}
 		
 		StepDefinitionsRepository stepDefinitionsRepository = new StepDefinitionsRepository();

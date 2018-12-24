@@ -3,7 +3,6 @@ package cucumber.eclipse.editor.builder;
 import java.io.IOException;
 import java.util.Map;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
@@ -128,7 +127,7 @@ public class CucumberStepDefinitionsBuilder extends IncrementalProjectBuilder {
 			}
 			if(stepDefinitionsProvider.support(resource)) {
 				this.markerFactory.cleanMarkers(resource);
-				stepDefinitionsProvider.findStepDefinitions((IFile) resource, markerFactory, monitor);
+				stepDefinitionsProvider.findStepDefinitions(resource, markerFactory, monitor);
 			}
 			
 			return true;
