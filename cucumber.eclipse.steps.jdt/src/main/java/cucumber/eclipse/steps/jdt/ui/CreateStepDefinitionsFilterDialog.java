@@ -1,7 +1,6 @@
 package cucumber.eclipse.steps.jdt.ui;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.debug.internal.ui.DebugUIMessages;
 import org.eclipse.debug.internal.ui.actions.StatusInfo;
 import org.eclipse.jdt.debug.ui.IJavaDebugUIConstants;
 import org.eclipse.jdt.internal.debug.ui.Filter;

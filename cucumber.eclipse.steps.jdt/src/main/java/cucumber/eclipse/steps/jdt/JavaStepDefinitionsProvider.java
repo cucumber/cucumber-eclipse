@@ -334,7 +334,7 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 			boolean isJavaProject = this.support(project);
 			if(isJavaProject) {
 				IJavaProject javaProject = JavaCore.create(project);
-				return findStepDefinitionsInClasspath(javaProject);
+				return findStepDefinitionsInClasspath(javaProject, monitor);
 			}
 		}
 		
@@ -380,17 +380,17 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 	}
 
 
-	private Set<StepDefinition> findStepDefinitionsInClasspath(IJavaProject javaProject) throws CoreException {
+	private Set<StepDefinition> findStepDefinitionsInClasspath(IJavaProject javaProject, IProgressMonitor monitor) throws CoreException {
 
 		SearchPattern searchPattern = SearchPattern.createPattern("cucumber.api.java.*.*", IJavaSearchConstants.TYPE,
 				IJavaSearchConstants.IMPORT_DECLARATION_TYPE_REFERENCE,
 				SearchPattern.R_PATTERN_MATCH | SearchPattern.R_CASE_SENSITIVE);
 
-		IJavaSearchScope scope;
+		
 		try {
-			// TODO try to use step definition filters to limit more the scope
-			scope = SearchEngine.createJavaSearchScope(new IJavaElement[] { javaProject },
-					IJavaSearchScope.APPLICATION_LIBRARIES);
+			SearchEngine engine = new SearchEngine();
+			IJavaSearchScope[] scopes = this.computeScope(engine, javaProject, monitor);
+			
 			final Set<StepDefinition> stepDefinitions = new HashSet<StepDefinition>();
 			SearchRequestor requestor = new SearchRequestor() {
 				private long start, end;
@@ -444,9 +444,11 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 				}
 			};
 
-			SearchEngine engine = new SearchEngine();
-			engine.search(searchPattern, new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() }, scope,
-					requestor, null);
+			for (IJavaSearchScope scope : scopes) {
+				engine.search(searchPattern, new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() }, scope,
+						requestor, null);	
+			}
+			
 			return stepDefinitions;
 		} catch (JavaModelException e) {
 			e.printStackTrace();
@@ -457,6 +459,64 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 		}
 	}
 
+	private IJavaSearchScope[] computeScope(SearchEngine searchEngine, IJavaProject javaProject, IProgressMonitor monitor) throws CoreException {
+		// TODO improve monitor support
+		List<IJavaSearchScope> scope = new ArrayList<IJavaSearchScope>();
+		if (CucumberJavaPreferences.isUseStepDefinitionsFilters()) {
+			String[] filters = CucumberJavaPreferences.getStepDefinitionsFilters();
+			final List<IJavaElement> pkgScope = new ArrayList<IJavaElement>();
+			final List<IJavaElement> typeScope = new ArrayList<IJavaElement>();
+			
+			IJavaSearchScope projectScope = SearchEngine.createJavaSearchScope(new IJavaElement[] { javaProject });
+			SearchRequestor requestor = new SearchRequestor() {
+				@Override
+				public void acceptSearchMatch(SearchMatch match) throws CoreException {
+					if(match.getAccuracy() == SearchMatch.A_ACCURATE) {
+						if(match.getElement() instanceof IPackageFragment) {
+							pkgScope.add((IJavaElement) match.getElement());
+						}
+						else if(match.getElement() instanceof IType) {
+							typeScope.add((IJavaElement) match.getElement());
+						}
+					}
+				}
+			};
+			
+			for (String filter : filters) {
+				if(filter.endsWith(".*")) {
+					// search for a package
+					String filterWithoutStar = filter.substring(0, filter.length() - 2);
+					SearchPattern searchPattern = SearchPattern.createPattern(filterWithoutStar, IJavaSearchConstants.PACKAGE,
+							IJavaSearchConstants.DECLARATIONS, SearchPattern.R_EXACT_MATCH | SearchPattern.R_CASE_SENSITIVE);
+					
+					searchEngine.search(searchPattern, new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() }, projectScope,
+							requestor, monitor);
+				}
+				else {
+					// search for a type
+					SearchPattern searchPattern = SearchPattern.createPattern(filter, IJavaSearchConstants.TYPE,
+							IJavaSearchConstants.DECLARATIONS, SearchPattern.R_EXACT_MATCH | SearchPattern.R_CASE_SENSITIVE);
+					
+					searchEngine.search(searchPattern, new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() }, projectScope,
+							requestor, monitor);
+				}
+			}
+			if(!pkgScope.isEmpty()) {
+				scope.add(SearchEngine.createJavaSearchScope(pkgScope.toArray(new IJavaElement[pkgScope.size()]),
+						IJavaSearchScope.APPLICATION_LIBRARIES));	
+			}
+			if(!typeScope.isEmpty()) {
+				scope.add(SearchEngine.createJavaSearchScope(typeScope.toArray(new IJavaElement[typeScope.size()]),
+						IJavaSearchScope.APPLICATION_LIBRARIES));
+			}
+			
+		}
+		else {
+			scope.add(SearchEngine.createJavaSearchScope(new IJavaElement[] { javaProject },
+					IJavaSearchScope.APPLICATION_LIBRARIES));
+		}
+		return scope.toArray(new IJavaSearchScope[scope.size()]);
+	}
 	
 	private Set<StepDefinition> getCukeSteps(IMethod method) throws JavaModelException {
 		Set<StepDefinition> stepDefinitions = new HashSet<StepDefinition>();
