@@ -388,7 +388,7 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 
 		IJavaSearchScope scope;
 		try {
-
+			// TODO try to use step definition filters to limit more the scope
 			scope = SearchEngine.createJavaSearchScope(new IJavaElement[] { javaProject },
 					IJavaSearchScope.APPLICATION_LIBRARIES);
 			final Set<StepDefinition> stepDefinitions = new HashSet<StepDefinition>();
@@ -417,39 +417,22 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 							if (match.getElement() instanceof IMethod) {
 								IMethod method = (IMethod) match.getElement();
 								
-								if (CucumberJavaPreferences.isUseStepDefinitionsFilters()) {
-									String[] filters = CucumberJavaPreferences.getStepDefinitionsFilters();
-									MethodStepDefinitionsPreferencesFilter filter = new MethodStepDefinitionsPreferencesFilter(filters);
-									if (!filter.accept(method)) {
-										// skip
-										return ;
-									}
-								}
-								
-								IAnnotation[] annotations = method.getAnnotations();
-								for (IAnnotation annotation : annotations) {
-									CucumberAnnotation cukeAnnotation = getCukeAnnotation(
-											new ArrayList<CucumberAnnotation>(), annotation);
-									if (cukeAnnotation != null) {
-										StepDefinition stepDefinition = new StepDefinition();
-										stepDefinition.setText(getAnnotationText(annotation));
-										IClassFile classFile = method.getClassFile();
-										IJavaElement pkg = classFile.getParent();
-										IJavaElement jar = pkg.getParent();
-										String classFileName = classFile.getElementName();
-										String packageName = pkg.getElementName();
-										String jarName = jar.getElementName();
-										stepDefinition.setSourceName(classFileName);
-										stepDefinition.setPackageName(packageName);
-//										stepDefinition.setHandleIdentifier(method.getHandleIdentifier());
-//										stepDefinition.setLabel(method.getKey());
-										stepDefinition.setLabel(String.format("%s > %s.%s#%s%s", jarName, packageName, classFileName, method.getElementName(), method.getSignature()));
-										// step.setLineNumber(getLineNumber(compUnit,annotation));
-										stepDefinition.setLang(cukeAnnotation.getLang());
-										stepDefinitions.add(stepDefinition);
-									}
+								Set<StepDefinition> methodStepDefinitions = getCukeSteps(method);
+								if(methodStepDefinitions != null) {
+									stepDefinitions.addAll(methodStepDefinitions);
 								}
 
+							}
+							else if (match.getElement() instanceof IType) {
+								IType resolvedType = (IType) match.getElement();
+								
+								IMethod[] methods = resolvedType.getMethods();
+								for (IMethod method : methods) {
+									Set<StepDefinition> methodStepDefinitions = getCukeSteps(method);
+									if(methodStepDefinitions != null) {
+										stepDefinitions.addAll(methodStepDefinitions);
+									}
+								}
 							}
 						}
 
@@ -474,4 +457,41 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 		}
 	}
 
+	
+	private Set<StepDefinition> getCukeSteps(IMethod method) throws JavaModelException {
+		Set<StepDefinition> stepDefinitions = new HashSet<StepDefinition>();
+		if (CucumberJavaPreferences.isUseStepDefinitionsFilters()) {
+			String[] filters = CucumberJavaPreferences.getStepDefinitionsFilters();
+			MethodStepDefinitionsPreferencesFilter filter = new MethodStepDefinitionsPreferencesFilter(filters);
+			if (!filter.accept(method)) {
+				// skip
+				return null;
+			}
+		}
+		
+		IAnnotation[] annotations = method.getAnnotations();
+		for (IAnnotation annotation : annotations) {
+			CucumberAnnotation cukeAnnotation = getCukeAnnotation(
+					new ArrayList<CucumberAnnotation>(), annotation);
+			if (cukeAnnotation != null) {
+				StepDefinition stepDefinition = new StepDefinition();
+				stepDefinition.setText(getAnnotationText(annotation));
+				IClassFile classFile = method.getClassFile();
+				IJavaElement pkg = classFile.getParent();
+				IJavaElement jar = pkg.getParent();
+				String classFileName = classFile.getElementName();
+				String packageName = pkg.getElementName();
+				String jarName = jar.getElementName();
+				stepDefinition.setSourceName(classFileName);
+				stepDefinition.setPackageName(packageName);
+//				stepDefinition.setHandleIdentifier(method.getHandleIdentifier());
+//				stepDefinition.setLabel(method.getKey());
+				stepDefinition.setLabel(String.format("%s > %s.%s#%s%s", jarName, packageName, classFileName, method.getElementName(), method.getSignature()));
+				// step.setLineNumber(getLineNumber(compUnit,annotation));
+				stepDefinition.setLang(cukeAnnotation.getLang());
+				stepDefinitions.add(stepDefinition);
+			}
+		}
+		return stepDefinitions;
+	}
 }
