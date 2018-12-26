@@ -21,7 +21,7 @@ import org.eclipse.jdt.core.dom.Type;
  *         name/return-type/body from a source file Specially used to collect
  *         all steps from the java8-Lambda-Expressions used in
  *         methods/constructors of a class
- *
+ *@deprecated I think this code is never used
  */
 
 public class MethodDefinition {

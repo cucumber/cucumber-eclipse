@@ -104,7 +104,7 @@
       </handler>
       <handler
             commandId="cucumber.eclipse.editor.navigation.findstep"
-            class="cucumber.eclipse.editor.editors.PopupMenuFindStepHandler">
+            class="cucumber.eclipse.editor.editors.jumpto.JumpToStepDefinitionHandler">
       </handler>
       <handler
             class="cucumber.eclipse.editor.editors.GherkinToggleCommentHandler"
@@ -131,7 +131,7 @@
                commandId="cucumber.eclipse.editor.navigation.findstep"
                helpContextId="cucumber.eclipse.editor.findsteps_action_context"
                icon="icons/cukes.gif"
-               label="Find Step"
+               label="Find step definition"
                style="push">
          </command>
          <command
@@ -221,65 +221,9 @@
      </contextualLaunch>
     </shortcut>
 </extension>
-    <extension
-           id="cucumber.eclipse.editor.editors.Editor.syntaxerror"
-           point="org.eclipse.core.resources.markers"
-           name="Gherkin Syntax Error Marker">
-           <super type="org.eclipse.core.resources.problemmarker"/>
-           <super type="org.eclipse.core.resources.textmarker"/>
-           <persistent value="true"/>
-    </extension>
-    <extension
-	    id="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror"
-	    name="Unmatched step"
-	    point="org.eclipse.core.resources.markers">
-	    <super type="org.eclipse.core.resources.problemmarker"/>
-	  <super
-	    type="org.eclipse.core.resources.textmarker">
-	  </super>
-	</extension>
-    <extension
-          id="cucumber.eclipse.editor.editors.Editor.lexingerror"
-          name="Lexing error"
-          point="org.eclipse.core.resources.markers">
-       <super
-             type="org.eclipse.core.resources.problemmarker">
-       </super>
-       <super
-             type="org.eclipse.core.resources.textmarker">
-       </super>
-    </extension>
-    <extension
-	  point="org.eclipse.ui.editors.annotationTypes">
-	  <type
-	        markerType="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror"
-	        name="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror">
-	  </type>
-	</extension>
-   <extension
-         point="org.eclipse.ui.editors.markerAnnotationSpecification">
-      <specification
-            annotationType="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror"
-            colorPreferenceKey="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror.color"
-            colorPreferenceValue="247,207,84"
-            contributesToHeader="false"
-            highlightPreferenceKey="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror.highlight"
-            highlightPreferenceValue="true"
-            includeOnPreferencePage="true"
-            label="Unmatched step error"
-            overviewRulerPreferenceKey="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror.overview"
-            overviewRulerPreferenceValue="true"
-            presentationLayer="0"
-            textPreferenceKey="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror.text"
-            textPreferenceValue="true"
-            textStylePreferenceValue="BOX"
-            verticalRulerPreferenceKey="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror.ruler"
-            verticalRulerPreferenceValue="true">
-      </specification>
-   </extension>
    <extension point="org.eclipse.ui.ide.markerResolution">
       <markerResolutionGenerator
-         markerType="cucumber.eclipse.editor.editors.Editor.unmatchedsteperror"
+         markerType="cucumber.eclipse.marker.gherkin.unmatched_step"
          class="cucumber.eclipse.editor.markers.StepCreationMarkerResolutionGenerator"/>
    </extension>
     <extension
@@ -309,11 +253,6 @@
 			id="cucumber.eclipse.editor.preferences.Page1"
 			class="cucumber.eclipse.editor.preferences.CucumberPreferencePage"
 			name="Cucumber" />
-		<page
-			id="cucumber.eclipse.editor.preferences.Page2"
-			category="cucumber.eclipse.editor.preferences.Page1"
-			class="cucumber.eclipse.editor.preferences.CucumberUserSettingsPage"
-			name="User Settings" />	
    </extension>
  <extension
        point="org.eclipse.ui.newWizards">
@@ -328,18 +267,78 @@
           id="cucumber.eclipse.editor.wizard.NewFeatureFileWizard"
           name="Step-Definition class">
     </wizard>
- </extension> 
- 
- <!-- Newly added  By Girija
- 	  Defining 'JDTStepDefinitions' class by inheriting 'cucumber.eclipse.editor.steps.jdt.StepDefinitions' class .
- 	  Used for the feature : 'Reading Step-Definitions from external JAR'
- 	  Commented in 'cucumber.eclipse.steps.jdt/plugin.xml' in order to avoid plugin-dependency conflicts
- -->
+ </extension>
  <extension
-         point="cucumber.eclipse.steps.integration">
-      <stepDefinitionIntegration
-            class="cucumber.eclipse.editor.steps.jdt.JDTStepDefinitions">
-      </stepDefinitionIntegration>
-  </extension>
- 
+       id="cucumber.eclipse.builder.stepdefinition"
+       name="Cucumber step definitions builder"
+       point="org.eclipse.core.resources.builders">
+    <builder
+          callOnEmptyDelta="false"
+          hasNature="false"
+          isConfigurable="false"
+          supportsConfigurations="false">
+          <run
+                class="cucumber.eclipse.editor.builder.CucumberStepDefinitionsBuilder">
+          </run>
+    </builder>
+ </extension>
+ <extension
+       id="cucumber.eclipse.builder.gherkin"
+       name="Cucumber gherkins builder"
+       point="org.eclipse.core.resources.builders">
+    <builder
+          callOnEmptyDelta="false"
+          hasNature="true"
+          isConfigurable="false"
+          supportsConfigurations="false">
+          <run
+                class="cucumber.eclipse.editor.builder.CucumberGherkinBuilder">
+          </run>
+    </builder>
+ </extension> 
+ <extension 
+    id="cucumber.eclipse.nature" 
+    name="Cucumber Incremental" 
+    point="org.eclipse.core.resources.natures">
+	<runtime>
+		<run class="cucumber.eclipse.editor.nature.CucumberProjectNature"/> 
+    </runtime> 
+    <builder id="cucumber.eclipse.builder.stepdefinition"/>
+    <builder id="cucumber.eclipse.builder.gherkin"/>
+ </extension>
+ <extension
+      point="org.eclipse.ui.ide.projectNatureImages">
+   <image
+         icon="icons/cukes_nature.gif"
+         id="cucumber.eclipse.nature.projectNatureImages"
+         natureId="cucumber.eclipse.nature">
+   </image>
+</extension> 
+<extension
+      point="org.eclipse.ui.commands">
+   <category id="cucumber.eclipse.category" name="Cucumber">
+   </category>
+   <command
+         categoryId="cucumber.eclipse.category"
+         id="cucumber.eclipse.commands.addNatureCommand"
+         name="Convert to Cucumber Project...">
+   </command>
+</extension>
+<extension
+      point="org.eclipse.ui.handlers">
+   <handler
+         class="cucumber.eclipse.editor.handler.AddNatureHandler"
+         commandId="cucumber.eclipse.commands.addNatureCommand">
+   </handler>
+</extension>
+<extension
+      point="org.eclipse.ui.menus">
+   <menuContribution
+         locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
+         <command
+               commandId="cucumber.eclipse.commands.addNatureCommand"
+               >
+         </command>
+   </menuContribution>
+</extension>
 </plugin>

@@ -1,21 +1,20 @@
 package cucumber.eclipse.editor.markers;
 
 import static cucumber.eclipse.editor.editors.DocumentUtil.read;
+import static cucumber.eclipse.steps.integration.marker.MarkerFactory.UNMATCHED_STEP_KEYWORD_ATTRIBUTE;
+import static cucumber.eclipse.steps.integration.marker.MarkerFactory.UNMATCHED_STEP_NAME_ATTRIBUTE;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IMarkerResolution;
@@ -27,84 +26,87 @@ import org.eclipse.ui.part.FileEditorInput;
 import cucumber.eclipse.editor.Activator;
 import cucumber.eclipse.editor.editors.Editor;
 import cucumber.eclipse.editor.editors.GherkinModel;
-import cucumber.eclipse.editor.editors.PositionedElement;
 import cucumber.eclipse.editor.snippet.ExtensionRegistryStepGeneratorProvider;
 import cucumber.eclipse.editor.snippet.IStepGeneratorProvider;
 import cucumber.eclipse.editor.snippet.SnippetApplicator;
-import cucumber.eclipse.editor.steps.ExtensionRegistryStepProvider;
-import cucumber.eclipse.steps.integration.Step;
+import cucumber.eclipse.editor.steps.UniversalStepDefinitionsProvider;
+import cucumber.eclipse.steps.integration.marker.MarkerFactory;
+import gherkin.formatter.model.Step;
 
 public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionGenerator {
 	
+	/**
+	 * Return a list of suggested resolutions for a gherkin step without step
+	 * definitions.
+	 * 
+	 * The plugin suggests to create the skeleton of a gherkin step in known step
+	 * definitions file.
+	 * 
+	 * @see org.eclipse.ui.IMarkerResolutionGenerator#getResolutions(org.eclipse.core.resources.IMarker)
+	 */
 	@Override
 	public IMarkerResolution[] getResolutions(IMarker marker) {
-		
-		Set<IFile> files = new HashSet<IFile>();
-		
-		ExtensionRegistryStepProvider prof = new ExtensionRegistryStepProvider((IFile) marker.getResource());
-		Set<Step> steps;
 		try {
-			steps = prof.getSteps(null);
+			boolean isUnmatchedStepMarker = MarkerFactory.UNMATCHED_STEP.equals(marker.getType());
+			
+			if(!isUnmatchedStepMarker) {
+				return new IMarkerResolution[0];
+			}
+			
+			String gherkinStepKeyword = (String) marker.getAttribute(UNMATCHED_STEP_KEYWORD_ATTRIBUTE);
+			String gherkinStepName = (String) marker.getAttribute(UNMATCHED_STEP_NAME_ATTRIBUTE);
+			
+			Step gherkinStep = new Step(null, gherkinStepKeyword, gherkinStepName, null, null, null);
+			
+			IFile gherkinFile = (IFile) marker.getResource();
+			IProject project = gherkinFile.getProject();
+			
+			UniversalStepDefinitionsProvider stepProvider = UniversalStepDefinitionsProvider.INSTANCE;
+			if(!stepProvider.isInitialized(project)) {
+				try {
+					stepProvider.load(project);
+				} catch (CoreException e) {
+					Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+					ErrorDialog.openError(shell, "Any cucumber build results found.", "Build the project to get resolution suggestions.", e.getStatus());
+				}
+			}
+			
+			Set<IFile> stepDefinitionsFiles = stepProvider.getStepDefinitionsFiles(project);
+			
+			IMarkerResolution[] resolutions = new IMarkerResolution[stepDefinitionsFiles.size()];
+			int it = 0;
+			for (IFile stepDefinitionsFile : stepDefinitionsFiles) {
+				resolutions[it++] = new StepCreationMarkerResolution(gherkinStep, stepDefinitionsFile);
+			}			
+			
+			return resolutions;
 		} catch (CoreException e) {
 			e.printStackTrace();
-			return new IMarkerResolution[0];
 		}
-		
-		for (Step step : steps) {
-			files.add((IFile) step.getSource());
-		}
-		
-		List<IFile> filesList = new ArrayList<IFile>(files);
-		Collections.sort(filesList, new Comparator<IFile>() {
-			@Override
-			public int compare(IFile o1, IFile o2) {
-				return o1.getName().compareTo(o2.getName());
-			}
-		});
-		
-		IMarkerResolution[] resolutions = new IMarkerResolution[filesList.size()];
-		
-		for (int i = 0; i < resolutions.length; i ++) {
-			resolutions[i] = new StepCreationMarkerResolution(filesList.get(i));
-		}
-		
-		return resolutions;
+		return new IMarkerResolution[0];
 	}
 
 	private static class StepCreationMarkerResolution implements IMarkerResolution {
 				
-		private final IFile stepFile;
+		private final IFile stepDefinitionsFile;
+		private final Step gherkinStep;
 		
-		public StepCreationMarkerResolution(IFile stepFile) {
-			this.stepFile = stepFile;
+		public StepCreationMarkerResolution(Step gherkinStep, IFile stepDefinitionsFile) {
+			this.stepDefinitionsFile = stepDefinitionsFile;
+			this.gherkinStep = gherkinStep;
 		}
 		
 		@Override
 		public void run(IMarker marker) {
-			IFile featureFile = ((IFile) marker.getResource());
 			IStepGeneratorProvider generatorProvider = new ExtensionRegistryStepGeneratorProvider();
 		
-			try {
-				GherkinModel model = getCurrentModel(featureFile);
-				PositionedElement element = model.getStepElement(marker.getAttribute(IMarker.CHAR_START, 0));
-				
-				gherkin.formatter.model.Step step = ((gherkin.formatter.model.Step) element.getStatement());
-				new SnippetApplicator(generatorProvider).generateSnippet(step, stepFile);
-			}
-			catch (IOException exception) {
-				logException(marker, exception);
-			}
-			catch (CoreException exception) {
-				logException(marker, exception);
-			}
-			catch (BadLocationException exception) {
-				logException(marker, exception);
-			}
+			new SnippetApplicator(generatorProvider).generateSnippet(gherkinStep, stepDefinitionsFile);
+			
 		}
 		
 		@Override
 		public String getLabel() {
-			return String.format("Create step in %s", stepFile.getName());
+			return String.format("Create step in %s", stepDefinitionsFile.getName());
 		}
 
 		private static GherkinModel getCurrentModel(IFile featureFile) throws IOException, CoreException {

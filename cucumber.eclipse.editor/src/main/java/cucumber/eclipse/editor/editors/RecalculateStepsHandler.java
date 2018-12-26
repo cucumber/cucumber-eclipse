@@ -3,11 +3,13 @@ package cucumber.eclipse.editor.editors;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import cucumber.eclipse.steps.integration.StepsChangedEvent;
-import cucumber.eclipse.steps.jdt.StepDefinitions;
+import cucumber.eclipse.steps.integration.builder.BuilderUtil;
 
 public class RecalculateStepsHandler extends AbstractHandler {
 
@@ -19,12 +21,17 @@ public class RecalculateStepsHandler extends AbstractHandler {
 		if (!(editorPart instanceof Editor)) {
 			return null;
 		}
-
-		StepDefinitions defs = StepDefinitions.getInstance();
-		if (defs != null) {
-			defs.notifyListeners(new StepsChangedEvent());
+		
+		Editor editor = (Editor) editorPart;
+		
+		IFile file = editor.getFile();
+		try {
+			file.touch(null);
+		} catch (CoreException e) {
+			e.printStackTrace();
 		}
-
+		BuilderUtil.buildProject(file.getProject(), IncrementalProjectBuilder.INCREMENTAL_BUILD);
+		
 		return null;
 	}
 

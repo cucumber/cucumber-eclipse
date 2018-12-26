@@ -1,12 +1,10 @@
 package cucumber.eclipse.editor.editors;
 
-import org.eclipse.jface.preference.IPreferenceStore;
-
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.TextAttribute;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
@@ -32,11 +30,11 @@ import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
+import cucumber.eclipse.editor.Activator;
+import cucumber.eclipse.editor.editors.jumpto.StepHyperlinkDetector;
 import cucumber.eclipse.editor.markers.MarkerResolutionProposal;
 import cucumber.eclipse.editor.markers.StepCreationMarkerResolutionGenerator;
-
-import cucumber.eclipse.editor.Activator;
-import cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants;
+import cucumber.eclipse.steps.integration.StepPreferences;
 
 public class GherkinConfiguration extends TextSourceViewerConfiguration {
 
@@ -125,7 +123,7 @@ public class GherkinConfiguration extends TextSourceViewerConfiguration {
 	public IContentAssistant getContentAssistant(ISourceViewer sourceViewer) {
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
-		if (store.getBoolean(ICucumberPreferenceConstants.PREF_CHECK_STEP_DEFINITIONS)) {
+		if (store.getBoolean(StepPreferences.PREF_CHECK_STEP_DEFINITIONS)) {
 			ContentAssistant ca = new ContentAssistant();
 			IContentAssistProcessor cap = new GherkinKeywordsAssistProcessor(editor);
 				ca.setContentAssistProcessor(cap, IDocument.DEFAULT_CONTENT_TYPE);
@@ -169,7 +167,7 @@ public class GherkinConfiguration extends TextSourceViewerConfiguration {
 	@Override
 	public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
 		IHyperlinkDetector[] hyperlinkDetectors = super.getHyperlinkDetectors(sourceViewer);
-		StepHyperlinkDetector stepHyperlinkDetector = new StepHyperlinkDetector(this.editor);
+		StepHyperlinkDetector stepHyperlinkDetector = new StepHyperlinkDetector(editor);
 		IHyperlinkDetector[] gherkinHyperlinkDetectors = Arrays.copyOf(hyperlinkDetectors, hyperlinkDetectors.length + 1);
 		gherkinHyperlinkDetectors[hyperlinkDetectors.length] = stepHyperlinkDetector;
 		return gherkinHyperlinkDetectors;
