@@ -35,8 +35,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants.CucumberIndentationStyle;
 
 /**
  * This class pretty prints feature files like they were in the source, only
@@ -516,9 +520,41 @@ public class PrettyFormatter implements Reporter, Formatter {
 
     private void printDescription(String description, String indentation, boolean newline) {
         if (!"".equals(description)) {
+            // The Gherkin lexer does not fully trim the whitespace from the description,
+            // but instead just removes the first two whitespace characters. So, if the
+            // Indentation Style is set to 4 Spaces, the excess whitespace must be trimmed.
+            if(CucumberIndentationStyle.FOUR_SPACES.getValue().equals(indent)) {
+                description = trimLeadingWhitespace(description);
+            }
             out.println(indent(description, indentation));
-            if (newline) out.println();
+            if (newline)
+                out.println();
         }
+    }
+
+    private String trimLeadingWhitespace(String description) {
+        // Find line with least leading whitespace and trim all lines by that amount
+        Scanner scanner = new Scanner(description);
+        int minCharCount = getLeadingWhitespace(scanner.nextLine()).length();
+        while (scanner.hasNextLine()) {
+            int charCount = getLeadingWhitespace(scanner.nextLine()).length();
+            if (minCharCount > charCount) {
+                minCharCount = charCount;
+            }
+        }
+        scanner.close();
+        if (minCharCount > 0) {
+            return Pattern.compile("^[\t ]{" + minCharCount + "}", Pattern.MULTILINE)
+                    .matcher(description).replaceAll("");
+        }
+        return description;
+    }
+
+    private static final Pattern LEADING_WS = Pattern.compile("^[\t ]+");
+
+    private String getLeadingWhitespace(String str) {
+        Matcher m = LEADING_WS.matcher(str);
+        return m.find() ? m.group(0) : "";
     }
 
     private static final Pattern START = Pattern.compile("^", Pattern.MULTILINE);
