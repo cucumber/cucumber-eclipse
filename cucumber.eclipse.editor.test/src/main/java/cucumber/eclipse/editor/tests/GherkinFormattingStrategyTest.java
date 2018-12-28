@@ -30,9 +30,6 @@ public class GherkinFormattingStrategyTest {
     public void testStringFormatting() throws Exception {
 		String formatted= GherkinFormatterUtil.format(GherkinTestFixtures.unformatted_feature);
 		assertThat(GherkinTestFixtures.formatted_feature, is(formatted));	
-
-		// Make sure that formatting again does not change the result.
-		assertThat(GherkinTestFixtures.formatted_feature, is(GherkinFormatterUtil.format(formatted)));
     }
 
     @Test
@@ -40,11 +37,7 @@ public class GherkinFormattingStrategyTest {
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 		store.setValue(ICucumberPreferenceConstants.PREF_INDENTATION_STYLE, CucumberIndentationStyle.FOUR_SPACES.getValue());
 		String formatted= GherkinFormatterUtil.format(GherkinTestFixtures.unformatted_feature);
-		assertThat(GherkinTestFixtures.formatted_feature_4_spaces, is(formatted));
-		
-		// Make sure that formatting again does not change the result.
-		assertThat(GherkinTestFixtures.formatted_feature_4_spaces, is(GherkinFormatterUtil.format(formatted)));
-
+		assertThat(GherkinTestFixtures.formatted_feature_4_spaces, is(formatted));	
 		store.setValue(ICucumberPreferenceConstants.PREF_INDENTATION_STYLE, CucumberIndentationStyle.TWO_SPACES.getValue());
     }
 
