@@ -1,0 +1,15 @@
+language: java
+sudo: false
+
+cache:
+  directories:
+  - "$HOME/.m2"
+
+jdk:
+  - oraclejdk8
+
+#jobs:  
+#  include:
+#    - stage: "Tests"                # naming the Tests stage
+#      name: "Unit Tests"            # names the first Tests stage job
+#      script: mvn test -B
