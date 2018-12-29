@@ -200,8 +200,8 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 				return true;
 			}
 
-			System.out.println(String.format("gherkin %s builder compile: %s",
-					(isIncrementalBuild ? "incremental" : "full"), resource));
+//			System.out.println(String.format("gherkin %s builder compile: %s",
+//					(isIncrementalBuild ? "incremental" : "full"), resource));
 			GlueRepository glueRepository = glueStorage.getOrCreate(resource.getProject());
 			glueRepository.clean(resource);
 			this.markerFactory.cleanMarkers(resource);
