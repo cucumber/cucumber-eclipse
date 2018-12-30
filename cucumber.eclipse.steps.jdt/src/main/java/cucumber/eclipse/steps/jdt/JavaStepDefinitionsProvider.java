@@ -445,8 +445,14 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 			};
 
 			for (IJavaSearchScope scope : scopes) {
-				engine.search(searchPattern, new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() }, scope,
-						requestor, null);	
+				try {
+					engine.search(searchPattern, new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() }, scope,
+							requestor, null);
+				}
+				catch (Throwable t) {
+					t.printStackTrace();
+					// if the search engine failed, skip it is a bug into the JDT plugin
+				}
 			}
 			
 			return stepDefinitions;
