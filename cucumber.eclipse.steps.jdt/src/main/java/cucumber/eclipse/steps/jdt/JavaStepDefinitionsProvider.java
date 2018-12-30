@@ -447,7 +447,7 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 			for (IJavaSearchScope scope : scopes) {
 				try {
 					engine.search(searchPattern, new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() }, scope,
-							requestor, null);
+						requestor, null);
 				}
 				catch (Throwable t) {
 					t.printStackTrace();
@@ -550,10 +550,8 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 				String jarName = jar.getElementName();
 				stepDefinition.setSourceName(classFileName);
 				stepDefinition.setPackageName(packageName);
-//				stepDefinition.setHandleIdentifier(method.getHandleIdentifier());
-//				stepDefinition.setLabel(method.getKey());
+				stepDefinition.setJDTHandleIdentifier(method.getHandleIdentifier());
 				stepDefinition.setLabel(String.format("%s > %s.%s#%s%s", jarName, packageName, classFileName, method.getElementName(), method.getSignature()));
-				// step.setLineNumber(getLineNumber(compUnit,annotation));
 				stepDefinition.setLang(cukeAnnotation.getLang());
 				stepDefinitions.add(stepDefinition);
 			}

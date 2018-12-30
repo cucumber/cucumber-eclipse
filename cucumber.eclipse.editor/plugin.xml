@@ -341,4 +341,8 @@
          </command>
    </menuContribution>
 </extension>
+<extension
+      point="cucumber.eclipse.editor.step_definition_opener">
+      <opener class="cucumber.eclipse.editor.editors.jumpto.GenericStepDefinitionOpener"/>
+</extension>
 </plugin>

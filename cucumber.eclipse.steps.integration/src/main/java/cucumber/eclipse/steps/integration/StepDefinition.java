@@ -22,7 +22,7 @@ public class StepDefinition implements Serializable {
 	private int lineNumber;
 	private String lang;
 	private transient Expression expression;
-	private String handleIdentifier;
+	private String jdtHandleIdentifier;
 	private String label;
 	
 	//Added By Girija
@@ -126,11 +126,11 @@ public class StepDefinition implements Serializable {
 		return packageName;
 	}
 	
-	public String getHandleIdentifier() {
-		return handleIdentifier;
+	public String getJDTHandleIdentifier() {
+		return jdtHandleIdentifier;
 	}
-	public void setHandleIdentifier(String handleIdentifier) {
-		this.handleIdentifier = handleIdentifier;
+	public void setJDTHandleIdentifier(String jdtHandleIdentifier) {
+		this.jdtHandleIdentifier = jdtHandleIdentifier;
 	}
 	
 	public String getLabel() {
