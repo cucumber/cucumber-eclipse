@@ -23,7 +23,6 @@
 		<module>cucumber.eclipse.steps.jdt</module>
 		<module>cucumber.eclipse.p2updatesite</module>
 		<module>cucumber.eclipse.targetdefinition</module>
-		<module>cucumber.eclipse.download</module>
 	</modules>
 
 	<build>

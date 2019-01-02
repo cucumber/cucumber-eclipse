@@ -8,10 +8,11 @@ jdk:
 jobs:
   include:
   - stage: Tests
-    script: mvn test -B
-  - stage: Create artifacts
-    script: mvn package -B -DskipTests
-  - stage: GitHub Release 
+    script: mvn clean test -B
+#  - stage: Create artifacts
+#    script: mvn clean package -B -DskipTests
+  - stage: GitHub Release
+    script: mvn clean verify -B -DskipTests 
     deploy:
       provider: releases
       api_key:
@@ -21,5 +22,7 @@ jobs:
       skip_cleanup: true
       draft: true
       overwrite: true
-    #  on:
+      on:
+        all_branches: true 
+#        branch: master
     #    tags: true
