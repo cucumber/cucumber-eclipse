@@ -10,10 +10,13 @@ jobs:
   - stage: Tests
     script: mvn clean test -B
   - stage: GitHub Release
-    script: mvn clean verify -B -DskipTests 
+    script: mvn clean verify -B -DskipTests
+    before_deploy:
+      - export TRAVIS_TAG=${TRAVIS_TAG:-$(find ./cucumber.eclipse.p2updatesite/target -name "*.zip" | sed 's#.*cucumber-eclipse-plugin-\(.*\)\.zip#\1#')}
     deploy:
       provider: releases
-      api_key: $GITHUB_OAUTH_TOKEN 
+      api_key: $GITHUB_OAUTH_TOKEN
+      file_glob: true 
       file: cucumber.eclipse.p2updatesite/target/*.zip
       skip_cleanup: true
       draft: true
