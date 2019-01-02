@@ -1,15 +1,24 @@
 language: java
 sudo: false
-
 cache:
   directories:
   - "$HOME/.m2"
-
 jdk:
-  - oraclejdk8
-
-#jobs:  
-#  include:
-#    - stage: "Tests"                # naming the Tests stage
-#      name: "Unit Tests"            # names the first Tests stage job
-#      script: mvn test -B
+- oraclejdk8
+jobs:
+  include:
+  - stage: Tests
+    name: Unit Tests
+    script: mvn test -B
+  - stage: Create artifacts
+    name: Create artifacts
+    script: mvn package -B -DskipTests
+deploy:
+  provider: releases
+  api_key:
+    secret:
+      secure: "$GITHUB_TOKEN_SECRET" 
+  file: cucumber.eclipse.download/download/$TRAVIS_TAG/cucumber-eclipse-plugin-$TRAVIS_TAG.zip
+  skip_cleanup: true
+  draft: true
+  overwrite: true
