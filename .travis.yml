@@ -12,14 +12,13 @@ jobs:
   - stage: GitHub Release
     script: mvn clean verify -B -DskipTests
     before_deploy:
-      - git config --local user.name "qvdk"
-      - git config --local user.email "qvandekerckhove@gmail.com"
       - export TRAVIS_TAG=${TRAVIS_TAG:-$(find ./cucumber.eclipse.p2updatesite/target -name "*.zip" | sed 's#.*cucumber-eclipse-plugin-\(.*\)\.zip#\1#')}
-#      - export RELEASE_TITLE="$TRAVIS_TAG $(date '+%Y-%m-%d %H:%M:%S')"
-      - git tag -fa $TRAVIS_TAG
+#      - export RELEASE_TITLE="$TRAVIS_TAG $(date '+%Y-%m-%d %H:%M:%S') $TRAVIS_JOB_NUMBER"
     deploy:
       provider: releases
-      name: Latest
+      name: Latest snapshot
+      body: |
+        Build of the latest snapshot.
       api_key: $GITHUB_OAUTH_TOKEN
       file_glob: true 
       file: cucumber.eclipse.p2updatesite/target/*.zip
