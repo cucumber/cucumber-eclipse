@@ -8,17 +8,18 @@ jdk:
 jobs:
   include:
   - stage: Tests
-    name: Unit Tests
     script: mvn test -B
   - stage: Create artifacts
-    name: Create artifacts
     script: mvn package -B -DskipTests
-deploy:
-  provider: releases
-  api_key:
-    secret:
-      secure: "$GITHUB_TOKEN_SECRET" 
-  file: cucumber.eclipse.download/download/$TRAVIS_TAG/cucumber-eclipse-plugin-$TRAVIS_TAG.zip
-  skip_cleanup: true
-  draft: true
-  overwrite: true
+  - stage: GitHub Release 
+    deploy:
+      provider: releases
+      api_key:
+        secret:
+          secure: "$GITHUB_TOKEN_SECRET" 
+      file: cucumber.eclipse.p2updatesite/target/*.zip
+      skip_cleanup: true
+      draft: true
+      overwrite: true
+    #  on:
+    #    tags: true
