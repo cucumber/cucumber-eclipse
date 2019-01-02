@@ -19,6 +19,7 @@ jobs:
       name: Latest snapshot
       body: |
         Build of the latest snapshot.
+      target: master
       api_key: $GITHUB_OAUTH_TOKEN
       file_glob: true 
       file: cucumber.eclipse.p2updatesite/target/*.zip
