@@ -9,15 +9,12 @@ jobs:
   include:
   - stage: Tests
     script: mvn clean test -B
-#  - stage: Create artifacts
-#    script: mvn clean package -B -DskipTests
   - stage: GitHub Release
     script: mvn clean verify -B -DskipTests 
     deploy:
       provider: releases
       api_key:
-        secret:
-          secure: "$GITHUB_TOKEN_SECRET" 
+        secure: "$GITHUB_TOKEN_SECRET" 
       file: cucumber.eclipse.p2updatesite/target/*.zip
       skip_cleanup: true
       draft: true
