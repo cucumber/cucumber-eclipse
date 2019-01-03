@@ -89,3 +89,4 @@ bug, other people than you might care enough to provide a fix.
 
 In other words, there is no guarantee that a bug or feature request gets fixed. Tickets that are more than 6 months old
 are likely to be closed to keep the backlog manageable.
+
