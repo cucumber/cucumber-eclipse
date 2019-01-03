@@ -13,7 +13,8 @@ jobs:
     script: mvn clean verify -B -DskipTests
     before_deploy:
       - export CURRENT_VERSION=$(find ./cucumber.eclipse.p2updatesite/target -name "*.zip" | sed 's#.*cucumber-eclipse-plugin-\(.*\)\.zip#\1#')
-      - export TRAVIS_TAG=${TRAVIS_TAG:-"$CURRENT_VERSION-$TRAVIS_COMMIT"}
+      - export SHORT_COMMIT=${TRAVIS_COMMIT:0:7}
+      - export TRAVIS_TAG=${TRAVIS_TAG:-"$CURRENT_VERSION-$SHORT_COMMIT"}
       - export BUILD_DATE="$(date '+%Y-%m-%d %H:%M:%S')"
     deploy:
       provider: releases
