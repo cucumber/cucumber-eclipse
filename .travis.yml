@@ -10,7 +10,6 @@ jobs:
   - stage: Tests
     script: mvn clean test -B
   - stage: Deploy [pre]release on GitHub
-#    if: branch = master
     script: mvn clean verify -B -DskipTests
     before_deploy:
       - export SNAPSHOT_VERSION=$(find ./cucumber.eclipse.p2updatesite/target -name "*.zip" | sed 's#.*cucumber-eclipse-plugin-\(.*\)-SNAPSHOT\.zip#\1#')
@@ -19,7 +18,7 @@ jobs:
       - export BUILD_DATE="$(date '+%Y-%m-%d %H:%M:%S')"
     deploy:
       - provider: releases
-        name: Snapshot of $BUILD_DATE
+        name: Snapshot branch $TRAVIS_BRANCH - $BUILD_DATE
         prerelease: true
         api_key: $GITHUB_OAUTH_TOKEN
         file_glob: true 
