@@ -10,6 +10,7 @@ jobs:
   - stage: Tests
     script: mvn clean test -B
   - stage: Deploy [pre]release on GitHub
+#    if: branch = master
     script: mvn clean verify -B -DskipTests
     before_deploy:
       - export CURRENT_VERSION=$(find ./cucumber.eclipse.p2updatesite/target -name "*.zip" | sed 's#.*cucumber-eclipse-plugin-\(.*\)\.zip#\1#')
@@ -21,7 +22,7 @@ jobs:
       - provider: releases
         name: Snapshot of $BUILD_DATE
         # GitHub Release API does not support multi-line description
-        body: "<li>publish date $BUILD_DATE<li>Travis CI build <a href='$TRAVIS_BUILD_WEB_URL'>#$TRAVIS_BUILD_NUMBER</a><li>branch $TRAVIS_BRANCH<li>commit $TRAVIS_COMMIT"
+        body: "<li>publish date $BUILD_DATE<li>Travis CI build <a href='$TRAVIS_BUILD_WEB_URL'>#$TRAVIS_BUILD_NUMBER</a><li>branch $TRAVIS_BRANCH"
         prerelease: true
         api_key: $GITHUB_OAUTH_TOKEN
         file_glob: true 
@@ -31,15 +32,14 @@ jobs:
         on:
           all_branches: true 
           tags: false
-#          branch: master
       - provider: releases
         name: Release of $BUILD_DATE
         # GitHub Release API does not support multi-line description
-        body: "<li>publish date $BUILD_DATE<li>Travis CI build <a href='$TRAVIS_BUILD_WEB_URL'>#$TRAVIS_BUILD_NUMBER</a><li>branch $TRAVIS_BRANCH<li>commit $TRAVIS_COMMIT"
+        body: "<li>publish date $BUILD_DATE<li>Travis CI build <a href='$TRAVIS_BUILD_WEB_URL'>#$TRAVIS_BUILD_NUMBER</a><li>branch $TRAVIS_BRANCH"
         api_key: $GITHUB_OAUTH_TOKEN
         file_glob: true 
         file: cucumber.eclipse.p2updatesite/target/*.zip
         skip_cleanup: true
         on: 
           tags: true
-          condition: $TRAVIS_TAG == *"-"* # Do not redeploy prerelease
+          condition: $TRAVIS_TAG != *"-"* # Do not redeploy prerelease
