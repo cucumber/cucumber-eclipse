@@ -19,7 +19,7 @@ jobs:
       provider: releases
       name: Latest snapshot
       # GitHub Release API does not support multi-line description
-      body: " * date $BUILD_DATE\r\n * build number [#$TRAVIS_BUILD_NUMBER]($TRAVIS_BUILD_WEB_URL)\r\n * branch $TRAVIS_BRANCH\r\n * commit $TRAVIS_COMMIT"
+      body: " * date $BUILD_DATE<br/> * build number [#$TRAVIS_BUILD_NUMBER]($TRAVIS_BUILD_WEB_URL)<br/> * branch $TRAVIS_BRANCH<br/> * commit $TRAVIS_COMMIT"
       api_key: $GITHUB_OAUTH_TOKEN
       file_glob: true 
       file: cucumber.eclipse.p2updatesite/target/*.zip
