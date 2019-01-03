@@ -1,3 +1,4 @@
+if: tag =~ /^.*-.*$/ # Do not build prerelease since this script created previously
 language: java
 sudo: false
 cache:
@@ -29,7 +30,7 @@ jobs:
           all_branches: true 
           tags: false
       - provider: releases
-        name: Release of $BUILD_DATE
+        name: Release $TRAVIS_TAG - $BUILD_DATE
         api_key: $GITHUB_OAUTH_TOKEN
         file_glob: true 
         file: cucumber.eclipse.p2updatesite/target/*.zip
