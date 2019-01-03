@@ -18,11 +18,8 @@ jobs:
     deploy:
       provider: releases
       name: Latest snapshot
-      body: |
-         * build date $BUILD_DATE
-         * build number [#$TRAVIS_BUILD_NUMBER]($TRAVIS_BUILD_WEB_URL) 
-         * branch $TRAVIS_BRANCH
-         * commit $TRAVIS_COMMIT
+      # GitHub Release API does not support multi-line description
+      body: * build date $BUILD_DATE<br/> * build number [#$TRAVIS_BUILD_NUMBER]($TRAVIS_BUILD_WEB_URL)<br/> * branch $TRAVIS_BRANCH<br/> * commit $TRAVIS_COMMIT
       target: master
       api_key: $GITHUB_OAUTH_TOKEN
       file_glob: true 
