@@ -13,16 +13,13 @@ jobs:
 #    if: branch = master
     script: mvn clean verify -B -DskipTests
     before_deploy:
-      - export CURRENT_VERSION=$(find ./cucumber.eclipse.p2updatesite/target -name "*.zip" | sed 's#.*cucumber-eclipse-plugin-\(.*\)\.zip#\1#')
-      - export CURRENT_VERION=${CURRENT_VERSION/-SNAPSHOT/}
-      - export PRERELEASE_TIMESTAMP="$(date '+%Y%m%d%H%M%S')" 
-      - export TRAVIS_TAG=${TRAVIS_TAG:-"$CURRENT_VERSION-$PRERELEASE_TIMESTAMP"}
+      - export SNAPSHOT_VERSION=$(find ./cucumber.eclipse.p2updatesite/target -name "*.zip" | sed 's#.*cucumber-eclipse-plugin-\(.*\)-SNAPSHOT\.zip#\1#')
+      - export PRERELEASE="$(date '+%Y%m%d%H%M%S')" 
+      - export TRAVIS_TAG=${TRAVIS_TAG:-"$SNAPSHOT_VERSION-$PRERELEASE.$TRAVIS_BUILD_NUMBER"}
       - export BUILD_DATE="$(date '+%Y-%m-%d %H:%M:%S')"
     deploy:
       - provider: releases
         name: Snapshot of $BUILD_DATE
-        # GitHub Release API does not support multi-line description
-        body: "<li>publish date $BUILD_DATE<li>Travis CI build <a href='$TRAVIS_BUILD_WEB_URL'>#$TRAVIS_BUILD_NUMBER</a><li>branch $TRAVIS_BRANCH"
         prerelease: true
         api_key: $GITHUB_OAUTH_TOKEN
         file_glob: true 
@@ -34,8 +31,6 @@ jobs:
           tags: false
       - provider: releases
         name: Release of $BUILD_DATE
-        # GitHub Release API does not support multi-line description
-        body: "<li>publish date $BUILD_DATE<li>Travis CI build <a href='$TRAVIS_BUILD_WEB_URL'>#$TRAVIS_BUILD_NUMBER</a><li>branch $TRAVIS_BRANCH"
         api_key: $GITHUB_OAUTH_TOKEN
         file_glob: true 
         file: cucumber.eclipse.p2updatesite/target/*.zip
