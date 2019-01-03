@@ -1,4 +1,4 @@
-if: tag =~ /^.*-.*$/ # Do not build prerelease since this script created previously
+if: ! tag =~ /^.*-.*$/ # Do not build prerelease since this script created previously
 language: java
 sudo: false
 cache:
