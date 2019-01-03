@@ -13,4 +13,5 @@ public interface IStepDefinitionGenerator {
 	
 	TextEdit createStepSnippet(gherkin.formatter.model.Step step,
 	        IDocument targetDocument) throws IOException, CoreException;
+	
 }
