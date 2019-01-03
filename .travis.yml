@@ -13,13 +13,16 @@ jobs:
     script: mvn clean verify -B -DskipTests
     before_deploy:
       - export TRAVIS_TAG=${TRAVIS_TAG:-$(find ./cucumber.eclipse.p2updatesite/target -name "*.zip" | sed 's#.*cucumber-eclipse-plugin-\(.*\)\.zip#\1#')}
-      - export GIT
+      - export BUILD_DATE="$(date '+%Y-%m-%d %H:%M:%S')"
 #      - export RELEASE_TITLE="$TRAVIS_TAG $(date '+%Y-%m-%d %H:%M:%S') $TRAVIS_JOB_NUMBER"
     deploy:
       provider: releases
       name: Latest snapshot
       body: |
-        Build [\#$TRAVIS_BUILD_NUMBER]($TRAVIS_BUILD_WEB_URL) of the latest snapshot from branch $TRAVIS_BRANCH, commit $TRAVIS_COMMIT.
+         * build date $BUILD_DATE
+         * build number [#$TRAVIS_BUILD_NUMBER]($TRAVIS_BUILD_WEB_URL) 
+         * branch $TRAVIS_BRANCH
+         * commit $TRAVIS_COMMIT
       target: master
       api_key: $GITHUB_OAUTH_TOKEN
       file_glob: true 
