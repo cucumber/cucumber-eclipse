@@ -12,14 +12,14 @@ jobs:
   - stage: GitHub Release
     script: mvn clean verify -B -DskipTests
     before_deploy:
-      - export TRAVIS_TAG=${TRAVIS_TAG:-$(find ./cucumber.eclipse.p2updatesite/target -name "*.zip" | sed 's#.*cucumber-eclipse-plugin-\(.*\)\.zip#\1#')}
+      - export CURRENT_VERSION=$(find ./cucumber.eclipse.p2updatesite/target -name "*.zip" | sed 's#.*cucumber-eclipse-plugin-\(.*\)\.zip#\1#')
+      - export TRAVIS_TAG=${TRAVIS_TAG:-"$CURRENT_VERSION-$TRAVIS_COMMIT"}
       - export BUILD_DATE="$(date '+%Y-%m-%d %H:%M:%S')"
-#      - export RELEASE_TITLE="$TRAVIS_TAG $(date '+%Y-%m-%d %H:%M:%S') $TRAVIS_JOB_NUMBER"
     deploy:
       provider: releases
       name: Latest snapshot
       # GitHub Release API does not support multi-line description
-      body: " * date $BUILD_DATE<br/> * build number [#$TRAVIS_BUILD_NUMBER]($TRAVIS_BUILD_WEB_URL)<br/> * branch $TRAVIS_BRANCH<br/> * commit $TRAVIS_COMMIT"
+      body: "* date $BUILD_DATE<br/>* build number [#$TRAVIS_BUILD_NUMBER]($TRAVIS_BUILD_WEB_URL)<br/>* branch $TRAVIS_BRANCH<br/>* commit $TRAVIS_COMMIT"
       prerelease: true
       api_key: $GITHUB_OAUTH_TOKEN
       file_glob: true 
