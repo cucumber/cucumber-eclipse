@@ -1,15 +1,25 @@
 #!/usr/bin/env bash
 
+CD_DIR=${0%/*}
+
 P2_ARCHIVE=$(find ./cucumber.eclipse.p2updatesite/target -name "*.zip")
 VERSION=$(echo $P2_ARCHIVE | sed 's#.*cucumber-eclipse-plugin-\(.*\)\(-SNAPSHOT\)\?\.zip#\1#')
 PRERELEASE="$(date '+%Y%m%d%H%M%S')"
 if [[ "$VERSION" == *"SNAPSHOT"* ]] ; then
+  VERSION=${VERSION/-SNAPSHOT/}
   TRAVIS_TAG=${TRAVIS_TAG:-"$VERSION-$PRERELEASE.$TRAVIS_BUILD_NUMBER"}
 else
   TRAVIS_TAG=${TRAVIS_TAG:-"$VERSION"}
 fi
 BUILD_DATE="$(date '+%Y-%m-%d %H:%M:%S')"
 
-export P2_ARCHIVE VERSION PRERELEASE BUILD_DATE TRAVIS_TAG
+echo """
+P2_ARCHIVE=$P2_ARCHIVE
+VERSION=$VERSION
+PRERELEASE=$PRERELEASE
+TRAVIS_TAG=$TRAVIS_TAG
+BUILD_DATE=$BUILD_DATE
+""" > $CD_DIR/deploy.conf
+
 
 
