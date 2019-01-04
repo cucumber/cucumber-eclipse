@@ -13,9 +13,10 @@ jobs:
   - stage: Deploy [pre]release on GitHub
     script: mvn clean verify -B -DskipTests
     before_deploy:
-      - export SNAPSHOT_VERSION=$(find ./cucumber.eclipse.p2updatesite/target -name "*.zip" | sed 's#.*cucumber-eclipse-plugin-\(.*\)-SNAPSHOT\.zip#\1#')
-      - export PRERELEASE="$(date '+%Y%m%d%H%M%S')" 
-      - export TRAVIS_TAG=${TRAVIS_TAG:-"$SNAPSHOT_VERSION-$PRERELEASE.$TRAVIS_BUILD_NUMBER"}
+      - export P2_ARCHIVE=$(find ./cucumber.eclipse.p2updatesite/target -name "*.zip")
+      - export VERSION=$(echo $P2_ARCHIVE | sed 's#.*cucumber-eclipse-plugin-\(.*\)\(-SNAPSHOT\)\?\.zip#\1#')
+      - export PRERELEASE="$(date '+%Y%m%d%H%M%S')"
+      - [[ "$VERSION" == *"SNAPSHOT"* ]] && export TRAVIS_TAG=${TRAVIS_TAG:-"$VERSION-$PRERELEASE.$TRAVIS_BUILD_NUMBER"} || export TRAVIS_TAG=${TRAVIS_TAG:-"$VERSION"}
       - export BUILD_DATE="$(date '+%Y-%m-%d %H:%M:%S')"
     deploy:
       - provider: releases
@@ -36,5 +37,5 @@ jobs:
         file: cucumber.eclipse.p2updatesite/target/*.zip
         skip_cleanup: true
         on: 
-          tags: true
+          tags: false
           condition: $TRAVIS_TAG != *"-"* # Do not redeploy prerelease
