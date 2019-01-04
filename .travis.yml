@@ -17,7 +17,7 @@ jobs:
     deploy:
       - provider: releases
         name: Snapshot branch $TRAVIS_BRANCH - $BUILD_DATE
-        description: "$DESCRIPTION"
+        body: "$DESCRIPTION"
         prerelease: true
         api_key: $GITHUB_OAUTH_TOKEN
         file_glob: true 
@@ -28,7 +28,7 @@ jobs:
           all_branches: true 
       - provider: releases
         name: Release $TRAVIS_TAG - $BUILD_DATE
-        description: "$DESCRIPTION"
+        body: "$DESCRIPTION"
         api_key: $GITHUB_OAUTH_TOKEN
         file_glob: true 
         file: cucumber.eclipse.p2updatesite/target/*.zip
