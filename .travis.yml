@@ -1,4 +1,4 @@
-if: NOT tag # Do not build tag 
+if: NOT tag =~ /^.*-.*$/ # Do not build prerelease tag 
 language: java
 sudo: false
 cache:
@@ -25,7 +25,8 @@ jobs:
         skip_cleanup: true
         overwrite: true
         on:
-          all_branches: true 
+          all_branches: true
+          tag: false
       - provider: releases
         name: Release $TRAVIS_TAG - $BUILD_DATE
         body: "$DESCRIPTION"
@@ -33,5 +34,6 @@ jobs:
         file_glob: true 
         file: cucumber.eclipse.p2updatesite/target/*.zip
         skip_cleanup: true
-        on: 
+        on:
+          tag: true
           condition: $TRAVIS_TAG != *"-"* # Do not redeploy prerelease

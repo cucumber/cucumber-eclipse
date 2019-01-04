@@ -8,11 +8,12 @@ if [[ "$VERSION" == *"SNAPSHOT"* ]] ; then
   VERSION=${VERSION/-SNAPSHOT/}
   PRERELEASE="$(date '+%Y%m%d%H%M%S')"
   export TRAVIS_TAG=${TRAVIS_TAG:-"$VERSION-$PRERELEASE.$TRAVIS_BUILD_NUMBER"}
+  export DESCRIPTION="$(echo "snapshot "$TRAVIS_TAG"<br/>"$( git log --pretty="format:%h&nbsp;%s<br/>" $TRAVIS_COMMIT_RANGE ) )"
 else
   export TRAVIS_TAG=${TRAVIS_TAG:-"$VERSION"}
+  export DESCRIPTION="$(echo "version "$TRAVIS_TAG"<br/>"$( git log --pretty="format:%h&nbsp;%s<br/>" $TRAVIS_COMMIT_RANGE ) )"
 fi
 
 export BUILD_DATE="$(date '+%Y-%m-%d %H:%M:%S')"
 
-export DESCRIPTION="$(echo "snapshot "$TRAVIS_TAG"<br/>"$( git log --pretty="format:%h&nbsp;%s<br/>" $TRAVIS_COMMIT_RANGE ) )"
 
