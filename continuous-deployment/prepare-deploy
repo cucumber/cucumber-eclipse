@@ -14,3 +14,4 @@ fi
 
 export BUILD_DATE="$(date '+%Y-%m-%d %H:%M:%S')"
 
+export DESCRIPTION="$( echo $(git log --pretty="format:<font color="#D4AC0D">%h</font>&nbsp;%s<br/>" $TRAVIS_COMMIT_RANGE) )"
