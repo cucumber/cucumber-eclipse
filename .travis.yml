@@ -13,8 +13,7 @@ jobs:
   - stage: Deploy [pre]release on GitHub
     script: mvn clean verify -B -DskipTests
     before_deploy:
-      - ./continuous-deployment/prepare-deploy
-      - source ./continuous-deployment/deploy.conf 
+      - source ./continuous-deployment/prepare-deploy
     deploy:
       - provider: releases
         name: Snapshot branch $TRAVIS_BRANCH - $BUILD_DATE
