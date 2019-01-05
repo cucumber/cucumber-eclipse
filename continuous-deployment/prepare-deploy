@@ -4,6 +4,8 @@ export P2_ARCHIVE=$(find ./cucumber.eclipse.p2updatesite/target -name "*.zip")
 
 VERSION=$(echo $P2_ARCHIVE | sed 's#.*cucumber-eclipse-plugin-\(.*\)\(-SNAPSHOT\)\?\.zip#\1#')
 
+export BUILD_DATE="$(date '+%Y-%m-%d %H:%M:%S')"
+
 if [[ "$VERSION" == *"SNAPSHOT"* ]] ; then
   export IS_SNAPSHOT="true"
   VERSION=${VERSION/-SNAPSHOT/}
@@ -18,6 +20,5 @@ else
 	export TITLE="Release $TRAVIS_TAG - $BUILD_DATE"
 fi
 
-export BUILD_DATE="$(date '+%Y-%m-%d %H:%M:%S')"
 
 
