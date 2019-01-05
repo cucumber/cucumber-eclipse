@@ -15,15 +15,23 @@ jobs:
     before_deploy:
       - source ./continuous-deployment/prepare-deploy
     deploy:
-      provider: releases
-      name: $TITLE 
-      body: "$DESCRIPTION"
-      prerelease: $IS_SNAPSHOT
-      api_key: $GITHUB_OAUTH_TOKEN
-      file_glob: true 
-      file: cucumber.eclipse.p2updatesite/target/*.zip
-      skip_cleanup: true
-      overwrite: $IS_SNAPSHOT
-      on:
-        all_branches: true
-#        branch: master
+      - provider: releases
+        name: $TITLE 
+        body: "$DESCRIPTION"
+        prerelease: $IS_SNAPSHOT
+        api_key: $GITHUB_OAUTH_TOKEN
+        file_glob: true 
+        file: cucumber.eclipse.p2updatesite/target/*.zip
+        skip_cleanup: true
+        overwrite: $IS_SNAPSHOT
+        on:
+          all_branches: true
+#          branch: master
+#      - provider: pages
+#        skip-cleanup: true
+#        github-token: $GITHUB_OAUTH_TOKEN
+#        keep-history: true
+#        local-dir: cucumber.eclipse.p2updatesite/target/repository/
+#        on:
+#          all_branches: true
+#          branch: master
