@@ -31,7 +31,6 @@ jobs:
         repo: https://github.com/qvdk/cucumber-eclipse-update-site.git
         skip-cleanup: true
         github-token: $GITHUB_OAUTH_TOKEN
-        keep-history: true
         local-dir: cucumber.eclipse.p2updatesite/target/repository/
         on:
           all_branches: true
