@@ -26,10 +26,10 @@ import cucumber.eclipse.editor.util.Utils;
  * 
  * Purpose: For creating Step definition(java) file
  * User can create a new  Step definition(java) file from Eclipse Menu : 
- * File > New > Other > Cucumber > Step-Definition class > Next >
- * Specify: Source Folder:<browse project dir>
- * 			Package Name:<browse package name>
- * 			Class Name:<input file name>
+ * File &gt; New &gt; Other &gt; Cucumber &gt; Step-Definition class &gt; Next &gt;
+ * Specify: Source Folder:&lt;browse project dir &gt;
+ * 			Package Name:&lt;browse package name &gt;
+ * 			Class Name:&lt;input file name&gt;
  * Select :	Cucumber Annotations : Given/When/Then/And/But
  * Result : Sample Step definition(java) file is created for selected Annotations
  * 

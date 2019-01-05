@@ -23,8 +23,8 @@ import gherkin.I18n;
 /**
  * @author girija.panda@nokia.com
  * 
- *         Purpose: Supports Content-Assistance of any Feature File for <Ctrl>+
- *         <Space> key Content-Assistance : Keyword-Assistance and
+ *         Purpose: Supports Content-Assistance of any Feature File for CTRL+
+ *         SPACE key Content-Assistance : Keyword-Assistance and
  *         Step-Assistance based on user input 1. Collect all steps from
  *         step-definition-java file 2. Remove junk-words from Keyword List 3.
  *         Populating of Keywords/Steps based on various RegEx pattern

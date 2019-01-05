@@ -67,8 +67,8 @@ public class GlueRepository implements Serializable {
 		return stepDefinitionsSources;
 	}
 	
-	/**
-	 * @param fromGherkinStepText
+	/** Find the glue for a gherkin statement
+	 * @param fromGherkinStepText a gherkin expression
 	 * @return the step definition related to this gherkin step. Or, null when not found
 	 */
 	public Glue findGlue(String fromGherkinStepText) {

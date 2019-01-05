@@ -14,7 +14,7 @@ public interface IStepDefinitionsProvider {
 	/**
 	 * Find step definitions into a file.
 	 * 
-	 * @param stepDefinitionFile the file where to search step definition.
+	 * @param stepDefinitionResource the file where to search step definition.
 	 * @param markerFactory      factory of markers supported by this plugin
 	 * @param monitor            the progress monitor
 	 * @return a set of StepDefinition or an empty array. Should NEVER return null.

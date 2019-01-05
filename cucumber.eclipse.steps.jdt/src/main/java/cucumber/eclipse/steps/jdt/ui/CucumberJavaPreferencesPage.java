@@ -471,6 +471,7 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 	/**
 	 * Returns all of the committed filters
 	 * 
+	 * @param defaults when true defaults values are used
 	 * @return an array of committed filters
 	 * @since 3.2
 	 */
