@@ -5,13 +5,17 @@ export P2_ARCHIVE=$(find ./cucumber.eclipse.p2updatesite/target -name "*.zip")
 VERSION=$(echo $P2_ARCHIVE | sed 's#.*cucumber-eclipse-plugin-\(.*\)\(-SNAPSHOT\)\?\.zip#\1#')
 
 if [[ "$VERSION" == *"SNAPSHOT"* ]] ; then
+  export IS_SNAPSHOT="true"
   VERSION=${VERSION/-SNAPSHOT/}
   PRERELEASE="$(date '+%Y%m%d%H%M%S')"
   export TRAVIS_TAG=${TRAVIS_TAG:-"$VERSION-$PRERELEASE.$TRAVIS_BUILD_NUMBER"}
   export DESCRIPTION="$(echo "snapshot "$TRAVIS_TAG"<br/>"$( git log --pretty="format:%h&nbsp;%s<br/>" $TRAVIS_COMMIT_RANGE ) )"
+	export TITLE="Snapshot branch $TRAVIS_BRANCH - $BUILD_DATE"
 else
+  export IS_SNAPSHOT="false"
   export TRAVIS_TAG=${TRAVIS_TAG:-"$VERSION"}
   export DESCRIPTION="$(echo "version "$TRAVIS_TAG"<br/>"$( git log --pretty="format:%h&nbsp;%s<br/>" $TRAVIS_COMMIT_RANGE ) )"
+	export TITLE="Release $TRAVIS_TAG - $BUILD_DATE"
 fi
 
 export BUILD_DATE="$(date '+%Y-%m-%d %H:%M:%S')"

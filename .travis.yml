@@ -15,25 +15,14 @@ jobs:
     before_deploy:
       - source ./continuous-deployment/prepare-deploy
     deploy:
-      - provider: releases
-        name: Snapshot branch $TRAVIS_BRANCH - $BUILD_DATE
-        body: "$DESCRIPTION"
-        prerelease: true
-        api_key: $GITHUB_OAUTH_TOKEN
-        file_glob: true 
-        file: cucumber.eclipse.p2updatesite/target/*.zip
-        skip_cleanup: true
-        overwrite: true
-        on:
-          all_branches: true
-          tag: false
-      - provider: releases
-        name: Release $TRAVIS_TAG - $BUILD_DATE
-        body: "$DESCRIPTION"
-        api_key: $GITHUB_OAUTH_TOKEN
-        file_glob: true 
-        file: cucumber.eclipse.p2updatesite/target/*.zip
-        skip_cleanup: true
-        on:
-          tag: true
-          condition: $TRAVIS_TAG != *"-"* # Do not redeploy prerelease
+      provider: releases
+      name: $TITLE 
+      body: "$DESCRIPTION"
+      prerelease: $IS_SNAPSHOT
+      api_key: $GITHUB_OAUTH_TOKEN
+      file_glob: true 
+      file: cucumber.eclipse.p2updatesite/target/*.zip
+      skip_cleanup: true
+      overwrite: $IS_SNAPSHOT
+      on:
+        all_branches: true
