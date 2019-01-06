@@ -13,11 +13,13 @@ if [[ "$VERSION" == *"SNAPSHOT"* ]] ; then
   export TRAVIS_TAG=${TRAVIS_TAG:-"$VERSION-$PRERELEASE.$TRAVIS_BUILD_NUMBER"}
   export DESCRIPTION="$(echo "snapshot "$TRAVIS_TAG"<br/>"$( git log --pretty="format:%h&nbsp;%s<br/>" $TRAVIS_COMMIT_RANGE ) )"
 	export TITLE="Snapshot branch $TRAVIS_BRANCH - $BUILD_DATE"
+  export GITHUB_PAGES_REPO="qvdk/cucumber-eclipse-updates-snapshot"
 else
   export IS_SNAPSHOT="false"
   export TRAVIS_TAG=${TRAVIS_TAG:-"$VERSION"}
   export DESCRIPTION="$(echo "version "$TRAVIS_TAG"<br/>"$( git log --pretty="format:%h&nbsp;%s<br/>" $TRAVIS_COMMIT_RANGE ) )"
 	export TITLE="Release $TRAVIS_TAG - $BUILD_DATE"
+  export GITHUB_PAGES_REPO="qvdk/cucumber-eclipse-updates"
 fi
 
 

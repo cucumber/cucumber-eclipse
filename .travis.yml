@@ -28,7 +28,7 @@ jobs:
           all_branches: true
 #          branch: master
       - provider: pages
-        repo: qvdk/cucumber-eclipse-update-site
+        repo: $GITHUB_PAGES_REPO 
         skip-cleanup: true
         github-token: $GITHUB_OAUTH_TOKEN
         local-dir: cucumber.eclipse.p2updatesite/target/repository/
