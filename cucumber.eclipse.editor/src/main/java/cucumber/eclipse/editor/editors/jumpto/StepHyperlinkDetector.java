@@ -48,17 +48,17 @@ public class StepHyperlinkDetector implements IHyperlinkDetector {
 				String currentLine = document.get(lineStartOffset, lineInfo.getLength());
 				
 				String stepDefinitionPath = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_PATH_ATTRIBUTE);
-				if(stepDefinitionPath == null) {
-					// probably the step definitions from binaries
-					return null;
-				}
+				String stepDefinitionJDTHandleIdentifier = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_JDT_HANDLE_IDENTIFIER_ATTRIBUTE);
 				String stepDefinitionText = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_TEXT_ATTRIBUTE);
 				Integer stepDefinitionLineNumber = (Integer) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_LINE_NUMBER_ATTRIBUTE);
 				
 				StepDefinition stepDefinition = new StepDefinition();
-				stepDefinition.setSource(new ResourceHelper().find(stepDefinitionPath));
+				if(stepDefinitionPath != null) {
+					stepDefinition.setSource(new ResourceHelper().find(stepDefinitionPath));
+				}
 				stepDefinition.setText(stepDefinitionText);
 				stepDefinition.setLineNumber(stepDefinitionLineNumber);
+				stepDefinition.setJDTHandleIdentifier(stepDefinitionJDTHandleIdentifier);
 	
 				// define the hyperlink region
 				String textStatement = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_TEXT_ATTRIBUTE);

@@ -18,7 +18,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.text.edits.TextEdit;
 
-import cucumber.eclipse.steps.integration.IStepGenerator;
+import cucumber.eclipse.steps.integration.IStepDefinitionGenerator;
 import cucumber.runtime.Backend;
 import cucumber.runtime.ClassFinder;
 import cucumber.runtime.java.JavaBackend;
@@ -26,7 +26,7 @@ import cucumber.runtime.java.ObjectFactory;
 import cucumber.runtime.snippets.CamelCaseConcatenator;
 import cucumber.runtime.snippets.FunctionNameGenerator;
 
-public class StepGenerator implements IStepGenerator {
+public class StepGenerator implements IStepDefinitionGenerator {
 
 	@Override
 	public boolean supports(IFile file) {

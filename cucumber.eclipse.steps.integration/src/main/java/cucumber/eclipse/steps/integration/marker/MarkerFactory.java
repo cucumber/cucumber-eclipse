@@ -30,6 +30,7 @@ public class MarkerFactory {
 
 	public static final String STEP_DEFINTION_MATCH = CUCUMBER_MARKER + ".stepdef.matches";
 	public static final String STEP_DEFINITION_MATCH_PATH_ATTRIBUTE = STEP_DEFINTION_MATCH + ".path";
+	public static final String STEP_DEFINITION_MATCH_JDT_HANDLE_IDENTIFIER_ATTRIBUTE = STEP_DEFINTION_MATCH + ".jdt_handler_identifier";
 	public static final String STEP_DEFINITION_MATCH_LINE_NUMBER_ATTRIBUTE = STEP_DEFINTION_MATCH + ".line_number";
 	public static final String STEP_DEFINITION_MATCH_TEXT_ATTRIBUTE = STEP_DEFINTION_MATCH + ".text";
 
@@ -211,6 +212,7 @@ public class MarkerFactory {
 						marker.setAttribute(STEP_DEFINITION_MATCH_PATH_ATTRIBUTE,
 								stepDefinition.getSource().getFullPath().toString());
 					}
+					marker.setAttribute(STEP_DEFINITION_MATCH_JDT_HANDLE_IDENTIFIER_ATTRIBUTE, stepDefinition.getJDTHandleIdentifier());
 					marker.setAttribute(STEP_DEFINITION_MATCH_LINE_NUMBER_ATTRIBUTE, stepDefinition.getLineNumber());
 					marker.setAttribute(STEP_DEFINITION_MATCH_TEXT_ATTRIBUTE, stepDefinitionText);
 				} catch (CoreException e) {

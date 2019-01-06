@@ -15,4 +15,8 @@
 			name="Java"
 			category="cucumber.eclipse.editor.preferences.Page1" />
    </extension>
+   <extension
+         point="cucumber.eclipse.editor.step_definition_opener">
+         <opener class="cucumber.eclipse.steps.jdt.JavaStepDefinitionOpener"/>
+   </extension>
 </plugin>

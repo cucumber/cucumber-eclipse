@@ -7,7 +7,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.text.edits.TextEdit;
 
-public interface IStepGenerator {
+public interface IStepDefinitionGenerator {
 
 	boolean supports(IFile stepFile);
 	

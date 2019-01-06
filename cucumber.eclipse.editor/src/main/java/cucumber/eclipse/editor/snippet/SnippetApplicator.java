@@ -18,7 +18,7 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import cucumber.eclipse.editor.Activator;
-import cucumber.eclipse.steps.integration.IStepGenerator;
+import cucumber.eclipse.steps.integration.IStepDefinitionGenerator;
 import gherkin.formatter.model.Step;
 
 public class SnippetApplicator {
@@ -31,7 +31,7 @@ public class SnippetApplicator {
 	
 	public void generateSnippet(Step step, IFile stepFile) {
 		try {
-			IStepGenerator generator = generatorProvider.getStepGenerator(stepFile);
+			IStepDefinitionGenerator generator = generatorProvider.getStepGenerator(stepFile);
 			
 			ITextEditor editor = openEditor(stepFile);
 			IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());

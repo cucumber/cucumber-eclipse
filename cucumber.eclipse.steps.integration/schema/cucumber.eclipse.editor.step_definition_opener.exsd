@@ -3,10 +3,10 @@
 <schema targetNamespace="cucumber.eclipse.steps.integration" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
-         <meta.schema plugin="cucumber.eclipse.steps.integration" id="cucumber.eclipse.steps.integration" name="Cucumber Steps Integration"/>
+         <meta.schema plugin="cucumber.eclipse.steps.integration" id="cucumber.eclipse.editor.step_definition_opener" name="Cucumber step definition opener"/>
       </appinfo>
       <documentation>
-         Allows a plugin to generate a list of steps for a given IProject.
+         This extension allows the Cucumber plugin to open an editor with the focus on the step definition.
       </documentation>
    </annotation>
 
@@ -17,9 +17,6 @@
          </appinfo>
       </annotation>
       <complexType>
-         <choice>
-            <element ref="stepDefinitionIntegration"/>
-         </choice>
          <attribute name="point" type="string" use="required">
             <annotation>
                <documentation>
@@ -47,15 +44,15 @@
       </complexType>
    </element>
 
-   <element name="stepDefinitionIntegration">
+   <element name="opener">
       <complexType>
-         <attribute name="class" type="string" use="required">
+         <attribute name="class" type="string">
             <annotation>
                <documentation>
                   
                </documentation>
                <appinfo>
-                  <meta.attribute kind="java" basedOn=":cucumber.eclipse.steps.integration.IStepDefinitionsProvider"/>
+                  <meta.attribute kind="java" basedOn=":cucumber.eclipse.steps.integration.IStepDefinitionOpener"/>
                </appinfo>
             </annotation>
          </attribute>
