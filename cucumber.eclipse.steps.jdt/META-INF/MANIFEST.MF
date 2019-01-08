@@ -16,7 +16,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.debug.ui;bundle-version="3.5.0",
  org.eclipse.jdt.debug.ui;bundle-version="3.5.0"
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: .,
  META-INF/lib/cucumber-java-1.2.2.jar
 Export-Package: cucumber.eclipse.steps.jdt;
