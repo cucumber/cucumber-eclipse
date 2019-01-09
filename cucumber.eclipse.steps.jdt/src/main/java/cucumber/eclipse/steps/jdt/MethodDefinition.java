@@ -43,9 +43,9 @@ public class MethodDefinition {
 	}
 
 	/**
-	 * @param methodName
-	 * @param returnType
-	 * @param methodBodyList
+	 * @param methodName method name
+	 * @param returnType return type 
+	 * @param methodBodyList list of statement from the method
 	 */
 	public MethodDefinition(SimpleName methodName, Type returnType, List<Statement> methodBodyList) {
 		super();
@@ -80,7 +80,7 @@ public class MethodDefinition {
 	}
 
 	/**
-	 * @return List<Statement>
+	 * @return list of statement
 	 */
 	public List<Statement> getMethodBodyList() {
 		return methodBodyList;
@@ -88,8 +88,9 @@ public class MethodDefinition {
 
 
 	/**
-	 * @param statement
-	 * @return String
+	 * @param statement a statement
+	 * @param keywords a set of gherkin keywords
+	 * @return lambda step expression or null
 	 */
 	public String getLambdaStep(Statement statement, Set<String> keywords) {
 		if (statement instanceof ExpressionStatement) {
@@ -115,9 +116,9 @@ public class MethodDefinition {
 	}
 
 	/**
-	 * @param method
-	 * @param i18n 
-	 * @return boolean
+	 * @param method a method declaration
+	 * @param keywords a set of gherkin keywords 
+	 * @return boolean true if the statement is a lambda step definition
 	 */
 	public boolean isCukeLambdaExpr(MethodDeclaration method, Set<String> keywords) {
 		@SuppressWarnings("unchecked")
@@ -142,8 +143,8 @@ public class MethodDefinition {
 	/**
 	 * Check if import contains 'cucumber.api.java8'
 	 * 
-	 * @param IImportDeclaration[]
-	 * @return boolean
+	 * @param allimports java imports
+	 * @return true if imports contains java8 cucumber import
 	 */
 	public boolean isJava8CukeAPI(IImportDeclaration[] allimports) {
 		// Check if import contains 'cucumber.api.java8'

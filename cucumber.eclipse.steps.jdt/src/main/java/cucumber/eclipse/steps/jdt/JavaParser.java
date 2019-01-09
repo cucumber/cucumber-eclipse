@@ -59,9 +59,8 @@ public class JavaParser extends AbstractHandler {
 	/**
 	 * Parse and Collect Method Details From Java file
 	 * 
-	 * @param compUnit
-	 * @return List<MethodDeclaration>
-	 * @throws JavaModelException
+	 * @return list of methods declaration of the compilation unit
+	 * @throws JavaModelException if the parser failed to build the Java model
 	 */
 	public List<MethodDeclaration> getAllMethods() throws JavaModelException {
 		// Visit and parse Methods from CompilationUnit
@@ -70,9 +69,9 @@ public class JavaParser extends AbstractHandler {
 		return visitor.getMethods();
 	}
 
-	/**
-	 * @param method
-	 * @return String
+	/** Return the method body
+	 * @param method a method declaration
+	 * @return method body
 	 */
 	public String getMethodBody(MethodDeclaration method) {
 		this.methodBody = method.getBody().toString();
@@ -81,8 +80,8 @@ public class JavaParser extends AbstractHandler {
 	
 
 	/**
-	 * @param iCompUnit
-	 * @return String
+	 * @param iCompUnit a compilation unit
+	 * @return the class name
 	 */
 	public String getClassName(ICompilationUnit iCompUnit) {
 		this.className = iCompUnit.getResource().getName();
@@ -92,8 +91,8 @@ public class JavaParser extends AbstractHandler {
 	/**
 	 * Get Line-Number of statement
 	 * 
-	 * @param statement
-	 * @return int
+	 * @param statement a statement
+	 * @return the line number
 	 */
 	public int getLineNumber(Statement statement) {
 		return compUnit.getLineNumber(statement.getStartPosition());
@@ -179,8 +178,8 @@ public class JavaParser extends AbstractHandler {
 	/**
 	 * Get Class Names
 	 * 
-	 * @param compUnit
-	 * @return
+	 * @param compUnit a compilation unit
+	 * @return the class name
 	 */
 	public String getClassName(CompilationUnit compUnit) {
 

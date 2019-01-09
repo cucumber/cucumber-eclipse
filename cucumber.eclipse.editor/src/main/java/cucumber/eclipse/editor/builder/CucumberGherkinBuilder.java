@@ -323,7 +323,7 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 		 * Check if the step have a matching step definitions.
 		 * 
 		 * @param step a gherkin step
-		 * @throws CoreException 
+		 * @throws CoreException if any exception occurs 
 		 */
 		protected void validate(Step step) throws CoreException {
 			if (!isGlueDetectionEnabled) {
@@ -360,7 +360,7 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 		 * @param scenarioOutlineStepLine the scenario outline
 		 * @param exampleVariablesMap     the examples
 		 * @param exampleLine             the line
-		 * @throws CoreException 
+		 * @throws CoreException if any exception occurs 
 		 */
 		private void validate(Step scenarioOutlineStepLine, Map<String, String> exampleVariablesMap,
 				Integer exampleLine) throws CoreException {

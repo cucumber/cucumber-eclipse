@@ -26,7 +26,9 @@ public abstract class CucumberJavaPreferences {
 	/**
 	 * Parses the comma separated string into an array of strings
 	 *
-	 * @return list
+	 * @param listString a string representation of a list of elements separated by commas 
+	 * 
+	 * @return an array of string
 	 */
 	public static String[] parseList(String listString) {
 		List<String> list = new ArrayList<String>(10);

@@ -245,14 +245,6 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 		}
 	}
 
-	/**
-	 * @param javaProject
-	 * @param packageFrag
-	 * @param lang
-	 * @return List<CucumberAnnotation>
-	 * @throws CoreException
-	 * @throws JavaModelException
-	 */
 	private List<CucumberAnnotation> getAllAnnotationsInPackage(final IJavaProject javaProject,
 			final String packageFrag, final String lang) throws CoreException, JavaModelException {
 

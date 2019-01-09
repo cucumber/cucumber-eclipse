@@ -1,15 +1,35 @@
+if: NOT tag =~ /^.*-.*$/ # Do not build prerelease tag 
 language: java
 sudo: false
-
 cache:
   directories:
   - "$HOME/.m2"
-
 jdk:
-  - oraclejdk8
-
-#jobs:  
-#  include:
-#    - stage: "Tests"                # naming the Tests stage
-#      name: "Unit Tests"            # names the first Tests stage job
-#      script: mvn test -B
+- oraclejdk8
+jobs:
+  include:
+  - stage: Tests
+    script: mvn clean test -B
+  - stage: Deploy [pre]release on GitHub
+    script: mvn clean verify -B -DskipTests
+    before_deploy:
+      - source ./continuous-deployment/prepare-deploy
+    deploy:
+      - provider: releases
+        name: $TITLE 
+        body: "$DESCRIPTION"
+        prerelease: $IS_SNAPSHOT
+        api_key: $GITHUB_OAUTH_TOKEN
+        file_glob: true 
+        file: cucumber.eclipse.p2updatesite/target/*.zip
+        skip_cleanup: true
+        overwrite: $IS_SNAPSHOT
+        on:
+          branch: master
+      - provider: pages
+        repo: $GITHUB_PAGES_REPO 
+        skip-cleanup: true
+        github-token: $GITHUB_OAUTH_TOKEN
+        local-dir: cucumber.eclipse.p2updatesite/target/repository/
+        on:
+          branch: master

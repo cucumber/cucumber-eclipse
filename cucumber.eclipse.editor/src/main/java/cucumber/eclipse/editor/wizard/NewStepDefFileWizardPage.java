@@ -37,7 +37,7 @@ import cucumber.eclipse.editor.util.Utils;
  * 
  * Purpose: For developing a New File Wizard page for Step definition(java) file
  * User can create a new  Step definition(java) file from Eclipse Menu : 
- * File > New > Other > Cucumber > Step-Definition class
+ * File &gt; New &gt; Other &gt; Cucumber &gt; Step-Definition class
  * 
  */
 public class NewStepDefFileWizardPage extends WizardPage {
