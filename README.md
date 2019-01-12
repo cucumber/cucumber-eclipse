@@ -37,7 +37,7 @@ For users who wants to keep up-to-date with the latest development version, ther
 
 With this one, you will be notified on each new snapshot.
 
-CAUTION: The latest snapshot can be unstable. This is a preview version.
+CAUTION: **The latest snapshot can be unstable. This is a preview version.**
 
 You are welcome to [report any issue](https://github.com/cucumber/cucumber-eclipse/issues).
 
