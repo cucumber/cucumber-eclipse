@@ -26,12 +26,20 @@ Please consult our [Wiki](https://github.com/cucumber/cucumber-eclipse/wiki) for
 
 ## Download the plugin
 ![Download-Plugin](https://github.com/cucumber/cucumber-eclipse/blob/gh-pages/images/Download.png)
-- Please [Download-Plugin-Zip](https://github.com/cucumber/cucumber-eclipse/tree/master/cucumber.eclipse.download/download) from the latest version directory.
-- Plugin is available as Zip and downloaded from the below directory : 
-```gherkin
- cucumber.eclipse.download\download\{latest-version}\cucumber-eclipse-plugin-{version}.zip
-```
-- Please refer our [Plugin-Download/Installation-Wiki](https://github.com/cucumber/cucumber-eclipse/wiki/Download-and-Install-Plugin-From-Zip) for detail information
+
+ - Releases and snapshots versions can be [downloaded](https://github.com/cucumber/cucumber-eclipse/releases) as zip format.
+
+ - Please refer our [Plugin-Download/Installation-Wiki](https://github.com/cucumber/cucumber-eclipse/wiki/Download-and-Install-Plugin-From-Zip) for detail information
+
+## Follow the latest snapshot
+
+For users who wants to keep up-to-date with the latest development version, there is a dedicated [eclipse update site for the cucumber eclipse plugin](https://github.com/cucumber/cucumber-eclipse-update-site-snapshot). 
+
+With this one, you will be notified on each new snapshot.
+
+CAUTION: The latest snapshot can be unstable. This is a preview version.
+
+You are welcome to [report any issue](https://github.com/cucumber/cucumber-eclipse/issues).
 
 ## Installation and further information
 
@@ -72,7 +80,7 @@ The full option list can be found at [Cucumber-Options](https://github.com/cucum
 To use the latest features, you can choose to build and install from source.
 
 - Build the plugin using Maven (https://maven.apache.org/) <code>mvn clean install</code>
-- Open Eclipse and navigate to Help -> Install New Software... -> Add
+- Open Eclipse and navigate to `Help` -> `Install New Software...` -> `Add`
 - Point to the update-site built in step 1: <code>file:path_to_repo/cucumber.eclipse.p2updatesite/target/repository</code>
 - Proceed to install like any other plug-in
 
