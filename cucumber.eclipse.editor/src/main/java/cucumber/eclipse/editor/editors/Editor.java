@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -152,7 +153,8 @@ public class Editor extends TextEditor {
 
 	private void warnIfFeatureFileOpenedComesFromNonCucumberProject() throws CoreException {
 		IFile featureFile = this.getFile();
-		boolean isCucumberProject = featureFile.getProject().hasNature(CucumberProjectNature.ID);
+		IProject projectWithGherkinFile = featureFile.getProject();
+		boolean isCucumberProject = projectWithGherkinFile.hasNature(CucumberProjectNature.ID);
 		if(!isCucumberProject) {
 			MarkerFactory markerFactory = MarkerFactory.INSTANCE;
 			markerFactory.featureFileIsNotInCucumberProject(featureFile);

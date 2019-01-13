@@ -49,6 +49,7 @@ public class CucumberProjectNature implements IProjectNature {
 
     public void deconfigure() throws CoreException {
     	removeBuilder(project);
+    	MarkerFactory.INSTANCE.cleanMarkersRecursively(project);
     }
 
     public IProject getProject() {

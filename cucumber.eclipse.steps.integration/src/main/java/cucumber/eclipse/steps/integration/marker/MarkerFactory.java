@@ -282,17 +282,18 @@ public class MarkerFactory {
 
 	}
 	
-	public void featureFileIsNotInCucumberProject(IFile gherkinFile) {
-		this.mark(gherkinFile, new IMarkerBuilder() {
+	public void featureFileIsNotInCucumberProject(IFile project) {
+		this.mark(project, new IMarkerBuilder() {
 			@Override
 			public IMarker build() {
 				IMarker marker = null;
 				try {
-					marker = gherkinFile.createMarker(NOT_A_CUCUMBER_PROJECT);
+					project.deleteMarkers(NOT_A_CUCUMBER_PROJECT, true, IResource.DEPTH_ZERO);
+					marker = project.createMarker(NOT_A_CUCUMBER_PROJECT);
 					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
 					marker.setAttribute(IMarker.MESSAGE, CucumberStepsIntegrationMessages.MarkerFactory__Step_definitions_detection_not_working_on_non_cucumber_project);
 					marker.setAttribute(IMarker.LINE_NUMBER, 1);
-					marker.setAttribute(NOT_A_CUCUMBER_PROJECT_NAME_ATTRIBUTE, gherkinFile.getProject().getName());
+					marker.setAttribute(NOT_A_CUCUMBER_PROJECT_NAME_ATTRIBUTE, project.getName());
 				} catch (CoreException e) {
 					e.printStackTrace();
 				}
@@ -310,6 +311,15 @@ public class MarkerFactory {
 		}
 	}
 
+	public void cleanMarkersRecursively(IResource resource) {
+		try {
+			resource.deleteMarkers(CUCUMBER_MARKER, true, IResource.DEPTH_INFINITE);
+		} catch (CoreException e) {
+			Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
+					String.format("Couldn't remove markers from %s", resource), e));
+		}
+	}
+	
 	private void mark(final IResource resource, final IMarkerBuilder markerBuilder) {
 		try {
 			IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
