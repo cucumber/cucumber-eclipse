@@ -29,7 +29,9 @@ import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import cucumber.eclipse.editor.Activator;
+import cucumber.eclipse.editor.nature.CucumberProjectNature;
 import cucumber.eclipse.editor.template.GherkinSampleTemplate;
+import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 
 public class Editor extends TextEditor {
 
@@ -145,11 +147,21 @@ public class Editor extends TextEditor {
 	protected void doSetInput(IEditorInput newInput) throws CoreException {
 		super.doSetInput(newInput);
 		model = new GherkinModel();
-
+		this.warnIfFeatureFileOpenedComesFromNonCucumberProject();
 	}
 
+	private void warnIfFeatureFileOpenedComesFromNonCucumberProject() throws CoreException {
+		IFile featureFile = this.getFile();
+		boolean isCucumberProject = featureFile.getProject().hasNature(CucumberProjectNature.ID);
+		if(!isCucumberProject) {
+			MarkerFactory markerFactory = MarkerFactory.INSTANCE;
+			markerFactory.featureFileIsNotInCucumberProject(featureFile);
+		}
+	}
+	
+	
 	public IFile getFile() {
-		IFileEditorInput fileEditorInput = (IFileEditorInput) this.getEditorInput();
+ 		IFileEditorInput fileEditorInput = (IFileEditorInput) this.getEditorInput();
 		return fileEditorInput.getFile();
 	}
 

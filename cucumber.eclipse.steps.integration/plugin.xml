@@ -62,6 +62,15 @@
 	  	<super type="cucumber.eclipse.marker"/>
 	  	<persistent value="true"/>
 	</extension>
+	<extension
+	    id="cucumber.eclipse.marker.not_a_cucumber_project"
+	    name="Project without Cucumber nature"
+	    point="org.eclipse.core.resources.markers">
+	    <super type="org.eclipse.core.resources.problemmarker"/>
+	  	<super type="cucumber.eclipse.marker"/>
+	  	<attribute name="cucumber.eclipse.marker.not_a_cucumber_project.project_name"/>
+	  	<persistent value="true"/>
+	</extension>
    <extension
          point="org.eclipse.ui.editors.markerAnnotationSpecification">
       <specification

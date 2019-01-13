@@ -1,5 +1,6 @@
 package cucumber.eclipse.steps.integration.marker;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -13,13 +14,25 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
+import org.eclipse.osgi.util.NLS;
 
 import cucumber.eclipse.steps.integration.Activator;
 import cucumber.eclipse.steps.integration.GherkinStepWrapper;
 import cucumber.eclipse.steps.integration.Glue;
 import cucumber.eclipse.steps.integration.StepDefinition;
+import cucumber.eclipse.steps.integration.i18n.CucumberStepsIntegrationMessages;
 import gherkin.formatter.model.Step;
 
+/**
+ * The marker factory exposes methods to put makers:
+ *  <li>unmatched step</li>
+ *  <li>gherkin syntax error</li>
+ *  <li>glue between step definition and gherkin step</li>
+ *  <li>feature file opened from a non cucumber project</li>
+ * 
+ * @author qvdk
+ *
+ */
 public class MarkerFactory {
 
 	public static final MarkerFactory INSTANCE = new MarkerFactory();
@@ -42,6 +55,9 @@ public class MarkerFactory {
 	public static final String UNMATCHED_STEP_NAME_ATTRIBUTE = UNMATCHED_STEP + ".name";
 	public static final String UNMATCHED_STEP_PATH_ATTRIBUTE = UNMATCHED_STEP + ".path";
 
+	public static final String NOT_A_CUCUMBER_PROJECT = CUCUMBER_MARKER + ".not_a_cucumber_project";
+	public static final String NOT_A_CUCUMBER_PROJECT_NAME_ATTRIBUTE = NOT_A_CUCUMBER_PROJECT + ".project_name";
+	
 	public static final String CUCUMBER_NATURE_MISSING_MARKER = CUCUMBER_MARKER + ".project.cucumber_nature_missing";
 
 	private MarkerFactory() {
@@ -264,6 +280,25 @@ public class MarkerFactory {
 			}
 		});
 
+	}
+	
+	public void featureFileIsNotInCucumberProject(IFile gherkinFile) {
+		this.mark(gherkinFile, new IMarkerBuilder() {
+			@Override
+			public IMarker build() {
+				IMarker marker = null;
+				try {
+					marker = gherkinFile.createMarker(NOT_A_CUCUMBER_PROJECT);
+					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+					marker.setAttribute(IMarker.MESSAGE, CucumberStepsIntegrationMessages.MarkerFactory__Step_definitions_detection_not_working_on_non_cucumber_project);
+					marker.setAttribute(IMarker.LINE_NUMBER, 1);
+					marker.setAttribute(NOT_A_CUCUMBER_PROJECT_NAME_ATTRIBUTE, gherkinFile.getProject().getName());
+				} catch (CoreException e) {
+					e.printStackTrace();
+				}
+				return marker;
+			}
+		});
 	}
 
 	public void cleanMarkers(IResource resource) {

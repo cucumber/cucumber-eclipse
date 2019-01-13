@@ -11,11 +11,14 @@ import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IProjectNature;
+import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import cucumber.eclipse.editor.builder.CucumberGherkinBuilder;
 import cucumber.eclipse.editor.builder.CucumberStepDefinitionsBuilder;
+import cucumber.eclipse.steps.integration.builder.BuilderUtil;
+import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 
 public class CucumberProjectNature implements IProjectNature {
 	
@@ -23,12 +26,25 @@ public class CucumberProjectNature implements IProjectNature {
 	
     private IProject project;
     
+    @Override
     public void configure() throws CoreException {
+    	IProjectDescription description = project.getDescription();
+	    String[] oldNatures = description.getNatureIds();
+	    String[] newNatures = new String[oldNatures.length+1];
+	    newNatures[0] = CucumberProjectNature.ID;
+	    for (int it=0; it<oldNatures.length; it++) {
+	    	String nature = oldNatures[it];
+			if(CucumberProjectNature.ID.equals(nature)) {
+				return ; // change nothing
+			}
+			newNatures[it+1] = nature;
+		}
+	    description.setNatureIds(newNatures);
+	    project.setDescription(description, new NullProgressMonitor());
+	    MarkerFactory.INSTANCE.cleanCucumberNatureMissing(project);
+    	
         addBuilder(project);
-//        IProject[] projects = project.getReferencedProjects();
-//    	for (IProject referencedProject : projects) {
-//    		addBuilder(referencedProject);
-//		}
+        BuilderUtil.buildProject(project, IncrementalProjectBuilder.FULL_BUILD);
     }
 
     public void deconfigure() throws CoreException {
