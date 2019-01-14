@@ -249,7 +249,7 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 			final String packageFrag, final String lang) throws CoreException, JavaModelException {
 
 		SearchPattern pattern = SearchPattern.createPattern(packageFrag, IJavaSearchConstants.PACKAGE,
-				IJavaSearchConstants.IMPORT_DECLARATION_TYPE_REFERENCE, SearchPattern.R_EXACT_MATCH);
+				IJavaSearchConstants.DECLARATIONS, SearchPattern.R_PATTERN_MATCH | SearchPattern.R_CASE_SENSITIVE);
 
 		IJavaSearchScope scope = SearchEngine.createJavaSearchScope(javaProject.getPackageFragments());
 
@@ -273,10 +273,19 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 			}
 		};
 		SearchEngine engine = new SearchEngine();
-		engine.search(pattern, new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() }, scope, requestor,
-				null);
-
+		jdtSearch(engine, pattern, scope, requestor);
 		return annotations;
+	}
+
+	private void jdtSearch(SearchEngine engine, SearchPattern pattern, IJavaSearchScope scope,
+			SearchRequestor requestor) throws CoreException {
+		try {
+			engine.search(pattern, new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() }, scope,
+					requestor, null);
+		} catch (Throwable t) {
+			t.printStackTrace();
+			// if the search engine failed, skip it is a bug into the JDT plugin
+		}
 	}
 
 	/**
@@ -437,14 +446,7 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 			};
 
 			for (IJavaSearchScope scope : scopes) {
-				try {
-					engine.search(searchPattern, new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() }, scope,
-						requestor, null);
-				}
-				catch (Throwable t) {
-					t.printStackTrace();
-					// if the search engine failed, skip it is a bug into the JDT plugin
-				}
+				jdtSearch(engine, searchPattern, scope, requestor);
 			}
 			
 			return stepDefinitions;
