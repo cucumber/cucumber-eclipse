@@ -226,6 +226,11 @@
          markerType="cucumber.eclipse.marker.gherkin.unmatched_step"
          class="cucumber.eclipse.editor.markers.StepCreationMarkerResolutionGenerator"/>
    </extension>
+   <extension point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator
+         markerType="cucumber.eclipse.marker.not_a_cucumber_project"
+         class="cucumber.eclipse.editor.markers.ConfigureAsCucumberProjectMarkerResolutionGenerator"/>
+   </extension>
     <extension
           point="org.eclipse.ui.contexts">
        <context
@@ -298,7 +303,7 @@
  </extension> 
  <extension 
     id="cucumber.eclipse.nature" 
-    name="Cucumber Incremental" 
+    name="Cucumber" 
     point="org.eclipse.core.resources.natures">
 	<runtime>
 		<run class="cucumber.eclipse.editor.nature.CucumberProjectNature"/> 
