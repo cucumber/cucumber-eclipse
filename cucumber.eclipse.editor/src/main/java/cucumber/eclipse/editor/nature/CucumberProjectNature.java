@@ -1,11 +1,7 @@
 package cucumber.eclipse.editor.nature;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IProject;
@@ -87,17 +83,19 @@ public class CucumberProjectNature implements IProjectNature {
     
     private void removeBuilder(IProject project) throws CoreException {
     	IProjectDescription description = project.getDescription();
-    	Set<ICommand> builders = new LinkedHashSet<ICommand>(Arrays.asList(description.getBuildSpec()));
+    	ICommand[] buildSpec = description.getBuildSpec();
+    	ICommand[] newBuildSpec = new ICommand[buildSpec.length-2];
 
-    	Set<ICommand> toRemove = new HashSet<ICommand>();
-        for (ICommand builder : builders) {
-			if(CucumberStepDefinitionsBuilder.ID.equals(builder.getBuilderName())) {
-				toRemove.remove(builder);
-			}
+    	int it = 0;
+    	for (ICommand builder : buildSpec) {
+			boolean isCucumberBuilder = CucumberStepDefinitionsBuilder.ID.equals(builder.getBuilderName())
+					|| CucumberGherkinBuilder.ID.equals(builder.getBuilderName()); 
+    		if(!isCucumberBuilder) {
+    			newBuildSpec[it++] = builder;
+    		}
 		}
-        builders.removeAll(toRemove);
         
-        description.setBuildSpec(builders.toArray(new ICommand[builders.size()]));
+        description.setBuildSpec(newBuildSpec);
         
         project.setDescription(description, new NullProgressMonitor());
     }
