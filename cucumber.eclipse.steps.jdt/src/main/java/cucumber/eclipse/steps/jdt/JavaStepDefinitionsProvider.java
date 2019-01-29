@@ -83,123 +83,129 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 		long start = System.currentTimeMillis();
 
 		List<StepDefinition> steps = new ArrayList<StepDefinition>();
-		List<CucumberAnnotation> importedAnnotations = new ArrayList<CucumberAnnotation>();
-		IImportDeclaration[] allimports = iCompUnit.getImports();
 
-		for (IImportDeclaration decl : allimports) {
+		try {
+			List<CucumberAnnotation> importedAnnotations = new ArrayList<CucumberAnnotation>();
+			IImportDeclaration[] allimports = iCompUnit.getImports();
 
-			// Match Package name
-			Matcher m = cukeAnnotationMatcher.matcher(decl.getElementName());
-			if (m.find()) {
-				if ("*".equals(m.group(2))) {
-					importedAnnotations.addAll(getAllAnnotationsInPackage(iCompUnit.getJavaProject(),
-							CUCUMBER_API_JAVA + m.group(1), m.group(1)));
-				} else {
-					importedAnnotations.add(new CucumberAnnotation(m.group(2), m.group(1)));
+			for (IImportDeclaration decl : allimports) {
+
+				// Match Package name
+				Matcher m = cukeAnnotationMatcher.matcher(decl.getElementName());
+				if (m.find()) {
+					if ("*".equals(m.group(2))) {
+						importedAnnotations.addAll(getAllAnnotationsInPackage(iCompUnit.getJavaProject(),
+								CUCUMBER_API_JAVA + m.group(1), m.group(1)));
+					} else {
+						importedAnnotations.add(new CucumberAnnotation(m.group(2), m.group(1)));
+					}
+				}
+
+				// If import declaration matches with 'cucumber.api.java8'
+				// Then set Language of Java8-cuke-api
+				if (decl.getElementName().matches(REGEX_JAVA8_CUKEAPI)) {
+					String importDeclaration = decl.getElementName();
+					// setJava8CukeLang(importDeclaration);
 				}
 			}
 
-			// If import declaration matches with 'cucumber.api.java8'
-			// Then set Language of Java8-cuke-api
-			if (decl.getElementName().matches(REGEX_JAVA8_CUKEAPI)) {
-				String importDeclaration = decl.getElementName();
-//				setJava8CukeLang(importDeclaration);
-			}
-		}
+			List<MethodDeclaration> methodDeclList = null;
+			JavaParser javaParser = null;
+			for (IType t : iCompUnit.getTypes()) {
+				// collect all steps from java8 lambdas
+				for (IType ifType : t.newTypeHierarchy(progressMonitor).getAllInterfaces()) {
 
-		List<MethodDeclaration> methodDeclList = null;
-		JavaParser javaParser = null;
-		for (IType t : iCompUnit.getTypes()) {
-			// collect all steps from java8 lamdas
-			for (IType ifType : t.newTypeHierarchy(progressMonitor).getAllInterfaces()) {
+					if (ifType.isInterface() && ifType.getFullyQualifiedName().startsWith(CUCUMBER_API_JAVA8)) {
+						String[] superInterfaceNames = ifType.getSuperInterfaceNames();
+						for (String superIfName : superInterfaceNames) {
+							if (superIfName.endsWith(".LambdaGlueBase")) {
+								// we found a possible interface, now try to load the language...
+								// String lang = ifType.getElementName().toLowerCase();
+								// init if not done in previous step..
+								if (javaParser == null) {
+									javaParser = new JavaParser(iCompUnit, progressMonitor);
+								}
+								if (methodDeclList == null) {
+									methodDeclList = javaParser.getAllMethods();
+								}
+								Set<String> keyWords = new HashSet<String>();
+								for (IMethod method : ifType.getMethods()) {
+									keyWords.add(method.getElementName());
+								}
+								List<MethodDefinition> methodDefList = new ArrayList<MethodDefinition>();
+								// Visiting Methods/Constructors
+								for (MethodDeclaration method : methodDeclList) {
 
-				if (ifType.isInterface() && ifType.getFullyQualifiedName().startsWith(CUCUMBER_API_JAVA8)) {
-					String[] superInterfaceNames = ifType.getSuperInterfaceNames();
-					for (String superIfName : superInterfaceNames) {
-						if (superIfName.endsWith(".LambdaGlueBase")) {
-							// we found a possible interface, now try to load the language...
-//							String lang = ifType.getElementName().toLowerCase();
-							// init if not done in previous step..
-							if (javaParser == null) {
-								javaParser = new JavaParser(iCompUnit, progressMonitor);
-							}
-							if (methodDeclList == null) {
-								methodDeclList = javaParser.getAllMethods();
-							}
-							Set<String> keyWords = new HashSet<String>();
-							for (IMethod method : ifType.getMethods()) {
-								keyWords.add(method.getElementName());
-							}
-							List<MethodDefinition> methodDefList = new ArrayList<MethodDefinition>();
-							// Visiting Methods/Constructors
-							for (MethodDeclaration method : methodDeclList) {
-
-								// Get Method/Constructor-Block{...}
-								if (isCukeLambdaExpr(method, keyWords)) {
-									// Collect method-body as List of Statements
-									@SuppressWarnings("unchecked")
-									List<Statement> statementList = method.getBody().statements();
-									if (!statementList.isEmpty()) {
-										MethodDefinition definition = new MethodDefinition(method.getName(),
-												method.getReturnType2(), statementList);
-										methodDefList.add(definition);
-//										definition.setJava8CukeLang(lang);
+									// Get Method/Constructor-Block{...}
+									if (isCukeLambdaExpr(method, keyWords)) {
+										// Collect method-body as List of Statements
+										@SuppressWarnings("unchecked")
+										List<Statement> statementList = method.getBody().statements();
+										if (!statementList.isEmpty()) {
+											MethodDefinition definition = new MethodDefinition(method.getName(),
+													method.getReturnType2(), statementList);
+											methodDefList.add(definition);
+											// definition.setJava8CukeLang(lang);
+										}
 									}
 								}
-							}
-							// Iterate MethodDefinition
-							for (MethodDefinition method : methodDefList) {
-								// Iterate Method-Statements
-								for (Statement statement : method.getMethodBodyList()) {
-									// Add all lambda-steps to Step
-									StepDefinition step = new StepDefinition();
-									step.setSource(iCompUnit.getResource()); // source
-									String lambdaStep = method.getLambdaStep(statement, keyWords);
-									if (lambdaStep == null) {
-										continue;
-									}
-									int lineNumber = javaParser.getLineNumber(statement);
-									try {
-										step.setText(lambdaStep); // step
-										step.setLineNumber(lineNumber); // line-number
-										step.setLang(method.getCukeLang()); // Language
-										steps.add(step);
-									} catch (CucumberExpressionException e) {
-										markerFactory.syntaxErrorOnStepDefinition(iCompUnit.getResource(), e,
-												lineNumber);
-									}
+								// Iterate MethodDefinition
+								for (MethodDefinition method : methodDefList) {
+									// Iterate Method-Statements
+									for (Statement statement : method.getMethodBodyList()) {
+										// Add all lambda-steps to Step
+										StepDefinition step = new StepDefinition();
+										step.setSource(iCompUnit.getResource()); // source
+										String lambdaStep = method.getLambdaStep(statement, keyWords);
+										if (lambdaStep == null) {
+											continue;
+										}
+										int lineNumber = javaParser.getLineNumber(statement);
+										try {
+											step.setText(lambdaStep); // step
+											step.setLineNumber(lineNumber); // line-number
+											step.setLang(method.getCukeLang()); // Language
+											steps.add(step);
+										} catch (CucumberExpressionException e) {
+											markerFactory.syntaxErrorOnStepDefinition(iCompUnit.getResource(), e,
+													lineNumber);
+										}
 
+									}
 								}
 							}
 						}
 					}
 				}
-			}
-			// Collect all steps from Annotations used in the methods as per imported
-			// Annotations
-			for (IMethod method : t.getMethods()) {
-				for (IAnnotation annotation : method.getAnnotations()) {
-					CucumberAnnotation cukeAnnotation = getCukeAnnotation(importedAnnotations, annotation);
-					if (cukeAnnotation != null) {
-						int lineNumber = getLineNumber(iCompUnit, annotation);
-						StepDefinition step = new StepDefinition();
-						step.setSource(method.getResource());
-						step.setLineNumber(lineNumber);
-						step.setLang(cukeAnnotation.getLang());
-						steps.add(step);
-						try {
-							step.setText(getAnnotationText(annotation));
-						} catch (CucumberExpressionException e) {
-							markerFactory.syntaxErrorOnStepDefinition(iCompUnit.getResource(), e, lineNumber);
+				// Collect all steps from Annotations used in the methods as per imported
+				// Annotations
+				for (IMethod method : t.getMethods()) {
+					for (IAnnotation annotation : method.getAnnotations()) {
+						CucumberAnnotation cukeAnnotation = getCukeAnnotation(importedAnnotations, annotation);
+						if (cukeAnnotation != null) {
+							int lineNumber = getLineNumber(iCompUnit, annotation);
+							StepDefinition step = new StepDefinition();
+							step.setSource(method.getResource());
+							step.setLineNumber(lineNumber);
+							step.setLang(cukeAnnotation.getLang());
+							steps.add(step);
+							try {
+								step.setText(getAnnotationText(annotation));
+							} catch (CucumberExpressionException e) {
+								markerFactory.syntaxErrorOnStepDefinition(iCompUnit.getResource(), e, lineNumber);
+							}
 						}
 					}
+
 				}
-
 			}
-		}
 
+		} catch (JavaModelException e) {
+			 System.out.println("Warning: could not process "+iCompUnit.getElementName());
+		}
 		long end = System.currentTimeMillis();
-//		System.out.println("getCukeSteps " + iCompUnit.getJavaProject().getElementName() + ": " + iCompUnit.getElementName() + " " + (end - start) + " ms.");
+		// System.out.println("getCukeSteps " + iCompUnit.getJavaProject().getElementName() + ": " +
+		// iCompUnit.getElementName() + " " + (end - start) + " ms.");
 
 		return steps;
 	}
