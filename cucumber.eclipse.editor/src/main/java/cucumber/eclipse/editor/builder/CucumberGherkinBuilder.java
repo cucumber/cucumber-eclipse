@@ -174,7 +174,7 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			// `${project.build.directory}/test-classes`
 			// but we do not need this files since we already parse sources.
 			if (resource.getFullPath().toString().contains("test-classes")) {
-				return true;
+				return false;
 			}
 			// end of the very bad hack...
 
