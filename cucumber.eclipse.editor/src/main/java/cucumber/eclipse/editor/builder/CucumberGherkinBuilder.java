@@ -192,7 +192,7 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 				// then we shall rebuild all gherkins files because this step definitions file
 				// could add glue to any of gherkins steps.
 
-				if (isIncrementalBuild && stepDefinitionsProvider.support(getProject())) {
+				if (isIncrementalBuild && stepDefinitionsProvider.support(file)) {
 					// force a full build of gherkin files
 					fullBuild(glueDetectionEnabled, monitor);
 				}
