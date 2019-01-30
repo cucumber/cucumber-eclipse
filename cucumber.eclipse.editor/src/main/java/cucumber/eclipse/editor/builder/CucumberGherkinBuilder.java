@@ -157,6 +157,12 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			}
 
 			if (!(resource instanceof IFile)) {
+				if(resource instanceof IProject) {
+					boolean projectConfigurationChanged = (delta.getFlags() & IResourceDelta.DESCRIPTION) != 0;
+					if(projectConfigurationChanged) {
+						fullBuildRequired = true;
+					}
+				}
 				return true;
 			}
 			
