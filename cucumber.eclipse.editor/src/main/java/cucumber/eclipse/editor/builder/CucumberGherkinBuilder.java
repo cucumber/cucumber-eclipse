@@ -79,6 +79,7 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 	private MarkerFactory markerFactory = MarkerFactory.INSTANCE;
 	private final UniversalStepDefinitionsProvider stepDefinitionsProvider = UniversalStepDefinitionsProvider.INSTANCE;
 	private final BuildStorage<GlueRepository> glueStorage = GlueStorage.INSTANCE;
+	private volatile boolean fullBuildRequired = false; 
 
 	@Override
 	protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
@@ -91,11 +92,11 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 		case AUTO_BUILD:
 		case INCREMENTAL_BUILD:
 			IResourceDelta delta = getDelta(getProject());
-			System.out.println("gherkin incrementale build on " + delta.getResource().getName());
+			System.out.println("> gherkin incremental build on " + delta.getResource().getName());
 			incrementalBuild(delta, glueDetectionEnabled, monitor);
 			break;
 		case CLEAN_BUILD:
-			System.out.println("gherkin clean build");
+			System.out.println("> gherkin clean build");
 			break;
 		default:
 			break;
@@ -103,10 +104,18 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 		return null;
 	}
 
-	private void incrementalBuild(IResourceDelta delta, boolean glueDetectionEnabled, IProgressMonitor monitor) throws CoreException {
+	private void incrementalBuild(IResourceDelta delta, boolean glueDetectionEnabled, IProgressMonitor monitor)
+			throws CoreException {
 		try {
+			fullBuildRequired = false;
+			delta.accept(new CucumberGherkinBuildCheckVisitor(glueDetectionEnabled));
 			// the visitor does the work.
-			delta.accept(new CucumberGherkinBuildVisitor(markerFactory, glueDetectionEnabled, monitor));
+			if (fullBuildRequired) {
+				System.out.println(">gherkin builder: force full build");
+				fullBuild(glueDetectionEnabled, monitor);
+			} else {
+				delta.accept(new CucumberGherkinBuildVisitor(markerFactory, glueDetectionEnabled, monitor));
+			}
 			glueStorage.persist(getProject(), monitor);
 		} catch (CoreException e) {
 			throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
@@ -120,6 +129,57 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			glueStorage.persist(getProject(), monitor);
 		} catch (CoreException e) {
 			throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
+		}
+	}
+
+	/**
+	 * This visitor quickly scans the resource delat to see if a full build is
+	 * necessary
+	 *
+	 */
+	class CucumberGherkinBuildCheckVisitor implements IResourceDeltaVisitor {
+
+		private boolean glueDetectionEnabled;
+
+		public CucumberGherkinBuildCheckVisitor(boolean glueDetectionEnabled) {
+			this.glueDetectionEnabled = glueDetectionEnabled;
+		}
+
+		@Override
+		public boolean visit(IResourceDelta delta) throws CoreException {
+			IResource resource = delta.getResource();
+
+			if (!resource.exists()) {
+				// skip
+				return false;
+			}
+
+			if (!(resource instanceof IFile)) {
+				return true;
+			}
+
+			// start of a very bad hack... see CucumberGherkinBuildVisitor
+			if (resource.getFullPath().toString().contains("test-classes")) {
+				return false;
+			}
+			// end of the very bad hack...
+
+			IFile file = (IFile) resource;
+
+			// Compile only gherkin files
+			String fileExtension = file.getFileExtension();
+			boolean isGherkinFile = "feature".equals(fileExtension) || "story".equals(fileExtension);
+			if (!isGherkinFile) {
+				if (!glueDetectionEnabled) {
+					// in this case there are nothing to do
+					return true;
+				}
+				if (stepDefinitionsProvider.support(file)) {
+					// force a full build of gherkin files
+					fullBuildRequired = true;
+				}
+			}
+			return true;
 		}
 	}
 
@@ -155,11 +215,11 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 				return false;
 			}
 
-			if(!resource.exists()) {
-				// skip 
-				return true;
+			if (!resource.exists()) {
+				// skip
+				return false;
 			}
-			
+
 			long start = System.currentTimeMillis();
 
 			if (!(resource instanceof IFile)) {
@@ -184,24 +244,11 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			String fileExtension = file.getFileExtension();
 			boolean isGherkinFile = "feature".equals(fileExtension) || "story".equals(fileExtension);
 			if (!isGherkinFile) {
-				if (!glueDetectionEnabled) {
-					// in this case there are nothing to do
-					return true;
-				}
-				// If this is not a gherkin file AND it is a step definitions file
-				// then we shall rebuild all gherkins files because this step definitions file
-				// could add glue to any of gherkins steps.
-
-				if (isIncrementalBuild && stepDefinitionsProvider.support(file)) {
-					// force a full build of gherkin files
-					fullBuild(glueDetectionEnabled, monitor);
-				}
-
 				return true;
 			}
 
-//			System.out.println(String.format("gherkin %s builder compile: %s",
-//					(isIncrementalBuild ? "incremental" : "full"), resource));
+			// System.out.println(String.format("gherkin %s builder compile: %s",
+			// (isIncrementalBuild ? "incremental" : "full"), resource));
 			GlueRepository glueRepository = glueStorage.getOrCreate(resource.getProject());
 			glueRepository.clean(resource);
 			this.markerFactory.cleanMarkers(resource);
@@ -300,7 +347,8 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			}
 		}
 
-		private void matchScenarioOutlineExample(ExamplesTableRow header, ExamplesTableRow example) throws CoreException {
+		private void matchScenarioOutlineExample(ExamplesTableRow header, ExamplesTableRow example)
+				throws CoreException {
 			Map<String, String> exampleVariablesMap = getExampleVariablesMap(header, example);
 			for (gherkin.formatter.model.Step scenarioOutlineStepLine : scenarioOutlineSteps) {
 				validate(scenarioOutlineStepLine, exampleVariablesMap, example.getLine());
@@ -322,15 +370,16 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 		/**
 		 * Check if the step have a matching step definitions.
 		 * 
-		 * @param step a gherkin step
-		 * @throws CoreException if any exception occurs 
+		 * @param step
+		 *            a gherkin step
+		 * @throws CoreException
+		 *             if any exception occurs
 		 */
 		protected void validate(Step step) throws CoreException {
 			if (!isGlueDetectionEnabled) {
 				return;
 			}
-			Set<StepDefinition> allStepDefinitions = stepDefinitionsProvider
-					.getStepDefinitions(this.project);
+			Set<StepDefinition> allStepDefinitions = stepDefinitionsProvider.getStepDefinitions(this.project);
 			Set<StepDefinition> stepDefinitionsScope = this.filter((IFile) gherkinFile, allStepDefinitions);
 			StepDefinition glueStepDefinition = null;
 
@@ -357,10 +406,14 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 		 * There are a particular way to process scenario outline step, since the
 		 * validation of examples should match with the previously parsed step.
 		 * 
-		 * @param scenarioOutlineStepLine the scenario outline
-		 * @param exampleVariablesMap     the examples
-		 * @param exampleLine             the line
-		 * @throws CoreException if any exception occurs 
+		 * @param scenarioOutlineStepLine
+		 *            the scenario outline
+		 * @param exampleVariablesMap
+		 *            the examples
+		 * @param exampleLine
+		 *            the line
+		 * @throws CoreException
+		 *             if any exception occurs
 		 */
 		private void validate(Step scenarioOutlineStepLine, Map<String, String> exampleVariablesMap,
 				Integer exampleLine) throws CoreException {
@@ -393,20 +446,20 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			}
 
 		}
-		
+
 		private Set<StepDefinition> filter(IFile gherkinFile, Set<StepDefinition> stepDefinitions) {
-			
+
 			Set<StepDefinition> filtered = new HashSet<StepDefinition>();
 			String gherkinLocation = gherkinFile.getParent().getFullPath().toString();
-			
+
 			boolean shouldFilterInSameLocation = this.stepPreferences.isGlueOnlyInSameLocationEnabled();
-			if(!shouldFilterInSameLocation) {
+			if (!shouldFilterInSameLocation) {
 				return stepDefinitions;
 			}
-			
+
 			SameLocationFilter sameLocationFilter = new SameLocationFilter(gherkinLocation);
 			FilterUtil.filter(stepDefinitions, sameLocationFilter, filtered);
-			
+
 			return filtered;
 		}
 
@@ -498,6 +551,5 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 
 		getProject().accept(new CucumberGherkinCleanBuildVisitor(markerFactory, monitor));
 	}
-	
-	
+
 }
