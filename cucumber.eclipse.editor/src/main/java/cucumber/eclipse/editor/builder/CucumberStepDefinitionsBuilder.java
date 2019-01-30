@@ -139,11 +139,22 @@ public class CucumberStepDefinitionsBuilder extends IncrementalProjectBuilder {
 			if(monitor.isCanceled()) {
 				return false;
 			}
-						
-			IResource resource = delta.getResource();
-//			System.out.println("CucumberIncrementalBuildVisitor is building " + delta.getResource().getName());
+			
+			int flags = delta.getFlags();
+			
+			boolean contentChanged = (flags & IResourceDelta.CONTENT) != 0;
+			boolean projectDescriptionChanged = (flags & IResourceDelta.DESCRIPTION) != 0;
+			
+			// process build only if the project configuration changed 
+			// or the resource changed
+			if(contentChanged || projectDescriptionChanged) {
+				IResource resource = delta.getResource();
+//				System.out.println("CucumberIncrementalBuildVisitor is building " + delta.getResource().getName());
 
-			return visit(resource);
+				return visit(resource);
+			}
+			
+			return true;
 		}
 
 	}
