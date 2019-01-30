@@ -37,7 +37,6 @@ public class StepDefinition implements Serializable {
 	}
 	public void setText(String text) throws CucumberExpressionException {
 		this.text = text;
-		this.initExpressionFactory();
 	}
 	
 	private void initExpressionFactory() {
