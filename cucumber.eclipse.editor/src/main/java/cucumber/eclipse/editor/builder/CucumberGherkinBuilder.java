@@ -27,6 +27,8 @@ import org.eclipse.jface.text.IDocument;
 import cucumber.eclipse.editor.steps.BuildStorage;
 import cucumber.eclipse.editor.steps.GlueRepository;
 import cucumber.eclipse.editor.steps.GlueStorage;
+import cucumber.eclipse.editor.steps.StepDefinitionsRepository;
+import cucumber.eclipse.editor.steps.StepDefinitionsStorage;
 import cucumber.eclipse.editor.steps.UniversalStepDefinitionsProvider;
 import cucumber.eclipse.editor.util.FileUtil;
 import cucumber.eclipse.steps.integration.Activator;
@@ -157,6 +159,12 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			if (!(resource instanceof IFile)) {
 				return true;
 			}
+			
+			int flags = delta.getFlags();
+			boolean contentChanged = (flags & IResourceDelta.CONTENT) != 0;
+			if(!contentChanged) {
+				return true;
+			}
 
 			// start of a very bad hack... see CucumberGherkinBuildVisitor
 			if (resource.getFullPath().toString().contains("test-classes")) {
@@ -174,7 +182,9 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 					// in this case there are nothing to do
 					return true;
 				}
-				if (stepDefinitionsProvider.support(file)) {
+				StepDefinitionsRepository stepDefinitionsRepository = StepDefinitionsStorage.INSTANCE.getOrCreate(getProject());
+				boolean isStepDefinitionsResource = stepDefinitionsRepository.isStepDefinitionsResource(resource); 
+				if (isStepDefinitionsResource && stepDefinitionsProvider.support(file)) {
 					// force a full build of gherkin files
 					fullBuildRequired = true;
 				}
