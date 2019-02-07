@@ -131,7 +131,7 @@ public class CucumberContentAssist {
 			for (StepDefinition step : importedSteps) {
 
 				// Get Step-Text
-				String stepText = getStepName(step.getText());
+				String stepText = getStepName(step.getExpression().getSource());
 
 				// Collect Steps from Source(.java) file Based on LineNumber
 				if (step.getLineNumber() != 0) {

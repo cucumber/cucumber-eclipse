@@ -7,6 +7,7 @@ import static cucumber.eclipse.editor.steps.StepDefinitionsRepository.*;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -25,17 +26,11 @@ public class StepDefinitionsRepositoryTest {
 	public void setUp() {
 		stepDefinitionsRepository = new StepDefinitionsRepository();
 		
-		StepDefinition stepDefinition1 = new StepDefinition();
-		stepDefinition1.setText("I buy {word}");
-		stepDefinition1.setLineNumber(21);
+		StepDefinition stepDefinition1 = createStep("I buy {word}",21);
 		
-		StepDefinition stepDefinition2 = new StepDefinition();
-		stepDefinition2.setText("I pay {int}");
-		stepDefinition2.setLineNumber(12);
+		StepDefinition stepDefinition2 = createStep("I pay {int}",12);
 		
-		StepDefinition stepDefinition3 = new StepDefinition();
-		stepDefinition3.setText("I add {int} and {int}");
-		stepDefinition3.setLineNumber(21);
+		StepDefinition stepDefinition3 = createStep("I add {int} and {int}", 21);
 		
 		Set<StepDefinition> steps = new HashSet<StepDefinition>();
 		steps.add(stepDefinition1);
@@ -52,6 +47,10 @@ public class StepDefinitionsRepositoryTest {
 
 	}
 	
+	private StepDefinition createStep(String text, int lineNo) {
+		return new StepDefinition(UUID.randomUUID().toString(), StepDefinition.NO_LABEL, StepDefinition.parseText("en", text), StepDefinition.NO_SOURCE, StepDefinition.NO_LINE_NUMBER, StepDefinition.NO_SOURCE_NAME, StepDefinition.NO_PACKAGE_NAME);
+	}
+
 	@Test
 	public void store() {
 		Set<StepDefinition> stepDefinitions = stepDefinitionsRepository.getAllStepDefinitions();

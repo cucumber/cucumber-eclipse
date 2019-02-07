@@ -23,6 +23,7 @@ public final class StepDefinition {
 	public static final String NO_SOURCE_NAME = null;
 	public static final String NO_PACKAGE_NAME = null;
 	public static final String NO_LABEL = null;
+	public static final IResource NO_SOURCE = null;
 
 	private final IResource source;
 	private final int lineNumber;
