@@ -2,13 +2,11 @@ package cucumber.eclipse.steps.jdt;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.JavaUI;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 
 import cucumber.eclipse.steps.integration.IStepDefinitionOpener;
@@ -43,7 +41,7 @@ public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
     }
 	
 	private IMember getMember(StepDefinition stepDefinition) {
-		String jdtHandleIdentifier = stepDefinition.getJDTHandleIdentifier();
+		String jdtHandleIdentifier = stepDefinition.getId();
 		if(jdtHandleIdentifier == null || jdtHandleIdentifier.isEmpty()) {
 			return null;
 		}

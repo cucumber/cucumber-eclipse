@@ -1,201 +1,142 @@
 package cucumber.eclipse.steps.integration;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Locale;
 
 import org.eclipse.core.resources.IResource;
 
 import io.cucumber.cucumberexpressions.Argument;
-import io.cucumber.cucumberexpressions.CucumberExpressionException;
 import io.cucumber.cucumberexpressions.Expression;
 import io.cucumber.cucumberexpressions.ExpressionFactory;
 import io.cucumber.cucumberexpressions.ParameterTypeRegistry;
 
-public class StepDefinition implements Serializable {
+/**
+ * A parse stepdefinition that relates either to a source file or a classpath
+ * item
+ * 
+ * @author Christoph Läubrich
+ *
+ */
+public final class StepDefinition {
 
-	private static final long serialVersionUID = 8357491927598467891L;
-	
-	private String text;
-	private transient IResource source;
-	private String sourcePath;
-	private int lineNumber;
-	private String lang;
-	private transient Expression expression;
-	private String jdtHandleIdentifier;
-	private String label;
-	
-	//Added By Girija
-	//For Reading Steps from External-ClassPath-JAR
-	private String sourceName;
-	private String packageName;
-	
-	//private String java8CukeSource;
-	
-	public String getText() {
-		return text;
+	public static final int NO_LINE_NUMBER = -1;
+	public static final String NO_SOURCE_NAME = null;
+	public static final String NO_PACKAGE_NAME = null;
+	public static final String NO_LABEL = null;
+
+	private final IResource source;
+	private final int lineNumber;
+	private final Expression expression;
+	private final String label;
+
+	private final String sourceName;
+	private final String packageName;
+	private final String id;
+
+	/**
+	 * Creates a new {@link StepDefinition}
+	 * 
+	 * @param id
+	 *            the persitent id of this step, this might be used by plugins
+	 *            to uniquily identify a step accros others in the workspace
+	 * @param label
+	 *            a userfriendly label
+	 * @param expression
+	 *            the expresion that this step contains
+	 * @param source
+	 *            the source where this step is created from
+	 * @param lineNumber
+	 *            an optional line limber where in the resource the step was
+	 *            found use {@link #NO_LINE_NUMBER} in case where no is avaiable
+	 * @param sourceName
+	 *            the name of the source, if not given, the name of te resource
+	 *            might be used
+	 * @param packageName
+	 *            the packagename of the source
+	 */
+	public StepDefinition(String id, String label, Expression expression, IResource source, int lineNumber,
+			String sourceName, String packageName) {
+		this.id = id;
+		this.label = label;
+		this.expression = expression;
+		this.source = source;
+		this.lineNumber = lineNumber;
+		this.sourceName = sourceName;
+		this.packageName = packageName;
 	}
-	public void setText(String text) throws CucumberExpressionException {
-		this.text = text;
-	}
-	
-	private void initExpressionFactory() {
-		Locale locale = this.lang == null ? Locale.getDefault() : new Locale(this.lang);
-		this.expression = new ExpressionFactory(new ParameterTypeRegistry(locale)).createExpression(text);
-	}
-	
+
 	public IResource getSource() {
-		// For marker, the plugin need to serialize StepDefinition
-		// however IResource is not serializable
-		// in this case we will retrieve it from its path
-		if(source == null && sourcePath != null) {
-			source = new ResourceHelper().find(this.sourcePath);
-		}
 		return source;
 	}
-	public void setSource(IResource source) {
-		this.source = source;
-		this.sourcePath = source.getFullPath().toString();
-	}
+	
 	public int getLineNumber() {
 		return lineNumber;
 	}
-	public void setLineNumber(int lineNumber) {
-		this.lineNumber = lineNumber;
-	}
-	
+
 	public boolean matches(String stepDefinitionText) {
-		if(this.expression == null) {
-			this.initExpressionFactory();
-		}
 		List<Argument<?>> match = this.match(stepDefinitionText);
 		return match != null;
 	}
-	
+
 	public List<Argument<?>> match(String s) {
-		try {
-			return this.expression.match(s);
-		} catch (Throwable e) {
-			// if an exception occurs, this means the cucumber expression
-			// have an error.
-			e.printStackTrace();
-			return null;
-		}
+		return this.expression.match(s);
 	}
-	
-	public String getLang() {
-		return lang;
-	}
-	public void setLang(String lang) {
-		this.lang = lang;
-	}
-	
-	
-	/*//For Java8-Cuke-Step-Definition file
-	public void setJava8CukeSource(String java8CukeSource) {
-		this.java8CukeSource = java8CukeSource;
-	}
-	
-	public String getJava8CukeSource() {
-		return java8CukeSource;
-	}*/
-	
-	
-	
-	
-	//Added By Girija
-	//Newly Added Below Methods For Reading Steps from External-ClassPath-JAR
-	//Set SourceName
-	public void setSourceName(String sourceName) {
-		this.sourceName = sourceName;
-	}
-	
-	//Get SourceName
+
 	public String getSourceName() {
+		if (sourceName == null && source !=null) {
+			return source.getName();
+		}
 		return sourceName;
 	}
-	
-	//Set PackageName
-	public void setPackageName(String packageName) {
-		this.packageName = packageName;
-	}
-	
-	//Get PackageName
+
 	public String getPackageName() {
 		return packageName;
 	}
-	
-	public String getJDTHandleIdentifier() {
-		return jdtHandleIdentifier;
+
+	/**
+	 * 
+	 * @return the id to identify this step in a persitent manner
+	 */
+	public String getId() {
+		return id;
 	}
-	public void setJDTHandleIdentifier(String jdtHandleIdentifier) {
-		this.jdtHandleIdentifier = jdtHandleIdentifier;
-	}
-	
+
 	public String getLabel() {
-		if(label == null) {
-			label = this.getSource().getName() + ":" + this.lineNumber;
+		if (label == null) {
+			return getSourceName() + ":" + this.lineNumber;
 		}
 		return label;
 	}
-	public void setLabel(String label) {
-		this.label = label;
-	}
+
+
 	@Override
 	public String toString() {
-		
-		//For Steps from Current-Project
-		if(lineNumber != 0)
-				return "Step [text=" + text + ", source=" + source + ", lineNumber="+ lineNumber +"]";
-			
-		//For Steps From External-ClassPath JAR
-		else		
-			return "Step [text=" + text + ", source=" + sourceName+", package="+ packageName +"]";
+
+		// For Steps from Current-Project
+		if (lineNumber != 0)
+			return "Step [text=" + getExpression().getSource() + ", source=" + source + ", lineNumber=" + lineNumber
+					+ "]";
+
+		// For Steps From External-ClassPath JAR
+		else
+			return "Step [text=" + getExpression().getSource() + ", source=" + sourceName + ", package=" + packageName
+					+ "]";
 	}
-	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((lang == null) ? 0 : lang.hashCode());
-		result = prime * result + lineNumber;
-		result = prime * result + ((packageName == null) ? 0 : packageName.hashCode());
-		result = prime * result + ((sourceName == null) ? 0 : sourceName.hashCode());
-		result = prime * result + ((text == null) ? 0 : text.hashCode());
-		return result;
+
+	public Expression getExpression() {
+		return expression;
 	}
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		StepDefinition other = (StepDefinition) obj;
-		if (lang == null) {
-			if (other.lang != null)
-				return false;
-		} else if (!lang.equals(other.lang))
-			return false;
-		if (lineNumber != other.lineNumber)
-			return false;
-		if (packageName == null) {
-			if (other.packageName != null)
-				return false;
-		} else if (!packageName.equals(other.packageName))
-			return false;
-		if (sourceName == null) {
-			if (other.sourceName != null)
-				return false;
-		} else if (!sourceName.equals(other.sourceName))
-			return false;
-		if (text == null) {
-			if (other.text != null)
-				return false;
-		} else if (!text.equals(other.text))
-			return false;
-		return true;
+
+	/**
+	 * creates an expression out of lang and text
+	 * 
+	 * @param lang
+	 * @param text
+	 * @return
+	 */
+	public static Expression parseText(String lang, String text) {
+		Locale locale = lang == null ? Locale.getDefault() : new Locale(lang);
+		return new ExpressionFactory(new ParameterTypeRegistry(locale)).createExpression(text);
 	}
-	
+
 }

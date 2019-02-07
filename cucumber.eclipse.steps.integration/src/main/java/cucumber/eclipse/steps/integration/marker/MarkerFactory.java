@@ -14,7 +14,6 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
-import org.eclipse.osgi.util.NLS;
 
 import cucumber.eclipse.steps.integration.Activator;
 import cucumber.eclipse.steps.integration.GherkinStepWrapper;
@@ -228,7 +227,7 @@ public class MarkerFactory {
 						marker.setAttribute(STEP_DEFINITION_MATCH_PATH_ATTRIBUTE,
 								stepDefinition.getSource().getFullPath().toString());
 					}
-					marker.setAttribute(STEP_DEFINITION_MATCH_JDT_HANDLE_IDENTIFIER_ATTRIBUTE, stepDefinition.getJDTHandleIdentifier());
+					marker.setAttribute(STEP_DEFINITION_MATCH_JDT_HANDLE_IDENTIFIER_ATTRIBUTE, stepDefinition.getId());
 					marker.setAttribute(STEP_DEFINITION_MATCH_LINE_NUMBER_ATTRIBUTE, stepDefinition.getLineNumber());
 					marker.setAttribute(STEP_DEFINITION_MATCH_TEXT_ATTRIBUTE, stepDefinitionText);
 				} catch (CoreException e) {
