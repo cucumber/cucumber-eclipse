@@ -4,12 +4,15 @@ package cucumber.eclipse.editor.editors;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.util.UUID;
+
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 import org.junit.Before;
 import org.junit.Test;
 
 import cucumber.eclipse.editor.editors.jumpto.StepHyperlink;
+import cucumber.eclipse.steps.integration.ExpressionDefinition;
 import cucumber.eclipse.steps.integration.StepDefinition;
 
 public class StepHyperlinkTest {
@@ -20,8 +23,7 @@ public class StepHyperlinkTest {
 	@Before
 	public void setUp() {
 		region = new Region(0, 10);
-		StepDefinition step = new StepDefinition();
-		step.setText("Given I have a cat");
+		StepDefinition step = new StepDefinition(UUID.randomUUID().toString(), "", new ExpressionDefinition("Given I have a cat", "en"), null, 0, null, null);
 		stepHyperlink = new StepHyperlink(region, step);
 	}
 	

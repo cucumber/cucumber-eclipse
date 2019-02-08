@@ -1,6 +1,7 @@
 package cucumber.eclipse.editor.editors.jumpto;
 
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -10,46 +11,50 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
 import cucumber.eclipse.editor.Activator;
+import cucumber.eclipse.editor.steps.StepDefinitionsRepository;
+import cucumber.eclipse.editor.steps.StepDefinitionsStorage;
 import cucumber.eclipse.editor.util.ExtensionRegistryUtil;
 import cucumber.eclipse.steps.integration.IStepDefinitionOpener;
-import cucumber.eclipse.steps.integration.ResourceHelper;
 import cucumber.eclipse.steps.integration.StepDefinition;
 import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 
 class JumpToStepDefinition {
-	
-	public static StepDefinition findStepDefinitionMatch(int selectionLineNumber, IFile gherkinFile) throws CoreException {
-		StepDefinition stepDefinition = null;
-		IMarker stepDefinitionMatchMarker = JumpToStepDefinition.findStepDefinitionMatchMarker(selectionLineNumber, gherkinFile);
-		if(stepDefinitionMatchMarker != null) {
-			String stepDefinitionPath = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_PATH_ATTRIBUTE);
-			if(stepDefinitionPath == null) {
-				// unable to jump
-				return null;
+
+	public static StepDefinition findStepDefinitionMatch(int selectionLineNumber, IFile gherkinFile)
+			throws CoreException {
+		IMarker stepDefinitionMatchMarker = JumpToStepDefinition.findStepDefinitionMatchMarker(selectionLineNumber,
+				gherkinFile);
+		if (stepDefinitionMatchMarker != null) {
+			String id = (String) stepDefinitionMatchMarker
+					.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_JDT_HANDLE_IDENTIFIER_ATTRIBUTE);
+			//Search step in repository
+			if (id != null) {
+				StepDefinitionsRepository repository = StepDefinitionsStorage.INSTANCE
+						.getOrCreate(gherkinFile.getProject(), null);
+				Set<StepDefinition> stepDefinitions = repository.getAllStepDefinitions();
+				for (StepDefinition step : stepDefinitions) {
+					if (id.equals(step.getId())) {
+						return step;
+					}
+				}
 			}
-			String stepDefinitionText = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_TEXT_ATTRIBUTE);
-			Integer stepDefinitionLineNumber = (Integer) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_LINE_NUMBER_ATTRIBUTE);
-			
-			stepDefinition = new StepDefinition();
-			stepDefinition.setSource(new ResourceHelper().find(stepDefinitionPath));
-			stepDefinition.setText(stepDefinitionText);
-			stepDefinition.setLineNumber(stepDefinitionLineNumber);
 		}
-		return stepDefinition;
+		return null;
 	}
-	
-	public static IMarker findStepDefinitionMatchMarker(int selectionLineNumber, IFile gherkinFile) throws CoreException {
-		IMarker stepDefinitionMatchMarker = null; 
+
+	public static IMarker findStepDefinitionMatchMarker(int selectionLineNumber, IFile gherkinFile)
+			throws CoreException {
+		IMarker stepDefinitionMatchMarker = null;
 		IMarker[] markers = gherkinFile.findMarkers(MarkerFactory.STEP_DEFINTION_MATCH, false, IResource.DEPTH_ZERO);
 		for (IMarker marker : markers) {
 			Integer lineNumber = (Integer) marker.getAttribute(IMarker.LINE_NUMBER);
-			if(lineNumber.equals(selectionLineNumber)) {
+			if (lineNumber.equals(selectionLineNumber)) {
 				stepDefinitionMatchMarker = marker;
 				break;
 			}
 		}
 
-		if(stepDefinitionMatchMarker == null) {
+		if (stepDefinitionMatchMarker == null) {
 			return null;
 		}
 		return stepDefinitionMatchMarker;
@@ -59,7 +64,7 @@ class JumpToStepDefinition {
 		try {
 			List<IStepDefinitionOpener> openers = ExtensionRegistryUtil.getStepDefinitionOpener();
 			for (IStepDefinitionOpener opener : openers) {
-				if(opener.canOpen(stepDefinition)) {
+				if (opener.canOpen(stepDefinition)) {
 					opener.openInEditor(stepDefinition);
 					return;
 				}

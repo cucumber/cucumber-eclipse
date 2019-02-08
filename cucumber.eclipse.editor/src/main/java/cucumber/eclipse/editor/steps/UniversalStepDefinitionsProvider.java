@@ -39,7 +39,7 @@ public class UniversalStepDefinitionsProvider implements IStepDefinitionsProvide
 	}
 
 	public Set<StepDefinition> getStepDefinitions(IProject project) throws CoreException {
-		StepDefinitionsRepository stepDefinitionsRepository = this.stepDefinitionsStorage.getOrCreate(project);
+		StepDefinitionsRepository stepDefinitionsRepository = this.stepDefinitionsStorage.getOrCreate(project, null);
 		Set<StepDefinition> stepDefinitions = stepDefinitionsRepository.getAllStepDefinitions(); // step definitions of the current projects
 		
 		IProject[] referencedProjects = project.getReferencedProjects();
@@ -52,7 +52,7 @@ public class UniversalStepDefinitionsProvider implements IStepDefinitionsProvide
 	}
 
 	public Set<IFile> getStepDefinitionsFiles(IProject project) throws CoreException {
-		StepDefinitionsRepository stepDefinitionsRepository = this.stepDefinitionsStorage.getOrCreate(project);
+		StepDefinitionsRepository stepDefinitionsRepository = this.stepDefinitionsStorage.getOrCreate(project, null);
 		return stepDefinitionsRepository.getAllStepDefinitionsFiles();
 	}
 
@@ -65,7 +65,7 @@ public class UniversalStepDefinitionsProvider implements IStepDefinitionsProvide
 				stepDefinitionsProviders.size());
 
 		IProject project = stepDefinitionResource.getProject();
-		StepDefinitionsRepository stepDefinitionsRepository = this.stepDefinitionsStorage.getOrCreate(project);
+		StepDefinitionsRepository stepDefinitionsRepository = this.stepDefinitionsStorage.getOrCreate(project, null);
 
 		int stepDefinitionsCounter = 0;
 		for (IStepDefinitionsProvider stepDefinitionsService : stepDefinitionsProviders) {
@@ -90,7 +90,7 @@ public class UniversalStepDefinitionsProvider implements IStepDefinitionsProvide
 	}
 
 	public void clean(IProject project) throws CoreException {
-		StepDefinitionsRepository stepDefinitionsRepository = this.stepDefinitionsStorage.getOrCreate(project);
+		StepDefinitionsRepository stepDefinitionsRepository = this.stepDefinitionsStorage.getOrCreate(project, null);
 		stepDefinitionsRepository.reset();
 	}
 

@@ -1,6 +1,9 @@
 package cucumber.eclipse.editor.steps;
 
+import java.io.Externalizable;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,18 +21,17 @@ import org.eclipse.core.resources.IResource;
 
 import cucumber.eclipse.steps.integration.GherkinStepWrapper;
 import cucumber.eclipse.steps.integration.Glue;
-import cucumber.eclipse.steps.integration.SerializationHelper;
 import cucumber.eclipse.steps.integration.StepDefinition;
 import gherkin.I18n;
 import gherkin.formatter.model.Step;
 
 
-public class GlueRepository implements Serializable {
+public class GlueRepository implements Externalizable {
 	
 	private static final long serialVersionUID = -3784224573706686779L;
 
 	
-	private Map<GherkinStepWrapper, StepDefinition> glues = new HashMap<GherkinStepWrapper, StepDefinition>();
+	private final Map<GherkinStepWrapper, StepDefinition> glues = new HashMap<GherkinStepWrapper, StepDefinition>();
 	
 	protected GlueRepository() {
 	}
@@ -183,14 +185,24 @@ public class GlueRepository implements Serializable {
 		}
 	}
 	
-	public static String serialize(GlueRepository glueRepository) throws IOException {
-		return SerializationHelper.serialize(glueRepository.glues);
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		glues.clear();
+		int items = in.readInt();
+		for (int i = 0; i < items; i++) {
+			GherkinStepWrapper wrapper = (GherkinStepWrapper) in.readObject();
+			glues.put(wrapper, StorageHelper.readStepDefinition(in));
+		}
+		
 	}
-	
-	public static GlueRepository deserialize(String glueRepositorySerialized) throws ClassNotFoundException, IOException {
-		Map<GherkinStepWrapper, StepDefinition> glues = SerializationHelper.deserialize(glueRepositorySerialized);
-		GlueRepository glueRepository = new GlueRepository();
-		glueRepository.glues = glues;
-		return glueRepository;
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeInt(glues.size());
+		for (Entry<GherkinStepWrapper, StepDefinition> entry : glues.entrySet()) {
+			out.writeObject(entry.getKey());
+			StorageHelper.writeStepDefinition(entry.getValue(), out);
+		}
+		
 	}
 }

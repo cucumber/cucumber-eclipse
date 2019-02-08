@@ -1,5 +1,7 @@
 package cucumber.eclipse.editor.editors.jumpto;
 
+import java.util.Set;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
@@ -12,7 +14,8 @@ import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 
 import cucumber.eclipse.editor.editors.Editor;
-import cucumber.eclipse.steps.integration.ResourceHelper;
+import cucumber.eclipse.editor.steps.StepDefinitionsRepository;
+import cucumber.eclipse.editor.steps.StepDefinitionsStorage;
 import cucumber.eclipse.steps.integration.StepDefinition;
 import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 
@@ -52,21 +55,28 @@ public class StepHyperlinkDetector implements IHyperlinkDetector {
 				String stepDefinitionText = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_TEXT_ATTRIBUTE);
 				Integer stepDefinitionLineNumber = (Integer) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_LINE_NUMBER_ATTRIBUTE);
 				
-				StepDefinition stepDefinition = new StepDefinition();
-				if(stepDefinitionPath != null) {
-					stepDefinition.setSource(new ResourceHelper().find(stepDefinitionPath));
-				}
-				stepDefinition.setText(stepDefinitionText);
-				stepDefinition.setLineNumber(stepDefinitionLineNumber);
-				stepDefinition.setJDTHandleIdentifier(stepDefinitionJDTHandleIdentifier);
-	
-				// define the hyperlink region
-				String textStatement = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_TEXT_ATTRIBUTE);
-				int statementStartOffset = lineStartOffset + currentLine.indexOf(textStatement);
-	
-				IRegion stepRegion = new Region(statementStartOffset, textStatement.length());
+				String id = (String) stepDefinitionMatchMarker
+						.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_JDT_HANDLE_IDENTIFIER_ATTRIBUTE);
+				//Search step in repository
+				if (id != null) {
+					StepDefinitionsRepository repository = StepDefinitionsStorage.INSTANCE
+							.getOrCreate(gherkinFile.getProject(), null);
+					Set<StepDefinition> stepDefinitions = repository.getAllStepDefinitions();
+					for (StepDefinition stepDefinition : stepDefinitions) {
+						if (id.equals(stepDefinition.getId())) {
+							// define the hyperlink region
+							String textStatement = (String) stepDefinitionMatchMarker.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_TEXT_ATTRIBUTE);
+							int statementStartOffset = lineStartOffset + currentLine.indexOf(textStatement);
 				
-				return new IHyperlink[] { new StepHyperlink(stepRegion, stepDefinition) };
+							IRegion stepRegion = new Region(statementStartOffset, textStatement.length());
+							
+							return new IHyperlink[] { new StepHyperlink(stepRegion, stepDefinition) };
+						}
+					}
+				}
+				
+				
+				
 			}
 		} catch (BadLocationException e1) {
 			e1.printStackTrace();

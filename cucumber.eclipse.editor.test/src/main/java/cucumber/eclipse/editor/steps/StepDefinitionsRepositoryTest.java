@@ -1,12 +1,15 @@
 package cucumber.eclipse.editor.steps;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.CoreMatchers.*;
-import static cucumber.eclipse.editor.steps.StepDefinitionsRepository.*;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -14,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import cucumber.eclipse.editor.tests.MockFile;
+import cucumber.eclipse.steps.integration.ExpressionDefinition;
 import cucumber.eclipse.steps.integration.ResourceHelper;
 import cucumber.eclipse.steps.integration.StepDefinition;
 
@@ -25,17 +29,11 @@ public class StepDefinitionsRepositoryTest {
 	public void setUp() {
 		stepDefinitionsRepository = new StepDefinitionsRepository();
 		
-		StepDefinition stepDefinition1 = new StepDefinition();
-		stepDefinition1.setText("I buy {word}");
-		stepDefinition1.setLineNumber(21);
+		StepDefinition stepDefinition1 = createStep("I buy {word}",21);
 		
-		StepDefinition stepDefinition2 = new StepDefinition();
-		stepDefinition2.setText("I pay {int}");
-		stepDefinition2.setLineNumber(12);
+		StepDefinition stepDefinition2 = createStep("I pay {int}",12);
 		
-		StepDefinition stepDefinition3 = new StepDefinition();
-		stepDefinition3.setText("I add {int} and {int}");
-		stepDefinition3.setLineNumber(21);
+		StepDefinition stepDefinition3 = createStep("I add {int} and {int}", 21);
 		
 		Set<StepDefinition> steps = new HashSet<StepDefinition>();
 		steps.add(stepDefinition1);
@@ -52,6 +50,10 @@ public class StepDefinitionsRepositoryTest {
 
 	}
 	
+	private StepDefinition createStep(String text, int lineNo) {
+		return new StepDefinition(UUID.randomUUID().toString(), StepDefinition.NO_LABEL, new ExpressionDefinition(text, "en"), StepDefinition.NO_SOURCE, StepDefinition.NO_LINE_NUMBER, StepDefinition.NO_SOURCE_NAME, StepDefinition.NO_PACKAGE_NAME);
+	}
+
 	@Test
 	public void store() {
 		Set<StepDefinition> stepDefinitions = stepDefinitionsRepository.getAllStepDefinitions();
@@ -88,10 +90,10 @@ public class StepDefinitionsRepositoryTest {
 
 	@Test
 	public void serialization() throws IOException, ClassNotFoundException {
-		String serialization = serialize(stepDefinitionsRepository);
-		assertThat(serialization, is(notNullValue()));
-		
-		StepDefinitionsRepository deserializedRepository = deserialize(serialization, new TestResourceHelper());
+		InputStream stream = StorageHelper.toStream(stepDefinitionsRepository, null);
+		assertNotNull(stream);
+		StorageHelper.RESOURCEHELPER = new TestResourceHelper();
+		StepDefinitionsRepository deserializedRepository = StorageHelper.fromStream(StepDefinitionsRepository.class, stream, null);
 		Set<StepDefinition> stepDefinitions = deserializedRepository.getAllStepDefinitions();
 		assertThat(stepDefinitions.size(), equalTo(3));
 		
