@@ -78,7 +78,7 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 
 	// From Java-Source-File(.java) : Collect All Steps as List based on
 	// Cucumber-Annotations
-	
+
 	private List<StepDefinition> getCukeSteps(ICompilationUnit iCompUnit, MarkerFactory markerFactory,
 			IProgressMonitor progressMonitor) throws JavaModelException, CoreException {
 
@@ -165,7 +165,7 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 										}
 										int lineNumber = javaParser.getLineNumber(statement);
 										ExpressionDefinition expression;
-										expression = new ExpressionDefinition(method.getCukeLang(), lambdaStep);
+										expression = new ExpressionDefinition(lambdaStep, method.getCukeLang());
 										StepDefinition step = new StepDefinition(ifType.getHandleIdentifier(),
 												StepDefinition.NO_LABEL, expression, resource, lineNumber,
 												method.getMethodName(), t.getPackageFragment().getElementName());
@@ -185,8 +185,8 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 						if (cukeAnnotation != null) {
 							int lineNumber = getLineNumber(iCompUnit, annotation);
 							ExpressionDefinition expression;
-							expression = new ExpressionDefinition(cukeAnnotation.getLang(),
-									getAnnotationText(annotation));
+							expression = new ExpressionDefinition(getAnnotationText(annotation),
+									cukeAnnotation.getLang());
 							StepDefinition step = new StepDefinition(method.getHandleIdentifier(),
 									StepDefinition.NO_LABEL, expression, resource, lineNumber, method.getElementName(),
 									t.getPackageFragment().getElementName());
@@ -539,7 +539,7 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 				IJavaElement pkg = classFile.getParent();
 				IJavaElement jar = pkg.getParent();
 				ExpressionDefinition expression;
-				expression = new ExpressionDefinition(cukeAnnotation.getLang(), getAnnotationText(annotation));
+				expression = new ExpressionDefinition(getAnnotationText(annotation), cukeAnnotation.getLang());
 
 				String classFileName = classFile.getElementName();
 				String packageName = pkg.getElementName();

@@ -81,7 +81,9 @@ public class StepDefinitionsStorage implements BuildStorage<StepDefinitionsRepos
 							inputStream, monitor);
 					this.add(project, repository);
 			}
-			//If an error occures then this means our stored data is incompatible and we must start with a fresh repository
+		} catch (RuntimeException e) {
+			Activator.getDefault().getLog().log(new Status(Status.ERROR, Activator.PLUGIN_ID, "loading StepDefinitionStore failed, a full rebuild of the project might be required", e));
+			this.add(project, new StepDefinitionsRepository());
 		} catch (IOException e) {
 			Activator.getDefault().getLog().log(new Status(Status.ERROR, Activator.PLUGIN_ID, "loading StepDefinitionStore failed, a full rebuild of the project might be required", e));
 			this.add(project, new StepDefinitionsRepository());

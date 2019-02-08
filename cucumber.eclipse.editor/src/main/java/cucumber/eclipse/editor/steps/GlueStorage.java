@@ -105,7 +105,9 @@ public class GlueStorage implements BuildStorage<GlueRepository> {
 				GlueRepository glueRepository = StorageHelper.fromStream(GlueRepository.class, inputStream, monitor);
 				glueRepositoryByProject.put(project, glueRepository);
 			}
-			//in case of error we must start over with a clean repository
+		} catch (RuntimeException e) {
+			Activator.getDefault().getLog().log(new Status(Status.ERROR, Activator.PLUGIN_ID, "loading StepDefinitionStore failed, a full rebuild of the project might be required", e));
+			glueRepositoryByProject.put(project, new GlueRepository());
 		} catch (IOException e) {
 			Activator.getDefault().getLog().log(new Status(Status.ERROR, Activator.PLUGIN_ID, "loading GlueStore failed, a full rebuild of the project might be required", e));
 			glueRepositoryByProject.put(project, new GlueRepository());

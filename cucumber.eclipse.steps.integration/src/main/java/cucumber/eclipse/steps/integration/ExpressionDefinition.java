@@ -12,6 +12,9 @@ public final class ExpressionDefinition {
 	private final String lang;
 
 	public ExpressionDefinition(String text, String lang) {
+		if (text == null) {
+			throw new IllegalArgumentException("text cant be null");
+		}
 		this.text = text;
 		this.lang = lang;
 	}
