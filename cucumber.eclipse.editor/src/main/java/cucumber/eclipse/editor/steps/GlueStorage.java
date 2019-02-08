@@ -105,10 +105,13 @@ public class GlueStorage implements BuildStorage<GlueRepository> {
 				GlueRepository glueRepository = StorageHelper.fromStream(GlueRepository.class, inputStream, monitor);
 				glueRepositoryByProject.put(project, glueRepository);
 			}
+			//in case of error we must start over with a clean repository
 		} catch (IOException e) {
-			throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
+			Activator.getDefault().getLog().log(new Status(Status.ERROR, Activator.PLUGIN_ID, "loading GlueStore failed, a full rebuild of the project might be required", e));
+			glueRepositoryByProject.put(project, new GlueRepository());
 		} catch (ClassNotFoundException e) {
-			throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
+			glueRepositoryByProject.put(project, new GlueRepository());
+			Activator.getDefault().getLog().log(new Status(Status.ERROR, Activator.PLUGIN_ID, "loading GlueStore failed, a full rebuild of the project might be required", e));
 		}
 	}
 

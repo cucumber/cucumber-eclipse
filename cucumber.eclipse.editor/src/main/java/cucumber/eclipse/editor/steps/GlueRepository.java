@@ -21,7 +21,6 @@ import org.eclipse.core.resources.IResource;
 
 import cucumber.eclipse.steps.integration.GherkinStepWrapper;
 import cucumber.eclipse.steps.integration.Glue;
-import cucumber.eclipse.steps.integration.SerializationHelper;
 import cucumber.eclipse.steps.integration.StepDefinition;
 import gherkin.I18n;
 import gherkin.formatter.model.Step;

@@ -10,6 +10,7 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -63,16 +64,26 @@ public class StorageHelper {
 			InputStream stream) throws CoreException {
 		SubMonitor subMonitor = SubMonitor.convert(monitor, "Saving data", 100);
 		IFolder target = getOutputFolder(project);
-		SubMonitor child = subMonitor.newChild(10);
-		if (!target.exists()) {
-			target.create(true, true, child);
-		}
+		createFolder(target, subMonitor.newChild(10));
 		IFile buildFile = target.getFile(filename);
 		if (buildFile.exists()) {
 			buildFile.setContents(stream, true, false, subMonitor.newChild(90));
 		} else {
 			buildFile.create(stream, true, subMonitor.newChild(90));
 		}
+	}
+
+	private static void createFolder(IFolder folder, IProgressMonitor monitor) throws CoreException {
+		if (folder.exists()) {
+			return;
+		}
+		SubMonitor subMonitor = SubMonitor.convert(monitor, 2);
+		IContainer parent = folder.getParent();
+		if (parent instanceof IFolder) {
+			IFolder parentFolder = (IFolder) parent;
+			createFolder(parentFolder, subMonitor.newChild(1));
+		}
+		folder.create(true, true, subMonitor.newChild(1));
 	}
 
 	static ResourceHelper RESOURCEHELPER = new ResourceHelper();

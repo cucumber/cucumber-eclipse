@@ -4,6 +4,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -32,8 +33,9 @@ import cucumber.eclipse.steps.integration.StepDefinition;
  */
 public class StepDefinitionsRepository implements Externalizable {
 
+	private static final long serialVersionUID = -5426643465030832989L;
 	private final Map<IResource, Set<StepDefinition>> stepDefinitionsByResourceName = new HashMap<IResource, Set<StepDefinition>>();
-	public void add(IResource stepDefinitionsFile, Set<StepDefinition> steps) {
+	public synchronized void add(IResource stepDefinitionsFile, Set<StepDefinition> steps) {
 		if (steps.isEmpty()) {
 			this.stepDefinitionsByResourceName.remove(stepDefinitionsFile);
 		} else {
@@ -69,7 +71,7 @@ public class StepDefinitionsRepository implements Externalizable {
 
 
 	@Override
-	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+	public synchronized void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
 		stepDefinitionsByResourceName.clear();
 		int size = in.readInt();
 		for (int i = 0; i < size; i++) {
@@ -91,7 +93,7 @@ public class StepDefinitionsRepository implements Externalizable {
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput out) throws IOException {
+	public synchronized void writeExternal(ObjectOutput out) throws IOException {
 		out.writeInt(stepDefinitionsByResourceName.size());
 		for (Entry<IResource, Set<StepDefinition>> entry : stepDefinitionsByResourceName.entrySet()) {
 			out.writeObject(entry.getKey().getFullPath().toString());

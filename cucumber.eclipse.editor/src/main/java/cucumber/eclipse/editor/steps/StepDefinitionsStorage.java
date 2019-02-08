@@ -2,6 +2,7 @@ package cucumber.eclipse.editor.steps;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InvalidClassException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -75,14 +76,18 @@ public class StepDefinitionsStorage implements BuildStorage<StepDefinitionsRepos
 			return;
 		}
 		try {
-			try(InputStream inputStream = buildFile.getContents()) {
-				StepDefinitionsRepository repository = StorageHelper.fromStream(StepDefinitionsRepository.class, inputStream, monitor);
-				this.add(project, repository);
+			try (InputStream inputStream = buildFile.getContents()) {
+					StepDefinitionsRepository repository = StorageHelper.fromStream(StepDefinitionsRepository.class,
+							inputStream, monitor);
+					this.add(project, repository);
 			}
+			//If an error occures then this means our stored data is incompatible and we must start with a fresh repository
 		} catch (IOException e) {
-			throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
+			Activator.getDefault().getLog().log(new Status(Status.ERROR, Activator.PLUGIN_ID, "loading StepDefinitionStore failed, a full rebuild of the project might be required", e));
+			this.add(project, new StepDefinitionsRepository());
 		} catch (ClassNotFoundException e) {
-			throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
+			Activator.getDefault().getLog().log(new Status(Status.ERROR, Activator.PLUGIN_ID, "loading StepDefinitionStore failed, a full rebuild of the project might be required", e));
+			this.add(project, new StepDefinitionsRepository());
 		}
 	}
 
