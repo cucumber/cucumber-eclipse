@@ -26,14 +26,14 @@ public class StepDefinitionsStorage implements BuildStorage<StepDefinitionsRepos
 	private Map<IProject, StepDefinitionsRepository> stepDefinitionsByProject = new HashMap<IProject, StepDefinitionsRepository>();
 
 	private List<IProject> initializedProjects = new ArrayList<IProject>();
-	
+
 	private StepDefinitionsStorage() {
 	}
 
 	@Override
-	public StepDefinitionsRepository getOrCreate(IProject project) throws CoreException {
-		if(!initializedProjects.contains(project)) {
-			this.load(project, null);
+	public StepDefinitionsRepository getOrCreate(IProject project, IProgressMonitor monitor) throws CoreException {
+		if (!initializedProjects.contains(project)) {
+			this.load(project, monitor);
 			this.initializedProjects.add(project);
 		}
 		StepDefinitionsRepository stepDefinitionRepository = stepDefinitionsByProject.get(project);
@@ -52,43 +52,33 @@ public class StepDefinitionsStorage implements BuildStorage<StepDefinitionsRepos
 
 	@Override
 	public void persist(IProject project, IProgressMonitor monitor) throws CoreException {
-		StepDefinitionsRepository stepDefinitionsRepository = this.getOrCreate(project);
-		String stepDefinitionsRepositorySerialized;
+		SubMonitor subMonitor = SubMonitor.convert(monitor, "Persiting step definitions", 100);
+		StepDefinitionsRepository stepDefinitionsRepository = this.getOrCreate(project, subMonitor.newChild(10));
 		try {
-			stepDefinitionsRepositorySerialized = StepDefinitionsRepository.serialize(stepDefinitionsRepository);
-			StorageHelper.saveIntoBuildDirectory(BUILD_FILE, project, monitor, stepDefinitionsRepositorySerialized.getBytes());
+			try (InputStream inputStream = StorageHelper.toStream(stepDefinitionsRepository, subMonitor.newChild(80))) {
+				StorageHelper.saveIntoBuildDirectory(BUILD_FILE, project, subMonitor.newChild(10), inputStream);
+			}
 		} catch (IOException e) {
 			throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
 		}
-		
+
 	}
 
 	@Override
 	public void load(IProject project, IProgressMonitor monitor) throws CoreException {
-        SubMonitor subMonitor = SubMonitor.convert(monitor, 2);
-        
-		IFolder target = project.getFolder("target");
-		if (!target.exists()) {
+		IFolder outputFolder = StorageHelper.getOutputFolder(project);
+		if (!outputFolder.exists()) {
 			return;
 		}
-		IFile buildFile = target.getFile(BUILD_FILE);
+		IFile buildFile = outputFolder.getFile(BUILD_FILE);
 		if (!buildFile.exists()) {
 			return;
 		}
-		InputStream inputStream = buildFile.getContents();
-		String stepDefinitionsRepositorySerialized;
 		try {
-            subMonitor.setTaskName("Loading cucumber step definitions from a previous build");
-			stepDefinitionsRepositorySerialized = StorageHelper.copy(inputStream);
-			subMonitor.newChild(1);
-			
-			subMonitor.setTaskName("Deserialize cucumber step definitions");
-			StepDefinitionsRepository stepDefinitionsRepository = StepDefinitionsRepository
-					.deserialize(stepDefinitionsRepositorySerialized);
-			this.add(project, stepDefinitionsRepository);
-			subMonitor.newChild(1);
-			subMonitor.done();
-			System.out.println(stepDefinitionsRepository.getAllStepDefinitions().size() + " step definitions loaded for "+project.getName());
+			try(InputStream inputStream = buildFile.getContents()) {
+				StepDefinitionsRepository repository = StorageHelper.fromStream(StepDefinitionsRepository.class, inputStream, monitor);
+				this.add(project, repository);
+			}
 		} catch (IOException e) {
 			throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
 		} catch (ClassNotFoundException e) {

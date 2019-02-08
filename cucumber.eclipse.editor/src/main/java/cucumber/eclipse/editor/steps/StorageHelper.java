@@ -4,43 +4,107 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
+
+import cucumber.eclipse.steps.integration.ExpressionDefinition;
+import cucumber.eclipse.steps.integration.ResourceHelper;
+import cucumber.eclipse.steps.integration.StepDefinition;
 
 public class StorageHelper {
 
-	protected static void saveIntoBuildDirectory(String filename, IProject project, IProgressMonitor monitor,
-			byte[] data) throws CoreException {
-		IFolder target = project.getFolder("target"); // should be replace by a project preference
-		if (!target.exists()) {
-			target.create(false, true, monitor);
-		}
-		IFile buildFile = target.getFile(filename);
-		ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
-		if (buildFile.exists()) {
-			buildFile.setContents(inputStream, true, false, monitor);
-		} else {
-			buildFile.create(inputStream, true, monitor);
+	private static final String OUTPUT_FOLDER = ".cucumber";
+
+	public static InputStream toStream(Serializable serializable, IProgressMonitor monitor) throws IOException {
+		try (ByteArrayOutputStream bout = new ByteArrayOutputStream()) {
+			try (ObjectOutputStream outputStream = new ObjectOutputStream(bout)) {
+				outputStream.writeObject(serializable);
+			}
+			return new ByteArrayInputStream(bout.toByteArray());
 		}
 	}
 	
-	protected static String copy(InputStream inputStream) throws IOException {
-		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-		int nRead;
-		byte[] data = new byte[1024];
-		while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
-			buffer.write(data, 0, nRead);
+	public static <T extends Serializable> T fromStream(Class<T> type, InputStream stream, IProgressMonitor monitor) throws IOException, ClassNotFoundException {
+		try (ObjectInputStream objectStream = new ObjectInputStream(stream)) {
+			return type.cast(objectStream.readObject());
 		}
-		buffer.flush();
-		byte[] byteArray = buffer.toByteArray();
+	}
 
-		String stepDefinitionsRepositorySerialized = new String(byteArray, StandardCharsets.UTF_8);
-		return stepDefinitionsRepositorySerialized;
+	public static IFolder getOutputFolder(IProject project)
+			throws JavaModelException, CoreException {
+		if (!project.isOpen()) {
+			throw new IllegalStateException("Project is closed");
+		}
+		IFolder folder;
+		if (project.hasNature(JavaCore.NATURE_ID)) {
+			IJavaProject javaProject = JavaCore.create(project);
+			folder = project.getFolder(javaProject.getOutputLocation()).getFolder(OUTPUT_FOLDER);
+		} else {
+			folder = project.getFolder(OUTPUT_FOLDER);
+		}
+		return folder;
+	}
+
+	public static void saveIntoBuildDirectory(String filename, IProject project, IProgressMonitor monitor,
+			InputStream stream) throws CoreException {
+		SubMonitor subMonitor = SubMonitor.convert(monitor, "Saving data", 100);
+		IFolder target = getOutputFolder(project);
+		SubMonitor child = subMonitor.newChild(10);
+		if (!target.exists()) {
+			target.create(true, true, child);
+		}
+		IFile buildFile = target.getFile(filename);
+		if (buildFile.exists()) {
+			buildFile.setContents(stream, true, false, subMonitor.newChild(90));
+		} else {
+			buildFile.create(stream, true, subMonitor.newChild(90));
+		}
+	}
+
+	static ResourceHelper RESOURCEHELPER = new ResourceHelper();
+
+	static void writeStepDefinition(StepDefinition stepDefinition, ObjectOutput out) throws IOException {
+		out.writeObject(stepDefinition.getId());
+		out.writeObject(stepDefinition.getLabel());
+		out.writeObject(stepDefinition.getPackageName());
+		out.writeObject(stepDefinition.getSourceName());
+		out.writeInt(stepDefinition.getLineNumber());
+		out.writeObject(stepDefinition.getExpression().getLang());
+		out.writeObject(stepDefinition.getExpression().getText());
+		IResource source = stepDefinition.getSource();
+		if (source != null) {
+			out.writeObject(source.getFullPath().toString());
+		} else {
+			out.writeObject(null);
+		}
+	}
+
+	static StepDefinition readStepDefinition(ObjectInput in) throws ClassNotFoundException, IOException {
+		String id = (String) in.readObject();
+		String label = (String) in.readObject();
+		String packageName = (String) in.readObject();
+		String sourceName = (String) in.readObject();
+		int line = in.readInt();
+		String expStr = (String) in.readObject();
+		String expLang = (String) in.readObject();
+		String sourceRef = (String) in.readObject();
+		IResource resource = RESOURCEHELPER.find(sourceRef);
+		ExpressionDefinition expression = new ExpressionDefinition(expStr, expLang);
+		return new StepDefinition(id, label, expression, resource, line, sourceName, packageName);
 	}
 
 }

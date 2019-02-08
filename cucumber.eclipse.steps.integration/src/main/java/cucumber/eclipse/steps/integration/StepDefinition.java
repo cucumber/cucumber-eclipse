@@ -5,7 +5,9 @@ import java.util.Locale;
 
 import org.eclipse.core.resources.IResource;
 
+import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 import io.cucumber.cucumberexpressions.Argument;
+import io.cucumber.cucumberexpressions.CucumberExpressionException;
 import io.cucumber.cucumberexpressions.Expression;
 import io.cucumber.cucumberexpressions.ExpressionFactory;
 import io.cucumber.cucumberexpressions.ParameterTypeRegistry;
@@ -27,7 +29,9 @@ public final class StepDefinition {
 
 	private final IResource source;
 	private final int lineNumber;
-	private final Expression expression;
+	private final ExpressionDefinition expression;
+	private transient Expression cucumberExpression;
+	private transient boolean expressionFailed;
 	private final String label;
 
 	private final String sourceName;
@@ -55,7 +59,7 @@ public final class StepDefinition {
 	 * @param packageName
 	 *            the packagename of the source
 	 */
-	public StepDefinition(String id, String label, Expression expression, IResource source, int lineNumber,
+	public StepDefinition(String id, String label, ExpressionDefinition expression, IResource source, int lineNumber,
 			String sourceName, String packageName) {
 		this.id = id;
 		this.label = label;
@@ -69,22 +73,37 @@ public final class StepDefinition {
 	public IResource getSource() {
 		return source;
 	}
-	
+
 	public int getLineNumber() {
 		return lineNumber;
 	}
 
 	public boolean matches(String stepDefinitionText) {
-		List<Argument<?>> match = this.match(stepDefinitionText);
-		return match != null;
+		return this.match(stepDefinitionText) != null;
+
 	}
 
 	public List<Argument<?>> match(String s) {
-		return this.expression.match(s);
+		try {
+			if (cucumberExpression == null) {
+				if (expressionFailed) {
+					return null;
+				}
+				cucumberExpression = parseText(expression.getLang(), expression.getText());
+			}
+			return cucumberExpression.match(s);
+		} catch (CucumberExpressionException e) {
+			expressionFailed = true;
+			if (source != null) {
+				MarkerFactory.INSTANCE.syntaxErrorOnStepDefinition(source, e, lineNumber);
+			}
+			return null;
+		}
+
 	}
 
 	public String getSourceName() {
-		if (sourceName == null && source !=null) {
+		if (sourceName == null && source != null) {
 			return source.getName();
 		}
 		return sourceName;
@@ -109,35 +128,92 @@ public final class StepDefinition {
 		return label;
 	}
 
-
 	@Override
 	public String toString() {
 
 		// For Steps from Current-Project
 		if (lineNumber != 0)
-			return "Step [text=" + getExpression().getSource() + ", source=" + source + ", lineNumber=" + lineNumber
-					+ "]";
+			return "Step [text=" + getExpression() + ", source=" + source + ", lineNumber=" + lineNumber + "]";
 
 		// For Steps From External-ClassPath JAR
 		else
-			return "Step [text=" + getExpression().getSource() + ", source=" + sourceName + ", package=" + packageName
-					+ "]";
+			return "Step [text=" + getExpression() + ", source=" + sourceName + ", package=" + packageName + "]";
 	}
 
-	public Expression getExpression() {
+	public ExpressionDefinition getExpression() {
 		return expression;
 	}
 
 	/**
-	 * creates an expression out of lang and text
+	 * creates an expression out of lang and text, this is an intermediate
+	 * soloution since we better need to create the factory out of the java
+	 * project where the gherking file resides
 	 * 
 	 * @param lang
 	 * @param text
 	 * @return
 	 */
-	public static Expression parseText(String lang, String text) {
+	private static Expression parseText(String lang, String text) {
 		Locale locale = lang == null ? Locale.getDefault() : new Locale(lang);
 		return new ExpressionFactory(new ParameterTypeRegistry(locale)).createExpression(text);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((expression == null) ? 0 : expression.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((label == null) ? 0 : label.hashCode());
+		result = prime * result + lineNumber;
+		result = prime * result + ((packageName == null) ? 0 : packageName.hashCode());
+		result = prime * result + ((source == null) ? 0 : source.hashCode());
+		result = prime * result + ((sourceName == null) ? 0 : sourceName.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		StepDefinition other = (StepDefinition) obj;
+		if (expression == null) {
+			if (other.expression != null)
+				return false;
+		} else if (!expression.equals(other.expression))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (label == null) {
+			if (other.label != null)
+				return false;
+		} else if (!label.equals(other.label))
+			return false;
+		if (lineNumber != other.lineNumber)
+			return false;
+		if (packageName == null) {
+			if (other.packageName != null)
+				return false;
+		} else if (!packageName.equals(other.packageName))
+			return false;
+		if (source == null) {
+			if (other.source != null)
+				return false;
+		} else if (!source.equals(other.source))
+			return false;
+		if (sourceName == null) {
+			if (other.sourceName != null)
+				return false;
+		} else if (!sourceName.equals(other.sourceName))
+			return false;
+		return true;
 	}
 
 }

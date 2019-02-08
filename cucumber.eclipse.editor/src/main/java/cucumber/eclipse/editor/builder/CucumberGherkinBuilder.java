@@ -188,7 +188,7 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 					// in this case there are nothing to do
 					return true;
 				}
-				StepDefinitionsRepository stepDefinitionsRepository = StepDefinitionsStorage.INSTANCE.getOrCreate(getProject());
+				StepDefinitionsRepository stepDefinitionsRepository = StepDefinitionsStorage.INSTANCE.getOrCreate(getProject(), null);
 				boolean isStepDefinitionsResource = stepDefinitionsRepository.isStepDefinitionsResource(resource); 
 				if (isStepDefinitionsResource && stepDefinitionsProvider.support(file)) {
 					// force a full build of gherkin files
@@ -265,7 +265,7 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 
 			// System.out.println(String.format("gherkin %s builder compile: %s",
 			// (isIncrementalBuild ? "incremental" : "full"), resource));
-			GlueRepository glueRepository = glueStorage.getOrCreate(resource.getProject());
+			GlueRepository glueRepository = glueStorage.getOrCreate(resource.getProject(), null);
 			glueRepository.clean(resource);
 			this.markerFactory.cleanMarkers(resource);
 
@@ -328,7 +328,7 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			this.gherkinDocument = document;
 			this.markerFactory = markerFactory;
 			this.isGlueDetectionEnabled = isGlueDetectionEnabled;
-			this.glueRepository = glueStorage.getOrCreate(this.project);
+			this.glueRepository = glueStorage.getOrCreate(this.project, null);
 		}
 
 		@Override
@@ -553,7 +553,7 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			}
 
 			this.markerFactory.cleanMarkers(resource);
-			GlueRepository glueRepository = glueStorage.getOrCreate(getProject());
+			GlueRepository glueRepository = glueStorage.getOrCreate(getProject(), null);
 			glueRepository.clean(resource);
 
 			return true;

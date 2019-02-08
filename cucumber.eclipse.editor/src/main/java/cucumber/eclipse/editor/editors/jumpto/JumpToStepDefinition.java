@@ -30,7 +30,7 @@ class JumpToStepDefinition {
 			//Search step in repository
 			if (id != null) {
 				StepDefinitionsRepository repository = StepDefinitionsStorage.INSTANCE
-						.getOrCreate(gherkinFile.getProject());
+						.getOrCreate(gherkinFile.getProject(), null);
 				Set<StepDefinition> stepDefinitions = repository.getAllStepDefinitions();
 				for (StepDefinition step : stepDefinitions) {
 					if (id.equals(step.getId())) {

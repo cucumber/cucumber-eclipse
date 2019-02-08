@@ -6,7 +6,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 public interface BuildStorage<T> {
 
-	T getOrCreate(IProject project) throws CoreException;
+	T getOrCreate(IProject project, IProgressMonitor monitor) throws CoreException;
 
 	void add(IProject project, T glueRepository);
 

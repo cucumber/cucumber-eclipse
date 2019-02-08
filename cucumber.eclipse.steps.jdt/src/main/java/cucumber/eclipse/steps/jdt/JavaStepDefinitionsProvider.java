@@ -40,12 +40,12 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 
 import cucumber.eclipse.steps.integration.AbstractStepDefinitionsProvider;
+import cucumber.eclipse.steps.integration.ExpressionDefinition;
 import cucumber.eclipse.steps.integration.StepDefinition;
 import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 import cucumber.eclipse.steps.jdt.filter.CompilationUnitStepDefinitionsPreferencesFilter;
 import cucumber.eclipse.steps.jdt.filter.MethodStepDefinitionsPreferencesFilter;
 import cucumber.eclipse.steps.jdt.ui.CucumberJavaPreferences;
-import io.cucumber.cucumberexpressions.CucumberExpressionException;
 
 /**
  * Find step definitions on Java elements.
@@ -53,6 +53,7 @@ import io.cucumber.cucumberexpressions.CucumberExpressionException;
  * @author qvdk
  *
  */
+@SuppressWarnings("deprecation")
 public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider {
 
 	protected static JavaStepDefinitionsProvider INSTANCE = new JavaStepDefinitionsProvider();
@@ -77,6 +78,7 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 
 	// From Java-Source-File(.java) : Collect All Steps as List based on
 	// Cucumber-Annotations
+	
 	private List<StepDefinition> getCukeSteps(ICompilationUnit iCompUnit, MarkerFactory markerFactory,
 			IProgressMonitor progressMonitor) throws JavaModelException, CoreException {
 
@@ -162,18 +164,11 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 											continue;
 										}
 										int lineNumber = javaParser.getLineNumber(statement);
-										io.cucumber.cucumberexpressions.Expression expression;
-										try {
-											expression = StepDefinition.parseText(method.getCukeLang(),
-													lambdaStep);
-										} catch (CucumberExpressionException e) {
-											markerFactory.syntaxErrorOnStepDefinition(resource, e, lineNumber);
-											// don't add erronours steps!
-											continue;
-										}
+										ExpressionDefinition expression;
+										expression = new ExpressionDefinition(method.getCukeLang(), lambdaStep);
 										StepDefinition step = new StepDefinition(ifType.getHandleIdentifier(),
-												StepDefinition.NO_LABEL, expression, resource, lineNumber, method.getMethodName(),
-												t.getPackageFragment().getElementName());
+												StepDefinition.NO_LABEL, expression, resource, lineNumber,
+												method.getMethodName(), t.getPackageFragment().getElementName());
 										steps.add(step);
 									}
 								}
@@ -189,15 +184,9 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 						CucumberAnnotation cukeAnnotation = getCukeAnnotation(importedAnnotations, annotation);
 						if (cukeAnnotation != null) {
 							int lineNumber = getLineNumber(iCompUnit, annotation);
-							io.cucumber.cucumberexpressions.Expression expression;
-							try {
-								expression = StepDefinition.parseText(cukeAnnotation.getLang(),
-										getAnnotationText(annotation));
-							} catch (CucumberExpressionException e) {
-								markerFactory.syntaxErrorOnStepDefinition(resource, e, lineNumber);
-								// don't add erronours steps!
-								continue;
-							}
+							ExpressionDefinition expression;
+							expression = new ExpressionDefinition(cukeAnnotation.getLang(),
+									getAnnotationText(annotation));
 							StepDefinition step = new StepDefinition(method.getHandleIdentifier(),
 									StepDefinition.NO_LABEL, expression, resource, lineNumber, method.getElementName(),
 									t.getPackageFragment().getElementName());
@@ -395,8 +384,8 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 		return javaElement != null;
 	}
 
-	private Set<StepDefinition> findStepDefinitionsInClasspath(IJavaProject javaProject, MarkerFactory markerFactory, IProgressMonitor monitor)
-			throws CoreException {
+	private Set<StepDefinition> findStepDefinitionsInClasspath(IJavaProject javaProject, MarkerFactory markerFactory,
+			IProgressMonitor monitor) throws CoreException {
 
 		SearchPattern searchPattern = SearchPattern.createPattern("cucumber.api.java.*.*", IJavaSearchConstants.TYPE,
 				IJavaSearchConstants.IMPORT_DECLARATION_TYPE_REFERENCE,
@@ -549,16 +538,8 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 				IClassFile classFile = method.getClassFile();
 				IJavaElement pkg = classFile.getParent();
 				IJavaElement jar = pkg.getParent();
-				io.cucumber.cucumberexpressions.Expression expression;
-				try {
-					expression = StepDefinition.parseText(cukeAnnotation.getLang(), getAnnotationText(annotation));
-				} catch (CucumberExpressionException e) {
-					if (markerFactory != null) {
-						markerFactory.syntaxErrorOnStepDefinition(jar.getResource(), e, -1);
-						// don't add erronours steps!
-					}
-					continue;
-				}
+				ExpressionDefinition expression;
+				expression = new ExpressionDefinition(cukeAnnotation.getLang(), getAnnotationText(annotation));
 
 				String classFileName = classFile.getElementName();
 				String packageName = pkg.getElementName();
@@ -566,9 +547,8 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 
 				String label = String.format("%s > %s.%s#%s%s", jarName, packageName, classFileName,
 						method.getElementName(), method.getSignature());
-				StepDefinition step = new StepDefinition(method.getHandleIdentifier(), label,
-						expression, jar.getResource(), StepDefinition.NO_LINE_NUMBER, method.getElementName(),
-						packageName);
+				StepDefinition step = new StepDefinition(method.getHandleIdentifier(), label, expression,
+						jar.getResource(), StepDefinition.NO_LINE_NUMBER, method.getElementName(), packageName);
 				stepDefinitions.add(step);
 			}
 		}

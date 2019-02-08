@@ -36,19 +36,18 @@ public class GlueStorage implements BuildStorage<GlueRepository> {
 	private Map<IProject, GlueRepository> glueRepositoryByProject = new HashMap<IProject, GlueRepository>();
 
 	private boolean isInitialized = false;
-	
+
 	private GlueStorage() {
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * cucumber.eclipse.editor.steps.Storage#getOrCreate(org.eclipse.core.resources.
-	 * IProject)
+	 * @see cucumber.eclipse.editor.steps.Storage#getOrCreate(org.eclipse.core.
+	 * resources. IProject)
 	 */
 	@Override
-	public GlueRepository getOrCreate(IProject project) throws CoreException {
+	public synchronized GlueRepository getOrCreate(IProject project, IProgressMonitor monitor) throws CoreException {
 		GlueRepository glueRepository = this.glueRepositoryByProject.get(project);
 		if (glueRepository == null) {
 			glueRepository = new GlueRepository();
@@ -60,7 +59,8 @@ public class GlueStorage implements BuildStorage<GlueRepository> {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see cucumber.eclipse.editor.steps.Storage#add(org.eclipse.core.resources.
+	 * @see
+	 * cucumber.eclipse.editor.steps.Storage#add(org.eclipse.core.resources.
 	 * IProject, cucumber.eclipse.editor.steps.GlueRepository)
 	 */
 	@Override
@@ -71,7 +71,7 @@ public class GlueStorage implements BuildStorage<GlueRepository> {
 	public static GlueRepository findGlueRepository(Editor editor) throws CoreException {
 		IFileEditorInput fileEditorInput = (IFileEditorInput) editor.getEditorInput();
 		IProject project = fileEditorInput.getFile().getProject();
-		return INSTANCE.getOrCreate(project);
+		return INSTANCE.getOrCreate(project, null);
 	}
 
 	@Override
@@ -80,9 +80,11 @@ public class GlueStorage implements BuildStorage<GlueRepository> {
 		if (glueRepository == null) {
 			return;
 		}
+		SubMonitor subMonitor = SubMonitor.convert(monitor, 100);
 		try {
-			String glueRepositorySerialized = GlueRepository.serialize(glueRepository);
-			StorageHelper.saveIntoBuildDirectory(BUILD_FILE, project, monitor, glueRepositorySerialized.getBytes());
+			try (InputStream stream = StorageHelper.toStream(glueRepository, subMonitor.newChild(50))) {
+				StorageHelper.saveIntoBuildDirectory(BUILD_FILE, project, subMonitor.newChild(50), stream);
+			}
 		} catch (IOException e) {
 			throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
 		}
@@ -90,28 +92,19 @@ public class GlueStorage implements BuildStorage<GlueRepository> {
 
 	@Override
 	public void load(IProject project, IProgressMonitor monitor) throws CoreException {
-		SubMonitor subMonitor = SubMonitor.convert(monitor, 2);
-
-		IFolder target = project.getFolder("target");
-		if (!target.exists()) {
+		IFolder outputFolder = StorageHelper.getOutputFolder(project);
+		if (!outputFolder.exists()) {
 			return;
 		}
-		IFile buildFile = target.getFile(BUILD_FILE);
+		IFile buildFile = outputFolder.getFile(BUILD_FILE);
 		if (!buildFile.exists()) {
 			return;
 		}
-		InputStream inputStream = buildFile.getContents();
-		String glueRepositorySerialized;
 		try {
-			subMonitor.setTaskName("Loading cucumber step definitions from a previous build");
-			glueRepositorySerialized = StorageHelper.copy(inputStream);
-			subMonitor.newChild(1);
-
-			subMonitor.setTaskName("Deserialize cucumber step definitions");
-			GlueRepository glueRepository = GlueRepository.deserialize(glueRepositorySerialized);
-			this.add(project, glueRepository);
-			subMonitor.newChild(1);
-			subMonitor.done();
+			try (InputStream inputStream = buildFile.getContents()) {
+				GlueRepository glueRepository = StorageHelper.fromStream(GlueRepository.class, inputStream, monitor);
+				glueRepositoryByProject.put(project, glueRepository);
+			}
 		} catch (IOException e) {
 			throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
 		} catch (ClassNotFoundException e) {
@@ -126,5 +119,5 @@ public class GlueStorage implements BuildStorage<GlueRepository> {
 	public void setInitialized(boolean isInitialized) {
 		this.isInitialized = isInitialized;
 	}
-	
+
 }

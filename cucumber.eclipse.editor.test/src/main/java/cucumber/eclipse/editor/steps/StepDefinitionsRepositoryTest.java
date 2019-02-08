@@ -1,10 +1,12 @@
 package cucumber.eclipse.editor.steps;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.CoreMatchers.*;
-import static cucumber.eclipse.editor.steps.StepDefinitionsRepository.*;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -15,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import cucumber.eclipse.editor.tests.MockFile;
+import cucumber.eclipse.steps.integration.ExpressionDefinition;
 import cucumber.eclipse.steps.integration.ResourceHelper;
 import cucumber.eclipse.steps.integration.StepDefinition;
 
@@ -48,7 +51,7 @@ public class StepDefinitionsRepositoryTest {
 	}
 	
 	private StepDefinition createStep(String text, int lineNo) {
-		return new StepDefinition(UUID.randomUUID().toString(), StepDefinition.NO_LABEL, StepDefinition.parseText("en", text), StepDefinition.NO_SOURCE, StepDefinition.NO_LINE_NUMBER, StepDefinition.NO_SOURCE_NAME, StepDefinition.NO_PACKAGE_NAME);
+		return new StepDefinition(UUID.randomUUID().toString(), StepDefinition.NO_LABEL, new ExpressionDefinition(text, "en"), StepDefinition.NO_SOURCE, StepDefinition.NO_LINE_NUMBER, StepDefinition.NO_SOURCE_NAME, StepDefinition.NO_PACKAGE_NAME);
 	}
 
 	@Test
@@ -87,10 +90,10 @@ public class StepDefinitionsRepositoryTest {
 
 	@Test
 	public void serialization() throws IOException, ClassNotFoundException {
-		String serialization = serialize(stepDefinitionsRepository);
-		assertThat(serialization, is(notNullValue()));
-		
-		StepDefinitionsRepository deserializedRepository = deserialize(serialization, new TestResourceHelper());
+		InputStream stream = StorageHelper.toStream(stepDefinitionsRepository, null);
+		assertNotNull(stream);
+		StorageHelper.RESOURCEHELPER = new TestResourceHelper();
+		StepDefinitionsRepository deserializedRepository = StorageHelper.fromStream(StepDefinitionsRepository.class, stream, null);
 		Set<StepDefinition> stepDefinitions = deserializedRepository.getAllStepDefinitions();
 		assertThat(stepDefinitions.size(), equalTo(3));
 		

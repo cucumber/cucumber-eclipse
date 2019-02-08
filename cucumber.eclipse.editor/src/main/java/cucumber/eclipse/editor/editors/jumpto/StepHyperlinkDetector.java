@@ -60,7 +60,7 @@ public class StepHyperlinkDetector implements IHyperlinkDetector {
 				//Search step in repository
 				if (id != null) {
 					StepDefinitionsRepository repository = StepDefinitionsStorage.INSTANCE
-							.getOrCreate(gherkinFile.getProject());
+							.getOrCreate(gherkinFile.getProject(), null);
 					Set<StepDefinition> stepDefinitions = repository.getAllStepDefinitions();
 					for (StepDefinition stepDefinition : stepDefinitions) {
 						if (id.equals(stepDefinition.getId())) {
