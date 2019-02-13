@@ -24,10 +24,10 @@ import gherkin.formatter.model.Step;
 
 /**
  * The marker factory exposes methods to put makers:
- *  <li>unmatched step</li>
- *  <li>gherkin syntax error</li>
- *  <li>glue between step definition and gherkin step</li>
- *  <li>feature file opened from a non cucumber project</li>
+ * <li>unmatched step</li>
+ * <li>gherkin syntax error</li>
+ * <li>glue between step definition and gherkin step</li>
+ * <li>feature file opened from a non cucumber project</li>
  * 
  * @author qvdk
  *
@@ -42,7 +42,8 @@ public class MarkerFactory {
 
 	public static final String STEP_DEFINTION_MATCH = CUCUMBER_MARKER + ".stepdef.matches";
 	public static final String STEP_DEFINITION_MATCH_PATH_ATTRIBUTE = STEP_DEFINTION_MATCH + ".path";
-	public static final String STEP_DEFINITION_MATCH_JDT_HANDLE_IDENTIFIER_ATTRIBUTE = STEP_DEFINTION_MATCH + ".jdt_handler_identifier";
+	public static final String STEP_DEFINITION_MATCH_JDT_HANDLE_IDENTIFIER_ATTRIBUTE = STEP_DEFINTION_MATCH
+			+ ".jdt_handler_identifier";
 	public static final String STEP_DEFINITION_MATCH_LINE_NUMBER_ATTRIBUTE = STEP_DEFINTION_MATCH + ".line_number";
 	public static final String STEP_DEFINITION_MATCH_TEXT_ATTRIBUTE = STEP_DEFINTION_MATCH + ".text";
 
@@ -56,7 +57,7 @@ public class MarkerFactory {
 
 	public static final String NOT_A_CUCUMBER_PROJECT = CUCUMBER_MARKER + ".not_a_cucumber_project";
 	public static final String NOT_A_CUCUMBER_PROJECT_NAME_ATTRIBUTE = NOT_A_CUCUMBER_PROJECT + ".project_name";
-	
+
 	public static final String CUCUMBER_NATURE_MISSING_MARKER = CUCUMBER_MARKER + ".project.cucumber_nature_missing";
 
 	private MarkerFactory() {
@@ -66,49 +67,52 @@ public class MarkerFactory {
 		syntaxErrorOnStepDefinition(stepDefinitionResource, e, 0);
 	}
 
-//	public void multipleStepDefinitionsMatched(final IResource gherkinFile, final gherkin.formatter.model.Step gherkinStep, final StepDefinition... stepDefinitions) {
-//		this.mark(gherkinFile, new IMarkerBuilder() {
-//			@Override
-//			public IMarker build() {
-//				IMarker marker = null;
-//				
-//				
-//				try {
-//					marker = gherkinFile.createMarker(MULTIPLE_STEP_DEFINTIONS_MATCH);
-//					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-//					marker.setAttribute(IMarker.LINE_NUMBER, gherkinStep.getLine());
-//					
-//					StringBuffer stepDefinitionsNamesStringBuffer = new StringBuffer();
-//					StringBuffer stepDefinitionsFullPathsStringBuffer = new StringBuffer();
-//
-//					for (int it = 0 ; it < stepDefinitions.length; it++) {
-//						StepDefinition stepDefinition = stepDefinitions[it];
-//						stepDefinitionsNamesStringBuffer.append(stepDefinition.getSource().getName()).append(":")
-//								.append(stepDefinition.getLineNumber());
-//						
-//						stepDefinitionsFullPathsStringBuffer.append(stepDefinition.getSource().getFullPath()).append(":")
-//						.append(stepDefinition.getLineNumber());
-//						
-//						if(it == stepDefinitions.length) {
-//							stepDefinitionsNamesStringBuffer.append(",");
-//							stepDefinitionsFullPathsStringBuffer.append(",");
-//						}
-//					}
-//					
-//					String message = String.format(
-//							"Step '%s' have more than one glue code: %s",
-//							gherkinStep.getName(), stepDefinitionsNamesStringBuffer.toString());
-//					
-//					marker.setAttribute(IMarker.MESSAGE, message);
-//					marker.setAttribute("duplicates", stepDefinitionsFullPathsStringBuffer.toString());
-//					
-//				} catch (CoreException e) {
-//					e.printStackTrace();
-//				}
-//				return marker;
-//			}
-//		});
-//	}
+	// public void multipleStepDefinitionsMatched(final IResource gherkinFile,
+	// final gherkin.formatter.model.Step gherkinStep, final StepDefinition...
+	// stepDefinitions) {
+	// this.mark(gherkinFile, new IMarkerBuilder() {
+	// @Override
+	// public IMarker build() {
+	// IMarker marker = null;
+	//
+	//
+	// try {
+	// marker = gherkinFile.createMarker(MULTIPLE_STEP_DEFINTIONS_MATCH);
+	// marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+	// marker.setAttribute(IMarker.LINE_NUMBER, gherkinStep.getLine());
+	//
+	// StringBuffer stepDefinitionsNamesStringBuffer = new StringBuffer();
+	// StringBuffer stepDefinitionsFullPathsStringBuffer = new StringBuffer();
+	//
+	// for (int it = 0 ; it < stepDefinitions.length; it++) {
+	// StepDefinition stepDefinition = stepDefinitions[it];
+	// stepDefinitionsNamesStringBuffer.append(stepDefinition.getSource().getName()).append(":")
+	// .append(stepDefinition.getLineNumber());
+	//
+	// stepDefinitionsFullPathsStringBuffer.append(stepDefinition.getSource().getFullPath()).append(":")
+	// .append(stepDefinition.getLineNumber());
+	//
+	// if(it == stepDefinitions.length) {
+	// stepDefinitionsNamesStringBuffer.append(",");
+	// stepDefinitionsFullPathsStringBuffer.append(",");
+	// }
+	// }
+	//
+	// String message = String.format(
+	// "Step '%s' have more than one glue code: %s",
+	// gherkinStep.getName(), stepDefinitionsNamesStringBuffer.toString());
+	//
+	// marker.setAttribute(IMarker.MESSAGE, message);
+	// marker.setAttribute("duplicates",
+	// stepDefinitionsFullPathsStringBuffer.toString());
+	//
+	// } catch (CoreException e) {
+	// e.printStackTrace();
+	// }
+	// return marker;
+	// }
+	// });
+	// }
 
 	public void unmatchedStep(final IDocument gherkinDocument, final GherkinStepWrapper gherkinStepWrapper) {
 
@@ -118,7 +122,7 @@ public class MarkerFactory {
 
 		this.mark(gherkinFile, new IMarkerBuilder() {
 			@Override
-			public IMarker build() {
+			public IMarker build() throws CoreException {
 				IMarker marker = null;
 
 				String warningMessage = String.format("Step '%s' does not have a matching glue code%s",
@@ -140,19 +144,15 @@ public class MarkerFactory {
 				int statementStartOffset = lineStartOffset + currentLine.indexOf(textStatement);
 
 				IRegion stepRegion = new Region(statementStartOffset, textStatement.length());
-				try {
-					marker = gherkinFile.createMarker(UNMATCHED_STEP);
-					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
-					marker.setAttribute(IMarker.MESSAGE, warningMessage);
-					marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
-					marker.setAttribute(IMarker.CHAR_START, stepRegion.getOffset());
-					marker.setAttribute(IMarker.CHAR_END, stepRegion.getOffset() + stepRegion.getLength());
-					marker.setAttribute(UNMATCHED_STEP_KEYWORD_ATTRIBUTE, gherkinStep.getKeyword());
-					marker.setAttribute(UNMATCHED_STEP_NAME_ATTRIBUTE, gherkinStep.getName());
-					marker.setAttribute(UNMATCHED_STEP_PATH_ATTRIBUTE, gherkinFile.getFullPath().toString());
-				} catch (CoreException e) {
-					e.printStackTrace();
-				}
+				marker = gherkinFile.createMarker(UNMATCHED_STEP);
+				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+				marker.setAttribute(IMarker.MESSAGE, warningMessage);
+				marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
+				marker.setAttribute(IMarker.CHAR_START, stepRegion.getOffset());
+				marker.setAttribute(IMarker.CHAR_END, stepRegion.getOffset() + stepRegion.getLength());
+				marker.setAttribute(UNMATCHED_STEP_KEYWORD_ATTRIBUTE, gherkinStep.getKeyword());
+				marker.setAttribute(UNMATCHED_STEP_NAME_ATTRIBUTE, gherkinStep.getName());
+				marker.setAttribute(UNMATCHED_STEP_PATH_ATTRIBUTE, gherkinFile.getFullPath().toString());
 				return marker;
 			}
 		});
@@ -163,16 +163,11 @@ public class MarkerFactory {
 
 		this.mark(stepDefinitionResource, new IMarkerBuilder() {
 			@Override
-			public IMarker build() {
-				IMarker marker = null;
-				try {
-					marker = stepDefinitionResource.createMarker(STEPDEF_SYNTAX_ERROR);
-					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-					marker.setAttribute(IMarker.MESSAGE, e.getMessage());
-					marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
-				} catch (CoreException e) {
-					e.printStackTrace();
-				}
+			public IMarker build() throws CoreException {
+				IMarker marker = stepDefinitionResource.createMarker(STEPDEF_SYNTAX_ERROR);
+				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+				marker.setAttribute(IMarker.MESSAGE, e.getMessage());
+				marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
 				return marker;
 			}
 		});
@@ -187,16 +182,12 @@ public class MarkerFactory {
 
 		this.mark(gherkinResource, new IMarkerBuilder() {
 			@Override
-			public IMarker build() {
+			public IMarker build() throws CoreException {
 				IMarker marker = null;
-				try {
-					marker = gherkinResource.createMarker(GHERKIN_SYNTAX_ERROR);
-					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-					marker.setAttribute(IMarker.MESSAGE, e.getMessage());
-					marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
-				} catch (CoreException e) {
-					e.printStackTrace();
-				}
+				marker = gherkinResource.createMarker(GHERKIN_SYNTAX_ERROR);
+				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+				marker.setAttribute(IMarker.MESSAGE, e.getMessage());
+				marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
 				return marker;
 			}
 		});
@@ -215,24 +206,20 @@ public class MarkerFactory {
 
 		this.mark(gherkinResource, new IMarkerBuilder() {
 			@Override
-			public IMarker build() {
+			public IMarker build() throws CoreException {
 				IMarker marker = null;
-				try {
-					marker = gherkinResource.createMarker(STEP_DEFINTION_MATCH);
-					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
-					String message = String.format("Glued with %s", stepDefinition.getLabel());
-					marker.setAttribute(IMarker.MESSAGE, message);
-					marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
-					if(stepDefinition.getSource() != null) {
-						marker.setAttribute(STEP_DEFINITION_MATCH_PATH_ATTRIBUTE,
-								stepDefinition.getSource().getFullPath().toString());
-					}
-					marker.setAttribute(STEP_DEFINITION_MATCH_JDT_HANDLE_IDENTIFIER_ATTRIBUTE, stepDefinition.getId());
-					marker.setAttribute(STEP_DEFINITION_MATCH_LINE_NUMBER_ATTRIBUTE, stepDefinition.getLineNumber());
-					marker.setAttribute(STEP_DEFINITION_MATCH_TEXT_ATTRIBUTE, stepDefinitionText);
-				} catch (CoreException e) {
-					e.printStackTrace();
+				marker = gherkinResource.createMarker(STEP_DEFINTION_MATCH);
+				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
+				String message = String.format("Glued with %s", stepDefinition.getLabel());
+				marker.setAttribute(IMarker.MESSAGE, message);
+				marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
+				if (stepDefinition.getSource() != null) {
+					marker.setAttribute(STEP_DEFINITION_MATCH_PATH_ATTRIBUTE,
+							stepDefinition.getSource().getFullPath().toString());
 				}
+				marker.setAttribute(STEP_DEFINITION_MATCH_JDT_HANDLE_IDENTIFIER_ATTRIBUTE, stepDefinition.getId());
+				marker.setAttribute(STEP_DEFINITION_MATCH_LINE_NUMBER_ATTRIBUTE, stepDefinition.getLineNumber());
+				marker.setAttribute(STEP_DEFINITION_MATCH_TEXT_ATTRIBUTE, stepDefinitionText);
 				return marker;
 			}
 		});
@@ -244,7 +231,7 @@ public class MarkerFactory {
 
 		this.mark(gherkinResource, new IMarkerBuilder() {
 			@Override
-			public IMarker build() {
+			public IMarker build() throws CoreException {
 				IMarker marker = null;
 				int lineStartOffset = 0;
 
@@ -263,39 +250,32 @@ public class MarkerFactory {
 
 				IRegion stepRegion = new Region(statementStartOffset, currentLineTrim.length());
 
-				try {
-					marker = gherkinResource.createMarker(SCENARIO_OUTLINE_EXAMPLE_UNMATCH);
-					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
-					marker.setAttribute(IMarker.MESSAGE,
-							String.format("No compatible step definition with %s", currentLineTrim));
-					marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
-					marker.setAttribute(IMarker.CHAR_START, stepRegion.getOffset());
-					marker.setAttribute(IMarker.CHAR_END, stepRegion.getOffset() + stepRegion.getLength());
+				marker = gherkinResource.createMarker(SCENARIO_OUTLINE_EXAMPLE_UNMATCH);
+				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+				marker.setAttribute(IMarker.MESSAGE,
+						String.format("No compatible step definition with %s", currentLineTrim));
+				marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
+				marker.setAttribute(IMarker.CHAR_START, stepRegion.getOffset());
+				marker.setAttribute(IMarker.CHAR_END, stepRegion.getOffset() + stepRegion.getLength());
 
-				} catch (CoreException e) {
-					e.printStackTrace();
-				}
 				return marker;
 			}
 		});
 
 	}
-	
+
 	public void featureFileIsNotInCucumberProject(IFile project) {
 		this.mark(project, new IMarkerBuilder() {
 			@Override
-			public IMarker build() {
+			public IMarker build() throws CoreException {
 				IMarker marker = null;
-				try {
-					project.deleteMarkers(NOT_A_CUCUMBER_PROJECT, true, IResource.DEPTH_ZERO);
-					marker = project.createMarker(NOT_A_CUCUMBER_PROJECT);
-					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
-					marker.setAttribute(IMarker.MESSAGE, CucumberStepsIntegrationMessages.MarkerFactory__Step_definitions_detection_not_working_on_non_cucumber_project);
-					marker.setAttribute(IMarker.LINE_NUMBER, 1);
-					marker.setAttribute(NOT_A_CUCUMBER_PROJECT_NAME_ATTRIBUTE, project.getName());
-				} catch (CoreException e) {
-					e.printStackTrace();
-				}
+				project.deleteMarkers(NOT_A_CUCUMBER_PROJECT, true, IResource.DEPTH_ZERO);
+				marker = project.createMarker(NOT_A_CUCUMBER_PROJECT);
+				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+				marker.setAttribute(IMarker.MESSAGE,
+						CucumberStepsIntegrationMessages.MarkerFactory__Step_definitions_detection_not_working_on_non_cucumber_project);
+				marker.setAttribute(IMarker.LINE_NUMBER, 1);
+				marker.setAttribute(NOT_A_CUCUMBER_PROJECT_NAME_ATTRIBUTE, project.getName());
 				return marker;
 			}
 		});
@@ -318,7 +298,7 @@ public class MarkerFactory {
 					String.format("Couldn't remove markers from %s", resource), e));
 		}
 	}
-	
+
 	private void mark(final IResource resource, final IMarkerBuilder markerBuilder) {
 		try {
 			IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
@@ -337,12 +317,11 @@ public class MarkerFactory {
 	}
 
 	private interface IMarkerBuilder {
-		IMarker build();
+		IMarker build() throws CoreException;
 	}
 
 	public void cleanCucumberNatureMissing(IProject project) throws CoreException {
-		IMarker[] markers = project.findMarkers(CUCUMBER_NATURE_MISSING_MARKER, false,
-				IResource.DEPTH_ZERO);
+		IMarker[] markers = project.findMarkers(CUCUMBER_NATURE_MISSING_MARKER, false, IResource.DEPTH_ZERO);
 		for (IMarker marker : markers) {
 			marker.delete();
 		}
