@@ -397,15 +397,9 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			}
 			Set<StepDefinition> allStepDefinitions = stepDefinitionsProvider.getStepDefinitions(this.project);
 			Set<StepDefinition> stepDefinitionsScope = this.filter((IFile) gherkinFile, allStepDefinitions);
-			StepDefinition glueStepDefinition = null;
+			StepDefinition glueStepDefinition = glueRepository.findMatchingStep(stepDefinitionsScope, step.getName());
 
-			for (StepDefinition stepDefinition : stepDefinitionsScope) {
-				boolean matches = stepDefinition.matches(step.getName());
-				if (matches) {
-					glueStepDefinition = stepDefinition;
-					break;
-				}
-			}
+			
 			boolean isFound = glueStepDefinition != null;
 			GherkinStepWrapper gherkinStepWrapper = new GherkinStepWrapper(step, gherkinFile);
 			if (isFound) {
@@ -442,15 +436,8 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			Set<cucumber.eclipse.steps.integration.StepDefinition> allStepDefinitions = stepDefinitionsProvider
 					.getStepDefinitions(project);
 			Set<StepDefinition> stepDefinitionsScope = this.filter((IFile) gherkinFile, allStepDefinitions);
-			cucumber.eclipse.steps.integration.StepDefinition glueStepDefinition = null;
+			cucumber.eclipse.steps.integration.StepDefinition glueStepDefinition = glueRepository.findMatchingStep(stepDefinitionsScope, derivateGherkinStepSource);
 
-			for (StepDefinition stepDefinition : stepDefinitionsScope) {
-				boolean matches = stepDefinition.matches(derivateGherkinStepSource);
-				if (matches) {
-					glueStepDefinition = stepDefinition;
-					break;
-				}
-			}
 			boolean isFound = glueStepDefinition != null;
 			GherkinStepWrapper gherkinStepWrapper = new GherkinStepWrapper(scenarioOutlineStepLine, gherkinFile);
 			if (isFound) {

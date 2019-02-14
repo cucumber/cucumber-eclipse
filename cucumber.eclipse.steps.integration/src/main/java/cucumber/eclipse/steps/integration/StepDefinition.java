@@ -1,16 +1,6 @@
 package cucumber.eclipse.steps.integration;
 
-import java.util.List;
-import java.util.Locale;
-
 import org.eclipse.core.resources.IResource;
-
-import cucumber.eclipse.steps.integration.marker.MarkerFactory;
-import io.cucumber.cucumberexpressions.Argument;
-import io.cucumber.cucumberexpressions.CucumberExpressionException;
-import io.cucumber.cucumberexpressions.Expression;
-import io.cucumber.cucumberexpressions.ExpressionFactory;
-import io.cucumber.cucumberexpressions.ParameterTypeRegistry;
 
 /**
  * A parse stepdefinition that relates either to a source file or a classpath
@@ -30,8 +20,6 @@ public final class StepDefinition {
 	private final IResource source;
 	private final int lineNumber;
 	private final ExpressionDefinition expression;
-	private transient Expression cucumberExpression;
-	private transient boolean expressionFailed;
 	private final String label;
 
 	private final String sourceName;
@@ -78,30 +66,6 @@ public final class StepDefinition {
 		return lineNumber;
 	}
 
-	public boolean matches(String stepDefinitionText) {
-		return this.match(stepDefinitionText) != null;
-
-	}
-
-	public List<Argument<?>> match(String s) {
-		try {
-			if (cucumberExpression == null) {
-				if (expressionFailed) {
-					return null;
-				}
-				cucumberExpression = parseText(expression.getLang(), expression.getText());
-			}
-			return cucumberExpression.match(s);
-		} catch (CucumberExpressionException e) {
-			expressionFailed = true;
-			if (source != null) {
-				MarkerFactory.INSTANCE.syntaxErrorOnStepDefinition(source, e, lineNumber);
-			}
-			return null;
-		}
-
-	}
-
 	public String getSourceName() {
 		if (sourceName == null && source != null) {
 			return source.getName();
@@ -142,20 +106,6 @@ public final class StepDefinition {
 
 	public ExpressionDefinition getExpression() {
 		return expression;
-	}
-
-	/**
-	 * creates an expression out of lang and text, this is an intermediate
-	 * soloution since we better need to create the factory out of the java
-	 * project where the gherking file resides
-	 * 
-	 * @param lang
-	 * @param text
-	 * @return
-	 */
-	private static Expression parseText(String lang, String text) {
-		Locale locale = lang == null ? Locale.getDefault() : new Locale(lang);
-		return new ExpressionFactory(new ParameterTypeRegistry(locale)).createExpression(text);
 	}
 
 	@Override
