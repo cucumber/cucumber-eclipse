@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 
 import cucumber.eclipse.steps.integration.ExpressionDefinition;
@@ -39,7 +40,10 @@ public class GlueRepository implements Externalizable {
 
 	private transient Map<StepDefinition, ParsedExpression> expressionCache;
 
-	protected GlueRepository() {
+	private transient IProject project;
+
+	protected GlueRepository(IProject project) {
+		this.project = project;
 	}
 
 	public Glue get(GherkinStepWrapper gherkinStep) {
@@ -233,7 +237,7 @@ public class GlueRepository implements Externalizable {
 		for (StepDefinition stepDefinition : stepDefinitionsScope) {
 			ParsedExpression expression = cache.get(stepDefinition);
 			if (expression == null) {
-				expression = new ParsedExpression(stepDefinition);
+				expression = new ParsedExpression(stepDefinition, getExpressionFactory(stepDefinition.getExpression()));
 				cache.putIfAbsent(stepDefinition, expression);
 			}
 			if (expression.matches(text)) {
@@ -241,6 +245,19 @@ public class GlueRepository implements Externalizable {
 			}
 		}
 		return null;
+	}
+
+	@SuppressWarnings("restriction")
+	private ExpressionFactory getExpressionFactory(ExpressionDefinition expression) {
+		if (project != null) {
+			Object adapter = org.eclipse.core.internal.runtime.AdapterManager.getDefault().loadAdapter(project, ExpressionFactory.class.getName());
+			if (adapter instanceof ExpressionFactory) {
+				return (ExpressionFactory) adapter;
+			}
+		}
+		String lang = expression.getLang();
+		Locale locale = lang == null ? Locale.getDefault() : new Locale(lang);
+		return new ExpressionFactory(new ParameterTypeRegistry(locale));
 	}
 
 	private synchronized Map<StepDefinition, ParsedExpression> getExpressionCache() {
@@ -254,14 +271,12 @@ public class GlueRepository implements Externalizable {
 
 		Expression cucumberExpression;
 
-		public ParsedExpression(StepDefinition step) {
+		public ParsedExpression(StepDefinition step, ExpressionFactory factory) {
 			ExpressionDefinition definition = step.getExpression();
-			String lang = definition.getLang();
 			String text = definition.getText();
 
 			try {
-				Locale locale = lang == null ? Locale.getDefault() : new Locale(lang);
-				cucumberExpression = new ExpressionFactory(new ParameterTypeRegistry(locale)).createExpression(text);
+				cucumberExpression = factory.createExpression(text);
 			} catch (CucumberExpressionException e) {
 				IResource source = step.getSource();
 				int lineNumber = step.getLineNumber();
@@ -275,6 +290,10 @@ public class GlueRepository implements Externalizable {
 			return cucumberExpression != null && cucumberExpression.match(text) != null;
 		}
 
+	}
+
+	public void setProject(IProject project) {
+		this.project = project;
 	}
 
 }
