@@ -247,11 +247,12 @@ public class GlueRepository implements Externalizable {
 		return null;
 	}
 
+	@SuppressWarnings("restriction")
 	private ExpressionFactory getExpressionFactory(ExpressionDefinition expression) {
 		if (project != null) {
-			ExpressionFactory adapter = project.getAdapter(ExpressionFactory.class);
-			if (adapter!=null) {
-				return adapter;
+			Object adapter = org.eclipse.core.internal.runtime.AdapterManager.getDefault().loadAdapter(project, ExpressionFactory.class.getName());
+			if (adapter instanceof ExpressionFactory) {
+				return (ExpressionFactory) adapter;
 			}
 		}
 		String lang = expression.getLang();
