@@ -50,7 +50,7 @@ public class GlueStorage implements BuildStorage<GlueRepository> {
 	public synchronized GlueRepository getOrCreate(IProject project, IProgressMonitor monitor) throws CoreException {
 		GlueRepository glueRepository = this.glueRepositoryByProject.get(project);
 		if (glueRepository == null) {
-			glueRepository = new GlueRepository();
+			glueRepository = new GlueRepository(project);
 			this.add(project, glueRepository);
 		}
 		return glueRepository;
@@ -103,16 +103,17 @@ public class GlueStorage implements BuildStorage<GlueRepository> {
 		try {
 			try (InputStream inputStream = buildFile.getContents()) {
 				GlueRepository glueRepository = StorageHelper.fromStream(GlueRepository.class, inputStream, monitor);
+				glueRepository.setProject(project);
 				glueRepositoryByProject.put(project, glueRepository);
 			}
 		} catch (RuntimeException e) {
 			Activator.getDefault().getLog().log(new Status(Status.ERROR, Activator.PLUGIN_ID, "loading StepDefinitionStore failed, a full rebuild of the project might be required", e));
-			glueRepositoryByProject.put(project, new GlueRepository());
+			glueRepositoryByProject.put(project, new GlueRepository(project));
 		} catch (IOException e) {
 			Activator.getDefault().getLog().log(new Status(Status.ERROR, Activator.PLUGIN_ID, "loading GlueStore failed, a full rebuild of the project might be required", e));
-			glueRepositoryByProject.put(project, new GlueRepository());
+			glueRepositoryByProject.put(project, new GlueRepository(project));
 		} catch (ClassNotFoundException e) {
-			glueRepositoryByProject.put(project, new GlueRepository());
+			glueRepositoryByProject.put(project, new GlueRepository(project));
 			Activator.getDefault().getLog().log(new Status(Status.ERROR, Activator.PLUGIN_ID, "loading GlueStore failed, a full rebuild of the project might be required", e));
 		}
 	}
