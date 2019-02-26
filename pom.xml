@@ -20,6 +20,7 @@
 		<module>cucumber.eclipse.runner</module>
 		<module>cucumber.eclipse.steps.integration</module>
 		<module>cucumber.eclipse.steps.jdt</module>
+		<module>cucumber.eclipse.backends.java</module>
 		<module>cucumber.eclipse.p2updatesite</module>
 		<module>cucumber.eclipse.targetdefinition</module>
 	</modules>
