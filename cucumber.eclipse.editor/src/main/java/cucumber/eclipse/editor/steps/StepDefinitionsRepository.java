@@ -77,7 +77,7 @@ public class StepDefinitionsRepository implements Externalizable {
 		for (int i = 0; i < size; i++) {
 			String key = (String) in.readObject();
 			IResource resource = StorageHelper.RESOURCEHELPER.find(key);
-			int childSize = in.read();
+			int childSize = in.readInt();
 			Set<StepDefinition> steps = new HashSet<>();
 			for (int j = 0; j < childSize; j++) {
 				StepDefinition step = StorageHelper.readStepDefinition(in);

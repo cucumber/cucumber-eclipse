@@ -9,7 +9,7 @@ jdk:
 jobs:
   include:
   - stage: Tests
-    script: mvn clean test -B
+    script: mvn clean integration-test -B
   - stage: Deploy [pre]release on GitHub
     script: mvn clean verify -B -DskipTests
     before_deploy:
