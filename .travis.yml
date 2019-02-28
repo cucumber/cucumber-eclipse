@@ -1,5 +1,7 @@
 if: NOT tag =~ /^.*-.*$/ # Do not build prerelease tag 
 language: java
+services:
+  - xvfb
 sudo: false
 cache:
   directories:
