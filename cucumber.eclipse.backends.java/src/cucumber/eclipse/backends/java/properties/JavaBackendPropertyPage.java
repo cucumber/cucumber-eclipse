@@ -46,7 +46,7 @@ public class JavaBackendPropertyPage extends PropertyPage {
 		button.setLayoutData(gd);
 		gd.horizontalSpan = 2;
 		button.setText("Enable Java Backend for project");
-		button.setSelection(isBackendEnabled((IResource) getElement()));
+		button.setSelection(isBackendEnabled(getResource()));
 		button.addSelectionListener(new SelectionListener() {
 
 			@Override
@@ -60,6 +60,10 @@ public class JavaBackendPropertyPage extends PropertyPage {
 			}
 		});
 		return button;
+	}
+
+	private IResource getResource() {
+		return getElement().getAdapter(IResource.class);
 	}
 
 	public static boolean isBackendEnabled(IResource resource) {
@@ -96,7 +100,7 @@ public class JavaBackendPropertyPage extends PropertyPage {
 		Text text = new Text(composite, SWT.BORDER);
 		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
 		text.setLayoutData(gd);
-		text.setText(getGlueOption((IResource) getElement()));
+		text.setText(getGlueOption(getResource()));
 		text.setToolTipText(
 				"The Glue option defines wich packages are scanned for glue code, seperate multiple packages by comma");
 		return text;
@@ -121,7 +125,7 @@ public class JavaBackendPropertyPage extends PropertyPage {
 	public boolean performOk() {
 		// store the value in the owner text field
 		try {
-			((IResource) getElement()).setPersistentProperty(KEY_GLUE, glueOption.getText());
+			getResource().setPersistentProperty(KEY_GLUE, glueOption.getText());
 		} catch (CoreException e) {
 			return false;
 		}
