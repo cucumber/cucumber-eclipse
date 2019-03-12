@@ -1,5 +1,8 @@
 package cucumber.eclipse.steps.integration.filter;
 
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IResource;
+
 import cucumber.eclipse.steps.integration.StepDefinition;
 
 public class SameLocationFilter implements Filter<StepDefinition> {
@@ -13,7 +16,15 @@ public class SameLocationFilter implements Filter<StepDefinition> {
 
 	@Override
 	public boolean accept(StepDefinition stepDefinition) {
-		String stepDefinitionLocation = stepDefinition.getSource().getParent().getFullPath().toString();
+		IResource source = stepDefinition.getSource();
+		if (source == null) {
+			return false;
+		}
+		IContainer parent = source.getParent();
+		if (parent == null) {
+			return false;
+		}
+		String stepDefinitionLocation = String.valueOf(parent.getFullPath());
 		return stepDefinitionLocation.startsWith(location);
 	}
 }
