@@ -1,8 +1,9 @@
 package cucumber.eclipse.backends.java.properties;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.QualifiedName;
+import org.eclipse.core.resources.ProjectScope;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -14,12 +15,13 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.PropertyPage;
+import org.osgi.service.prefs.BackingStoreException;
 
 public class JavaBackendPropertyPage extends PropertyPage {
 
+	private static final String KEY_GLUE = "glue";
+	private static final String KEY_ENABLED = "enabled";
 	private static final String NAMESPACE = "cucumber.backend.java";
-	public static final QualifiedName KEY_ENABLE = new QualifiedName(NAMESPACE, "enable");
-	public static final QualifiedName KEY_GLUE = new QualifiedName(NAMESPACE, "glue");
 	private Text glueOption;
 	private Button enableOption;
 	private Label glueLabel;
@@ -46,7 +48,7 @@ public class JavaBackendPropertyPage extends PropertyPage {
 		button.setLayoutData(gd);
 		gd.horizontalSpan = 2;
 		button.setText("Enable Java Backend for project");
-		button.setSelection(isBackendEnabled((IResource) getElement()));
+		button.setSelection(isBackendEnabled(getResource()));
 		button.addSelectionListener(new SelectionListener() {
 
 			@Override
@@ -62,24 +64,24 @@ public class JavaBackendPropertyPage extends PropertyPage {
 		return button;
 	}
 
+	private IResource getResource() {
+		return getElement().getAdapter(IResource.class);
+	}
+
 	public static boolean isBackendEnabled(IResource resource) {
-		try {
-			return Boolean.parseBoolean(resource.getProject().getPersistentProperty(KEY_ENABLE));
-		} catch (CoreException e) {
-			return false;
-		}
+		IEclipsePreferences node = getNode(resource);
+		return node.getBoolean(KEY_ENABLED, false);
 	}
 
 	public static String getGlueOption(IResource resource) {
-		try {
-			String property = resource.getProject().getPersistentProperty(KEY_GLUE);
-			if (property != null) {
-				return property;
-			}
-		} catch (CoreException e) {
-			//
-		}
-		return "";
+		IEclipsePreferences node = getNode(resource);
+		return node.get(KEY_GLUE, "");
+	}
+
+	private static IEclipsePreferences getNode(IResource resource) {
+		ProjectScope scope = new ProjectScope(resource.getProject());
+		IEclipsePreferences node = scope.getNode(NAMESPACE);
+		return node;
 	}
 
 	protected void updateUIState() {
@@ -96,7 +98,7 @@ public class JavaBackendPropertyPage extends PropertyPage {
 		Text text = new Text(composite, SWT.BORDER);
 		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
 		text.setLayoutData(gd);
-		text.setText(getGlueOption((IResource) getElement()));
+		text.setText(getGlueOption(getResource()));
 		text.setToolTipText(
 				"The Glue option defines wich packages are scanned for glue code, seperate multiple packages by comma");
 		return text;
@@ -119,11 +121,12 @@ public class JavaBackendPropertyPage extends PropertyPage {
 	}
 
 	public boolean performOk() {
-		// store the value in the owner text field
+		IEclipsePreferences node = getNode(getResource());
+		node.put(KEY_GLUE, glueOption.getText());
+		node.putBoolean(KEY_ENABLED, enableOption.getSelection());
 		try {
-			((IResource) getElement()).setPersistentProperty(KEY_GLUE, glueOption.getText());
-		} catch (CoreException e) {
-			return false;
+			node.flush();
+		} catch (BackingStoreException e) {
 		}
 		return true;
 	}
