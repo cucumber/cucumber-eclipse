@@ -350,4 +350,21 @@
       point="cucumber.eclipse.editor.step_definition_opener">
       <opener class="cucumber.eclipse.editor.editors.jumpto.GenericStepDefinitionOpener"/>
 </extension>
+<extension
+      point="org.eclipse.ui.propertyPages">
+   <page
+         class="cucumber.eclipse.editor.properties.CucumberPropertiesPage"
+         icon="icons/cukes.gif"
+         id="cucumber.eclipse.editor.properties.main"
+         name="Cucumber">
+       <enabledWhen>
+    	<adapt type="org.eclipse.core.resources.IProject" >
+                <test
+                 property="org.eclipse.core.resources.projectNature"
+                value="cucumber.eclipse.nature">
+                </test>
+            </adapt>
+         </enabledWhen>
+   </page>
+</extension>
 </plugin>

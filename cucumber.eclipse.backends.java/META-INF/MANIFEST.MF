@@ -1,0 +1,23 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Cucumber Java Backend
+Bundle-SymbolicName: cucumber.eclipse.backends.java;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy
+Require-Bundle: org.eclipse.equinox.registry,
+ org.eclipse.core.resources;bundle-version="3.10.1",
+ org.eclipse.jdt.core;bundle-version="3.11.2",
+ org.eclipse.jdt.launching,
+ org.eclipse.ui.workbench;bundle-version="3.107.1",
+ org.eclipse.core.runtime;bundle-version="3.11.1",
+ org.eclipse.ui
+Import-Package: io.cucumber.cucumberexpressions,
+ org.osgi.framework;version="1.8.0"
+Bundle-ClassPath: lib/cucumber-core-4.2.0.jar,
+ lib/cucumber-java-4.2.0.jar,
+ .,
+ lib/gherkin-5.1.0.jar,
+ lib/datatable-1.1.7.jar,
+ lib/datatable-dependencies-1.1.7.jar
+Bundle-Activator: cucumber.eclipse.backends.java.JavaBackendActivator
