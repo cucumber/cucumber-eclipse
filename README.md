@@ -29,7 +29,7 @@ Please consult our [Wiki](https://github.com/cucumber/cucumber-eclipse/wiki) for
 
  - Releases and snapshots versions can be [downloaded](https://github.com/cucumber/cucumber-eclipse/releases) as zip format.
 
- - Please refer our [Plugin-Download/Installation-Wiki](https://github.com/cucumber/cucumber-eclipse/wiki/Download-and-Install-Plugin-From-Zip) for detail information
+ - Please refer our [Plugin-Download/Installation-Wiki](https://github.com/cucumber/cucumber-eclipse/wiki/Download-and-Offline-Installation-Of-The-Plugin-From-Zip) for detail information
 
 ## Follow the latest snapshot
 
