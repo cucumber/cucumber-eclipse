@@ -110,8 +110,8 @@ public class StorageHelper {
 		String packageName = (String) in.readObject();
 		String sourceName = (String) in.readObject();
 		int line = in.readInt();
-		String expStr = (String) in.readObject();
 		String expLang = (String) in.readObject();
+		String expStr = (String) in.readObject();
 		String sourceRef = (String) in.readObject();
 		IResource resource = RESOURCEHELPER.find(sourceRef);
 		ExpressionDefinition expression = new ExpressionDefinition(expStr, expLang);
