@@ -9,6 +9,9 @@
          <adapter
                type="io.cucumber.cucumberexpressions.ExpressionFactory">
          </adapter>
+         <adapter
+               type="cucumber.eclipse.steps.integration.KeyWordProvider">
+         </adapter>
       </factory>
    </extension>
    <extension

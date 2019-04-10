@@ -12,7 +12,8 @@ Require-Bundle: org.eclipse.equinox.registry,
  org.eclipse.ui.workbench;bundle-version="3.107.1",
  org.eclipse.core.runtime;bundle-version="3.11.1",
  org.eclipse.ui
-Import-Package: io.cucumber.cucumberexpressions,
+Import-Package: cucumber.eclipse.steps.integration,
+ io.cucumber.cucumberexpressions,
  org.osgi.framework;version="1.8.0"
 Bundle-ClassPath: lib/cucumber-core-4.2.0.jar,
  lib/cucumber-java-4.2.0.jar,
