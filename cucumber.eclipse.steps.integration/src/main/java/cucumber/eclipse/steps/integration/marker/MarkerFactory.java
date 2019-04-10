@@ -180,13 +180,19 @@ public class MarkerFactory {
 
 	public void syntaxErrorOnGherkin(final IResource gherkinResource, final Exception e, final int lineNumber) {
 
+		syntaxErrorOnGherkin(gherkinResource, e.getMessage(), lineNumber);
+
+	}
+	
+	public void syntaxErrorOnGherkin(final IResource gherkinResource, String msg, final int lineNumber) {
+
 		this.mark(gherkinResource, new IMarkerBuilder() {
 			@Override
 			public IMarker build() throws CoreException {
 				IMarker marker = null;
 				marker = gherkinResource.createMarker(GHERKIN_SYNTAX_ERROR);
 				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-				marker.setAttribute(IMarker.MESSAGE, e.getMessage());
+				marker.setAttribute(IMarker.MESSAGE, msg);
 				marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
 				return marker;
 			}
