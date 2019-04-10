@@ -353,8 +353,14 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 		@Override
 		public void examples(Examples examples) {
 			ExamplesTableRow examplesHeader = examples.getRows().get(0);
+			int variablesSize = examplesHeader.getCells().size();
 			for (int i = 1; i < examples.getRows().size(); i++) {
 				ExamplesTableRow currentExample = examples.getRows().get(i);
+				int examplesSize = currentExample.getCells().size();
+				if (examplesSize != variablesSize) {
+					markerFactory.syntaxErrorOnGherkin(gherkinFile, "The number of examples ("+examplesSize+")does not match the number of variables ("+variablesSize+")", currentExample.getLine());
+					continue;
+				}
 				try {
 					matchScenarioOutlineExample(examplesHeader, currentExample);
 				} catch (CoreException e) {
