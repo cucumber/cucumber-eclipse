@@ -36,9 +36,6 @@ public class CucumberContentAssist {
 
 	private final String NOSTEPS = "No Step Definition Found";
 
-	// Junk words needs to be filter form keyword list
-	private String[] junkWords = { "* ", "Business Need", "Ability", "Scenario Template", "Scenarios" };
-
 	// RegEx1 : (Line starts with only a <Step-keyword>[without <space> or
 	// <word>]) OR
 	// (Line doesn't starts with a <Step-keyword>)
@@ -105,11 +102,11 @@ public class CucumberContentAssist {
 		this.matchedStepList = new ArrayList<String>();
 	}
 
-	public List<String> getStepKeyWords(I18n i18n) {
-		List<String> stepKeywords = i18n.getStepKeywords();
-		stepKeywords.removeAll(asList(junkWords));
-		return stepKeywords;
-	}
+//	public List<String> getStepKeyWords(I18n i18n) {
+//		List<String> stepKeywords = i18n.getStepKeywords();
+//		stepKeywords.removeAll(asList(junkWords));
+//		return stepKeywords;
+//	}
 
 	// Iterate and collect all step proposals from Both Source and JAR
 	public void collectAllSteps(String matchPrefix) {
@@ -291,22 +288,12 @@ public class CucumberContentAssist {
 		return mySource;
 	}
 
-	// Remove junk words from keyword list
-	public void removeJunkWords(List<String> keywords) {
-		List<String> junks = Arrays.asList(junkWords);
-		keywords.removeAll(junks);
-	}
-
-	// Get all junkList
-	public List<String> getJunkList() {
-		List<String> junkList = Arrays.asList(junkWords);
-		return junkList;
-	}
 
 	// Get Last word of a String by replacing KEYWORD
 	public String lastPrefix(String string, List<String> keywords) {
 		String longestMatch = null;
-		for (String keyword : keywords) {
+		for (String kw : keywords) {
+			String keyword  = kw+" ";
 			if (string.startsWith(keyword)) {
 				if (longestMatch == null || keyword.length()>longestMatch.length()) {
 					longestMatch = keyword;

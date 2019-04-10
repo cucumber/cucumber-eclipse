@@ -24,6 +24,7 @@ import org.eclipse.jdt.launching.JavaRuntime;
 
 import cucumber.api.TypeRegistryConfigurer;
 import cucumber.eclipse.backends.java.properties.JavaBackendPropertyPage;
+import cucumber.eclipse.steps.integration.KeyWordProvider;
 import cucumber.runtime.DefaultTypeRegistryConfiguration;
 import cucumber.runtime.Reflections;
 import cucumber.runtime.io.MultiLoader;
@@ -33,6 +34,7 @@ import io.cucumber.stepexpression.TypeRegistry;
 
 public class JavaBackendAdapterFactory implements IAdapterFactory, IResourceChangeListener {
 	
+	private static final JavaKeywordsProvider KEYWORDS_PROVIDER = new JavaKeywordsProvider();
 	Map<IProject, ExpressionFactory> cache = new HashMap<>();
 
 	public JavaBackendAdapterFactory() {
@@ -43,6 +45,10 @@ public class JavaBackendAdapterFactory implements IAdapterFactory, IResourceChan
 	public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
 		if (adaptableObject instanceof IProject) {
 			IProject project = (IProject) adaptableObject;
+			if (adapterType == KeyWordProvider.class) {
+				//TODO should we check for any property here??
+				return adapterType.cast(KEYWORDS_PROVIDER);
+			}
 			try {
 				if (project.isAccessible() && project.hasNature(JavaCore.NATURE_ID) && JavaBackendPropertyPage.isBackendEnabled(project)) {
 					
