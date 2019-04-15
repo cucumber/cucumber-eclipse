@@ -333,7 +333,7 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 
 		@Override
 		public void syntaxError(String state, String event, List<String> legalEvents, String uri, Integer line) {
-			this.markerFactory.syntaxErrorOnGherkin(this.gherkinFile, new ParseException(event, line));
+			this.markerFactory.syntaxErrorOnGherkin(this.gherkinFile, "Found "+event+" when expecting one of: "+legalEvents+". (Current state: "+state+").", line);
 		}
 
 		@Override
