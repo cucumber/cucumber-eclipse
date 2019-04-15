@@ -61,7 +61,7 @@ public class GherkinModel {
 	public void updateFromDocument(final IDocument document) {
 		elements.clear();
 		
-		Parser p = new Parser(new Formatter() {
+		Formatter formatter = new Formatter() {
 
 			private Stack<PositionedElement> stack = new Stack<PositionedElement>();
 
@@ -70,8 +70,7 @@ public class GherkinModel {
 			}
 
 			@Override
-			public void syntaxError(String arg0, String arg1,
-					List<String> arg2, String arg3, Integer arg4) {
+			public void syntaxError(String state, String event, List<String> legalEvents, String uri, Integer line) {
 			}
 
 			@Override
@@ -157,7 +156,8 @@ public class GherkinModel {
 				// TODO Auto-generated method stub
 				
 			}
-		});
+		};
+		Parser p = new Parser(formatter, false);
 		
 		try {
 			p.parse(document.get(), "", 0);
