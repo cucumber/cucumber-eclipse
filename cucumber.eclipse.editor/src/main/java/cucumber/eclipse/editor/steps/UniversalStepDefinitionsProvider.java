@@ -4,6 +4,7 @@ import static cucumber.eclipse.editor.util.ExtensionRegistryUtil.getStepDefiniti
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -39,13 +40,22 @@ public class UniversalStepDefinitionsProvider implements IStepDefinitionsProvide
 	}
 
 	public Set<StepDefinition> getStepDefinitions(IProject project) throws CoreException {
+		return getStepDefinitions(project, new HashSet<>());
+	}
+
+	private Set<StepDefinition> getStepDefinitions(IProject project, Set<String> analyzedProjects) throws CoreException {
 		StepDefinitionsRepository stepDefinitionsRepository = this.stepDefinitionsStorage.getOrCreate(project, null);
 		Set<StepDefinition> stepDefinitions = stepDefinitionsRepository.getAllStepDefinitions(); // step definitions of the current projects
 		
 		IProject[] referencedProjects = project.getReferencedProjects();
 		for (IProject referencedProject : referencedProjects) {
-			Set<StepDefinition> stepDefinitionsFromReferencedProject = getStepDefinitions(referencedProject);
-			stepDefinitions.addAll(stepDefinitionsFromReferencedProject);
+			if (!analyzedProjects.contains(referencedProject.getName())) {
+				// prevent the project from being analyzed twice
+				analyzedProjects.add(referencedProject.getName());
+
+				Set<StepDefinition> stepDefinitionsFromReferencedProject = getStepDefinitions(referencedProject, analyzedProjects);
+				stepDefinitions.addAll(stepDefinitionsFromReferencedProject);
+			}
 		}
 		
 		return stepDefinitions;
