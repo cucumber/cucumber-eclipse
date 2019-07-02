@@ -2,7 +2,6 @@ package cucumber.eclipse.editor.steps;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InvalidClassException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

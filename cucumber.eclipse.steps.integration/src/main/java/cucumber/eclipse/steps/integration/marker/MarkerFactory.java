@@ -24,10 +24,10 @@ import gherkin.formatter.model.Step;
 
 /**
  * The marker factory exposes methods to put makers:
- * <li>unmatched step</li>
- * <li>gherkin syntax error</li>
- * <li>glue between step definition and gherkin step</li>
- * <li>feature file opened from a non cucumber project</li>
+ *  - unmatched step
+ *  - gherkin syntax error
+ *  - glue between step definition and gherkin step
+ *  - feature file opened from a non cucumber project
  * 
  * @author qvdk
  *

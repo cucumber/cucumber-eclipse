@@ -12,15 +12,15 @@ public interface KeyWordProvider {
 
 	/**
 	 * Returns a list of step related keywords (And, But, Given, Then, When)
-	 * @param lang
-	 * @return
+	 * @param lang the language
+	 * @return a list of keywords for the specified language
 	 */
 	List<String> getStepKeyWords(String lang);
 	
 	/**
 	 * returns a list a scenario related keywords (Feature, Scenario, Scenario Outline, Examples)
-	 * @param lang
-	 * @return
+	 * @param lang the language
+	 * @return a list a scenario related keywords (Feature, Scenario, Scenario Outline, Examples)
 	 */
 	List<String> getGroupingKeyWords(String lang);
 
