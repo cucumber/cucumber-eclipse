@@ -58,10 +58,13 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 
 	protected static JavaStepDefinitionsProvider INSTANCE = new JavaStepDefinitionsProvider();
 
-	private final Pattern cukeAnnotationMatcher = Pattern.compile("cucumber\\.api\\.java\\.([a-z_]+)\\.(.*)$");
+	private final Pattern cucumberApiAnnotationMatcher = Pattern.compile("cucumber\\.api\\.java\\.([a-z_]+)\\.(.*)$");
 	private static final String CUCUMBER_API_JAVA = "cucumber.api.java.";
 	private static final String CUCUMBER_API_JAVA8 = "cucumber.api.java8.";
-	private static final String REGEX_JAVA8_CUKEAPI = "cucumber\\.api\\.java8\\.(.*)";
+
+	private final Pattern ioCucumberAnnotationMatcher = Pattern.compile("io\\.cucumber\\.java\\.([a-z_]+)\\.(.*)$");
+	private static final String IO_CUCUMBER_JAVA = "io.cucumber.java.";
+	private static final String IO_CUCUMBER_JAVA8 = "io.cucumber.java8.";
 
 	// secure usage of the singleton
 	private JavaStepDefinitionsProvider() {
@@ -92,8 +95,8 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 
 			for (IImportDeclaration decl : allimports) {
 
-				// Match Package name
-				Matcher m = cukeAnnotationMatcher.matcher(decl.getElementName());
+				// Match pre-5.x Package name
+				Matcher m = cucumberApiAnnotationMatcher.matcher(decl.getElementName());
 				if (m.find()) {
 					if ("*".equals(m.group(2))) {
 						importedAnnotations.addAll(getAllAnnotationsInPackage(iCompUnit.getJavaProject(),
@@ -103,12 +106,17 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 					}
 				}
 
-				// If import declaration matches with 'cucumber.api.java8'
-				// Then set Language of Java8-cuke-api
-				if (decl.getElementName().matches(REGEX_JAVA8_CUKEAPI)) {
-					String importDeclaration = decl.getElementName();
-					// setJava8CukeLang(importDeclaration);
+				// Match 5.x+ Package name
+				m = ioCucumberAnnotationMatcher.matcher(decl.getElementName());
+				if (m.find()) {
+					if ("*".equals(m.group(2))) {
+						importedAnnotations.addAll(getAllAnnotationsInPackage(iCompUnit.getJavaProject(),
+								IO_CUCUMBER_JAVA + m.group(1), m.group(1)));
+					} else {
+						importedAnnotations.add(new CucumberAnnotation(m.group(2), m.group(1)));
+					}
 				}
+
 			}
 
 			List<MethodDeclaration> methodDeclList = null;
@@ -118,7 +126,9 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 				IResource resource = iCompUnit.getResource();
 				for (IType ifType : t.newTypeHierarchy(progressMonitor).getAllInterfaces()) {
 
-					if (ifType.isInterface() && ifType.getFullyQualifiedName().startsWith(CUCUMBER_API_JAVA8)) {
+					if (ifType.isInterface() &&
+							(ifType.getFullyQualifiedName().startsWith(CUCUMBER_API_JAVA8)
+							|| ifType.getFullyQualifiedName().startsWith(IO_CUCUMBER_JAVA8))) {
 						String[] superInterfaceNames = ifType.getSuperInterfaceNames();
 						for (String superIfName : superInterfaceNames) {
 							if (superIfName.endsWith(".LambdaGlueBase")) {
@@ -301,7 +311,7 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 	private CucumberAnnotation getCukeAnnotation(List<CucumberAnnotation> importedAnnotations, IAnnotation annotation)
 			throws JavaModelException {
 
-		Matcher m = cukeAnnotationMatcher.matcher(annotation.getElementName());
+		Matcher m = cucumberApiAnnotationMatcher.matcher(annotation.getElementName());
 		if (m.find()) {
 			return new CucumberAnnotation(m.group(2), m.group(1));
 		}
