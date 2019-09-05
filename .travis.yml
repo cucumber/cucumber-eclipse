@@ -1,5 +1,6 @@
 if: NOT tag =~ /^.*-.*$/ # Do not build prerelease tag 
 language: java
+dist: trusty
 sudo: false
 cache:
   directories:
