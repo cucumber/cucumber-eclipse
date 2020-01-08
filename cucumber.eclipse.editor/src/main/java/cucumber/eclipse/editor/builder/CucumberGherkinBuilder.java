@@ -411,7 +411,7 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			if (isFound) {
 				Glue glue = glueRepository.add(gherkinStepWrapper, glueStepDefinition);
 				markerFactory.glueFound(glue);
-			} else {
+			} else if(!inScenarioOutline) { // unmatch for the steps with examples will be mark later
 				markerFactory.unmatchedStep(gherkinDocument, gherkinStepWrapper);
 				// if the step was defined before, we need to remove its glue
 				glueRepository.clean(step);
@@ -497,7 +497,6 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 		public void step(Step step) {
 			if (inScenarioOutline) {
 				scenarioOutlineSteps.add(step);
-				return;
 			}
 
 			try {
