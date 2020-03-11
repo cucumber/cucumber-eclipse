@@ -100,7 +100,7 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 				if (m.find()) {
 					if ("*".equals(m.group(2))) {
 						importedAnnotations.addAll(getAllAnnotationsInPackage(iCompUnit.getJavaProject(),
-								CUCUMBER_API_JAVA + m.group(1), m.group(1)));
+								CUCUMBER_API_JAVA + m.group(1), m.group(1), progressMonitor));
 					} else {
 						importedAnnotations.add(new CucumberAnnotation(m.group(2), m.group(1)));
 					}
@@ -111,7 +111,7 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 				if (m.find()) {
 					if ("*".equals(m.group(2))) {
 						importedAnnotations.addAll(getAllAnnotationsInPackage(iCompUnit.getJavaProject(),
-								IO_CUCUMBER_JAVA + m.group(1), m.group(1)));
+								IO_CUCUMBER_JAVA + m.group(1), m.group(1), progressMonitor));
 					} else {
 						importedAnnotations.add(new CucumberAnnotation(m.group(2), m.group(1)));
 					}
@@ -260,7 +260,7 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 	}
 
 	private List<CucumberAnnotation> getAllAnnotationsInPackage(final IJavaProject javaProject,
-			final String packageFrag, final String lang) throws CoreException, JavaModelException {
+			final String packageFrag, final String lang, IProgressMonitor monitor) throws CoreException, JavaModelException {
 
 		SearchPattern pattern = SearchPattern.createPattern(packageFrag, IJavaSearchConstants.PACKAGE,
 				IJavaSearchConstants.DECLARATIONS, SearchPattern.R_PATTERN_MATCH | SearchPattern.R_CASE_SENSITIVE);
@@ -287,12 +287,12 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 			}
 		};
 		SearchEngine engine = new SearchEngine();
-		jdtSearch(engine, pattern, scope, requestor);
+		jdtSearch(engine, pattern, scope, requestor, monitor);
 		return annotations;
 	}
 
 	private void jdtSearch(SearchEngine engine, SearchPattern pattern, IJavaSearchScope scope,
-			SearchRequestor requestor) throws CoreException {
+			SearchRequestor requestor, IProgressMonitor monitor) throws CoreException {
 		try {
 			engine.search(pattern, new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() }, scope,
 					requestor, null);
@@ -312,6 +312,10 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 			throws JavaModelException {
 
 		Matcher m = cucumberApiAnnotationMatcher.matcher(annotation.getElementName());
+		if (m.find()) {
+			return new CucumberAnnotation(m.group(2), m.group(1));
+		}
+		m = ioCucumberAnnotationMatcher.matcher(annotation.getElementName());
 		if (m.find()) {
 			return new CucumberAnnotation(m.group(2), m.group(1));
 		}
@@ -397,7 +401,7 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 	private Set<StepDefinition> findStepDefinitionsInClasspath(IJavaProject javaProject, MarkerFactory markerFactory,
 			IProgressMonitor monitor) throws CoreException {
 
-		SearchPattern searchPattern = SearchPattern.createPattern("cucumber.api.java.*.*", IJavaSearchConstants.TYPE,
+		SearchPattern searchPattern = SearchPattern.createPattern("*cucumber*.java*", IJavaSearchConstants.TYPE,
 				IJavaSearchConstants.IMPORT_DECLARATION_TYPE_REFERENCE,
 				SearchPattern.R_PATTERN_MATCH | SearchPattern.R_CASE_SENSITIVE);
 
@@ -456,7 +460,7 @@ public class JavaStepDefinitionsProvider extends AbstractStepDefinitionsProvider
 			};
 
 			for (IJavaSearchScope scope : scopes) {
-				jdtSearch(engine, searchPattern, scope, requestor);
+				jdtSearch(engine, searchPattern, scope, requestor, monitor);
 			}
 
 			return stepDefinitions;
