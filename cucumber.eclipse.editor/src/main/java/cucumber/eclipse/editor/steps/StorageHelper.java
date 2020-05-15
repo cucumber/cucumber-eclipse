@@ -53,7 +53,7 @@ public class StorageHelper {
 		IFolder folder;
 		if (project.hasNature(JavaCore.NATURE_ID)) {
 			IJavaProject javaProject = JavaCore.create(project);
-			folder = project.getFolder(javaProject.getOutputLocation()).getFolder(OUTPUT_FOLDER);
+			folder = project.getWorkspace().getRoot().getFolder(javaProject.getOutputLocation()).getFolder(OUTPUT_FOLDER);
 		} else {
 			folder = project.getFolder(OUTPUT_FOLDER);
 		}
