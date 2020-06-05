@@ -1,9 +1,11 @@
 package cucumber.eclipse.editor.editors.jumpto;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -59,9 +61,12 @@ public class StepHyperlinkDetector implements IHyperlinkDetector {
 						.getAttribute(MarkerFactory.STEP_DEFINITION_MATCH_JDT_HANDLE_IDENTIFIER_ATTRIBUTE);
 				//Search step in repository
 				if (id != null) {
-					StepDefinitionsRepository repository = StepDefinitionsStorage.INSTANCE
-							.getOrCreate(gherkinFile.getProject(), null);
-					Set<StepDefinition> stepDefinitions = repository.getAllStepDefinitions();
+					Set<StepDefinition> stepDefinitions = new HashSet<>();
+					for (IProject project : gherkinFile.getProject().getWorkspace().getRoot().getProjects()) {
+						StepDefinitionsRepository repository = StepDefinitionsStorage.INSTANCE
+								.getOrCreate(project, null);
+						stepDefinitions.addAll(repository.getAllStepDefinitions());	
+					}
 					for (StepDefinition stepDefinition : stepDefinitions) {
 						if (id.equals(stepDefinition.getId())) {
 							// define the hyperlink region
