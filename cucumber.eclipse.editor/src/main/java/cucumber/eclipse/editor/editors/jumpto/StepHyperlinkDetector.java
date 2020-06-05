@@ -63,9 +63,15 @@ public class StepHyperlinkDetector implements IHyperlinkDetector {
 				if (id != null) {
 					Set<StepDefinition> stepDefinitions = new HashSet<>();
 					for (IProject project : gherkinFile.getProject().getWorkspace().getRoot().getProjects()) {
-						StepDefinitionsRepository repository = StepDefinitionsStorage.INSTANCE
-								.getOrCreate(project, null);
-						stepDefinitions.addAll(repository.getAllStepDefinitions());	
+						try {
+							if (project.isOpen()) {
+								StepDefinitionsRepository repository = StepDefinitionsStorage.INSTANCE
+										.getOrCreate(project, null);
+								stepDefinitions.addAll(repository.getAllStepDefinitions());	
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+						}	
 					}
 					for (StepDefinition stepDefinition : stepDefinitions) {
 						if (id.equals(stepDefinition.getId())) {

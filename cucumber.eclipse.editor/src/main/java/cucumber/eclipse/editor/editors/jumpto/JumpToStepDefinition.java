@@ -33,9 +33,15 @@ class JumpToStepDefinition {
 			if (id != null) {
 				Set<StepDefinition> stepDefinitions = new HashSet<>();
 				for (IProject project : gherkinFile.getProject().getWorkspace().getRoot().getProjects()) {
-					StepDefinitionsRepository repository = StepDefinitionsStorage.INSTANCE
-							.getOrCreate(project, null);
-					stepDefinitions.addAll(repository.getAllStepDefinitions());	
+					try {
+						if (project.isOpen()) {
+							StepDefinitionsRepository repository = StepDefinitionsStorage.INSTANCE
+									.getOrCreate(project, null);
+							stepDefinitions.addAll(repository.getAllStepDefinitions());	
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}	
 				}
 				for (StepDefinition step : stepDefinitions) {
 					if (id.equals(step.getId())) {
