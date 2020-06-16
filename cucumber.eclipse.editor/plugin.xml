@@ -367,4 +367,13 @@
          </enabledWhen>
    </page>
 </extension>
+ <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            category="cucumber.eclipse.editor.properties.main"
+            class="cucumber.eclipse.editor.properties.ProjectGlueCodeOptions"
+            id="cucumber.eclipse.editor.properties.gluecodeoptions"
+            name="Glue Code Options">
+      </page>
+   </extension>
 </plugin>

@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 
+import cucumber.eclipse.editor.properties.ProjectGlueCodeOptions;
 import cucumber.eclipse.steps.integration.ExpressionDefinition;
 import cucumber.eclipse.steps.integration.GherkinStepWrapper;
 import cucumber.eclipse.steps.integration.Glue;
@@ -27,6 +28,7 @@ import cucumber.eclipse.steps.integration.StepDefinition;
 import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 import gherkin.I18n;
 import gherkin.formatter.model.Step;
+import io.cucumber.cucumberexpressions.CucumberExpression;
 import io.cucumber.cucumberexpressions.CucumberExpressionException;
 import io.cucumber.cucumberexpressions.Expression;
 import io.cucumber.cucumberexpressions.ExpressionFactory;
@@ -82,10 +84,9 @@ public class GlueRepository implements Externalizable {
 	/**
 	 * Find the glue for a gherkin statement
 	 * 
-	 * @param fromGherkinStepText
-	 *            a gherkin expression
-	 * @return the step definition related to this gherkin step. Or, null when
-	 *         not found
+	 * @param fromGherkinStepText a gherkin expression
+	 * @return the step definition related to this gherkin step. Or, null when not
+	 *         found
 	 */
 	public Glue findGlue(String fromGherkinStepText) {
 		Entry<GherkinStepWrapper, StepDefinition> glue = null;
@@ -121,10 +122,10 @@ public class GlueRepository implements Externalizable {
 
 			if (step.getLine().equals(lineNumber)) {
 				this.glues.remove(gherkinStepWrapper);
-				clearExpressionCache(gherkinStepWrapper);
 				break;
 			}
 		}
+		getExpressionCache().clear();
 	}
 
 	public void clean(IResource gherkinFile) {
@@ -132,26 +133,17 @@ public class GlueRepository implements Externalizable {
 			GherkinStepWrapper wrapper = iterator.next();
 			if (wrapper.getSource().equals(gherkinFile)) {
 				iterator.remove();
-				clearExpressionCache(wrapper);
 			}
 		}
-	}
-
-	private void clearExpressionCache(GherkinStepWrapper wrapper) {
-		Step step = wrapper.getStep();
-		if (step != null) {
-			getExpressionCache().remove(step);
-		}
+		getExpressionCache().clear();
 	}
 
 	/**
-	 * Get the text statement of a gherkin step. For example, with the step
-	 * "Given I love cats" will return "I love cats"
+	 * Get the text statement of a gherkin step. For example, with the step "Given I
+	 * love cats" will return "I love cats"
 	 * 
-	 * @param language
-	 *            the document language
-	 * @param expression
-	 *            a gherkin step expression
+	 * @param language   the document language
+	 * @param expression a gherkin step expression
 	 * @return the text part of the gherkin step expression
 	 */
 	protected String getTextStatement(String language, String expression) {
@@ -166,13 +158,11 @@ public class GlueRepository implements Externalizable {
 	}
 
 	/**
-	 * Get a matcher to ensure text starts with a basic step keyword : Given,
-	 * When, Then, etc
+	 * Get a matcher to ensure text starts with a basic step keyword : Given, When,
+	 * Then, etc
 	 * 
-	 * @param language
-	 *            the document language
-	 * @param text
-	 *            the text to match
+	 * @param language the document language
+	 * @param text     the text to match
 	 * @return a matcher
 	 */
 	private Matcher getBasicStatementMatcher(String language, String text) {
@@ -250,7 +240,8 @@ public class GlueRepository implements Externalizable {
 	@SuppressWarnings("restriction")
 	private ExpressionFactory getExpressionFactory(ExpressionDefinition expression) {
 		if (project != null) {
-			Object adapter = org.eclipse.core.internal.runtime.AdapterManager.getDefault().loadAdapter(project, ExpressionFactory.class.getName());
+			Object adapter = org.eclipse.core.internal.runtime.AdapterManager.getDefault().loadAdapter(project,
+					ExpressionFactory.class.getName());
 			if (adapter instanceof ExpressionFactory) {
 				return (ExpressionFactory) adapter;
 			}
@@ -267,27 +258,49 @@ public class GlueRepository implements Externalizable {
 		return expressionCache;
 	}
 
-	private static final class ParsedExpression {
+	private final class ParsedExpression {
 
-		Expression cucumberExpression;
+		private Expression expression;
 
 		public ParsedExpression(StepDefinition step, ExpressionFactory factory) {
 			ExpressionDefinition definition = step.getExpression();
 			String text = definition.getText();
-
 			try {
-				cucumberExpression = factory.createExpression(text);
-			} catch (CucumberExpressionException e) {
-				IResource source = step.getSource();
-				int lineNumber = step.getLineNumber();
-				if (source != null) {
-					MarkerFactory.INSTANCE.syntaxErrorOnStepDefinition(source, e, lineNumber);
+				if (ProjectGlueCodeOptions.isMatchAllParameter(project)) {
+					String altText = text.replaceAll("(?<=\\{).*?(?=\\})", "");
+					try {
+						// check if this is a cucumber or a regexp...
+						Expression temporary = factory.createExpression(text);
+						if (temporary instanceof CucumberExpression) {
+							text = altText;
+						} else {
+							expression = temporary;
+						}
+					} catch (CucumberExpressionException e) {
+						// exception can also mean this is a cucumber expression...
+						text = altText;
+					}
 				}
+				if (expression == null) {
+					expression = factory.createExpression(text);
+				}
+			} catch (CucumberExpressionException e) {
+				createErrorMarker(step, e);
+			} catch (PatternSyntaxException e) {
+				createErrorMarker(step, e);
+			}
+		}
+
+		private void createErrorMarker(StepDefinition step, Exception e) {
+			IResource source = step.getSource();
+			int lineNumber = step.getLineNumber();
+			if (source != null) {
+				MarkerFactory.INSTANCE.syntaxErrorOnStepDefinition(source, e, lineNumber);
 			}
 		}
 
 		public boolean matches(String text) {
-			return cucumberExpression != null && cucumberExpression.match(text) != null;
+			return expression != null && expression.match(text) != null;
 		}
 
 	}
