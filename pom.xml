@@ -8,7 +8,7 @@
 	<name>Cucumber Eclipse Parent</name>
 
 	<properties>
-		<tycho-version>1.3.0</tycho-version>
+		<tycho-version>1.7.0</tycho-version>
 		<maven-scm-plugin-version>1.11.1</maven-scm-plugin-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
@@ -43,7 +43,7 @@
 						<environment>
 							<os>win32</os>
 							<ws>win32</ws>
-							<arch>x86</arch>
+							<arch>x86_64</arch>
 						</environment>
 						<environment>
 							<os>linux</os>
