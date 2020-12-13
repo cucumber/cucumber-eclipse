@@ -374,6 +374,9 @@
             class="cucumber.eclipse.editor.properties.ProjectGlueCodeOptions"
             id="cucumber.eclipse.editor.properties.gluecodeoptions"
             name="Glue Code Options">
+         <enabledWhen>
+            <adapt type="org.eclipse.core.resources.IProject"/>
+         </enabledWhen>
       </page>
    </extension>
  <extension
