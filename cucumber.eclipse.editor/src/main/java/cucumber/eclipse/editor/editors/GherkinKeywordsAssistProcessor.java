@@ -2,30 +2,22 @@
 package cucumber.eclipse.editor.editors;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.contentassist.CompletionProposal;
-import org.eclipse.jface.text.contentassist.ContextInformation;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.ui.IEditorInput;
-import org.omg.PortableInterceptor.AdapterStateHelper;
 
 import cucumber.eclipse.editor.Activator;
 import cucumber.eclipse.editor.contentassist.CucumberContentAssist;
-import cucumber.eclipse.editor.steps.UniversalStepDefinitionsProvider;
 import cucumber.eclipse.steps.integration.KeyWordProvider;
-import gherkin.I18n;
-import io.cucumber.cucumberexpressions.ExpressionFactory;
 
 public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 
@@ -106,7 +98,7 @@ public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 				}
 			}
 
-			return (ICompletionProposal[]) result.toArray(new ICompletionProposal[result.size()]);
+			return result.toArray(new ICompletionProposal[result.size()]);
 		} catch (Exception e) {
 			// ... log the exception ...
 			e.printStackTrace();

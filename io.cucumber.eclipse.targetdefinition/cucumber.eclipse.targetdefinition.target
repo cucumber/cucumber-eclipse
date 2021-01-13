@@ -18,8 +18,8 @@
 <repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20150519210750/repository/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-<unit id="org.eclipse.sdk.ide" version="4.5.2.M20160212-1500"/>
-<repository location="http://download.eclipse.org/releases/mars"/>
+<unit id="org.eclipse.sdk.ide" version="0.0.0"/>
+<repository location="http://download.eclipse.org/releases/2020-12"/>
 </location>
 </locations>
 </target>

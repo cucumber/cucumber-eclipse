@@ -30,7 +30,7 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.5.0",
  org.eclipse.core.jobs,
  org.eclipse.e4.ui.css.swt.theme
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: cucumber.eclipse.editor,
  cucumber.eclipse.editor.editors
 DynamicImport-Package: * 
