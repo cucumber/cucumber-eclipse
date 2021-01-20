@@ -16,8 +16,8 @@ import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Image;
 
 import cucumber.eclipse.editor.Activator;
-import cucumber.eclipse.editor.contentassist.CucumberContentAssist;
 import cucumber.eclipse.steps.integration.KeyWordProvider;
+import io.cucumber.eclipse.editor.contentassist.CucumberContentAssist;
 
 public class GherkinKeywordsAssistProcessor implements IContentAssistProcessor {
 

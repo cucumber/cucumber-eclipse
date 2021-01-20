@@ -1,6 +1,6 @@
 package cucumber.eclipse.editor.snippet;
 
-import static cucumber.eclipse.editor.util.ExtensionRegistryUtil.*;
+import static io.cucumber.eclipse.editor.ExtensionRegistryUtil.*;
 
 import java.util.List;
 

@@ -1,8 +1,8 @@
 package cucumber.eclipse.editor.markers;
 
 import static cucumber.eclipse.editor.editors.DocumentUtil.read;
-import static cucumber.eclipse.steps.integration.marker.MarkerFactory.UNMATCHED_STEP_KEYWORD_ATTRIBUTE;
-import static cucumber.eclipse.steps.integration.marker.MarkerFactory.UNMATCHED_STEP_NAME_ATTRIBUTE;
+import static io.cucumber.eclipse.editor.marker.MarkerFactory.UNMATCHED_STEP_KEYWORD_ATTRIBUTE;
+import static io.cucumber.eclipse.editor.marker.MarkerFactory.UNMATCHED_STEP_NAME_ATTRIBUTE;
 
 import java.io.IOException;
 import java.util.Set;
@@ -30,8 +30,8 @@ import cucumber.eclipse.editor.snippet.ExtensionRegistryStepGeneratorProvider;
 import cucumber.eclipse.editor.snippet.IStepGeneratorProvider;
 import cucumber.eclipse.editor.snippet.SnippetApplicator;
 import cucumber.eclipse.editor.steps.UniversalStepDefinitionsProvider;
-import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 import gherkin.formatter.model.Step;
+import io.cucumber.eclipse.editor.marker.MarkerFactory;
 
 public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionGenerator {
 	

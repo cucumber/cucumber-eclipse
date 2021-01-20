@@ -14,10 +14,10 @@ import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 
 import cucumber.eclipse.editor.editors.Editor;
-import cucumber.eclipse.editor.steps.StepDefinitionsRepository;
-import cucumber.eclipse.editor.steps.StepDefinitionsStorage;
-import cucumber.eclipse.steps.integration.StepDefinition;
-import cucumber.eclipse.steps.integration.marker.MarkerFactory;
+import io.cucumber.eclipse.editor.marker.MarkerFactory;
+import io.cucumber.eclipse.editor.steps.StepDefinition;
+import io.cucumber.eclipse.editor.steps.StepDefinitionsRepository;
+import io.cucumber.eclipse.editor.steps.StepDefinitionsStorage;
 
 public class StepHyperlinkDetector implements IHyperlinkDetector {
 

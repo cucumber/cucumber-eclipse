@@ -2,6 +2,8 @@ package cucumber.eclipse.steps.integration;
 
 import org.eclipse.core.runtime.CoreException;
 
+import io.cucumber.eclipse.editor.steps.StepDefinition;
+
 /**
  * The cucumber editor try to jump to step definition resource by itself when it
  * know the file and the line number. However in some case the step definition

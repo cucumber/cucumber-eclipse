@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         id="io.cucumber.eclipse.java.steps.source"
+         name="Java Source"
+         point="io.cucumber.eclipse.editor.steps.integration">
+      <stepDefinitionIntegration
+            class="io.cucumber.eclipse.java.JavaSourceStepDefinitionProvider">
+      </stepDefinitionIntegration>
+   </extension>
+   <extension
+         id="io.cucumber.eclipse.java.steps.classpath"
+         point="io.cucumber.eclipse.editor.steps.integration">
+      <stepDefinitionIntegration
+            class="io.cucumber.eclipse.java.JavaClasspathStepDefinitionProvider">
+      </stepDefinitionIntegration>
+   </extension>
+
+</plugin>

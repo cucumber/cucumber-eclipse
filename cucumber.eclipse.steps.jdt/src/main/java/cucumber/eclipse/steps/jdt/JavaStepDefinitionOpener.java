@@ -10,7 +10,7 @@ import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.ui.PartInitException;
 
 import cucumber.eclipse.steps.integration.IStepDefinitionOpener;
-import cucumber.eclipse.steps.integration.StepDefinition;
+import io.cucumber.eclipse.editor.steps.StepDefinition;
 
 public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
 

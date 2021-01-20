@@ -11,12 +11,12 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
 import cucumber.eclipse.editor.Activator;
-import cucumber.eclipse.editor.steps.StepDefinitionsRepository;
-import cucumber.eclipse.editor.steps.StepDefinitionsStorage;
-import cucumber.eclipse.editor.util.ExtensionRegistryUtil;
 import cucumber.eclipse.steps.integration.IStepDefinitionOpener;
-import cucumber.eclipse.steps.integration.StepDefinition;
-import cucumber.eclipse.steps.integration.marker.MarkerFactory;
+import io.cucumber.eclipse.editor.ExtensionRegistryUtil;
+import io.cucumber.eclipse.editor.marker.MarkerFactory;
+import io.cucumber.eclipse.editor.steps.StepDefinition;
+import io.cucumber.eclipse.editor.steps.StepDefinitionsRepository;
+import io.cucumber.eclipse.editor.steps.StepDefinitionsStorage;
 
 class JumpToStepDefinition {
 

@@ -1,6 +1,6 @@
 package cucumber.eclipse.editor.steps;
 
-import static cucumber.eclipse.editor.util.ExtensionRegistryUtil.getStepDefinitionsProvider;
+import static io.cucumber.eclipse.editor.ExtensionRegistryUtil.getStepDefinitionsProvider;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,9 +15,11 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
-import cucumber.eclipse.steps.integration.IStepDefinitionsProvider;
-import cucumber.eclipse.steps.integration.StepDefinition;
-import cucumber.eclipse.steps.integration.marker.MarkerFactory;
+import io.cucumber.eclipse.editor.marker.MarkerFactory;
+import io.cucumber.eclipse.editor.steps.IStepDefinitionsProvider;
+import io.cucumber.eclipse.editor.steps.StepDefinition;
+import io.cucumber.eclipse.editor.steps.StepDefinitionsRepository;
+import io.cucumber.eclipse.editor.steps.StepDefinitionsStorage;
 
 /**
  * The uniq point of truth for step definitions independently of the language

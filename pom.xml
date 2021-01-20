@@ -8,7 +8,7 @@
 	<name>Cucumber Eclipse Parent</name>
 
 	<properties>
-		<tycho-version>2.0.0</tycho-version>
+		<tycho-version>2.2.0</tycho-version>
 		<maven-scm-plugin-version>1.11.1</maven-scm-plugin-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>11</maven.compiler.source>
@@ -16,15 +16,17 @@
 	</properties>
 
 	<modules>
-		<module>io.cucumber.eclipse.targetdefinition</module>
-		<module>cucumber.eclipse.editor</module>
+		<!--  <module>cucumber.eclipse.editor</module>
 		<module>cucumber.eclipse.editor.test</module>
 		<module>cucumber.eclipse.feature</module>
 		<module>cucumber.eclipse.runner</module>
 		<module>cucumber.eclipse.steps.integration</module>
 		<module>cucumber.eclipse.steps.jdt</module>
 		<module>cucumber.eclipse.backends.java</module>
-		<module>cucumber.eclipse.p2updatesite</module>
+		<module>cucumber.eclipse.p2updatesite</module> -->
+		<!-- next generation -->
+		<module>io.cucumber.eclipse.targetdefinition</module>
+		<module>io.cucumber.eclipse.editor</module>
 	</modules>
 
 	<build>

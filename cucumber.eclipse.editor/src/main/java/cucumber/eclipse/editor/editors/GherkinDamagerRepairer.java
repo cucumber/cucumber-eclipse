@@ -8,6 +8,8 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.ITokenScanner;
 
+import io.cucumber.eclipse.editor.document.GherkinKeywordScanner;
+
 public class GherkinDamagerRepairer extends DefaultDamagerRepairer {
 	private static String code = "en";
 

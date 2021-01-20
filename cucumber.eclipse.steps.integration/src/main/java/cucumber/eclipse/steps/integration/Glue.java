@@ -1,5 +1,7 @@
 package cucumber.eclipse.steps.integration;
 
+import io.cucumber.eclipse.editor.steps.StepDefinition;
+
 /**
  * A glue is the link between a gherkin step and its implementation called a
  * step definition.

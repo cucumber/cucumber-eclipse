@@ -1,6 +1,6 @@
 package cucumber.eclipse.editor.markers;
 
-import static cucumber.eclipse.steps.integration.marker.MarkerFactory.NOT_A_CUCUMBER_PROJECT;
+import static io.cucumber.eclipse.editor.marker.MarkerFactory.NOT_A_CUCUMBER_PROJECT;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;

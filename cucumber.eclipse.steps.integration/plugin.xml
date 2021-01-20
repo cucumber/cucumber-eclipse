@@ -4,23 +4,9 @@
 	<extension-point id="cucumber.eclipse.steps.integration" name="Cucumber Steps Integration" schema="schema/cucumber.eclipse.steps.integration.exsd"/>
  <extension-point id="cucumber.eclipse.editor.step_definition_opener" name="Cucumber step definition opener" schema="schema/cucumber.eclipse.editor.step_definition_opener.exsd"/>
 	<extension
-           id="cucumber.eclipse.marker"
-           point="org.eclipse.core.resources.markers">
-           <super type="org.eclipse.core.resources.textmarker"/>
-           <persistent value="true"/>
-	</extension>
-	<extension
            id="cucumber.eclipse.marker.stepdef.syntaxerror"
            point="org.eclipse.core.resources.markers"
            name="Step definition syntax error">
-           <super type="org.eclipse.core.resources.problemmarker"/>
-           <super type="cucumber.eclipse.marker"/>
-           <persistent value="true"/>
-	</extension>
-	<extension
-           id="cucumber.eclipse.marker.gherkin.syntaxerror"
-           point="org.eclipse.core.resources.markers"
-           name="Gherkin syntax error">
            <super type="org.eclipse.core.resources.problemmarker"/>
            <super type="cucumber.eclipse.marker"/>
            <persistent value="true"/>

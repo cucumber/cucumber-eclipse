@@ -7,6 +7,8 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.jface.text.rules.IPartitionTokenScanner;
 
+import io.cucumber.eclipse.editor.document.GherkinKeywordScanner;
+
 public class GherkinPartitioner extends FastPartitioner {
 
 	private static String DEFAULT_EN = "en";
