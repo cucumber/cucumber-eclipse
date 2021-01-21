@@ -110,4 +110,13 @@
               contentType="io.cucumber.eclipse.editor.content-type.feature">
         </contentAssistProcessor>
      </extension>
+     <extension
+           point="org.eclipse.ui.trace.traceComponents">
+        <component
+              id="io.cucumber.eclipse.editor.trace.cucumber"
+              label="Cucumber Editor">
+           <bundle
+                 name="io.cucumber.eclipse.editor"></bundle>
+        </component>
+     </extension>
 </plugin>

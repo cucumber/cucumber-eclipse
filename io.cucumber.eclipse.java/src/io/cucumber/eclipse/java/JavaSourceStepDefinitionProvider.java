@@ -28,8 +28,6 @@ import org.eclipse.jdt.core.dom.ExpressionStatement;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Statement;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.Document;
 
 import io.cucumber.eclipse.editor.steps.ExpressionDefinition;
 import io.cucumber.eclipse.editor.steps.StepDefinition;
@@ -201,12 +199,10 @@ public class JavaSourceStepDefinitionProvider extends JavaStepDefinitionsProvide
 					for (IAnnotation annotation : method.getAnnotations()) {
 						CucumberAnnotation cukeAnnotation = getCukeAnnotation(importedAnnotations, annotation);
 						if (cukeAnnotation != null) {
-
 							int lineNumber = getLineNumber(compilationUnit, annotation);
 							ExpressionDefinition expression;
 							expression = new ExpressionDefinition(getAnnotationText(annotation),
 									cukeAnnotation.getLang());
-
 							StepDefinition step = new StepDefinition(method.getHandleIdentifier(),
 									StepDefinition.NO_LABEL, expression, resource, lineNumber, method.getElementName(),
 									t.getPackageFragment().getElementName(), getParameter(method));
@@ -261,19 +257,5 @@ public class JavaSourceStepDefinitionProvider extends JavaStepDefinitionsProvide
 		return false;
 	}
 
-	/**
-	 * @param compUnit
-	 * @param annotation
-	 * @return int
-	 * @throws JavaModelException
-	 */
-	private static int getLineNumber(ICompilationUnit compUnit, IAnnotation annotation) throws JavaModelException {
-		Document document = new Document(compUnit.getBuffer().getContents());
 
-		try {
-			return document.getLineOfOffset(annotation.getSourceRange().getOffset()) + 1;
-		} catch (BadLocationException e) {
-			return 0;
-		}
-	}
 }

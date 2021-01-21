@@ -55,7 +55,7 @@ public final class StepDefinition {
 		this.lineNumber = lineNumber;
 		this.sourceName = sourceName;
 		this.packageName = packageName;
-		this.parameters = parameters;
+		this.parameters = Objects.requireNonNullElseGet(parameters, () -> new StepParameter[0]);
 	}
 
 	public StepParameter[] getParameters() {

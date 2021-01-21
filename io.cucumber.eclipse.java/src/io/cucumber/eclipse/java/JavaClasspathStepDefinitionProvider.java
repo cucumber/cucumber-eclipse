@@ -85,19 +85,10 @@ public class JavaClasspathStepDefinitionProvider extends JavaStepDefinitionsProv
 		return stepDefinitions;
 	}
 
-//	@Override
-//	public Set<StepDefinition> findStepDefinitions(IResource stepDefinitionResource, IProgressMonitor monitor)
-//			throws CoreException {
-//		if (support(stepDefinitionResource)) {
-//			return findStepDefinitionsFromSupportedResource(stepDefinitionResource, null, monitor);
-//		}
-//		return Collections.emptySet();
-//	}
-
 	private Set<StepDefinition> findStepDefinitionsInClasspath(IJavaProject javaProject,
 			IProgressMonitor monitor) throws CoreException {
-		// FIXME use pattern io.cucumber.java?.
-		SearchPattern searchPattern = SearchPattern.createPattern("io.cucumber.java*", IJavaSearchConstants.TYPE,
+		// FIXME use pattern io.cucumber.java*.
+		SearchPattern searchPattern = SearchPattern.createPattern("*cucumber*.java*", IJavaSearchConstants.TYPE,
 				IJavaSearchConstants.IMPORT_DECLARATION_TYPE_REFERENCE,
 				SearchPattern.R_PATTERN_MATCH | SearchPattern.R_CASE_SENSITIVE);
 

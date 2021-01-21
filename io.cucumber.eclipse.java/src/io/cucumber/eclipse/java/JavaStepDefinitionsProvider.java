@@ -1,5 +1,9 @@
 package io.cucumber.eclipse.java;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -11,12 +15,14 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IClassFile;
+import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IMemberValuePair;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.ISourceReference;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
@@ -28,6 +34,9 @@ import org.eclipse.jdt.core.search.SearchMatch;
 import org.eclipse.jdt.core.search.SearchParticipant;
 import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.core.search.SearchRequestor;
+import org.eclipse.jdt.launching.JavaRuntime;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
 
 import io.cucumber.eclipse.editor.steps.IStepDefinitionsProvider;
 import io.cucumber.eclipse.editor.steps.ParameterType;
@@ -90,6 +99,22 @@ public abstract class JavaStepDefinitionsProvider implements IStepDefinitionsPro
 		} catch (Throwable t) {
 			t.printStackTrace();
 			// if the search engine failed, skip it is a bug into the JDT plugin
+		}
+	}
+
+	/**
+	 * @param compUnit
+	 * @param annotation
+	 * @return int
+	 * @throws JavaModelException
+	 */
+	protected static int getLineNumber(ICompilationUnit compUnit, ISourceReference annotation)
+			throws JavaModelException {
+		Document document = new Document(compUnit.getBuffer().getContents());
+		try {
+			return document.getLineOfOffset(annotation.getSourceRange().getOffset()) + 1;
+		} catch (BadLocationException e) {
+			return -1;
 		}
 	}
 
@@ -176,5 +201,25 @@ public abstract class JavaStepDefinitionsProvider implements IStepDefinitionsPro
 			stepParameters[i] = new StepParameter(parameterVariable.getElementName(), ParameterType.UNKNWON, values);
 		}
 		return stepParameters;
+	}
+
+	protected static URLClassLoader createClassloader(IJavaProject javaProject, ClassLoader parent)
+			throws CoreException {
+		String[] classPathEntries = JavaRuntime.computeDefaultRuntimeClassPath(javaProject);
+		List<URL> urlList = new ArrayList<URL>();
+		for (String entry : classPathEntries) {
+			try {
+				if (entry.startsWith("file:/")) {
+					urlList.add(new URL(entry));
+				} else {
+					urlList.add(new File(entry).toURI().toURL());
+				}
+			} catch (MalformedURLException e) {
+				Activator.getDefault().getLog().error(
+						"can't add classpathentry " + entry + " for project " + javaProject.getProject().getName(), e);
+			}
+		}
+		URL[] urls = urlList.toArray(new URL[urlList.size()]);
+		return new URLClassLoader(urls, parent);
 	}
 }

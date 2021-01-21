@@ -11,6 +11,11 @@ public final class ExpressionDefinition {
 	private final String text;
 	private final String lang;
 
+	public ExpressionDefinition(String text) {
+		this(text, "");
+	}
+
+	@Deprecated
 	public ExpressionDefinition(String text, String lang) {
 		if (text == null) {
 			throw new IllegalArgumentException("text cant be null");
@@ -23,6 +28,7 @@ public final class ExpressionDefinition {
 		return text;
 	}
 
+	@Deprecated
 	public String getLang() {
 		return lang;
 	}
