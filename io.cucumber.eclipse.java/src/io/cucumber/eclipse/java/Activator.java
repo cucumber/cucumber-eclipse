@@ -42,4 +42,14 @@ public class Activator extends AbstractUIPlugin {
 		return plugin;
 	}
 
+	public static void warn(String string, Throwable e) {
+		getDefault().getLog().warn(string, e);
+
+	}
+
+	public static void error(String string, Throwable e) {
+		getDefault().getLog().warn(string, e);
+
+	}
+
 }

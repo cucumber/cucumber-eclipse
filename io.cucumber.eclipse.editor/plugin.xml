@@ -119,4 +119,11 @@
                  name="io.cucumber.eclipse.editor"></bundle>
         </component>
      </extension>
+     <extension
+           point="org.eclipse.ui.genericeditor.icons">
+        <icon
+              contentType="io.cucumber.eclipse.editor.content-type.feature"
+              icon="icons/cukes.gif">
+        </icon>
+     </extension>
 </plugin>

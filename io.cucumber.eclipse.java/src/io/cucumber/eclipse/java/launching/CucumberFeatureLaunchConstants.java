@@ -1,4 +1,4 @@
-package cucumber.eclipse.launching;
+package io.cucumber.eclipse.java.launching;
 
 public class CucumberFeatureLaunchConstants {
 

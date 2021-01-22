@@ -1,4 +1,4 @@
-package io.cucumber.eclipse.java;
+package io.cucumber.eclipse.java.steps;
 
 import static io.cucumber.eclipse.editor.Tracing.PERFORMANCE_STEPS;
 
@@ -7,21 +7,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -41,6 +35,9 @@ import io.cucumber.core.runtime.Runtime;
 import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.editor.steps.ExpressionDefinition;
 import io.cucumber.eclipse.editor.steps.StepDefinition;
+import io.cucumber.eclipse.java.Activator;
+import io.cucumber.eclipse.java.JDTUtil;
+import io.cucumber.eclipse.java.plugins.CucumberStepParserPlugin;
 
 /**
  * Step definition provider that calls cucumber to find steps for the project
@@ -56,10 +53,9 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 		long start = System.currentTimeMillis();
 		DebugTrace debug = Tracing.get();
 		debug.traceEntry(PERFORMANCE_STEPS, stepDefinitionResource);
-		IJavaProject javaProject = getJavaProject(stepDefinitionResource);
+		IJavaProject javaProject = JDTUtil.getJavaProject(stepDefinitionResource);
 		if (javaProject != null) {
-			URLClassLoader classloader = createClassloader(javaProject,
-					new FilteringClassLoader(CucumberStepDefinitionProvider.class.getClassLoader()));
+			URLClassLoader classloader = JDTUtil.createClassloader(javaProject);
 			try {
 				Collection<StepDefinition> defintions = parseStepDefintions(runCucumber(classloader), javaProject,
 						monitor);
@@ -177,21 +173,6 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 		}
 	}
 
-	// TODO workaround for bug https://github.com/cucumber/cucumber-jvm/issues/2212
-	private static final class FilteringClassLoader extends ClassLoader {
-		public FilteringClassLoader(ClassLoader parent) {
-			super("FilteringClassLoader", parent);
-		}
 
-		@Override
-		public Enumeration<URL> getResources(String name) throws IOException {
-			Spliterator<URL> spliterator = Spliterators.spliteratorUnknownSize(super.getResources(name).asIterator(),
-					Spliterator.ORDERED);
-			return Collections.enumeration(StreamSupport.stream(spliterator, false).filter(url -> {
-				return !url.getProtocol().equals("bundleresource");
-			}).collect(Collectors.toList()));
-		}
-
-	}
 
 }

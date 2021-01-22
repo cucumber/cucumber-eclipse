@@ -1,4 +1,4 @@
-package io.cucumber.eclipse.java;
+package io.cucumber.eclipse.java.plugins;
 
 import java.util.Collection;
 import java.util.Map;

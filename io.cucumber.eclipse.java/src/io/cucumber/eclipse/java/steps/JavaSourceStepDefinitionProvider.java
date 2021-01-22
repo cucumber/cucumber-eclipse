@@ -1,4 +1,6 @@
-package io.cucumber.eclipse.java;
+package io.cucumber.eclipse.java.steps;
+
+import static io.cucumber.eclipse.editor.Tracing.PERFORMANCE_STEPS;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,10 +30,17 @@ import org.eclipse.jdt.core.dom.ExpressionStatement;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Statement;
+import org.eclipse.osgi.service.debug.DebugTrace;
 
+import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.editor.steps.ExpressionDefinition;
 import io.cucumber.eclipse.editor.steps.StepDefinition;
 import io.cucumber.eclipse.editor.steps.StepParameter;
+import io.cucumber.eclipse.java.Activator;
+import io.cucumber.eclipse.java.CucumberAnnotation;
+import io.cucumber.eclipse.java.JDTUtil;
+import io.cucumber.eclipse.java.JavaParser;
+import io.cucumber.eclipse.java.MethodDefinition;
 
 /**
  * Scans the source files of a project for step-definitions
@@ -49,10 +58,14 @@ public class JavaSourceStepDefinitionProvider extends JavaStepDefinitionsProvide
 	@Override
 	public Collection<StepDefinition> findStepDefinitions(IResource stepDefinitionResource, IProgressMonitor monitor)
 			throws CoreException {
-		IJavaProject javaProject = getJavaProject(stepDefinitionResource);
+		IJavaProject javaProject = JDTUtil.getJavaProject(stepDefinitionResource);
+		DebugTrace debug = Tracing.get();
+		long start = System.currentTimeMillis();
+		debug.traceEntry(PERFORMANCE_STEPS, stepDefinitionResource);
 		if (javaProject != null) {
+			Collection<StepDefinition> steps;
 			if (stepDefinitionResource instanceof IProject) {
-				List<StepDefinition> allProjectSteps = new ArrayList<>();
+				steps = new ArrayList<>();
 				List<ICompilationUnit> units = new ArrayList<>();
 				for (IPackageFragment fragment : javaProject.getPackageFragments()) {
 					for (ICompilationUnit unit : fragment.getCompilationUnits()) {
@@ -61,17 +74,22 @@ public class JavaSourceStepDefinitionProvider extends JavaStepDefinitionsProvide
 				}
 				SubMonitor subMonitor = SubMonitor.convert(monitor, units.size() * 100);
 				for (ICompilationUnit unit : units) {
-					allProjectSteps.addAll(getCukeSteps(unit, subMonitor.split(100)));
+					steps.addAll(getCukeSteps(unit, subMonitor.split(100)));
 				}
-				return allProjectSteps;
 			} else {
 				IJavaElement javaElement = JavaCore.create(stepDefinitionResource);
 				if (javaElement instanceof ICompilationUnit) {
 					ICompilationUnit compilationUnit = (ICompilationUnit) javaElement;
-					return getCukeSteps(compilationUnit, monitor);
+					steps = getCukeSteps(compilationUnit, monitor);
+				} else {
+					steps = Collections.emptySet();
 				}
 			}
+			debug.traceExit(PERFORMANCE_STEPS,
+					steps.size() + " steps found (" + (System.currentTimeMillis() - start) + "ms)");
+			return steps;
 		}
+		debug.traceExit(PERFORMANCE_STEPS);
 		return Collections.emptySet();
 	}
 
@@ -201,8 +219,7 @@ public class JavaSourceStepDefinitionProvider extends JavaStepDefinitionsProvide
 						if (cukeAnnotation != null) {
 							int lineNumber = getLineNumber(compilationUnit, annotation);
 							ExpressionDefinition expression;
-							expression = new ExpressionDefinition(getAnnotationText(annotation),
-									cukeAnnotation.getLang());
+							expression = new ExpressionDefinition(getAnnotationText(annotation));
 							StepDefinition step = new StepDefinition(method.getHandleIdentifier(),
 									StepDefinition.NO_LABEL, expression, resource, lineNumber, method.getElementName(),
 									t.getPackageFragment().getElementName(), getParameter(method));
@@ -214,7 +231,7 @@ public class JavaSourceStepDefinitionProvider extends JavaStepDefinitionsProvide
 			}
 
 		} catch (JavaModelException e) {
-			System.out.println("Warning: could not process " + compilationUnit.getElementName());
+			Activator.warn("Warning: could not process " + compilationUnit.getElementName(), e);
 		}
 		long end = System.currentTimeMillis();
 		System.out.println("getCukeSteps " + compilationUnit.getJavaProject().getElementName() + ": "

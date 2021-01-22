@@ -1,4 +1,4 @@
-package io.cucumber.eclipse.java;
+package io.cucumber.eclipse.java.steps;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,6 +28,9 @@ import org.eclipse.jdt.core.search.SearchRequestor;
 
 import io.cucumber.eclipse.editor.steps.ExpressionDefinition;
 import io.cucumber.eclipse.editor.steps.StepDefinition;
+import io.cucumber.eclipse.java.Activator;
+import io.cucumber.eclipse.java.CucumberAnnotation;
+import io.cucumber.eclipse.java.JDTUtil;
 
 /**
  * Step definition provider that scans the java classpath for step definitions
@@ -40,7 +43,7 @@ public class JavaClasspathStepDefinitionProvider extends JavaStepDefinitionsProv
 	@Override
 	public Collection<StepDefinition> findStepDefinitions(IResource stepDefinitionResource, IProgressMonitor monitor)
 			throws CoreException {
-		IJavaProject project = getJavaProject(stepDefinitionResource);
+		IJavaProject project = JDTUtil.getJavaProject(stepDefinitionResource);
 		if (project != null) {
 			return findStepDefinitionsInClasspath(project, monitor);
 		}

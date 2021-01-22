@@ -22,6 +22,8 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 
+import io.cucumber.eclipse.editor.launching.CucumberFeatureLaunchConstants;
+
 public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigurationTab {
 
 

@@ -45,8 +45,8 @@ public class CucumberExpressionParserSupport {
 		} else {
 			Matcher m = SCRIPT_STYLE_REGEXP.matcher(expressionString);
 			if (m.find()) {
-				return new Template(definition.getExpression().getText(), definition.getDescription(),
-						contextId, definition.getExpression().getText(), true);
+				return new Template(definition.getExpression().getText(), definition.getDescription(), contextId,
+						definition.getExpression().getText(), true);
 			} else {
 				return new CucumberExpressionTemplate(definition, contextId);
 			}
@@ -103,8 +103,10 @@ public class CucumberExpressionParserSupport {
 		Node child = node.nodes().get(0);
 		String optionalText = child.text();
 		String fullText = "(" + optionalText + ")";
-		return new TemplateVariable("OPTIONAL_NODE", fullText, new String[] { fullText, optionalText, "" },
+		TemplateVariable variable = new TemplateVariable("OPTIONAL_NODE", fullText, fullText,
 				new int[] { node.start() });
+		variable.setValue(optionalText);
+		return variable;
 	}
 
 	private static TemplateVariable parseAlternation(Node node) {
@@ -112,8 +114,9 @@ public class CucumberExpressionParserSupport {
 		node.nodes().stream().map(Node::text).forEach(values::add);
 		String join = String.join("/", values);
 		values.add(0, join);
-		return new TemplateVariable("ALTERNATION_NODE", join, values.toArray(String[]::new),
+		TemplateVariable variable = new TemplateVariable("ALTERNATION_NODE", join, values.toArray(String[]::new),
 				new int[] { node.start() });
+		return variable;
 	}
 
 	private static TemplateVariable parseParameter(Node node, Iterator<StepParameter> parameterNames,
@@ -126,19 +129,19 @@ public class CucumberExpressionParserSupport {
 		String fullText = "{" + paramType + "}";
 		if (param == null) {
 			paramName = paramType + index;
-			paramValues = new String[] { fullText, paramName };
+			paramValues = new String[] { paramName };
 		} else {
 			paramName = param.getParameterName();
 			String[] values = param.getValues();
 			if (values == null || values.length == 0) {
-				paramValues = new String[] { fullText, paramName };
+				paramValues = new String[] { paramName };
 			} else {
-				List<String> list = new ArrayList<>(Arrays.asList(values));
-				list.add(0, fullText);
-				paramValues = list.toArray(String[]::new);
+				paramValues = values;
 			}
 		}
-		return new TemplateVariable(paramType, fullText, paramValues, new int[] { node.start() });
+		TemplateVariable variable = new TemplateVariable(paramType, fullText, fullText, new int[] { node.start() });
+		variable.setValues(paramValues);
+		return variable;
 	}
 
 	private static final class CucumberExpressionTemplate extends Template {

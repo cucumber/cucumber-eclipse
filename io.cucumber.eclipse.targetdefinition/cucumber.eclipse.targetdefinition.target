@@ -75,5 +75,9 @@ Bundle-Version:        ${version}
 Import-Package:        !io.cucumber.messages.internal.*,!org.checkerframework.*,*
 Export-Package:        *;version="${version}";-noimport:=true]]></instructions>
 	</location>
+	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+		<repository location="https://www.mihai-nita.net/eclipse"/>
+		<unit id="net.mihai-nita.ansicon.feature.group" version="1.4.3.202012111715"/>
+	</location>
 </locations>
 </target>

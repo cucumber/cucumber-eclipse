@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,6 +31,7 @@ import io.cucumber.messages.IdGenerator;
 import io.cucumber.messages.Messages.Envelope;
 import io.cucumber.messages.Messages.GherkinDocument.Feature;
 import io.cucumber.messages.Messages.ParseError;
+import io.cucumber.messages.internal.com.google.protobuf.Descriptors.FieldDescriptor;
 
 /**
  * 
@@ -191,6 +194,17 @@ public final class GherkinEditorDocument {
 	 */
 	public static GherkinEditorDocument parse(IDocument document) {
 		return new GherkinEditorDocument(document);
+	}
+
+	public static void format(IDocument document) {
+		GherkinEditorDocument doc = new GherkinEditorDocument(document);
+		for (Envelope env : doc.sources) {
+			System.out.println("----------------------");
+			Map<FieldDescriptor, Object> allFields = env.getAllFields();
+			for (Entry<FieldDescriptor, Object> entry : allFields.entrySet()) {
+				System.out.println(entry.getKey().getFullName() + "->" + entry.getValue());
+			}
+		}
 	}
 
 	private static boolean isWildcard(String keyword) {
