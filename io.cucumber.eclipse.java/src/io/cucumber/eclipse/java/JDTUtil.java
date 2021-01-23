@@ -88,7 +88,11 @@ public class JDTUtil {
 			Spliterator<URL> spliterator = Spliterators.spliteratorUnknownSize(super.getResources(name).asIterator(),
 					Spliterator.ORDERED);
 			return Collections.enumeration(StreamSupport.stream(spliterator, false).filter(url -> {
-				return !url.getProtocol().equals("bundleresource");
+				boolean equals = url.getProtocol().equals("bundleresource");
+				if (equals) {
+					System.out.println("Filtered " + url);
+				}
+				return !equals;
 			}).collect(Collectors.toList()));
 		}
 

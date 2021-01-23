@@ -126,4 +126,12 @@
               icon="icons/cukes.gif">
         </icon>
      </extension>
+     <extension
+           point="org.eclipse.ui.console.consoleFactories">
+        <consoleFactory
+              class="io.cucumber.eclipse.editor.console.CucumberConsoleFactory"
+              icon="icons/cukes.gif"
+              label="Cucumber Console">
+        </consoleFactory>
+     </extension>
 </plugin>

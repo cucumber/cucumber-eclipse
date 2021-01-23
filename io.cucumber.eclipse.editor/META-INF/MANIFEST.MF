@@ -28,11 +28,14 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.5.0",
  org.eclipse.ui.genericeditor,
  io.cucumber.gherkin;bundle-version="16.0.0",
  io.cucumber.messages;bundle-version="13.2.1",
- org.eclipse.ui.trace
+ org.eclipse.ui.trace,
+ org.eclipse.ui.console,
+ net.mihai-nita.ansicon.plugin
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Automatic-Module-Name: io.cucumber.eclipse.editor
 Bundle-ActivationPolicy: lazy
 Export-Package: io.cucumber.eclipse.editor,
+ io.cucumber.eclipse.editor.console,
  io.cucumber.eclipse.editor.document,
  io.cucumber.eclipse.editor.marker,
  io.cucumber.eclipse.editor.steps

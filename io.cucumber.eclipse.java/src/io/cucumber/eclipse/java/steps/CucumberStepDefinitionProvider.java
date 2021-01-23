@@ -14,8 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.Set;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -26,18 +25,24 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.osgi.service.debug.DebugTrace;
 
-import io.cucumber.core.feature.FeatureParser;
+import io.cucumber.core.backend.Backend;
+import io.cucumber.core.backend.ObjectFactory;
 import io.cucumber.core.gherkin.Feature;
+import io.cucumber.core.options.RuntimeOptions;
 import io.cucumber.core.options.RuntimeOptionsBuilder;
 import io.cucumber.core.resource.Resource;
-import io.cucumber.core.runtime.FeatureSupplier;
+import io.cucumber.core.runtime.BackendSupplier;
+import io.cucumber.core.runtime.ObjectFactoryServiceLoader;
 import io.cucumber.core.runtime.Runtime;
+import io.cucumber.core.runtime.ThreadLocalObjectFactorySupplier;
 import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.editor.steps.ExpressionDefinition;
 import io.cucumber.eclipse.editor.steps.StepDefinition;
 import io.cucumber.eclipse.java.Activator;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberStepParserPlugin;
+import io.cucumber.eclipse.java.runtime.CucumberRuntime;
+import io.cucumber.java.JavaBackendProviderService;
 
 /**
  * Step definition provider that calls cucumber to find steps for the project
@@ -46,6 +51,24 @@ import io.cucumber.eclipse.java.plugins.CucumberStepParserPlugin;
  *
  */
 public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider {
+
+	private Feature dummyFeature;
+
+	public CucumberStepDefinitionProvider() throws URISyntaxException {
+		URI uri = new URI("dummy:uri");
+		dummyFeature = CucumberRuntime.loadFeature(new Resource() {
+
+			@Override
+			public URI getUri() {
+				return uri;
+			}
+
+			@Override
+			public InputStream getInputStream() throws IOException {
+				return new ByteArrayInputStream("Feature: Dummy\r\nScenario: Dummy\r\nGiven a dummy".getBytes());
+			}
+		}).get();
+	}
 
 	@Override
 	public Collection<StepDefinition> findStepDefinitions(IResource stepDefinitionResource, IProgressMonitor monitor)
@@ -118,7 +141,7 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 		return list;
 	}
 
-	private static Map<String, Collection<io.cucumber.plugin.event.StepDefinition>> runCucumber(ClassLoader classLoader)
+	private Map<String, Collection<io.cucumber.plugin.event.StepDefinition>> runCucumber(ClassLoader classLoader)
 			throws CoreException {
 		ClassLoader ccl = Thread.currentThread().getContextClassLoader();
 		try {
@@ -129,47 +152,33 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 					.setDryRun();
 			// TODO filter packages from configuration
 			CucumberStepParserPlugin stepParserPlugin = new CucumberStepParserPlugin();
+			JavaBackendProviderService providerService = new JavaBackendProviderService();
+			RuntimeOptions options = runtimeOptions.build();
+
 			final Runtime runtime = Runtime.builder()//
-					.withRuntimeOptions(runtimeOptions.build())//
+					.withRuntimeOptions(options)//
 					.withClassLoader(() -> classLoader)//
-					.withFeatureSupplier(new DummyFeatureSupplier())//
+					.withFeatureSupplier(() -> Collections.singletonList(dummyFeature))//
 					.withAdditionalPlugins(stepParserPlugin)//
+					.withBackendSupplier(new BackendSupplier() {
+
+						@Override
+						public Collection<? extends Backend> get() {
+							// TODO https://github.com/cucumber/cucumber-jvm/issues/2217
+							ThreadLocalObjectFactorySupplier supplier = new ThreadLocalObjectFactorySupplier(
+									new ObjectFactoryServiceLoader(options));
+							ObjectFactory objectFactory = supplier.get();
+							// TODO Auto-generated method stub
+							Set<Backend> backends = Collections
+									.singleton(providerService.create(objectFactory, objectFactory, () -> classLoader));
+							return backends;
+						}
+					})
 					.build();
 			runtime.run();
 			return stepParserPlugin.getStepList();
 		} finally {
 			Thread.currentThread().setContextClassLoader(ccl);
-		}
-	}
-
-	private static final class DummyFeatureSupplier implements FeatureSupplier {
-		private URI uri;
-
-		public DummyFeatureSupplier() {
-			try {
-				uri = new URI("dummy:uri");
-			} catch (URISyntaxException e) {
-				throw new AssertionError("should never happen", e);
-			}
-
-		}
-
-		@Override
-		public List<Feature> get() {
-			FeatureParser parser = new FeatureParser(UUID::randomUUID);
-			Optional<Feature> resource = parser.parseResource(new Resource() {
-
-				@Override
-				public URI getUri() {
-					return uri;
-				}
-
-				@Override
-				public InputStream getInputStream() throws IOException {
-					return new ByteArrayInputStream("Feature: Dummy\r\nScenario: Dummy\r\nGiven a dummy".getBytes());
-				}
-			});
-			return Collections.singletonList(resource.get());
 		}
 	}
 

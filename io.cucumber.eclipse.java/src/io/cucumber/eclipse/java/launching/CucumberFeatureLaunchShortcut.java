@@ -1,12 +1,15 @@
 package io.cucumber.eclipse.java.launching;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
+import java.io.PrintStream;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -17,6 +20,8 @@ import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ICoreRunnable;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -27,18 +32,23 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import io.cucumber.core.feature.FeatureParser;
 import io.cucumber.core.gherkin.Feature;
+import io.cucumber.core.gherkin.messages.GherkinMessagesFeatureParser;
 import io.cucumber.core.options.RuntimeOptionsBuilder;
-import io.cucumber.core.resource.Resource;
-import io.cucumber.core.runtime.FeatureSupplier;
+import io.cucumber.core.plugin.ProgressFormatter;
+import io.cucumber.core.plugin.UsageFormatter;
 import io.cucumber.core.runtime.Runtime;
+import io.cucumber.eclipse.editor.console.CucumberConsole;
+import io.cucumber.eclipse.editor.console.CucumberConsoleFactory;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.java.Activator;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberStepParserPlugin;
+import io.cucumber.plugin.Plugin;
 import mnita.ansiconsole.preferences.AnsiConsolePreferenceUtils;
 
 public class CucumberFeatureLaunchShortcut implements ILaunchShortcut2 {
@@ -71,27 +81,48 @@ public class CucumberFeatureLaunchShortcut implements ILaunchShortcut2 {
 		if (selection instanceof StructuredSelection) {
 			List<IFile> resources = Arrays.stream(((StructuredSelection) selection).toArray())
 					.map(o -> Adapters.adapt(o, IFile.class)).collect(Collectors.toList());
+			CucumberConsole console = CucumberConsoleFactory.getConsole(true);
 			Job job = Job.create("Executing " + resources.size() + " Feature(s)", new ICoreRunnable() {
 
 				@Override
 				public void run(IProgressMonitor monitor) throws CoreException {
-					SubMonitor subMonitor = SubMonitor.convert(monitor, resources.size() * 100);
-					for (IFile resource : resources) {
-						runFeature(resource, subMonitor.split(100, SubMonitor.SUPPRESS_NONE));
+					ClassLoader ccl = Thread.currentThread().getContextClassLoader();
+					try {
+						Thread.currentThread()
+								.setContextClassLoader(GherkinMessagesFeatureParser.class.getClassLoader());
+						SubMonitor subMonitor = SubMonitor.convert(monitor, resources.size() * 101);
+						Map<IJavaProject, List<Feature>> projectMap = new HashMap<>();
+						for (IFile file : resources) {
+							IJavaProject javaProject = JDTUtil.getJavaProject(file);
+							if (javaProject != null) {
+								FeatureParser parser = new FeatureParser(UUID::randomUUID);
+								Optional<Feature> optional = parser.parseResource(new FileResource(file));
+								optional.ifPresent(feature -> projectMap
+										.computeIfAbsent(javaProject, p -> new ArrayList<>()).add(feature));
+							}
+							subMonitor.worked(1);
+						}
+						for (Entry<IJavaProject, List<Feature>> entry : projectMap.entrySet()) {
+							runFeatures(entry.getKey(), entry.getValue(), console, subMonitor.split(100));
+						}
+					} finally {
+						Thread.currentThread().setContextClassLoader(ccl);
 					}
-
 				}
 			});
 			job.schedule();
 		}
 	}
 
-	protected void runFeature(IFile resource, IProgressMonitor monitor) throws CoreException {
-		SubMonitor subMonitor = SubMonitor.convert(monitor, "Running " + resource.getName(), 100);
-		IJavaProject javaProject = JDTUtil.getJavaProject(resource);
-		if (javaProject == null) {
-			return;
-		}
+	protected String fileAsString(IFile file) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	protected void runFeatures(IJavaProject javaProject, List<Feature> features, CucumberConsole console,
+			IProgressMonitor monitor) throws CoreException {
+		console.clearConsole();
+		SubMonitor subMonitor = SubMonitor.convert(monitor, "Running Cucumber", 100);
 		// FIXME create a CucumberRuntimeJob
 		ClassLoader ccl = Thread.currentThread().getContextClassLoader();
 		URLClassLoader classloader = JDTUtil.createClassloader(javaProject);
@@ -107,36 +138,27 @@ public class CucumberFeatureLaunchShortcut implements ILaunchShortcut2 {
 			;
 
 			CucumberStepParserPlugin stepParserPlugin = new CucumberStepParserPlugin();
-			final Runtime runtime = Runtime.builder()//
-					.withRuntimeOptions(runtimeOptions.build())//
-					.withClassLoader(() -> classloader)//
-					.withFeatureSupplier(new FeatureSupplier() {
-
-						@Override
-						public List<Feature> get() {
-							FeatureParser parser = new FeatureParser(UUID::randomUUID);
-							Optional<Feature> optional = parser.parseResource(new Resource() {
-								
-								@Override
-								public URI getUri() {
-									return resource.getLocationURI();
-								}
-								
-								@Override
-								public InputStream getInputStream() throws IOException {
-									try {
-										return resource.getContents();
-									} catch (CoreException e) {
-										throw new IOException(e);
-									}
-								}
-							});
-							return Collections.singletonList(optional.get());
-						}
-					})//
-					.withAdditionalPlugins(stepParserPlugin)//
-					.build();
-			runtime.run();
+			try (IOConsoleOutputStream stream = console.newOutputStream()) {
+				// FIXME workaround for https://github.com/cucumber/cucumber-jvm/issues/2216
+				PrintStream old = System.out;
+				System.setOut(new PrintStream(stream));
+				try {
+					Plugin[] plugins = new Plugin[] { new ProgressFormatter(stream),
+							new UsageFormatter(console.newOutputStream()) };
+				final Runtime runtime = Runtime.builder()//
+						.withRuntimeOptions(runtimeOptions.build())//
+						.withClassLoader(() -> classloader)//
+						.withAdditionalPlugins(plugins)
+						.withFeatureSupplier(() -> Collections.unmodifiableList(features))//
+						.withAdditionalPlugins(stepParserPlugin)//
+						.build();
+				runtime.run();
+			} finally {
+				System.setOut(old);
+			}
+			} catch (IOException e) {
+				throw new CoreException(new Status(IStatus.ERROR, getClass(), "running cucumber failed", e));
+			}
 		} finally {
 			Thread.currentThread().setContextClassLoader(ccl);
 			try {
