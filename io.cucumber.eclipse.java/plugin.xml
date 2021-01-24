@@ -54,4 +54,11 @@
 			     </contextualLaunch>
 			   </shortcut>
      </extension>
+ <extension
+       point="org.eclipse.core.filebuffers.documentSetup">
+    <participant
+          class="io.cucumber.eclipse.java.validation.CucumberGlueValidator"
+          contentTypeId="io.cucumber.eclipse.editor.content-type.feature">
+    </participant>
+ </extension>
 </plugin>

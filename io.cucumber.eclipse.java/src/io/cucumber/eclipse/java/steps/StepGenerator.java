@@ -1,13 +1,8 @@
-package cucumber.eclipse.steps.jdt;
-
-import gherkin.formatter.model.Step;
+package io.cucumber.eclipse.java.steps;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -17,29 +12,17 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.text.edits.TextEdit;
+import org.osgi.service.component.annotations.Component;
 
-import cucumber.eclipse.steps.integration.IStepDefinitionGenerator;
-import cucumber.runtime.Backend;
-import cucumber.runtime.ClassFinder;
-import cucumber.runtime.java.JavaBackend;
-import cucumber.runtime.java.ObjectFactory;
-import cucumber.runtime.snippets.CamelCaseConcatenator;
-import cucumber.runtime.snippets.FunctionNameGenerator;
+import io.cucumber.eclipse.editor.steps.IStepDefinitionGenerator;
 
+@Component(service = { IStepDefinitionGenerator.class })
 public class StepGenerator implements IStepDefinitionGenerator {
 
-	@Override
-	public boolean supports(IFile file) {
-		return file.getName().endsWith(".java");
-	}
 
 	@Override
-	public TextEdit createStepSnippet(Step step, IDocument targetDocument) throws IOException, CoreException {
-		Backend backend = new JavaBackend(new EmptyObjectFactory(), new EmptyClassFinder());
-		
-		String snippetText = backend.getSnippet(step, new FunctionNameGenerator(new CamelCaseConcatenator()));
-
-		ASTParser parser = ASTParser.newParser(AST.JLS3);
+	public TextEdit createStepSnippet(String snippetText, IDocument targetDocument) throws IOException, CoreException {
+		ASTParser parser = ASTParser.newParser(AST.JLS_Latest);
 		parser.setSource(targetDocument.get().toCharArray());
 		
 		CompilationUnit target = (CompilationUnit) parser.createAST(null);
@@ -102,38 +85,4 @@ public class StepGenerator implements IStepDefinitionGenerator {
 		return -1;
 	}
 
-	private static class EmptyObjectFactory implements ObjectFactory {
-		@Override
-		public void start() {
-			// no action
-		}
-	
-		@Override
-		public void stop() {
-			// no action
-		}
-	
-		@Override
-		public void addClass(Class<?> glueClass) {
-			// no action
-		}
-	
-		@Override
-		public <T> T getInstance(Class<T> glueClass) {
-			return null;
-		}
-	}
-
-	private static class EmptyClassFinder implements ClassFinder {
-		@Override
-		public <T> Collection<Class<? extends T>> getDescendants(Class<T> parentType, String packageName) {
-			return new ArrayList<Class<? extends T>>();
-		}
-
-		@Override
-		public <T> Class<? extends T> loadClass(String arg0) throws ClassNotFoundException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-	}	
 }

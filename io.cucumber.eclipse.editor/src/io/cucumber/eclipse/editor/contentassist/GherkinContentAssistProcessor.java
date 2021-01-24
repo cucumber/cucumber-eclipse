@@ -2,6 +2,8 @@ package io.cucumber.eclipse.editor.contentassist;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -17,7 +19,10 @@ import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 
 import io.cucumber.eclipse.editor.Activator;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
+import io.cucumber.eclipse.editor.document.GherkinKeyword;
 import io.cucumber.gherkin.GherkinDialect;
+import io.cucumber.messages.Messages.GherkinDocument.Feature;
+import io.cucumber.messages.Messages.GherkinDocument.Feature.FeatureChild;
 
 /**
  * Provides content assist for gherkin keywords
@@ -30,7 +35,6 @@ public class GherkinContentAssistProcessor implements IContentAssistProcessor {
 
 	@Override
 	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
-		List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
 
 		IDocument document = viewer.getDocument();
 		GherkinEditorDocument editorDocument = GherkinEditorDocument.get(document);
@@ -39,30 +43,45 @@ public class GherkinContentAssistProcessor implements IContentAssistProcessor {
 
 			String typed = viewer.getDocument().get(line.getOffset(), offset - line.getOffset()).stripLeading();
 
-//			Predicate<? super String> isPrefix = keyWord -> isKeyWordPrefix(typed, keyWord);
-			if (editorDocument.getFeature().isEmpty()) {
-
-				// TODO only one feature per file allowed
-				editorDocument.keyWords(GherkinDialect::getFeatureKeywords).filter(keyWord -> keyWord.prefix(typed))
+			Optional<Feature> feature = editorDocument.getFeature();
+			if (feature.isEmpty()) {
+				// if the document do not contain a feature this is the only choice
+				return editorDocument.getFeatureKeywords()
+						.filter(keyWord -> keyWord.prefix(typed))
 						.map(featureKeyWord -> createFeatureKeyWordProposal(featureKeyWord.getKey(), offset, typed))
-						.forEach(result::add);
+						.toArray(ICompletionProposal[]::new);
+			}
+			String nl = TextUtilities.getDefaultLineDelimiter(document);
+			Predicate<FeatureChild> hasTopLevelElement = FeatureChild::hasBackground;
+			hasTopLevelElement = hasTopLevelElement.or(FeatureChild::hasRule);
+			hasTopLevelElement = hasTopLevelElement.or(FeatureChild::hasScenario);
+			if (editorDocument.getFeatureChilds().filter(hasTopLevelElement).count() == 0) {
+				// in this case Rule, Scenario or background are required
+				return editorDocument.getTopLevelKeywords()//
+						.filter(keyWord -> keyWord.prefix(typed)).sorted(GherkinKeyword.KEY_ORDER) //
+						.map(keyWord -> createCompletionProposal(offset, typed, keyWord.getKey(),
+								keyWord.getKey() + ":" + nl))
+						.toArray(ICompletionProposal[]::new);
 			}
 
-			String nl = TextUtilities.getDefaultLineDelimiter(document);
-			editorDocument.getFeatureElementKeywords()
-					.filter(keyWord -> keyWord.prefix(typed))
+			// TODO other constrains, filtering etc...
+			List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
+			editorDocument.getTopLevelKeywords()
+					.filter(keyWord -> keyWord.prefix(typed)).sorted(GherkinKeyword.KEY_ORDER)
 					.map(keyWord -> createCompletionProposal(offset, typed, keyWord.getKey(),
 							keyWord.getKey() + ":" + nl))
 					.forEach(result::add);
 
 			editorDocument.getStepElementKeywords()
-					.filter(keyWord -> keyWord.prefix(typed))
+					.filter(keyWord -> keyWord.prefix(typed)).sorted(GherkinKeyword.KEY_ORDER)
 					.map(keyWord -> createCompletionProposal(offset, typed, keyWord.getKey(), keyWord.getKey() + " "))
 					.forEach(result::add);
+			//TODO datatables, docstrings, ...
+			return result.toArray(ICompletionProposal[]::new);
 		} catch (BadLocationException e) {
 			Activator.getDefault().getLog().warn("Invalid location encountered while computing proposals", e);
 		}
-		return result.toArray(ICompletionProposal[]::new);
+		return null;
 
 	}
 
@@ -74,6 +93,8 @@ public class GherkinContentAssistProcessor implements IContentAssistProcessor {
 
 	@Override
 	public IContextInformation[] computeContextInformation(ITextViewer viewer, int offset) {
+		// TODO provide context infos according to cucumber documentation see
+		// https://cucumber.io/docs/gherkin/reference/
 		IDocument document = viewer.getDocument();
 		GherkinEditorDocument editorDocument = GherkinEditorDocument.get(document);
 		try {

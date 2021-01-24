@@ -60,7 +60,9 @@ public class GherkinKeywordScanner extends RuleBasedScanner {
 		// Add rule to colour the * that can be used instead of steps
 		wordStarStepRule.addWord("*", keyword);
 		
-		document.getFeatureElementKeywords()
+		document.getTopLevelKeywords()
+		.forEach(e -> rules.add(new SingleLineRule(e.getKey().trim() + ":", " ", keyword)));
+		document.getFeatureKeywords()
 				.forEach(e -> rules.add(new SingleLineRule(e.getKey().trim() + ":", " ", keyword)));
 		document.getStepElementKeywords().forEach(e -> rules.add(new SingleLineRule(e.getKey().trim(), " ", step)));
 		rules.add(numericRule);

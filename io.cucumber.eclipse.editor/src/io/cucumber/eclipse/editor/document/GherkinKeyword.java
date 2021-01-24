@@ -1,5 +1,6 @@
 package io.cucumber.eclipse.editor.document;
 
+import java.util.Comparator;
 import java.util.Locale;
 
 import io.cucumber.gherkin.GherkinDialect;
@@ -13,6 +14,7 @@ import io.cucumber.gherkin.GherkinDialect;
  */
 public class GherkinKeyword {
 
+	public static final Comparator<? super GherkinKeyword> KEY_ORDER = (w1, w2) -> w1.lcKey.compareTo(w2.lcKey);
 	private final String key;
 	private final Locale locale;
 	private final GherkinDialect dialect;

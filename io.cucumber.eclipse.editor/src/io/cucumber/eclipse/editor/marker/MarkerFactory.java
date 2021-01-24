@@ -1,7 +1,9 @@
 package io.cucumber.eclipse.editor.marker;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -129,7 +131,7 @@ public class MarkerFactory {
 		mark(resource, new IMarkerBuilder() {
 			@Override
 			public void build() throws CoreException {
-				Map<Object, IMarker> existingMarker = getExistingMarker(resource);
+				Map<Object, IMarker> existingMarker = getExistingMarker(resource, GHERKIN_SYNTAX_ERROR);
 				for (ParseError error : errors) {
 					String sourceId;
 					int line;
@@ -168,10 +170,47 @@ public class MarkerFactory {
 
 	}
 
-	private static Map<Object, IMarker> getExistingMarker(final IResource resource) throws CoreException {
+	public static void missingSteps(IResource resource, Map<Integer, Collection<String>> snippets,
+			String generatorId, boolean persistent) {
+		// TODO Auto-generated method stub
+		mark(resource, new IMarkerBuilder() {
+			@Override
+			public void build() throws CoreException {
+				Map<Object, IMarker> existingMarker = getExistingMarker(resource, UNMATCHED_STEP);
+				for (Entry<Integer, Collection<String>> entry : snippets.entrySet()) {
+					int lineNumber = entry.getKey();
+					int index = 0;
+					for (String snippet : entry.getValue()) {
+						String sourceId = generatorId + "_" + lineNumber + "_" + (index++);
+						IMarker marker = existingMarker.remove(sourceId);
+						if (marker == null) {
+							marker = resource.createMarker(UNMATCHED_STEP);
+							marker.setAttribute(IMarker.SOURCE_ID, sourceId);
+						}
+						marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_WARNING);
+						marker.setAttribute(IMarker.MESSAGE, "Step  does not have a matching glue code");
+						marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
+						marker.setAttribute(IMarker.TRANSIENT, persistent);
+//					marker.setAttribute(IMarker.CHAR_START, stepRegion.getOffset());
+//					marker.setAttribute(IMarker.CHAR_END, stepRegion.getOffset() + stepRegion.getLength());
+//					marker.setAttribute(UNMATCHED_STEP_KEYWORD_ATTRIBUTE, gherkinStep.getKeyword());
+//					marker.setAttribute(UNMATCHED_STEP_NAME_ATTRIBUTE, gherkinStep.getName());
+//					marker.setAttribute(UNMATCHED_STEP_PATH_ATTRIBUTE, gherkinFile.getFullPath().toString());
+
+					}
+				}
+				for (IMarker obsolete : existingMarker.values()) {
+					obsolete.delete();
+				}
+			}
+		});
+
+	}
+
+	private static Map<Object, IMarker> getExistingMarker(final IResource resource, String type) throws CoreException {
 
 		HashMap<Object, IMarker> map = new HashMap<>();
-		IMarker[] markers = resource.findMarkers(GHERKIN_SYNTAX_ERROR, true, IResource.DEPTH_INFINITE);
+		IMarker[] markers = resource.findMarkers(type, true, IResource.DEPTH_INFINITE);
 		for (IMarker marker : markers) {
 			String attribute = marker.getAttribute(IMarker.SOURCE_ID, "");
 			if (!attribute.isBlank()) {
@@ -180,6 +219,7 @@ public class MarkerFactory {
 		}
 		return map;
 	}
+
 
 //	public void glueFound(final Glue glue) {
 //		Step step = glue.getGherkinStepWrapper().getStep();
@@ -313,5 +353,6 @@ public class MarkerFactory {
 			marker.delete();
 		}
 	}
+
 
 }

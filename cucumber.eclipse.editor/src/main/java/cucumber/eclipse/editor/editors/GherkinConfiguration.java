@@ -33,11 +33,11 @@ import org.eclipse.ui.texteditor.MarkerAnnotation;
 import cucumber.eclipse.editor.Activator;
 import cucumber.eclipse.editor.editors.jumpto.StepHyperlinkDetector;
 import cucumber.eclipse.editor.markers.MarkerResolutionProposal;
-import cucumber.eclipse.editor.markers.StepCreationMarkerResolutionGenerator;
 import cucumber.eclipse.steps.integration.StepPreferences;
 import io.cucumber.eclipse.editor.ColorManager;
 import io.cucumber.eclipse.editor.GherkinColors;
 import io.cucumber.eclipse.editor.document.GherkinKeywordScanner;
+import io.cucumber.eclipse.editor.marker.StepCreationMarkerResolutionGenerator;
 
 public class GherkinConfiguration extends TextSourceViewerConfiguration {
 

@@ -46,9 +46,11 @@ public class JDTUtil {
 	}
 
 	public static IJavaProject getJavaProject(IResource resource) throws CoreException {
-		IProject project = resource.getProject();
-		if (project.isOpen() && project.hasNature(JavaCore.NATURE_ID)) {
-			return JavaCore.create(project);
+		if (resource != null) {
+			IProject project = resource.getProject();
+			if (project.isOpen() && project.hasNature(JavaCore.NATURE_ID)) {
+				return JavaCore.create(project);
+			}
 		}
 		return null;
 	}
@@ -57,8 +59,7 @@ public class JDTUtil {
 		return createClassloader(javaProject, JDTUtil.class.getClassLoader());
 	}
 
-	public static URLClassLoader createClassloader(IJavaProject javaProject, ClassLoader parent)
-			throws CoreException {
+	public static URLClassLoader createClassloader(IJavaProject javaProject, ClassLoader parent) throws CoreException {
 		String[] classPathEntries = JavaRuntime.computeDefaultRuntimeClassPath(javaProject);
 		List<URL> urlList = new ArrayList<URL>();
 		for (String entry : classPathEntries) {
@@ -76,7 +77,7 @@ public class JDTUtil {
 		URL[] urls = urlList.toArray(new URL[urlList.size()]);
 		return new URLClassLoader(urls, new FilteringClassLoader(parent));
 	}
-	
+
 	// TODO workaround for bug https://github.com/cucumber/cucumber-jvm/issues/2212
 	private static final class FilteringClassLoader extends ClassLoader {
 		public FilteringClassLoader(ClassLoader parent) {
@@ -97,5 +98,5 @@ public class JDTUtil {
 		}
 
 	}
-	
+
 }

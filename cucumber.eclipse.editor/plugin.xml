@@ -170,11 +170,7 @@
      </contextualLaunch>
     </shortcut>
 </extension>
-   <extension point="org.eclipse.ui.ide.markerResolution">
-      <markerResolutionGenerator
-         markerType="cucumber.eclipse.marker.gherkin.unmatched_step"
-         class="cucumber.eclipse.editor.markers.StepCreationMarkerResolutionGenerator"/>
-   </extension>
+   
    <extension point="org.eclipse.ui.ide.markerResolution">
       <markerResolutionGenerator
          markerType="cucumber.eclipse.marker.not_a_cucumber_project"

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="io.cucumber.eclipse.editor.CucumberServiceRegistry">
+   <reference bind="addStepDefinitionGenerator" cardinality="0..n" interface="io.cucumber.eclipse.editor.steps.IStepDefinitionGenerator" name="StepDefinitionGenerator" policy="dynamic" unbind="removeStepDefinitionGenerator"/>
+   <implementation class="io.cucumber.eclipse.editor.CucumberServiceRegistry"/>
+</scr:component>

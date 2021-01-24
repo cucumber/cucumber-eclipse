@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 
-import cucumber.eclipse.steps.integration.IStepDefinitionGenerator;
+import io.cucumber.eclipse.editor.document.IStepDefinitionGenerator;
 
 public class ExtensionRegistryStepGeneratorProvider implements IStepGeneratorProvider {
 	
