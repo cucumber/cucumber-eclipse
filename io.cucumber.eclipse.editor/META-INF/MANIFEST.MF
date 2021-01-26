@@ -38,6 +38,7 @@ Bundle-ActivationPolicy: lazy
 Export-Package: io.cucumber.eclipse.editor,
  io.cucumber.eclipse.editor.console,
  io.cucumber.eclipse.editor.document,
+ io.cucumber.eclipse.editor.hyperlinks,
  io.cucumber.eclipse.editor.marker,
  io.cucumber.eclipse.editor.steps
 Bundle-ClassPath: META-INF/cucumber-expressions-11.0.0.jar,

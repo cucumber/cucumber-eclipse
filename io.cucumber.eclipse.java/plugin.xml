@@ -61,4 +61,11 @@
           contentTypeId="io.cucumber.eclipse.editor.content-type.feature">
     </participant>
  </extension>
+ <extension
+       point="org.eclipse.ui.workbench.texteditor.codeMiningProviders">
+    <codeMiningProvider
+          class="io.cucumber.eclipse.java.codemining.JavaReferencesCodeMiningProvider"
+          id="io.cucumber.eclipse.java.codeMiningProvider1">
+    </codeMiningProvider>
+ </extension>
 </plugin>

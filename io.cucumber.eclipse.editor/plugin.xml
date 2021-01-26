@@ -195,9 +195,19 @@
      <extension
            point="org.eclipse.ui.workbench.texteditor.codeMiningProviders">
         <codeMiningProvider
-              class="io.cucumber.eclipse.editor.codemining.CucumberCodeMiningProvider"
+              class="io.cucumber.eclipse.editor.codemining.GherkinCodeMiningProvider"
               id="io.cucumber.eclipse.editor.codeMiningProvider1"
               label="Cucumber">
         </codeMiningProvider>
+     </extension>
+     <extension
+           point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
+        <hyperlinkDetector
+              activate="true"
+              class="io.cucumber.eclipse.editor.hyperlinks.StepHyperlinkDetector"
+              id="io.cucumber.eclipse.editor.hyperlinkDetector1"
+              name="Gherkin Steps"
+              targetId="org.eclipse.ui.genericeditor.GenericEditor">
+        </hyperlinkDetector>
      </extension>
 </plugin>

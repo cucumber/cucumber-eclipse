@@ -8,6 +8,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 public interface IStepDefinitionsProvider {
 
+	public static final String PROVIDER_NAME = "name";
+
 	/**
 	 * Find step definitions into a file.
 	 * 

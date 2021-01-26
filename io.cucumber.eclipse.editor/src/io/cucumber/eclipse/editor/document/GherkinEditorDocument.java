@@ -35,6 +35,7 @@ import io.cucumber.messages.Messages.GherkinDocument;
 import io.cucumber.messages.Messages.GherkinDocument.Feature;
 import io.cucumber.messages.Messages.GherkinDocument.Feature.FeatureChild;
 import io.cucumber.messages.Messages.GherkinDocument.Feature.Scenario;
+import io.cucumber.messages.Messages.GherkinDocument.Feature.Scenario.Examples;
 import io.cucumber.messages.Messages.GherkinDocument.Feature.Step;
 import io.cucumber.messages.Messages.GherkinDocument.Feature.Step.DataTable;
 import io.cucumber.messages.Messages.GherkinDocument.Feature.TableRow;
@@ -130,13 +131,25 @@ public final class GherkinEditorDocument {
 		return getFeatureChilds().filter(FeatureChild::hasScenario).map(FeatureChild::getScenario);
 	}
 
-	public Stream<TableRow> getTableHeader() {
-		return getScenarios().flatMap(s -> s.getExamplesList().stream()).map(ex -> ex.getTableHeader());
+	public Stream<Step> getSteps() {
+		return getScenarios().flatMap(scenario -> scenario.getStepsList().stream()).distinct();
+	}
+
+	public Stream<Examples> getExamples() {
+		return getScenarios().flatMap(s -> s.getExamplesList().stream());
+	}
+
+	public Stream<TableRow> getTableHeaders() {
+		return getExamples().filter(Examples::hasTableHeader).map(Examples::getTableHeader).distinct();
+	}
+
+	public Stream<List<TableRow>> getTableBodys() {
+		return getExamples().filter(Examples::hasTableHeader).map(Examples::getTableBodyList).distinct();
 	}
 
 	public Stream<DataTable> getDataTables() {
 		return getScenarios().flatMap(scenario -> scenario.getStepsList().stream()).filter(Step::hasDataTable)
-				.map(Step::getDataTable);
+				.map(Step::getDataTable).distinct();
 	}
 
 	/**

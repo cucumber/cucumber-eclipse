@@ -25,8 +25,11 @@ import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.SearchMatch;
 import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.core.search.SearchRequestor;
+import org.osgi.framework.Constants;
+import org.osgi.service.component.annotations.Component;
 
 import io.cucumber.eclipse.editor.steps.ExpressionDefinition;
+import io.cucumber.eclipse.editor.steps.IStepDefinitionsProvider;
 import io.cucumber.eclipse.editor.steps.StepDefinition;
 import io.cucumber.eclipse.java.Activator;
 import io.cucumber.eclipse.java.CucumberAnnotation;
@@ -36,8 +39,12 @@ import io.cucumber.eclipse.java.JDTUtil;
  * Step definition provider that scans the java classpath for step definitions
  * 
  * @author christoph
- *
+ * @deprecated included for legacy reasons
  */
+@Deprecated
+@Component(service = IStepDefinitionsProvider.class, property = {
+		IStepDefinitionsProvider.PROVIDER_NAME + "=Java Classpath Scanner",
+		Constants.SERVICE_RANKING + ":Integer=-100" }, enabled = false)
 public class JavaClasspathStepDefinitionProvider extends JavaStepDefinitionsProvider {
 
 	@Override

@@ -19,14 +19,19 @@ import java.util.Set;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.osgi.service.debug.DebugTrace;
+import org.osgi.framework.Constants;
+import org.osgi.service.component.annotations.Component;
 
 import io.cucumber.core.backend.Backend;
 import io.cucumber.core.backend.ObjectFactory;
+import io.cucumber.core.exception.CucumberException;
 import io.cucumber.core.gherkin.Feature;
 import io.cucumber.core.options.RuntimeOptions;
 import io.cucumber.core.options.RuntimeOptionsBuilder;
@@ -37,6 +42,7 @@ import io.cucumber.core.runtime.Runtime;
 import io.cucumber.core.runtime.ThreadLocalObjectFactorySupplier;
 import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.editor.steps.ExpressionDefinition;
+import io.cucumber.eclipse.editor.steps.IStepDefinitionsProvider;
 import io.cucumber.eclipse.editor.steps.StepDefinition;
 import io.cucumber.eclipse.java.Activator;
 import io.cucumber.eclipse.java.JDTUtil;
@@ -50,6 +56,8 @@ import io.cucumber.java.JavaBackendProviderService;
  * @author christoph
  *
  */
+@Component(service = IStepDefinitionsProvider.class, property = {
+		IStepDefinitionsProvider.PROVIDER_NAME + "=Cucumber JVM Runtime", Constants.SERVICE_RANKING + ":Integer=100" })
 public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider {
 
 	private Feature dummyFeature;
@@ -120,8 +128,8 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 										cucumberStepDefinition.getPattern());
 								StepDefinition step = new StepDefinition(method.getHandleIdentifier(),
 										StepDefinition.NO_LABEL, expression, type.getResource(), lineNumber,
-										method.getElementName(),
-										type.getPackageFragment().getElementName(), getParameter(method));
+										method.getElementName(), type.getPackageFragment().getElementName(),
+										getParameter(method));
 								list.add(step);
 								continue nextStep;
 							}
@@ -173,15 +181,16 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 									.singleton(providerService.create(objectFactory, objectFactory, () -> classLoader));
 							return backends;
 						}
-					})
-					.build();
-			runtime.run();
+					}).build();
+			try {
+				runtime.run();
+			} catch (CucumberException e) {
+				throw new CoreException(new Status(IStatus.ERROR, getClass(), "Calling cucumber runtime failed", e));
+			}
 			return stepParserPlugin.getStepList();
 		} finally {
 			Thread.currentThread().setContextClassLoader(ccl);
 		}
 	}
-
-
 
 }

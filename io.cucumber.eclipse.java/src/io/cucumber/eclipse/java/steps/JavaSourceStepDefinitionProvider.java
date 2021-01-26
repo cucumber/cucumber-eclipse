@@ -3,10 +3,12 @@ package io.cucumber.eclipse.java.steps;
 import static io.cucumber.eclipse.editor.Tracing.PERFORMANCE_STEPS;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 
@@ -31,9 +33,11 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.osgi.service.debug.DebugTrace;
+import org.osgi.service.component.annotations.Component;
 
 import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.editor.steps.ExpressionDefinition;
+import io.cucumber.eclipse.editor.steps.IStepDefinitionsProvider;
 import io.cucumber.eclipse.editor.steps.StepDefinition;
 import io.cucumber.eclipse.editor.steps.StepParameter;
 import io.cucumber.eclipse.java.Activator;
@@ -46,8 +50,11 @@ import io.cucumber.eclipse.java.MethodDefinition;
  * Scans the source files of a project for step-definitions
  * 
  * @author christoph
- *
+ * @deprecated included for legacy reasons
  */
+@Deprecated
+@Component(service = IStepDefinitionsProvider.class, property = {
+		IStepDefinitionsProvider.PROVIDER_NAME + "=Java Source File Scanner" }, enabled = false)
 public class JavaSourceStepDefinitionProvider extends JavaStepDefinitionsProvider {
 
 	private static final String CUCUMBER_API_JAVA = "cucumber.api.java.";
@@ -65,17 +72,7 @@ public class JavaSourceStepDefinitionProvider extends JavaStepDefinitionsProvide
 		if (javaProject != null) {
 			Collection<StepDefinition> steps;
 			if (stepDefinitionResource instanceof IProject) {
-				steps = new ArrayList<>();
-				List<ICompilationUnit> units = new ArrayList<>();
-				for (IPackageFragment fragment : javaProject.getPackageFragments()) {
-					for (ICompilationUnit unit : fragment.getCompilationUnits()) {
-						units.add(unit);
-					}
-				}
-				SubMonitor subMonitor = SubMonitor.convert(monitor, units.size() * 100);
-				for (ICompilationUnit unit : units) {
-					steps.addAll(getCukeSteps(unit, subMonitor.split(100)));
-				}
+				steps = getProjectSteps(monitor, javaProject, new HashSet<>());
 			} else {
 				IJavaElement javaElement = JavaCore.create(stepDefinitionResource);
 				if (javaElement instanceof ICompilationUnit) {
@@ -92,6 +89,34 @@ public class JavaSourceStepDefinitionProvider extends JavaStepDefinitionsProvide
 		debug.traceExit(PERFORMANCE_STEPS);
 		return Collections.emptySet();
 	}
+
+	private Collection<StepDefinition> getProjectSteps(IProgressMonitor monitor, IJavaProject javaProject,
+			Set<String> analyzedProjects)
+			throws JavaModelException, CoreException {
+		Collection<StepDefinition> steps = new ArrayList<>();
+		List<ICompilationUnit> units = new ArrayList<>();
+		for (IPackageFragment fragment : javaProject.getPackageFragments()) {
+			for (ICompilationUnit unit : fragment.getCompilationUnits()) {
+				units.add(unit);
+			}
+		}
+		IJavaProject[] references = Arrays.stream(javaProject.getProject().getReferencedProjects()).map(t -> {
+			try {
+				return JDTUtil.getJavaProject(t);
+			} catch (CoreException e) {
+				return null;
+			}
+		}).filter(Objects::nonNull).toArray(IJavaProject[]::new);
+		SubMonitor subMonitor = SubMonitor.convert(monitor, units.size() * 100 + references.length * 100);
+		for (ICompilationUnit unit : units) {
+			steps.addAll(getCukeSteps(unit, subMonitor.split(100)));
+		}
+		for (IJavaProject reference : references) {
+			steps.addAll(getProjectSteps(subMonitor.split(100), reference, analyzedProjects));
+		}
+		return steps;
+	}
+
 
 	// From Java-Source-File(.java) : Collect All Steps as List based on
 	// Cucumber-Annotations
@@ -273,6 +298,5 @@ public class JavaSourceStepDefinitionProvider extends JavaStepDefinitionsProvide
 		}
 		return false;
 	}
-
 
 }

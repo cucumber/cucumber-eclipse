@@ -28,14 +28,8 @@ public class CucumberStepParserPlugin implements Plugin, ConcurrentEventListener
 
 	private void handleStepDefinedEvent(StepDefinedEvent event) {
 		StepDefinition definition = event.getStepDefinition();
-		String location = definition.getLocation();
-		int braceIndex = location.indexOf('(');
-		if (braceIndex > 0) {
-			location = location.substring(0, braceIndex);
-		}
-		int indexOf = location.lastIndexOf('.');
-		String key = indexOf > 0 ? location.substring(0, indexOf) : "";
-		stepList.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet()).add(definition);
+		CucumberCodeLocation location = new CucumberCodeLocation(definition.getLocation());
+		stepList.computeIfAbsent(location.getTypeName(), k -> ConcurrentHashMap.newKeySet()).add(definition);
 	}
 
 	/**

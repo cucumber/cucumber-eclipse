@@ -11,8 +11,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
 import cucumber.eclipse.editor.Activator;
-import cucumber.eclipse.steps.integration.IStepDefinitionOpener;
 import io.cucumber.eclipse.editor.ExtensionRegistryUtil;
+import io.cucumber.eclipse.editor.hyperlinks.IStepDefinitionOpener;
 import io.cucumber.eclipse.editor.marker.MarkerFactory;
 import io.cucumber.eclipse.editor.steps.StepDefinition;
 import io.cucumber.eclipse.editor.steps.StepDefinitionsRepository;

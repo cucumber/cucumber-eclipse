@@ -354,5 +354,12 @@ public class MarkerFactory {
 		}
 	}
 
+	public static boolean hasMarker(IResource resource, String type, int lineNumber) throws CoreException {
+
+		return getExistingMarker(resource, type).values().stream()
+				.filter(marker -> marker.getAttribute(IMarker.LINE_NUMBER, -1) == lineNumber)
+				.findAny().isPresent();
+
+	}
 
 }

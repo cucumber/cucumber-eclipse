@@ -2,9 +2,12 @@ package io.cucumber.eclipse.editor.contentassist;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -33,10 +36,11 @@ import org.eclipse.swt.graphics.Image;
 
 import io.cucumber.cucumberexpressions.CucumberExpressionParserSupport;
 import io.cucumber.eclipse.editor.Activator;
+import io.cucumber.eclipse.editor.CucumberServiceRegistry;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.document.GherkinKeyword;
+import io.cucumber.eclipse.editor.steps.IStepDefinitionsProvider;
 import io.cucumber.eclipse.editor.steps.StepDefinition;
-import io.cucumber.eclipse.editor.steps.StepDefinitionsRepository;
 
 /**
  * Provides content assists for cucumber steps
@@ -157,11 +161,15 @@ public class CucumberContentAssistProcessor implements IContentAssistProcessor {
 
 		@Override
 		public IStatus run(IProgressMonitor monitor) {
-			try {
-				definitions = StepDefinitionsRepository.getStepDefinitions(project, monitor);
-			} catch (CoreException e) {
-				return e.getStatus();
-			}
+			List<IStepDefinitionsProvider> providers = CucumberServiceRegistry.getStepDefinitionsProvider(project);
+			definitions = providers.stream().flatMap(provider -> {
+				try {
+					return provider.findStepDefinitions(project, monitor).stream();
+				} catch (CoreException e) {
+					Activator.getDefault().getLog().log(e.getStatus());
+					return Stream.empty();
+				}
+			}).collect(Collectors.toList());
 			return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
 		}
 

@@ -1,12 +1,19 @@
 package io.cucumber.eclipse.java.validation;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.IDocumentSetupParticipant;
+import org.eclipse.core.filebuffers.IFileBuffer;
+import org.eclipse.core.filebuffers.IFileBufferListener;
+import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -24,6 +31,7 @@ import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberMatchedStepsPlugin;
 import io.cucumber.eclipse.java.plugins.CucumberMissingStepsPlugin;
 import io.cucumber.eclipse.java.plugins.CucumberStepParserPlugin;
+import io.cucumber.eclipse.java.plugins.MatchedStep;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;
 import io.cucumber.eclipse.java.steps.StepGenerator;
 
@@ -36,6 +44,67 @@ import io.cucumber.eclipse.java.steps.StepGenerator;
 public class CucumberGlueValidator implements IDocumentSetupParticipant {
 
 	private static ConcurrentMap<IDocument, GlueJob> jobMap = new ConcurrentHashMap<>();
+
+	static {
+		// TODO implement generic DocumentCache class
+		FileBuffers.getTextFileBufferManager().addFileBufferListener(new IFileBufferListener() {
+
+			@Override
+			public void underlyingFileMoved(IFileBuffer buffer, IPath path) {
+
+			}
+
+			@Override
+			public void underlyingFileDeleted(IFileBuffer buffer) {
+
+			}
+
+			@Override
+			public void stateValidationChanged(IFileBuffer buffer, boolean isStateValidated) {
+
+			}
+
+			@Override
+			public void stateChanging(IFileBuffer buffer) {
+
+			}
+
+			@Override
+			public void stateChangeFailed(IFileBuffer buffer) {
+
+			}
+
+			@Override
+			public void dirtyStateChanged(IFileBuffer buffer, boolean isDirty) {
+				System.out.println("dirtyStateChanged: " + buffer.getLocation() + " dirty = " + isDirty);
+
+			}
+
+			@Override
+			public void bufferDisposed(IFileBuffer buffer) {
+				if (buffer instanceof ITextFileBuffer) {
+					IDocument document = ((ITextFileBuffer) buffer).getDocument();
+					jobMap.remove(document);
+				}
+
+			}
+
+			@Override
+			public void bufferCreated(IFileBuffer buffer) {
+
+			}
+
+			@Override
+			public void bufferContentReplaced(IFileBuffer buffer) {
+
+			}
+
+			@Override
+			public void bufferContentAboutToBeReplaced(IFileBuffer buffer) {
+
+			}
+		});
+	}
 
 	@Override
 	public void setup(IDocument document) {
@@ -84,12 +153,22 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 	 * @throws InterruptedException       if the thread was interrupted while
 	 *                                    waiting
 	 */
-	public static void sync(IDocument document, IProgressMonitor monitor)
+	private static GlueJob sync(IDocument document, IProgressMonitor monitor)
 			throws OperationCanceledException, InterruptedException {
 		GlueJob glueJob = jobMap.get(document);
 		if (glueJob != null) {
 			glueJob.join(TimeUnit.SECONDS.toMillis(30), monitor);
 		}
+		return glueJob;
+	}
+
+	public static Collection<MatchedStep> getMatchedSteps(IDocument document, IProgressMonitor monitor)
+			throws OperationCanceledException, InterruptedException {
+		GlueJob job = sync(document, monitor);
+		if (job != null) {
+			return Collections.unmodifiableCollection(job.matchedStepsPlugin.getMatchedSteps());
+		}
+		return Collections.emptyList();
 	}
 
 	private static final class GlueJob extends Job {
@@ -97,6 +176,8 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 		private GlueJob oldJob;
 		private IDocument document;
 		private boolean persistent;
+
+		CucumberMatchedStepsPlugin matchedStepsPlugin = new CucumberMatchedStepsPlugin();
 
 		public GlueJob(GlueJob oldJob, IDocument document, boolean persistent) {
 			super("Verify Cucumber Glue Code");
@@ -131,18 +212,25 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 							}
 							CucumberMissingStepsPlugin missingStepsPlugin = new CucumberMissingStepsPlugin();
 							rt.addPlugin(new CucumberStepParserPlugin());
-							rt.addPlugin(new CucumberMatchedStepsPlugin());
+
+							rt.addPlugin(matchedStepsPlugin);
 							rt.addPlugin(missingStepsPlugin);
-							rt.run(monitor);
-							MarkerFactory.missingSteps(resource, missingStepsPlugin.getSnippets(),
-									StepGenerator.class.getName(), persistent);
+							try {
+								rt.run(monitor);
+								MarkerFactory.missingSteps(resource, missingStepsPlugin.getSnippets(),
+										StepGenerator.class.getName(), persistent);
+								matchedStepsPlugin.getMatchedSteps();
+							} catch (Throwable e) {
+								// TODO
+								System.out.println(e);
+							}
 						}
 					}
 				} catch (CoreException e) {
 					return e.getStatus();
 				}
 			}
-			jobMap.remove(document, this);
+//			jobMap.remove(document, this);
 			return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
 		}
 

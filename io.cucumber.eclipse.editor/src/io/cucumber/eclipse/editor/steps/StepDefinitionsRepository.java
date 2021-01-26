@@ -4,22 +4,15 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.SubMonitor;
 
-import io.cucumber.eclipse.editor.ExtensionRegistryUtil;
 import io.cucumber.eclipse.editor.ResourceHelper;
 import io.cucumber.eclipse.editor.StorageHelper;
 
@@ -113,26 +106,5 @@ public class StepDefinitionsRepository implements Externalizable {
 
 	}
 
-	public static Collection<StepDefinition> getStepDefinitions(IProject project, IProgressMonitor monitor)
-			throws CoreException {
-		return getStepDefinitions(project, new HashSet<>(), monitor);
-	}
-
-	private static Collection<StepDefinition> getStepDefinitions(IProject project, Set<String> analyzedProjects,
-			IProgressMonitor monitor) throws CoreException {
-		HashSet<StepDefinition> set = new HashSet<>();
-		List<IStepDefinitionsProvider> provider = ExtensionRegistryUtil.getStepDefinitionsProvider();
-		IProject[] referencedProjects = project.getReferencedProjects();
-		SubMonitor subMonitor = SubMonitor.convert(monitor, (provider.size() + referencedProjects.length) * 100);
-		for (IStepDefinitionsProvider definitionsProvider : provider) {
-			set.addAll(definitionsProvider.findStepDefinitions(project, subMonitor.split(100)));
-		}
-		for (IProject referencedProject : referencedProjects) {
-			if (!analyzedProjects.contains(referencedProject.getName())) {
-				set.addAll(getStepDefinitions(project, analyzedProjects, subMonitor.split(100)));
-			}
-		}
-		return set;
-	}
 
 }

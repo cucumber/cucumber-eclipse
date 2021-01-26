@@ -19,10 +19,17 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.launching.JavaRuntime;
+
+import io.cucumber.eclipse.java.plugins.CucumberCodeLocation;
 
 public class JDTUtil {
 
@@ -97,6 +104,26 @@ public class JDTUtil {
 			}).collect(Collectors.toList()));
 		}
 
+	}
+
+	public static IMethod resolveMethod(IJavaProject project, CucumberCodeLocation codeLocation,
+			IProgressMonitor monitor) throws JavaModelException {
+		SubMonitor subMonitor = SubMonitor.convert(monitor, codeLocation.toString(), 100);
+		String typeName = codeLocation.getTypeName();
+		String methodName = codeLocation.getMethodName();
+		if (typeName.isBlank() || methodName.isBlank()) {
+			return null;
+		}
+		IType type = project.findType(typeName, subMonitor.split(10));
+		if (type != null) {
+			// FIXME match method parameters!
+			for (IMethod method : type.getMethods()) {
+				if (method.getElementName().equals(methodName)) {
+					return method;
+				}
+			}
+		}
+		return null;
 	}
 
 }

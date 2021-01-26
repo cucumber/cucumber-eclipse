@@ -1,8 +1,10 @@
-package cucumber.eclipse.steps.integration;
+package io.cucumber.eclipse.editor.hyperlinks;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.ITextViewer;
 
-import io.cucumber.eclipse.editor.steps.StepDefinition;
+import io.cucumber.messages.Messages.GherkinDocument.Feature.Step;
 
 /**
  * The cucumber editor try to jump to step definition resource by itself when it
@@ -20,21 +22,24 @@ import io.cucumber.eclipse.editor.steps.StepDefinition;
 public interface IStepDefinitionOpener {
 
 	/**
-	 * This method indicates if the opener can opened the given step definition.
-	 * 
-	 * @param stepDefinition a step definition
-	 * @return true if the
-	 *         {@link IStepDefinitionOpener#openInEditor(StepDefinition)} can open
-	 *         this step definition
+	 * @param resource
+	 * @return <code>true</code> if the opener can (possibly) open steps in the
+	 *         given resource
+	 * @throws CoreException
 	 */
-	boolean canOpen(StepDefinition stepDefinition);
+	boolean canOpen(IResource resource) throws CoreException;
 
 	/**
 	 * Open an editor and focus on the step definition.
 	 * 
+	 * @param textViewer
+	 * @param resource
+	 * @param step
+	 * 
 	 * @param stepDefinition a step definition
+	 * @return <code>true</code> if the step was opened
 	 * @throws CoreException if an error occurs
 	 */
-	void openInEditor(StepDefinition stepDefinition) throws CoreException;
+	boolean openInEditor(ITextViewer textViewer, IResource resource, Step step) throws CoreException;
 
 }

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" enabled="false" name="io.cucumber.eclipse.java.steps.JavaSourceStepDefinitionProvider">
+   <property name="name" value="Java Source File Scanner"/>
+   <service>
+      <provide interface="io.cucumber.eclipse.editor.steps.IStepDefinitionsProvider"/>
+   </service>
+   <implementation class="io.cucumber.eclipse.java.steps.JavaSourceStepDefinitionProvider"/>
+</scr:component>
