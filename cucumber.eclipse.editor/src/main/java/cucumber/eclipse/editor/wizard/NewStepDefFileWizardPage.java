@@ -28,8 +28,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.SelectionDialog;
 
-import cucumber.eclipse.editor.util.SWTUtil;
 import cucumber.eclipse.editor.util.Utils;
+import io.cucumber.eclipse.editor.SWTUtil;
 import io.cucumber.eclipse.java.JDTUtil;
 
 /**

@@ -157,7 +157,7 @@
               contentType="io.cucumber.eclipse.editor.content-type.feature">
         </contentAssistProcessor>
         <contentAssistProcessor
-              class="io.cucumber.eclipse.editor.contentassist.CucumberContentAssistProcessor"
+              class="io.cucumber.eclipse.editor.contentassist.CucumberStepContentAssistProcessor"
               contentType="io.cucumber.eclipse.editor.content-type.feature">
         </contentAssistProcessor>
      </extension>

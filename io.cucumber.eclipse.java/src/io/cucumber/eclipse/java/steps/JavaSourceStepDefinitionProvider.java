@@ -32,6 +32,7 @@ import org.eclipse.jdt.core.dom.ExpressionStatement;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Statement;
+import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.osgi.service.debug.DebugTrace;
 import org.osgi.service.component.annotations.Component;
 
@@ -63,7 +64,9 @@ public class JavaSourceStepDefinitionProvider extends JavaStepDefinitionsProvide
 	private static final String IO_CUCUMBER_JAVA8 = "io.cucumber.java8.";
 
 	@Override
-	public Collection<StepDefinition> findStepDefinitions(IResource stepDefinitionResource, IProgressMonitor monitor)
+	public Collection<StepDefinition> findStepDefinitions(ITextViewer viewer, int offset,
+			IResource stepDefinitionResource,
+			IProgressMonitor monitor)
 			throws CoreException {
 		IJavaProject javaProject = JDTUtil.getJavaProject(stepDefinitionResource);
 		DebugTrace debug = Tracing.get();
@@ -227,7 +230,7 @@ public class JavaSourceStepDefinitionProvider extends JavaStepDefinitionsProvide
 										StepDefinition step = new StepDefinition(ifType.getHandleIdentifier(),
 												StepDefinition.NO_LABEL, expression, resource, lineNumber,
 												method.getMethodName(), t.getPackageFragment().getElementName(),
-												new StepParameter[] {});
+												new StepParameter[] {}, null);
 										steps.add(step);
 									}
 								}
@@ -247,7 +250,7 @@ public class JavaSourceStepDefinitionProvider extends JavaStepDefinitionsProvide
 							expression = new ExpressionDefinition(getAnnotationText(annotation));
 							StepDefinition step = new StepDefinition(method.getHandleIdentifier(),
 									StepDefinition.NO_LABEL, expression, resource, lineNumber, method.getElementName(),
-									t.getPackageFragment().getElementName(), getParameter(method));
+									t.getPackageFragment().getElementName(), getParameter(method), null);
 							steps.add(step);
 						}
 					}

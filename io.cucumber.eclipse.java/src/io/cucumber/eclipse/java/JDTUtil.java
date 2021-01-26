@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -14,11 +15,14 @@ import java.util.Spliterators;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import org.eclipse.core.filebuffers.FileBuffers;
+import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.IJavaModel;
@@ -27,10 +31,18 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.Signature;
+import org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2;
 import org.eclipse.jdt.launching.JavaRuntime;
+import org.eclipse.jface.internal.text.html.HTMLPrinter;
+import org.eclipse.jface.resource.ColorRegistry;
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.swt.graphics.RGB;
 
 import io.cucumber.eclipse.java.plugins.CucumberCodeLocation;
 
+@SuppressWarnings("restriction")
 public class JDTUtil {
 
 	public JDTUtil() {
@@ -50,6 +62,17 @@ public class JDTUtil {
 
 	public static IWorkspaceRoot getWorkspaceRoot() {
 		return ResourcesPlugin.getWorkspace().getRoot();
+	}
+
+	public static IJavaProject getJavaProject(IDocument document) throws CoreException {
+		ITextFileBuffer buffer = FileBuffers.getTextFileBufferManager().getTextFileBuffer(document);
+		if (buffer != null) {
+			IPath location = buffer.getLocation();
+			if (location != null) {
+				return getJavaProject(ResourcesPlugin.getWorkspace().getRoot().getFile(location));
+			}
+		}
+		return null;
 	}
 
 	public static IJavaProject getJavaProject(IResource resource) throws CoreException {
@@ -106,22 +129,59 @@ public class JDTUtil {
 
 	}
 
-	public static IMethod resolveMethod(IJavaProject project, CucumberCodeLocation codeLocation,
+	public static IMethod[] resolveMethod(IJavaProject project, CucumberCodeLocation codeLocation,
 			IProgressMonitor monitor) throws JavaModelException {
 		SubMonitor subMonitor = SubMonitor.convert(monitor, codeLocation.toString(), 100);
 		String typeName = codeLocation.getTypeName();
-		String methodName = codeLocation.getMethodName();
-		if (typeName.isBlank() || methodName.isBlank()) {
-			return null;
+		if (typeName.isBlank()) {
+			return new IMethod[0];
 		}
-		IType type = project.findType(typeName, subMonitor.split(10));
+		return resolveTypeMethod(project.findType(typeName, subMonitor.split(10)), codeLocation, subMonitor.split(90));
+	}
+
+	public static IMethod[] resolveTypeMethod(IType type, CucumberCodeLocation codeLocation, IProgressMonitor monitor)
+			throws JavaModelException {
 		if (type != null) {
-			// FIXME match method parameters!
-			for (IMethod method : type.getMethods()) {
-				if (method.getElementName().equals(methodName)) {
-					return method;
-				}
+			String methodName = codeLocation.getMethodName();
+			if (methodName.isBlank()) {
+				return null;
 			}
+			IMethod[] candidates = Arrays.stream(type.getMethods())
+					.filter(method -> method.getElementName().equals(methodName))
+					.toArray(IMethod[]::new);
+			if (candidates.length > 1) {
+				// FIXME try to find match method parameters!
+			}
+			return candidates;
+		}
+		return new IMethod[0];
+	}
+
+	public static String getMethodName(IMethod method) throws JavaModelException {
+		StringBuilder name = new StringBuilder();
+		name.append(method.getDeclaringType().getElementName());
+		name.append('.');
+		name.append(method.getElementName());
+		name.append("(");
+		String.join(",", Arrays.stream(method.getParameterTypes()).map(Signature::toString).toArray(String[]::new));
+		name.append(")");
+
+		return name.toString();
+	}
+
+	public static String getJavadoc(IMethod method) {
+		try {
+			String content = JavadocContentAccess2.getHTMLContent(method, true);
+			if (content != null) {
+				StringBuilder buffer = new StringBuilder(content);
+				ColorRegistry registry = JFaceResources.getColorRegistry();
+				RGB fgRGB = registry.getRGB("org.eclipse.jdt.ui.Javadoc.foregroundColor"); //$NON-NLS-1$
+				RGB bgRGB = registry.getRGB("org.eclipse.jdt.ui.Javadoc.backgroundColor"); //$NON-NLS-1$
+				HTMLPrinter.insertPageProlog(buffer, 0, fgRGB, bgRGB, "");
+				HTMLPrinter.addPageEpilog(buffer);
+				return buffer.toString();
+			}
+		} catch (CoreException e) {
 		}
 		return null;
 	}

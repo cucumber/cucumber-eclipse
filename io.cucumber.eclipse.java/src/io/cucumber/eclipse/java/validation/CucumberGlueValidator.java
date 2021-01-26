@@ -1,7 +1,10 @@
 package io.cucumber.eclipse.java.validation;
 
+import static io.cucumber.eclipse.editor.Tracing.PERFORMANCE_STEPS;
+
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -23,13 +26,16 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
+import org.eclipse.osgi.service.debug.DebugTrace;
 
 import io.cucumber.core.gherkin.FeatureParserException;
+import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.marker.MarkerFactory;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberMatchedStepsPlugin;
 import io.cucumber.eclipse.java.plugins.CucumberMissingStepsPlugin;
+import io.cucumber.eclipse.java.plugins.CucumberStepDefinition;
 import io.cucumber.eclipse.java.plugins.CucumberStepParserPlugin;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;
@@ -162,11 +168,20 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 		return glueJob;
 	}
 
-	public static Collection<MatchedStep> getMatchedSteps(IDocument document, IProgressMonitor monitor)
+	public static Collection<MatchedStep<?>> getMatchedSteps(IDocument document, IProgressMonitor monitor)
 			throws OperationCanceledException, InterruptedException {
 		GlueJob job = sync(document, monitor);
 		if (job != null) {
-			return Collections.unmodifiableCollection(job.matchedStepsPlugin.getMatchedSteps());
+			return job.matchedSteps;
+		}
+		return Collections.emptyList();
+	}
+
+	public static Collection<CucumberStepDefinition> getAvaiableSteps(IDocument document, IProgressMonitor monitor)
+			throws OperationCanceledException, InterruptedException {
+		GlueJob job = sync(document, monitor);
+		if (job != null) {
+			return job.parsedSteps;
 		}
 		return Collections.emptyList();
 	}
@@ -177,13 +192,21 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 		private IDocument document;
 		private boolean persistent;
 
-		CucumberMatchedStepsPlugin matchedStepsPlugin = new CucumberMatchedStepsPlugin();
+		transient Collection<MatchedStep<?>> matchedSteps;
+		transient Collection<CucumberStepDefinition> parsedSteps;
 
 		public GlueJob(GlueJob oldJob, IDocument document, boolean persistent) {
 			super("Verify Cucumber Glue Code");
 			this.oldJob = oldJob;
 			this.document = document;
 			this.persistent = persistent;
+			if (oldJob != null) {
+				this.matchedSteps = oldJob.matchedSteps;
+				this.parsedSteps = oldJob.parsedSteps;
+			} else {
+				this.matchedSteps = Collections.emptySet();
+				this.parsedSteps = Collections.emptySet();
+			}
 		}
 
 		@Override
@@ -202,6 +225,9 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 					IResource resource = editorDocument.getResource();
 					IJavaProject javaProject = JDTUtil.getJavaProject(resource);
 					if (javaProject != null) {
+						long start = System.currentTimeMillis();
+						DebugTrace debug = Tracing.get();
+						debug.traceEntry(PERFORMANCE_STEPS, resource);
 						try (CucumberRuntime rt = CucumberRuntime.create(javaProject)) {
 							rt.getRuntimeOptions().setDryRun();
 							try {
@@ -211,15 +237,24 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 								return Status.CANCEL_STATUS;
 							}
 							CucumberMissingStepsPlugin missingStepsPlugin = new CucumberMissingStepsPlugin();
-							rt.addPlugin(new CucumberStepParserPlugin());
-
+							CucumberStepParserPlugin stepParserPlugin = new CucumberStepParserPlugin();
+							CucumberMatchedStepsPlugin matchedStepsPlugin = new CucumberMatchedStepsPlugin();
+							rt.addPlugin(stepParserPlugin);
 							rt.addPlugin(matchedStepsPlugin);
 							rt.addPlugin(missingStepsPlugin);
 							try {
 								rt.run(monitor);
-								MarkerFactory.missingSteps(resource, missingStepsPlugin.getSnippets(),
-										StepGenerator.class.getName(), persistent);
-								matchedStepsPlugin.getMatchedSteps();
+								Map<Integer, Collection<String>> snippets = missingStepsPlugin.getSnippets();
+								MarkerFactory.missingSteps(resource, snippets, StepGenerator.class.getName(),
+										persistent);
+								Collection<CucumberStepDefinition> steps = stepParserPlugin.getStepList();
+								matchedSteps = Collections.unmodifiableCollection(matchedStepsPlugin.getMatchedSteps());
+								parsedSteps = Collections.unmodifiableCollection(stepParserPlugin.getStepList());
+								debug.traceExit(PERFORMANCE_STEPS,
+										matchedSteps.size() + " step(s) /  " + steps.size() + " step(s)  matched, "
+												+ snippets.size() + " snippet(s) where suggested || total run time "
+												+ (System.currentTimeMillis() - start) + "ms)");
+
 							} catch (Throwable e) {
 								// TODO
 								System.out.println(e);
@@ -231,6 +266,7 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 				}
 			}
 //			jobMap.remove(document, this);
+			// FIXME notify document reconsilers??
 			return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
 		}
 

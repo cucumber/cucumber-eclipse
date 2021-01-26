@@ -1,8 +1,6 @@
 package io.cucumber.eclipse.java.plugins;
 
-import io.cucumber.plugin.event.HookTestStep;
 import io.cucumber.plugin.event.Location;
-import io.cucumber.plugin.event.PickleStepTestStep;
 import io.cucumber.plugin.event.TestStep;
 
 /**
@@ -11,33 +9,28 @@ import io.cucumber.plugin.event.TestStep;
  * @author christoph
  *
  */
-public final class MatchedStep {
+public abstract class MatchedStep<T extends TestStep> {
 
-	private final TestStep testStep;
+	private final T testStep;
+
 	private final Location location;
 	private final CucumberCodeLocation codeLocation;
 
-	public MatchedStep(PickleStepTestStep step) {
-		this.testStep = step;
-		location = step.getStep().getLocation();
-		codeLocation = new CucumberCodeLocation(testStep.getCodeLocation());
-	}
-
-	public MatchedStep(HookTestStep hookTestStep, Location location) {
-		testStep = hookTestStep;
+	MatchedStep(T testStep, Location location, CucumberCodeLocation codeLocation) {
+		this.testStep = testStep;
 		this.location = location;
-		codeLocation = new CucumberCodeLocation(testStep.getCodeLocation());
+		this.codeLocation = codeLocation;
 	}
 
-	public Location getLocation() {
+	public final Location getLocation() {
 		return location;
 	}
-	
-	public TestStep getTestStep() {
+
+	public final T getTestStep() {
 		return testStep;
 	}
 
-	public CucumberCodeLocation getCodeLocation() {
+	public final CucumberCodeLocation getCodeLocation() {
 		return codeLocation;
 	}
 

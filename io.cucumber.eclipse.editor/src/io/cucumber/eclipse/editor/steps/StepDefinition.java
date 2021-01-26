@@ -1,5 +1,6 @@
 package io.cucumber.eclipse.editor.steps;
 
+import java.util.Comparator;
 import java.util.Objects;
 
 import org.eclipse.core.resources.IResource;
@@ -18,6 +19,8 @@ public final class StepDefinition {
 	public static final String NO_PACKAGE_NAME = null;
 	public static final String NO_LABEL = null;
 	public static final IResource NO_SOURCE = null;
+	public static final Comparator<? super StepDefinition> EXPRESSION_TEXT_ORDER = (s1, s2) -> s1.getExpression().getText()
+			.compareToIgnoreCase(s2.getExpression().getText());
 
 	private final IResource source;
 	private final int lineNumber;
@@ -28,6 +31,7 @@ public final class StepDefinition {
 	private final String packageName;
 	private final String id;
 	private StepParameter[] parameters;
+	private String description;
 
 	/**
 	 * Creates a new {@link StepDefinition}
@@ -47,7 +51,7 @@ public final class StepDefinition {
 	 * @param parameterNames the parameter names of the corresponding method
 	 */
 	public StepDefinition(String id, String label, ExpressionDefinition expression, IResource source, int lineNumber,
-			String sourceName, String packageName, StepParameter[] parameters) {
+			String sourceName, String packageName, StepParameter[] parameters, String description) {
 		this.id = id;
 		this.label = label;
 		this.expression = expression;
@@ -55,6 +59,7 @@ public final class StepDefinition {
 		this.lineNumber = lineNumber;
 		this.sourceName = sourceName;
 		this.packageName = packageName;
+		this.description = description;
 		this.parameters = Objects.requireNonNullElseGet(parameters, () -> new StepParameter[0]);
 	}
 
@@ -82,18 +87,7 @@ public final class StepDefinition {
 	}
 
 	public String getDescription() {
-		StringBuilder sb = new StringBuilder();
-		String sourceLocation = Objects.requireNonNullElse(getSourceName(), "");
-		if (sourceLocation != null) {
-			if (sourceLocation.contains("/")) {
-				sourceLocation = sourceLocation.substring(sourceLocation.lastIndexOf("/"));
-			}
-			sb.append(sourceLocation);
-		}
-		if (getLineNumber() > 0) {
-			sb.append(":" + getLineNumber());
-		}
-		return sb.toString();
+		return description;
 	}
 
 	/**

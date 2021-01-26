@@ -1,7 +1,7 @@
 package io.cucumber.eclipse.java.plugins;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Collection;
+import java.util.concurrent.ConcurrentHashMap;
 
 import io.cucumber.plugin.ConcurrentEventListener;
 import io.cucumber.plugin.EventListener;
@@ -20,7 +20,7 @@ import io.cucumber.plugin.event.TestStepFinished;
  */
 public class CucumberMatchedStepsPlugin implements Plugin, ConcurrentEventListener, EventListener {
 
-	private List<MatchedStep> matchedSteps = new CopyOnWriteArrayList<>();
+	private Collection<MatchedStep<?>> matchedSteps = ConcurrentHashMap.newKeySet();
 
 	@Override
 	public void setEventPublisher(EventPublisher publisher) {
@@ -32,15 +32,15 @@ public class CucumberMatchedStepsPlugin implements Plugin, ConcurrentEventListen
 		if (testStep instanceof PickleStepTestStep) {
 			PickleStepTestStep pickleStepTestStep = (PickleStepTestStep) testStep;
 			if (pickleStepTestStep.getCodeLocation() != null) {
-				matchedSteps.add(new MatchedStep(pickleStepTestStep));
+				matchedSteps.add(new MatchedPickleStep(pickleStepTestStep));
 			}
 		} else if (testStep instanceof HookTestStep) {
 			HookTestStep hookTestStep = (HookTestStep) testStep;
-			matchedSteps.add(new MatchedStep(hookTestStep, event.getTestCase().getLocation()));
+			matchedSteps.add(new MatchedHookStep(hookTestStep, event.getTestCase().getLocation()));
 		}
 	}
 
-	public List<MatchedStep> getMatchedSteps() {
+	public Collection<MatchedStep<?>> getMatchedSteps() {
 		return matchedSteps;
 	}
 

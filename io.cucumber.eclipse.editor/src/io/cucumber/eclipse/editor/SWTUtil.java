@@ -1,4 +1,4 @@
-package cucumber.eclipse.editor.util;
+package io.cucumber.eclipse.editor;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Path;
@@ -7,16 +7,20 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.TypedEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 
 public class SWTUtil
@@ -95,7 +99,8 @@ public class SWTUtil
     button.setText("Browse...");
     button.addSelectionListener(new SelectionAdapter()
     {
-      public void widgetSelected(SelectionEvent e)
+      @Override
+	public void widgetSelected(SelectionEvent e)
       {
         ContainerSelectionDialog dialog = new ContainerSelectionDialog(container.getShell(),
         		ResourcesPlugin.getWorkspace().getRoot(), false, "Select new file container");
@@ -129,5 +134,14 @@ public class SWTUtil
   {
     return new GridData(4, 128, true, false);
   }
+
+	public static Shell getShell(TypedEvent event) {
+		if (event.widget instanceof Control) {
+			Control control = (Control) event.widget;
+			return control.getShell();
+		} else {
+			return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+		}
+	}
 }
 

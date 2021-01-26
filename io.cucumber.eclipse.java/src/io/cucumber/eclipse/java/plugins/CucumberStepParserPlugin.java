@@ -19,7 +19,7 @@ import io.cucumber.plugin.event.StepDefinition;
  */
 public class CucumberStepParserPlugin implements Plugin, ConcurrentEventListener, EventListener {
 
-	private Map<String, Collection<StepDefinition>> stepList = new ConcurrentHashMap<>();
+	private Map<CucumberCodeLocation, CucumberStepDefinition> stepList = new ConcurrentHashMap<>();
 
 	@Override
 	public void setEventPublisher(EventPublisher publisher) {
@@ -28,15 +28,15 @@ public class CucumberStepParserPlugin implements Plugin, ConcurrentEventListener
 
 	private void handleStepDefinedEvent(StepDefinedEvent event) {
 		StepDefinition definition = event.getStepDefinition();
-		CucumberCodeLocation location = new CucumberCodeLocation(definition.getLocation());
-		stepList.computeIfAbsent(location.getTypeName(), k -> ConcurrentHashMap.newKeySet()).add(definition);
+		stepList.computeIfAbsent(new CucumberCodeLocation(definition.getLocation()),
+				location -> new CucumberStepDefinition(definition, location));
 	}
 
 	/**
 	 * @return a Map of locations to recorded step definitions
 	 */
-	public Map<String, Collection<StepDefinition>> getStepList() {
-		return stepList;
+	public Collection<CucumberStepDefinition> getStepList() {
+		return stepList.values();
 	}
 
 

@@ -115,7 +115,8 @@ public class StorageHelper {
 		IResource resource = ResourceHelper.find(sourceRef);
 		ExpressionDefinition expression = new ExpressionDefinition(expStr, expLang);
 		// FIXME
-		return new StepDefinition(id, label, expression, resource, line, sourceName, packageName, new StepParameter[0]);
+		return new StepDefinition(id, label, expression, resource, line, sourceName, packageName, new StepParameter[0],
+				null);
 	}
 
 }

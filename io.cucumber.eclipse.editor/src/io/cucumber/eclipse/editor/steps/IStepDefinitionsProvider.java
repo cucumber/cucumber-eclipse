@@ -5,6 +5,7 @@ import java.util.Collection;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.text.ITextViewer;
 
 public interface IStepDefinitionsProvider {
 
@@ -13,13 +14,18 @@ public interface IStepDefinitionsProvider {
 	/**
 	 * Find step definitions into a file.
 	 * 
+	 * @param viewer
+	 * @param offset
+	 * @param resource
+	 * 
 	 * @param stepDefinitionResource the file where to search step definition.
-	 * @param markerFactory      factory of markers supported by this plugin
-	 * @param monitor            the progress monitor
+	 * @param markerFactory          factory of markers supported by this plugin
+	 * @param monitor                the progress monitor
 	 * @return a set of StepDefinition or an empty array. Should NEVER return null.
 	 * @throws CoreException if an error occurs
 	 */
-	Collection<StepDefinition> findStepDefinitions(IResource stepDefinitionResource, IProgressMonitor monitor)
+	Collection<StepDefinition> findStepDefinitions(ITextViewer viewer, int offset, IResource resource,
+			IProgressMonitor monitor)
 			throws CoreException;
 	
 	/**

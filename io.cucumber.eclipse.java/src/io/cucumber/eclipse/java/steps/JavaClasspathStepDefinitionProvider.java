@@ -25,6 +25,7 @@ import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.SearchMatch;
 import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.core.search.SearchRequestor;
+import org.eclipse.jface.text.ITextViewer;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
 
@@ -48,7 +49,9 @@ import io.cucumber.eclipse.java.JDTUtil;
 public class JavaClasspathStepDefinitionProvider extends JavaStepDefinitionsProvider {
 
 	@Override
-	public Collection<StepDefinition> findStepDefinitions(IResource stepDefinitionResource, IProgressMonitor monitor)
+	public Collection<StepDefinition> findStepDefinitions(ITextViewer viewer, int offset,
+			IResource stepDefinitionResource,
+			IProgressMonitor monitor)
 			throws CoreException {
 		IJavaProject project = JDTUtil.getJavaProject(stepDefinitionResource);
 		if (project != null) {
@@ -88,7 +91,7 @@ public class JavaClasspathStepDefinitionProvider extends JavaStepDefinitionsProv
 
 				StepDefinition step = new StepDefinition(method.getHandleIdentifier(), label, expression,
 						jar.getResource(), StepDefinition.NO_LINE_NUMBER, method.getElementName(), packageName,
-						getParameter(method));
+						getParameter(method), null);
 				stepDefinitions.add(step);
 			}
 		}

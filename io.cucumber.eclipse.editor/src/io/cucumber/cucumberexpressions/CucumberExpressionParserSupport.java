@@ -40,12 +40,12 @@ public class CucumberExpressionParserSupport {
 	public static Template createTemplate(StepDefinition definition, String contextId) {
 		String expressionString = definition.getExpression().getText();
 		if (BEGIN_ANCHOR.matcher(expressionString).find() || END_ANCHOR.matcher(expressionString).find()) {
-			return new Template(definition.getExpression().getText(), definition.getDescription(), contextId,
+			return new Template(definition.getExpression().getText(), definition.getLabel(), contextId,
 					definition.getExpression().getText(), true);
 		} else {
 			Matcher m = SCRIPT_STYLE_REGEXP.matcher(expressionString);
 			if (m.find()) {
-				return new Template(definition.getExpression().getText(), definition.getDescription(), contextId,
+				return new Template(definition.getExpression().getText(), definition.getLabel(), contextId,
 						definition.getExpression().getText(), true);
 			} else {
 				return new CucumberExpressionTemplate(definition, contextId);
@@ -121,7 +121,13 @@ public class CucumberExpressionParserSupport {
 
 	private static TemplateVariable parseParameter(Node node, Iterator<StepParameter> parameterNames,
 			AtomicInteger counter) {
-		String paramType = node.nodes().get(0).text();
+		List<Node> nodes = node.nodes();
+		String paramType;
+		if (nodes.isEmpty()) {
+			paramType = "";
+		} else {
+			paramType = nodes.get(0).text();
+		}
 		StepParameter param = parameterNames.hasNext() ? parameterNames.next() : null;
 		int index = counter.getAndIncrement();
 		String paramName;
@@ -149,7 +155,7 @@ public class CucumberExpressionParserSupport {
 		private StepDefinition definition;
 
 		public CucumberExpressionTemplate(StepDefinition definition, String contextId) {
-			super(definition.getExpression().getText(), definition.getDescription(), contextId,
+			super(definition.getExpression().getText(), definition.getLabel(), contextId,
 					definition.getExpression().getText(), true);
 			this.definition = definition;
 

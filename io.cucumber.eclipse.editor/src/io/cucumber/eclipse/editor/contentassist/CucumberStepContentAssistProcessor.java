@@ -18,6 +18,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IInformationControl;
+import org.eclipse.jface.text.IInformationControlCreator;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
@@ -29,10 +31,12 @@ import org.eclipse.jface.text.link.LinkedModeModel;
 import org.eclipse.jface.text.templates.DocumentTemplateContext;
 import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.text.templates.TemplateBuffer;
+import org.eclipse.jface.text.templates.TemplateContext;
 import org.eclipse.jface.text.templates.TemplateContextType;
 import org.eclipse.jface.text.templates.TemplateException;
 import org.eclipse.jface.text.templates.TemplateProposal;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Shell;
 
 import io.cucumber.cucumberexpressions.CucumberExpressionParserSupport;
 import io.cucumber.eclipse.editor.Activator;
@@ -48,10 +52,10 @@ import io.cucumber.eclipse.editor.steps.StepDefinition;
  * @author christoph
  *
  */
-public class CucumberContentAssistProcessor implements IContentAssistProcessor {
+public class CucumberStepContentAssistProcessor implements IContentAssistProcessor {
 
 	private static final TemplateContextType CONTEXT_TYPE = new TemplateContextType(
-			CucumberContentAssistProcessor.class.getName(), "Cucumber");
+			CucumberStepContentAssistProcessor.class.getName(), "Cucumber");
 
 	private ConcurrentMap<IProject, StepDefSearchJob> jobMap = new ConcurrentHashMap<>();
 
@@ -80,7 +84,7 @@ public class CucumberContentAssistProcessor implements IContentAssistProcessor {
 					IProject project = resource.getProject();
 					StepDefSearchJob job = jobMap.compute(project, (p, j) -> {
 						if (j == null) {
-							j = new StepDefSearchJob(p);
+							j = new StepDefSearchJob(p, viewer, offset);
 							j.schedule();
 						} else {
 							if (j.definitions != null) {
@@ -102,11 +106,16 @@ public class CucumberContentAssistProcessor implements IContentAssistProcessor {
 							CucumberDocumentTemplateContext ctx = new CucumberDocumentTemplateContext(
 									viewer.getDocument(), region);
 							Image icon = Activator.getDefault().getImageRegistry().get(Activator.ICON_CUKES);
-							ICompletionProposal[] proposals = steps.stream().map(s -> {
-								Template template = CucumberExpressionParserSupport.createTemplate(s,
-										CONTEXT_TYPE.getId());
-								return new TemplateProposal(template, ctx, region, icon);
-							}).toArray(ICompletionProposal[]::new);
+							ICompletionProposal[] proposals = steps.stream()
+									.sorted(StepDefinition.EXPRESSION_TEXT_ORDER).map(stepDefinition -> {
+										Template template = CucumberExpressionParserSupport
+												.createTemplate(stepDefinition, CONTEXT_TYPE.getId());
+										// TODO compute relevance!
+										return new CucumberTemplateProposal(template, ctx, region, icon, 1,
+												stepDefinition.getDescription());
+									})
+									.sorted(Collections.reverseOrder((p1, p2) -> p1.getRelevance() - p2.getRelevance()))
+									.toArray(ICompletionProposal[]::new);
 							return proposals;
 						}
 					} catch (InterruptedException e) {
@@ -152,9 +161,15 @@ public class CucumberContentAssistProcessor implements IContentAssistProcessor {
 
 		private volatile Collection<StepDefinition> definitions;
 
-		public StepDefSearchJob(IProject project) {
+		private ITextViewer viewer;
+
+		private int offset;
+
+		public StepDefSearchJob(IProject project, ITextViewer viewer, int offset) {
 			super("Compute Step definitions");
 			this.project = project;
+			this.viewer = viewer;
+			this.offset = offset;
 			setUser(false);
 			setPriority(Job.BUILD);
 		}
@@ -164,7 +179,7 @@ public class CucumberContentAssistProcessor implements IContentAssistProcessor {
 			List<IStepDefinitionsProvider> providers = CucumberServiceRegistry.getStepDefinitionsProvider(project);
 			definitions = providers.stream().flatMap(provider -> {
 				try {
-					return provider.findStepDefinitions(project, monitor).stream();
+					return provider.findStepDefinitions(viewer, offset, project, monitor).stream();
 				} catch (CoreException e) {
 					Activator.getDefault().getLog().log(e.getStatus());
 					return Stream.empty();
@@ -186,6 +201,40 @@ public class CucumberContentAssistProcessor implements IContentAssistProcessor {
 			TemplateBuffer buffer = CucumberExpressionParserSupport.evaluate(template);
 			getContextType().resolve(buffer, this);
 			return buffer;
+		}
+
+	}
+
+	private static final class CucumberTemplateProposal extends TemplateProposal {
+
+		private String description;
+
+		public CucumberTemplateProposal(Template template, TemplateContext context, IRegion region, Image image,
+				int relevance, String description) {
+			super(template, context, region, image, relevance);
+			this.description = description;
+			if (description != null && description.startsWith("<html")) {
+				setInformationControlCreator(new IInformationControlCreator() {
+
+					@Override
+					public IInformationControl createInformationControl(Shell parent) {
+						return new HtmlInformationControl(parent, description);
+					}
+				});
+			}
+		}
+
+		@Override
+		public String getAdditionalProposalInfo() {
+			if (description != null) {
+				return description;
+			}
+			return getTemplate().getDescription();
+		}
+
+		@Override
+		public String getDisplayString() {
+			return getTemplate().getPattern();
 		}
 
 	}

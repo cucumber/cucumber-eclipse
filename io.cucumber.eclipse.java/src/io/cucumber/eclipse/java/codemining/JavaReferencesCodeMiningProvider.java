@@ -7,11 +7,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
@@ -20,10 +29,18 @@ import org.eclipse.jface.text.codemining.ICodeMining;
 import org.eclipse.jface.text.codemining.ICodeMiningProvider;
 import org.eclipse.jface.text.codemining.LineContentCodeMining;
 import org.eclipse.jface.text.codemining.LineHeaderCodeMining;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.window.Window;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 
+import io.cucumber.eclipse.editor.SWTUtil;
+import io.cucumber.eclipse.java.JDTUtil;
+import io.cucumber.eclipse.java.plugins.MatchedHookStep;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
+import io.cucumber.eclipse.java.steps.JavaStepDefinitionOpener;
 import io.cucumber.eclipse.java.validation.CucumberGlueValidator;
-import io.cucumber.plugin.event.HookTestStep;
 import io.cucumber.plugin.event.HookType;
 import io.cucumber.plugin.event.Location;
 import io.cucumber.plugin.event.TestStep;
@@ -42,33 +59,36 @@ public class JavaReferencesCodeMiningProvider implements ICodeMiningProvider {
 		return CompletableFuture.supplyAsync(() -> {
 			try {
 				IDocument document = viewer.getDocument();
-				Collection<MatchedStep> steps = CucumberGlueValidator.getMatchedSteps(document, monitor);
-				List<ICodeMining> list = new ArrayList<>();
+				IJavaProject javaProject = JDTUtil.getJavaProject(document);
+				if (javaProject != null) {
+					Collection<MatchedStep<?>> steps = CucumberGlueValidator.getMatchedSteps(document, monitor);
+					List<ICodeMining> list = new ArrayList<>();
 
-				Map<Integer, List<MatchedStep>> stepByLine = steps.stream()
-						.filter(step -> step.getTestStep() instanceof HookTestStep)
-						.collect(Collectors.groupingBy(step -> step.getLocation().getLine()));
-				for (Entry<Integer, List<MatchedStep>> entry : stepByLine.entrySet()) {
-					int lineNumber = entry.getKey() - 1;
-					Map<HookType, List<HookTestStep>> hooksByType = entry.getValue().stream()
-							.map(MatchedStep::getTestStep).map(HookTestStep.class::cast)
-							.collect(Collectors.groupingBy(hookStep -> hookStep.getHookType()));
-					hooksByType.entrySet().stream().sorted((e1, e2) -> e1.getKey().ordinal() - e2.getKey().ordinal())
-							.map(e -> {
-								try {
-									return new HooksCodeMining(lineNumber, document,
-											JavaReferencesCodeMiningProvider.this, e.getKey(), e.getValue());
-								} catch (BadLocationException e3) {
-									return null;
-								}
-							})
-							.filter(Objects::nonNull).forEach(list::add);
+					Map<Integer, List<MatchedHookStep>> stepByLine = steps.stream()
+							.filter(MatchedHookStep.class::isInstance).map(MatchedHookStep.class::cast)
+							.collect(Collectors.groupingBy(step -> step.getLocation().getLine()));
+					for (Entry<Integer, List<MatchedHookStep>> entry : stepByLine.entrySet()) {
+						int lineNumber = entry.getKey() - 1;
+						Map<HookType, List<MatchedHookStep>> hooksByType = entry.getValue().stream()
+								.collect(Collectors.groupingBy(hookStep -> hookStep.getTestStep().getHookType()));
+						hooksByType.entrySet().stream()
+								.sorted((e1, e2) -> e1.getKey().ordinal() - e2.getKey().ordinal()).map(e -> {
+									try {
+										return new HooksCodeMining(lineNumber, document,
+												JavaReferencesCodeMiningProvider.this, e.getKey(), e.getValue(),
+												javaProject);
+									} catch (BadLocationException e3) {
+										return null;
+									}
+								}).filter(Objects::nonNull).forEach(list::add);
+					}
+					return list;
 				}
-
-				return list;
 			} catch (OperationCanceledException e) {
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
+			} catch (CoreException e) {
+				e.printStackTrace();
 			}
 			return Collections.emptyList();
 		});
@@ -82,14 +102,16 @@ public class JavaReferencesCodeMiningProvider implements ICodeMiningProvider {
 	private static final class HooksCodeMining extends LineHeaderCodeMining {
 
 		private HookType hookType;
-		private List<HookTestStep> list;
+		private List<MatchedHookStep> list;
+		private AtomicReference<Consumer<MouseEvent>> action = new AtomicReference<>();
+		private IJavaProject javaProject;
 
 		public HooksCodeMining(int beforeLineNumber, IDocument document, ICodeMiningProvider provider,
-				HookType hookType, List<HookTestStep> list)
-				throws BadLocationException {
+				HookType hookType, List<MatchedHookStep> list, IJavaProject javaProject) throws BadLocationException {
 			super(beforeLineNumber, document, provider);
 			this.hookType = hookType;
 			this.list = list;
+			this.javaProject = javaProject;
 		}
 
 		@Override
@@ -115,8 +137,69 @@ public class JavaReferencesCodeMiningProvider implements ICodeMiningProvider {
 				}
 				int size = list.size();
 				setLabel(hookName + ": " + size);
+				Set<Entry<MatchedHookStep, IMethod[]>> resolvedMethods = list.stream()
+						.collect(Collectors.toMap(Function.identity(), step -> {
+							try {
+								return JDTUtil.resolveMethod(javaProject, step.getCodeLocation(), null);
+							} catch (JavaModelException e) {
+								return null;
+							}
+						})).entrySet();
+				action.set(event -> {
+					Shell shell = SWTUtil.getShell(event);
+					if (resolvedMethods.size() == 1) {
+						Entry<MatchedHookStep, IMethod[]> entry = resolvedMethods.iterator().next();
+						open(entry.getKey(), entry.getValue(), shell);
+					} else {
+						ElementListSelectionDialog dialog = new ElementListSelectionDialog(shell, new LabelProvider() {
+							@Override
+							public String getText(Object element) {
+								if (element instanceof Entry<?, ?>) {
+									Entry<?, ?> entry = (Entry<?, ?>) element;
+									Object value = entry.getValue();
+									if (value instanceof IMethod) {
+										try {
+											return JDTUtil.getMethodName((IMethod) value);
+										} catch (JavaModelException e) {
+										}
+									}
+									Object key = entry.getKey();
+									if (key instanceof MatchedHookStep) {
+										MatchedHookStep step = (MatchedHookStep) key;
+										return step.getCodeLocation().toString();
+									}
+								}
+								return element.toString();
+							}
+						});
+						dialog.setElements(resolvedMethods.toArray());
+						if (dialog.open() == Window.OK) {
+							for (Object e : dialog.getResult()) {
+								@SuppressWarnings("unchecked")
+								Entry<MatchedHookStep, IMethod[]> entry = (Entry<MatchedHookStep, IMethod[]>) e;
+								open(entry.getKey(), entry.getValue(), shell);
+							}
+						}
+					}
+
+					// TODO new ElementListSelectionDialog(null, null)
+				});
 				return null;
 			});
+		}
+
+		private void open(MatchedHookStep step, IMethod[] method, Shell shell) {
+			if (method != null && method.length > 0) {
+				JavaStepDefinitionOpener.showMethod(method, shell);
+				return;
+			}
+			MessageDialog.openInformation(shell, "Method not found",
+					"Location " + step.getCodeLocation() + " not found");
+		}
+
+		@Override
+		public Consumer<MouseEvent> getAction() {
+			return action.get();
 		}
 
 	}
