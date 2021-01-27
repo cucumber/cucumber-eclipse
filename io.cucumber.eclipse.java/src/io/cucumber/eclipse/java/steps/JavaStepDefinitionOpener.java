@@ -55,7 +55,6 @@ public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
 		ICompilationUnit cu = method.getCompilationUnit();
 		IEditorPart javaEditor = JavaUI.openInEditor(cu);
 		JavaUI.revealInEditor(javaEditor, (IJavaElement) method);
-
 	}
 
 	@Override

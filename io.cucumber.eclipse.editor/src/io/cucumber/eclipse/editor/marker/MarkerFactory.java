@@ -52,6 +52,8 @@ public class MarkerFactory {
 	public static final String UNMATCHED_STEP_KEYWORD_ATTRIBUTE = UNMATCHED_STEP + ".keyword";
 	public static final String UNMATCHED_STEP_NAME_ATTRIBUTE = UNMATCHED_STEP + ".name";
 	public static final String UNMATCHED_STEP_PATH_ATTRIBUTE = UNMATCHED_STEP + ".path";
+	public static final String UNMATCHED_STEP_SNIPPET_ATTRIBUTE = UNMATCHED_STEP + ".snippet";
+	public static final String UNMATCHED_STEP_SNIPPTE_TYPE_ATTRIBUTE = UNMATCHED_STEP_SNIPPET_ATTRIBUTE + ".type";
 
 	public static final String NOT_A_CUCUMBER_PROJECT = CUCUMBER_MARKER + ".not_a_cucumber_project";
 	public static final String NOT_A_CUCUMBER_PROJECT_NAME_ATTRIBUTE = NOT_A_CUCUMBER_PROJECT + ".project_name";
@@ -171,7 +173,7 @@ public class MarkerFactory {
 	}
 
 	public static void missingSteps(IResource resource, Map<Integer, Collection<String>> snippets,
-			String generatorId, boolean persistent) {
+			String snippetType, boolean persistent) {
 		// TODO Auto-generated method stub
 		mark(resource, new IMarkerBuilder() {
 			@Override
@@ -181,7 +183,7 @@ public class MarkerFactory {
 					int lineNumber = entry.getKey();
 					int index = 0;
 					for (String snippet : entry.getValue()) {
-						String sourceId = generatorId + "_" + lineNumber + "_" + (index++);
+						String sourceId = snippetType + "_" + lineNumber + "_" + (index++);
 						IMarker marker = existingMarker.remove(sourceId);
 						if (marker == null) {
 							marker = resource.createMarker(UNMATCHED_STEP);
@@ -191,6 +193,8 @@ public class MarkerFactory {
 						marker.setAttribute(IMarker.MESSAGE, "Step  does not have a matching glue code");
 						marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
 						marker.setAttribute(IMarker.TRANSIENT, persistent);
+						marker.setAttribute(UNMATCHED_STEP_SNIPPET_ATTRIBUTE, snippet);
+						marker.setAttribute(UNMATCHED_STEP_SNIPPTE_TYPE_ATTRIBUTE, snippetType);
 //					marker.setAttribute(IMarker.CHAR_START, stepRegion.getOffset());
 //					marker.setAttribute(IMarker.CHAR_END, stepRegion.getOffset() + stepRegion.getLength());
 //					marker.setAttribute(UNMATCHED_STEP_KEYWORD_ATTRIBUTE, gherkinStep.getKeyword());

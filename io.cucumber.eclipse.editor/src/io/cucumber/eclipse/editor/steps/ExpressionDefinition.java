@@ -1,5 +1,11 @@
 package io.cucumber.eclipse.editor.steps;
 
+import java.util.Locale;
+
+import io.cucumber.cucumberexpressions.CucumberExpressionParserSupport;
+import io.cucumber.cucumberexpressions.ExpressionFactory;
+import io.cucumber.cucumberexpressions.ParameterTypeRegistry;
+
 /**
  * A Stepexpresion contains the raw unparsed values for a step
  * 
@@ -7,6 +13,9 @@ package io.cucumber.eclipse.editor.steps;
  *
  */
 public final class ExpressionDefinition {
+
+	private static final ExpressionFactory EXPRESSION_FACTORY = new ExpressionFactory(
+			new ParameterTypeRegistry(Locale.getDefault()));
 
 	private final String text;
 	private final String lang;
@@ -31,6 +40,32 @@ public final class ExpressionDefinition {
 	@Deprecated
 	public String getLang() {
 		return lang;
+	}
+
+	/**
+	 * Test if the expression matches except parameter types, this is done by
+	 * converting the expression int a form that accepts any type then perform a
+	 * match against the text
+	 * 
+	 * @param text the text to check
+	 * @return <code>true</code> if this expression matches <code>false</code>
+	 *         otherwise
+	 */
+	public boolean matchIgnoreTypes(String text) {
+		try {
+			return EXPRESSION_FACTORY
+					.createExpression(CucumberExpressionParserSupport.replaceVariables(getText(), "{}"))
+					.match(text) != null;
+		} catch (RuntimeException e) {
+			return false;
+		}
+	}
+
+	/**
+	 * @return the expression text but with all variables replaced
+	 */
+	public String getTextWithoutVariables() {
+		return CucumberExpressionParserSupport.replaceVariables(getText(), "");
 	}
 
 	@Override

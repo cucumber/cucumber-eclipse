@@ -13,6 +13,7 @@ import org.eclipse.jface.text.templates.TemplateBuffer;
 import org.eclipse.jface.text.templates.TemplateVariable;
 
 import io.cucumber.cucumberexpressions.Ast.Node;
+import io.cucumber.cucumberexpressions.Ast.Node.Type;
 import io.cucumber.eclipse.editor.steps.StepDefinition;
 import io.cucumber.eclipse.editor.steps.StepParameter;
 
@@ -39,7 +40,8 @@ public class CucumberExpressionParserSupport {
 	 */
 	public static Template createTemplate(StepDefinition definition, String contextId) {
 		String expressionString = definition.getExpression().getText();
-		if (BEGIN_ANCHOR.matcher(expressionString).find() || END_ANCHOR.matcher(expressionString).find()) {
+		if (isRegularExpression(expressionString)) {
+			// TODO can we support them?
 			return new Template(definition.getExpression().getText(), definition.getLabel(), contextId,
 					definition.getExpression().getText(), true);
 		} else {
@@ -51,6 +53,10 @@ public class CucumberExpressionParserSupport {
 				return new CucumberExpressionTemplate(definition, contextId);
 			}
 		}
+	}
+
+	private static boolean isRegularExpression(String expressionString) {
+		return BEGIN_ANCHOR.matcher(expressionString).find() || END_ANCHOR.matcher(expressionString).find();
 	}
 
 	/**
@@ -73,6 +79,55 @@ public class CucumberExpressionParserSupport {
 		} else {
 			return new TemplateBuffer(pattern, new TemplateVariable[0]);
 		}
+	}
+
+	public static String replaceVariables(String pattern, String replacement) {
+		if (isRegularExpression(pattern)) {
+			// TODO can we support them?
+			return pattern;
+		}
+		CucumberExpressionParser parser = new CucumberExpressionParser();
+		Node ast = parser.parse(pattern);
+		StringBuilder sb = new StringBuilder();
+		replaceVariables(ast, replacement, sb);
+		return sb.toString();
+	}
+
+	private static void replaceVariables(Node node, String replacement, StringBuilder buffer) {
+		Type type = node.type();
+		switch (type) {
+		case PARAMETER_NODE:
+			buffer.append(replacement);
+			break;
+		case ALTERNATION_NODE: {
+			List<String> values = new ArrayList<>();
+			node.nodes().stream().map(Node::text).forEach(values::add);
+			String join = String.join("/", values);
+			buffer.append(join);
+		}
+			break;
+		case OPTIONAL_NODE: {
+			Node child = node.nodes().get(0);
+			String optionalText = child.text();
+			buffer.append('(');
+			buffer.append(optionalText);
+			buffer.append(')');
+		}
+			break;
+		default: {
+			if (type != Type.EXPRESSION_NODE) {
+				buffer.append(node.text());
+			}
+			List<Node> childs = node.nodes();
+			if (childs != null) {
+				for (Node child : childs) {
+					replaceVariables(child, replacement, buffer);
+				}
+			}
+		}
+			break;
+		}
+
 	}
 
 	private static void parseAst(Node node, Iterator<StepParameter> parameterNames, AtomicInteger counter,

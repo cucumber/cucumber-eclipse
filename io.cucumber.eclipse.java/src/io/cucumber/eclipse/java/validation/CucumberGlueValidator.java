@@ -32,6 +32,7 @@ import io.cucumber.core.gherkin.FeatureParserException;
 import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.marker.MarkerFactory;
+import io.cucumber.eclipse.java.Activator;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberMatchedStepsPlugin;
 import io.cucumber.eclipse.java.plugins.CucumberMissingStepsPlugin;
@@ -39,7 +40,6 @@ import io.cucumber.eclipse.java.plugins.CucumberStepDefinition;
 import io.cucumber.eclipse.java.plugins.CucumberStepParserPlugin;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;
-import io.cucumber.eclipse.java.steps.StepGenerator;
 
 /**
  * Performs a dry-run on the document to verify step definition matching
@@ -245,7 +245,8 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 							try {
 								rt.run(monitor);
 								Map<Integer, Collection<String>> snippets = missingStepsPlugin.getSnippets();
-								MarkerFactory.missingSteps(resource, snippets, StepGenerator.class.getName(),
+								MarkerFactory.missingSteps(resource, snippets,
+										Activator.PLUGIN_ID,
 										persistent);
 								Collection<CucumberStepDefinition> steps = stepParserPlugin.getStepList();
 								matchedSteps = Collections.unmodifiableCollection(matchedStepsPlugin.getMatchedSteps());

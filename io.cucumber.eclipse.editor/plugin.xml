@@ -131,11 +131,6 @@
             verticalRulerPreferenceValue="true">
       </specification>
    </extension>
-    <extension point="org.eclipse.ui.ide.markerResolution">
-      <markerResolutionGenerator
-         markerType="cucumber.eclipse.marker.gherkin.unmatched_step"
-         class="io.cucumber.eclipse.editor.marker.StepCreationMarkerResolutionGenerator"/>
-   </extension>
    <extension
 	  point="org.eclipse.ui.editors.annotationTypes">
 	  <type
@@ -185,7 +180,8 @@
               label="Cucumber Console">
         </consoleFactory>
      </extension>
-     <extension
+     <!-- TODO is this required? seems to work without already... -->
+      <extension
            point="org.eclipse.ui.genericeditor.reconcilers">
         <reconciler
               class="org.eclipse.jface.text.codemining.CodeMiningReconciler"
@@ -209,5 +205,12 @@
               name="Gherkin Steps"
               targetId="org.eclipse.ui.genericeditor.GenericEditor">
         </hyperlinkDetector>
+     </extension>
+     <extension
+           point="org.eclipse.ui.genericeditor.quickAssistProcessors">
+        <quickAssistProcessor
+              class="io.cucumber.eclipse.editor.contentassist.CucumberStepQuickAssistProcessor"
+              contentType="io.cucumber.eclipse.editor.content-type.feature">
+        </quickAssistProcessor>
      </extension>
 </plugin>

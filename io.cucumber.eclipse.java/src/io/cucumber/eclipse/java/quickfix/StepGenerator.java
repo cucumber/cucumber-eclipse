@@ -1,4 +1,4 @@
-package io.cucumber.eclipse.java.steps;
+package io.cucumber.eclipse.java.quickfix;
 
 import java.io.IOException;
 import java.util.List;
@@ -12,16 +12,12 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.text.edits.TextEdit;
-import org.osgi.service.component.annotations.Component;
 
-import io.cucumber.eclipse.editor.steps.IStepDefinitionGenerator;
-
-@Component(service = { IStepDefinitionGenerator.class })
-public class StepGenerator implements IStepDefinitionGenerator {
+public class StepGenerator {
 
 
-	@Override
-	public TextEdit createStepSnippet(String snippetText, IDocument targetDocument) throws IOException, CoreException {
+	public static TextEdit createStepSnippet(String snippetText, IDocument targetDocument)
+			throws IOException, CoreException {
 		ASTParser parser = ASTParser.newParser(AST.JLS_Latest);
 		parser.setSource(targetDocument.get().toCharArray());
 		

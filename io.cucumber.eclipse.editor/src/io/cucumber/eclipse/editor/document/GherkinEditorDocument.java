@@ -159,7 +159,6 @@ public final class GherkinEditorDocument {
 		return Arrays.stream(sources).filter(Envelope::hasParseError).map(Envelope::getParseError);
 	}
 
-
 	/**
 	 * @return a stream of all {@link GherkinKeyword}s for the current language that
 	 *         are related to steps
@@ -192,6 +191,20 @@ public final class GherkinEditorDocument {
 	}
 
 	/**
+	 * Computes the longest keyword prefix the given line
+	 * 
+	 * @param line the line to check
+	 * @return the longest match for the given line
+	 */
+	public Optional<GherkinKeyword> getKeyWordOfLine(String line) {
+		String typed = line.stripLeading();
+		Optional<GherkinKeyword> keywordPrefix = getStepElementKeywords()
+				.sorted(Collections.reverseOrder((s1, s2) -> s1.getKey().length() - s2.getKey().length()))
+				.filter(keyWord -> typed.startsWith(keyWord.getKey() + " ")).findFirst();
+		return keywordPrefix;
+	}
+
+	/**
 	 * 
 	 * 
 	 * @param keyWords the keywords to fetch
@@ -214,26 +227,48 @@ public final class GherkinEditorDocument {
 	 */
 	public static GherkinEditorDocument get(IDocument document) {
 		Objects.requireNonNull(document, "document can't be null");
-		ITextFileBuffer buffer = FileBuffers.getTextFileBufferManager().getTextFileBuffer(document);
-		if (buffer != null) {
-			try {
-				IContentType contentType = buffer.getContentType();
-				if (contentType != null) {
-					if ("io.cucumber.eclipse.editor.content-type.feature".equals(contentType.getId())) {
-						return DOCUMENT_MAP.compute(document, (key, value) -> {
-							if (value == null || value.dirty) {
-								System.out.println("Document is null or dirty");
-								return parse(key);
-							}
-							return value;
-						});
-					}
+		if (isCompatible(document)) {
+			return DOCUMENT_MAP.compute(document, (key, value) -> {
+				if (value == null || value.dirty) {
+					System.out.println("Document is null or dirty");
+					return parse(key);
 				}
-			} catch (CoreException e) {
-			}
+				return value;
+			});
 		}
 		return null;
-		
+	}
+
+	/**
+	 * 
+	 * @param document the document to check
+	 * @return true if the document is currently cached
+	 */
+	public static boolean has(IDocument document) {
+		return DOCUMENT_MAP.contains(document);
+	}
+
+	/**
+	 * Checks if the given document is a {@link GherkinEditorDocument} comptible one
+	 * 
+	 * @param document the document to check
+	 * @return <code>true</code> if the given document is one that could be used
+	 *         with {@link GherkinEditorDocument}
+	 */
+	public static boolean isCompatible(IDocument document) {
+		if (document != null) {
+			ITextFileBuffer buffer = FileBuffers.getTextFileBufferManager().getTextFileBuffer(document);
+			if (buffer != null) {
+				try {
+					IContentType contentType = buffer.getContentType();
+					if (contentType != null) {
+						return "io.cucumber.eclipse.editor.content-type.feature".equals(contentType.getId());
+					}
+				} catch (CoreException e) {
+				}
+			}
+		}
+		return false;
 	}
 
 	/**

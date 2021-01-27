@@ -49,7 +49,7 @@ public abstract class JavaStepDefinitionsProvider implements IStepDefinitionsPro
 	protected static final Pattern cucumberApiAnnotationMatcher = Pattern
 			.compile("cucumber\\.api\\.java\\.([a-z_]+)\\.(.*)$");
 
-	protected static final Pattern ioCucumberAnnotationMatcher = Pattern
+	public static final Pattern ioCucumberAnnotationMatcher = Pattern
 			.compile("io\\.cucumber\\.java\\.([a-z_]+)\\.(.*)$");
 
 	protected static List<CucumberAnnotation> getAllAnnotationsInPackage(final IJavaProject javaProject,

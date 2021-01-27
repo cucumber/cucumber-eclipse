@@ -25,6 +25,11 @@
             class="io.cucumber.eclipse.java.steps.CucumberStepDefinitionProvider">
       </stepDefinitionIntegration>
    </extension>
+       <extension point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator
+         markerType="cucumber.eclipse.marker.gherkin.unmatched_step"
+         class="io.cucumber.eclipse.java.quickfix.StepCreationMarkerResolutionGenerator"/>
+   </extension>
 	<extension
            point="org.eclipse.debug.ui.launchShortcuts">
         <shortcut
