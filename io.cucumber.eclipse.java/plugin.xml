@@ -30,35 +30,6 @@
          markerType="cucumber.eclipse.marker.gherkin.unmatched_step"
          class="io.cucumber.eclipse.java.quickfix.StepCreationMarkerResolutionGenerator"/>
    </extension>
-	<extension
-           point="org.eclipse.debug.ui.launchShortcuts">
-        <shortcut
-              class="io.cucumber.eclipse.java.launching.CucumberFeatureLaunchShortcut"
-              description="Run this feature with cucumber-jvm"
-              icon="icons/cukes.gif"
-              id="io.cucumber.eclipse.editor.shortcut1"
-              label="Cucumber JVM"
-              modes="run,debug">
-              <configurationType
-			        id="cucumber.eclipse.launching.localCucumberFeature">
-	          </configurationType>
-	          <contextualLaunch>
-		         <contextLabel mode="run" label="Cucumber Feature" />
-		         <contextLabel mode="debug" label="Cucumber Feature" />
-		         <enablement >
-		           <with variable="selection">
-			           <iterate>
-			            <adapt type="org.eclipse.core.resources.IResource">
-			                <and>
-			                <test property="org.eclipse.core.resources.name" value="*.feature"/>
-			            </and>
-			            </adapt>
-			           </iterate>
-			         </with>
-			       </enablement>
-			     </contextualLaunch>
-			   </shortcut>
-     </extension>
  <extension
        point="org.eclipse.core.filebuffers.documentSetup">
     <participant

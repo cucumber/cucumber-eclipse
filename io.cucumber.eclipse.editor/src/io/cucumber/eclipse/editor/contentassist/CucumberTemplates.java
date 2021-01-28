@@ -39,6 +39,7 @@ import org.eclipse.swt.widgets.Shell;
 import io.cucumber.cucumberexpressions.CucumberExpressionParserSupport;
 import io.cucumber.eclipse.editor.Activator;
 import io.cucumber.eclipse.editor.CucumberServiceRegistry;
+import io.cucumber.eclipse.editor.Images;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.document.GherkinKeyword;
 import io.cucumber.eclipse.editor.steps.IStepDefinitionsProvider;
@@ -129,11 +130,12 @@ public class CucumberTemplates {
 							IRegion region = new Region(keyWordOffset, line.getLength() - keyWordLength);
 							CucumberDocumentTemplateContext ctx = new CucumberDocumentTemplateContext(
 									viewer.getDocument(), region);
-							Image icon = Activator.getDefault().getImageRegistry().get(Activator.ICON_CUKES);
+							Image icon = Images.getCukesIcon();
 							ICompletionProposal[] proposals = steps.parallelStream()
 									.map(stepDefinition -> new CucumberStepProposal(stepDefinition, gherkinKeyword,
 											text, prefix))
 									.filter(stepProposal -> stepFilter.test(stepProposal)).map(stepProposal -> {
+
 										return new CucumberTemplateProposal(stepProposal.getTemplate(), ctx, region,
 												icon, stepProposal.relevance,
 												stepProposal.getStepDefinition().getDescription());

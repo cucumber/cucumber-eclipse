@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.jface.text.templates.Template;
@@ -24,12 +23,34 @@ import io.cucumber.eclipse.editor.steps.StepParameter;
  *
  */
 //TODO see bug Bug 570519  currently we must always supply the full text as the default value
-//TODO use public API (if available)
+//TODO use public API (if available) for Cucumberparser + GroupPrser
 public class CucumberExpressionParserSupport {
 
 	private static final Pattern BEGIN_ANCHOR = Pattern.compile("^\\^.*");
 	private static final Pattern END_ANCHOR = Pattern.compile(".*\\$$");
 	private static final Pattern SCRIPT_STYLE_REGEXP = Pattern.compile("^/(.*)/$");
+
+	public static enum VariableReplacement {
+		DELETE, MATCH_ALL;
+
+		private String getCucumberExpressionReplacement() {
+			switch (this) {
+			case MATCH_ALL:
+				return "{}";
+			default:
+				return "";
+			}
+		}
+
+		private String getRegularExpressionReplacement() {
+			switch (this) {
+			case MATCH_ALL:
+				return "(.*)";
+			default:
+				return "";
+			}
+		}
+	}
 
 	/**
 	 * Creates a {@link Template} from {@link StepDefinition}
@@ -41,22 +62,15 @@ public class CucumberExpressionParserSupport {
 	public static Template createTemplate(StepDefinition definition, String contextId) {
 		String expressionString = definition.getExpression().getText();
 		if (isRegularExpression(expressionString)) {
-			// TODO can we support them?
-			return new Template(definition.getExpression().getText(), definition.getLabel(), contextId,
-					definition.getExpression().getText(), true);
+			return new RegularExpressionTemplate(definition, contextId);
 		} else {
-			Matcher m = SCRIPT_STYLE_REGEXP.matcher(expressionString);
-			if (m.find()) {
-				return new Template(definition.getExpression().getText(), definition.getLabel(), contextId,
-						definition.getExpression().getText(), true);
-			} else {
-				return new CucumberExpressionTemplate(definition, contextId);
-			}
+			return new CucumberExpressionTemplate(definition, contextId);
 		}
 	}
 
 	private static boolean isRegularExpression(String expressionString) {
-		return BEGIN_ANCHOR.matcher(expressionString).find() || END_ANCHOR.matcher(expressionString).find();
+		return BEGIN_ANCHOR.matcher(expressionString).find() || END_ANCHOR.matcher(expressionString).find()
+				|| SCRIPT_STYLE_REGEXP.matcher(expressionString).find();
 	}
 
 	/**
@@ -67,7 +81,23 @@ public class CucumberExpressionParserSupport {
 	 */
 	public static TemplateBuffer evaluate(Template template) {
 		String pattern = template.getPattern();
-		if (template instanceof CucumberExpressionTemplate) {
+		if (template instanceof RegularExpressionTemplate) {
+			RegularExpressionTemplate expressionTemplate = (RegularExpressionTemplate) template;
+			List<TemplateVariable> variables = new ArrayList<>();
+			for (GroupBuilder_ builder : expressionTemplate.groups) {
+				int startIndex = builder.getStartIndex() - expressionTemplate.offset;
+				TemplateVariable variable = new TemplateVariable("REG_EXP",
+						pattern.substring(startIndex, builder.getEndIndex() - expressionTemplate.offset + 1),
+						new int[] { startIndex });
+				String source = builder.getSource();
+				if (source.contains("|")) {
+					String[] values = source.split("\\|");
+					variable.setValues(values);
+				}
+				variables.add(variable);
+			}
+			return new TemplateBuffer(pattern, variables.toArray(TemplateVariable[]::new));
+		} else if (template instanceof CucumberExpressionTemplate) {
 			CucumberExpressionTemplate cucumberTemplate = (CucumberExpressionTemplate) template;
 			CucumberExpressionParser parser = new CucumberExpressionParser();
 			Node ast = parser.parse(pattern);
@@ -81,23 +111,37 @@ public class CucumberExpressionParserSupport {
 		}
 	}
 
-	public static String replaceVariables(String pattern, String replacement) {
-		if (isRegularExpression(pattern)) {
-			// TODO can we support them?
-			return pattern;
-		}
-		CucumberExpressionParser parser = new CucumberExpressionParser();
-		Node ast = parser.parse(pattern);
+	public static String replaceVariables(String pattern, VariableReplacement replacement) {
 		StringBuilder sb = new StringBuilder();
-		replaceVariables(ast, replacement, sb);
+		if (isRegularExpression(pattern)) {
+			TreeRegexp_ treeRegexp = new TreeRegexp_(pattern);
+			List<GroupBuilder_> groups = treeRegexp.getGroupBuilder().getChildren();
+			int start = 0;
+			for (GroupBuilder_ groupBuilder_ : groups) {
+				sb.append(pattern.substring(start, groupBuilder_.getEndIndex()));
+				if (replacement != VariableReplacement.DELETE) {
+					sb.append(replacement.getRegularExpressionReplacement());
+				}
+				start = groupBuilder_.getEndIndex();
+			}
+			if (start < pattern.length() - 1) {
+				sb.append(pattern.substring(start, pattern.length() - 1));
+			}
+		} else {
+			CucumberExpressionParser parser = new CucumberExpressionParser();
+			Node ast = parser.parse(pattern);
+			replaceVariables(ast, replacement, sb);
+		}
 		return sb.toString();
 	}
 
-	private static void replaceVariables(Node node, String replacement, StringBuilder buffer) {
+	private static void replaceVariables(Node node, VariableReplacement replacement, StringBuilder buffer) {
 		Type type = node.type();
 		switch (type) {
 		case PARAMETER_NODE:
-			buffer.append(replacement);
+			if (replacement != VariableReplacement.DELETE) {
+				buffer.append(replacement.getCucumberExpressionReplacement());
+			}
 			break;
 		case ALTERNATION_NODE: {
 			List<String> values = new ArrayList<>();
@@ -207,7 +251,7 @@ public class CucumberExpressionParserSupport {
 
 	private static final class CucumberExpressionTemplate extends Template {
 
-		private StepDefinition definition;
+		private final StepDefinition definition;
 
 		public CucumberExpressionTemplate(StepDefinition definition, String contextId) {
 			super(definition.getExpression().getText(), definition.getLabel(), contextId,
@@ -215,6 +259,33 @@ public class CucumberExpressionParserSupport {
 			this.definition = definition;
 
 		}
+	}
 
+	private static final class RegularExpressionTemplate extends Template {
+		private final List<GroupBuilder_> groups;
+		private final int offset;
+		private final StepDefinition definition;
+
+		@SuppressWarnings("deprecation")
+		public RegularExpressionTemplate(StepDefinition definition, String contextId) {
+			super(definition.getExpression().getText(), definition.getLabel(), contextId,
+					definition.getExpression().getText(), true);
+			this.definition = definition;
+			TreeRegexp_ treeRegexp = new TreeRegexp_(definition.getExpression().getText());
+			groups = treeRegexp.getGroupBuilder().getChildren();
+			String pattern = definition.getExpression().getText();
+			boolean startMarker = pattern.startsWith("^");
+			boolean endMarker = pattern.endsWith("$");
+			if (startMarker) {
+				offset = 1;
+				pattern = pattern.substring(1);
+			} else {
+				offset = 0;
+			}
+			if (endMarker) {
+				pattern = pattern.substring(0, pattern.length() - 1);
+			}
+			setPattern(pattern);
+		}
 	}
 }

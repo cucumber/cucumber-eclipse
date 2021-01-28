@@ -1,29 +1,35 @@
 package io.cucumber.eclipse.editor.document;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.IOUtils;
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBuffer;
+import org.eclipse.core.filebuffers.LocationKind;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.content.IContentType;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
+import org.eclipse.jface.text.Position;
 
 import io.cucumber.gherkin.Gherkin;
 import io.cucumber.gherkin.GherkinDialect;
@@ -39,8 +45,8 @@ import io.cucumber.messages.Messages.GherkinDocument.Feature.Scenario.Examples;
 import io.cucumber.messages.Messages.GherkinDocument.Feature.Step;
 import io.cucumber.messages.Messages.GherkinDocument.Feature.Step.DataTable;
 import io.cucumber.messages.Messages.GherkinDocument.Feature.TableRow;
+import io.cucumber.messages.Messages.GherkinDocument.Feature.Tag;
 import io.cucumber.messages.Messages.ParseError;
-import io.cucumber.messages.internal.com.google.protobuf.Descriptors.FieldDescriptor;
 
 /**
  * 
@@ -69,7 +75,10 @@ public final class GherkinEditorDocument {
 	private final IDocument document;
 	private final Locale locale;
 
-	private GherkinEditorDocument(IDocument document) {
+	private Supplier<IResource> resourceSupplier;
+
+	private GherkinEditorDocument(IDocument document, Supplier<IResource> resourceSupplier) {
+		this.resourceSupplier = resourceSupplier;
 		document.addDocumentListener(new IDocumentListener() {
 
 			@Override
@@ -110,6 +119,13 @@ public final class GherkinEditorDocument {
 		return document;
 	}
 
+	public Position getPosition(io.cucumber.messages.Messages.Location location) throws BadLocationException {
+		int line = location.getLine();
+		int offset = document.getLineOffset(line - 1);
+		int lineLength = document.getLineLength(line - 1);
+		return new Position(offset + lineLength - 1, 1);
+	}
+
 	/**
 	 * 
 	 * @return the {@link Feature} of the document or an empty optional if no
@@ -133,6 +149,13 @@ public final class GherkinEditorDocument {
 
 	public Stream<Step> getSteps() {
 		return getScenarios().flatMap(scenario -> scenario.getStepsList().stream()).distinct();
+	}
+
+	public Stream<Tag> getTags() {
+		return Stream.concat(getExamples().flatMap(example -> example.getTagsList().stream()),
+				Stream.concat(getScenarios().flatMap(scenario -> scenario.getTagsList().stream()),
+						getFeature().stream().flatMap(feature -> feature.getTagsList().stream())))
+				.distinct();
 	}
 
 	public Stream<Examples> getExamples() {
@@ -230,11 +253,40 @@ public final class GherkinEditorDocument {
 		if (isCompatible(document)) {
 			return DOCUMENT_MAP.compute(document, (key, value) -> {
 				if (value == null || value.dirty) {
-					System.out.println("Document is null or dirty");
-					return parse(key);
+					return parse(key, () -> resourceForDocument(key));
 				}
 				return value;
 			});
+		}
+		return null;
+	}
+
+	/**
+	 * if the resource is currently managed by TextFileBufferManager returns the
+	 * cached instance of the corresponding document, otherwise create a detached
+	 * copy of the resource if it is convertible otherwise <code>null</code> is
+	 * returned
+	 * 
+	 * @param resource the resource to request a gherking document
+	 * @return {@link GherkinEditorDocument} for the given resource
+	 */
+	public static GherkinEditorDocument get(IResource resource) {
+		if (resource instanceof IFile) {
+			IFile file = (IFile) resource;
+			ITextFileBuffer buffer = FileBuffers.getTextFileBufferManager().getTextFileBuffer(file.getFullPath(),
+					LocationKind.IFILE);
+			if (buffer != null) {
+				return get(buffer.getDocument());
+			}
+			try {
+				try (InputStream stream = file.getContents()) {
+					return parse(new Document(IOUtils.toString(stream, file.getCharset())), () -> file);
+				}
+			} catch (IOException e) {
+				return null;
+			} catch (CoreException e) {
+				return null;
+			}
 		}
 		return null;
 	}
@@ -276,6 +328,20 @@ public final class GherkinEditorDocument {
 	 *         determined
 	 */
 	public IResource getResource() {
+		return resourceSupplier.get();
+	}
+
+	/**
+	 * Parses the string into a (temporary) document
+	 * 
+	 * @param document the document to parse
+	 * @return a detached {@link GherkinEditorDocument} instance
+	 */
+	public static GherkinEditorDocument parse(IDocument document, Supplier<IResource> resource) {
+		return new GherkinEditorDocument(document, resource);
+	}
+
+	public static IResource resourceForDocument(IDocument document) {
 		ITextFileBuffer buffer = FileBuffers.getTextFileBufferManager().getTextFileBuffer(document);
 		if (buffer != null) {
 			IPath location = buffer.getLocation();
@@ -287,27 +353,6 @@ public final class GherkinEditorDocument {
 			}
 		}
 		return null;
-	}
-
-	/**
-	 * Parses the string into a (temporary) document
-	 * 
-	 * @param document the document to parse
-	 * @return a detached {@link GherkinEditorDocument} instance
-	 */
-	public static GherkinEditorDocument parse(IDocument document) {
-		return new GherkinEditorDocument(document);
-	}
-
-	public static void format(IDocument document) {
-		GherkinEditorDocument doc = new GherkinEditorDocument(document);
-		for (Envelope env : doc.sources) {
-			System.out.println("----------------------");
-			Map<FieldDescriptor, Object> allFields = env.getAllFields();
-			for (Entry<FieldDescriptor, Object> entry : allFields.entrySet()) {
-				System.out.println(entry.getKey().getFullName() + "->" + entry.getValue());
-			}
-		}
 	}
 
 	private static boolean isWildcard(String keyword) {

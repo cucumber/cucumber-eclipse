@@ -1,20 +1,21 @@
 package io.cucumber.eclipse.java.quickfix;
 
+import java.util.Arrays;
 import java.util.Collection;
 
-import org.eclipse.core.filebuffers.FileBuffers;
-import org.eclipse.core.filebuffers.ITextFileBuffer;
-import org.eclipse.core.filebuffers.LocationKind;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IMarkerResolution;
 import org.eclipse.ui.IMarkerResolutionGenerator;
 import org.eclipse.ui.IMarkerResolutionGenerator2;
+import org.eclipse.ui.views.markers.WorkbenchMarkerResolution;
 
+import io.cucumber.eclipse.editor.Images;
+import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.marker.MarkerFactory;
 import io.cucumber.eclipse.java.Activator;
 import io.cucumber.eclipse.java.JDTUtil;
@@ -42,49 +43,20 @@ public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionG
 
 			if (hasResolutions(marker)) {
 				IResource resource = marker.getResource();
-				if (resource instanceof IFile) {
-					IFile file = (IFile) resource;
-					// FIXME instead of static use Adapters.adapt();
-					ITextFileBuffer buffer = FileBuffers.getTextFileBufferManager()
-							.getTextFileBuffer(file.getFullPath(), LocationKind.IFILE);
-					IJavaProject project = JDTUtil.getJavaProject(resource);
-					if (buffer != null && project != null) {
-
+				IJavaProject project = JDTUtil.getJavaProject(resource);
+				if (project != null) {
+					GherkinEditorDocument editorDocument = GherkinEditorDocument.get(resource);
+					if (editorDocument != null) {
 						Collection<ICompilationUnit> glueSources = JDTUtil.getGlueSources(project, null);
-						// TODO sort, show sources that are used in the document first
+						// TODO sort?, show sources that are used in the document first?
 						return glueSources.stream()
 								.sorted((c1, c2) -> c1.getElementName().compareToIgnoreCase(c2.getElementName()))
-								.map(unit -> new StepCreationMarkerResolution(unit, buffer))
+								.map(unit -> new StepCreationMarkerResolution(unit, editorDocument))
 								.toArray(IMarkerResolution[]::new);
-					}
 
+					}
 				}
 			}
-
-//			Step gherkinStep = new Step(null, gherkinStepKeyword, gherkinStepName, null, null, null);
-//			
-//			IFile gherkinFile = (IFile) marker.getResource();
-//			IProject project = gherkinFile.getProject();
-//			
-//			UniversalStepDefinitionsProvider stepProvider = UniversalStepDefinitionsProvider.INSTANCE;
-//			if(!stepProvider.isInitialized(project)) {
-//				try {
-//					stepProvider.load(project);
-//				} catch (CoreException e) {
-//					Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-//					ErrorDialog.openError(shell, "Any cucumber build results found.", "Build the project to get resolution suggestions.", e.getStatus());
-//				}
-//			}
-//			
-//			Set<IFile> stepDefinitionsFiles = stepProvider.getStepDefinitionsFiles(project);
-//			
-//			IMarkerResolution[] resolutions = new IMarkerResolution[stepDefinitionsFiles.size()];
-//			int it = 0;
-//			for (IFile stepDefinitionsFile : stepDefinitionsFiles) {
-//				resolutions[it++] = new StepCreationMarkerResolution(gherkinStep, stepDefinitionsFile);
-//			}			
-//			
-//			return resolutions;
 			return new IMarkerResolution[0];
 		} catch (CoreException e) {
 			e.printStackTrace();
@@ -101,14 +73,13 @@ public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionG
 				&& JDTUtil.isJavaProject(marker.getResource().getProject());
 	}
 
-	private static class StepCreationMarkerResolution
-			/* TODO extends WorkbenchMarkerResolution */ implements IMarkerResolution {
+	private static class StepCreationMarkerResolution extends WorkbenchMarkerResolution implements IMarkerResolution {
 		private ICompilationUnit unit;
-		private ITextFileBuffer textFileBuffer;
+		private GherkinEditorDocument editorDocument;
 
-		public StepCreationMarkerResolution(ICompilationUnit unit, ITextFileBuffer buffer) {
+		public StepCreationMarkerResolution(ICompilationUnit unit, GherkinEditorDocument editorDocument) {
 			this.unit = unit;
-			this.textFileBuffer = buffer;
+			this.editorDocument = editorDocument;
 			// TODO Auto-generated constructor stub
 		}
 
@@ -180,22 +151,26 @@ public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionG
 //				String.format("Couldn't create step for %s", marker), exception));
 //		}
 
-//		@Override
-//		public String getDescription() {
-//			// TODO Auto-generated method stub
-//			return null;
-//		}
-//
-//		@Override
-//		public Image getImage() {
-//			// TODO Auto-generated method stub
-//			return null;
-//		}
-//
-//		@Override
-//		public IMarker[] findOtherMarkers(IMarker[] markers) {
-//			// TODO Auto-generated method stub
-//			return null;
-//		}
+		@Override
+		public String getDescription() {
+			return "Create missing step in existing java source file";
+		}
+
+		@Override
+		public Image getImage() {
+			return Images.getCukesIcon();
+		}
+
+		@Override
+		public IMarker[] findOtherMarkers(IMarker[] markers) {
+			return Arrays.stream(markers).filter(marker -> {
+				try {
+					return MarkerFactory.UNMATCHED_STEP.equals(marker.getType());
+				} catch (CoreException e) {
+					return false;
+				}
+			}).toArray(IMarker[]::new);
+		}
+
 	}
 }

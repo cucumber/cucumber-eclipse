@@ -1,8 +1,11 @@
 package io.cucumber.eclipse.editor.steps;
 
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import io.cucumber.cucumberexpressions.CucumberExpressionParserSupport;
+import io.cucumber.cucumberexpressions.CucumberExpressionParserSupport.VariableReplacement;
 import io.cucumber.cucumberexpressions.ExpressionFactory;
 import io.cucumber.cucumberexpressions.ParameterTypeRegistry;
 
@@ -14,8 +17,7 @@ import io.cucumber.cucumberexpressions.ParameterTypeRegistry;
  */
 public final class ExpressionDefinition {
 
-	private static final ExpressionFactory EXPRESSION_FACTORY = new ExpressionFactory(
-			new ParameterTypeRegistry(Locale.getDefault()));
+	private static final Map<Locale, ExpressionFactory> EXPRESSION_FACTORY_MAP = new ConcurrentHashMap<>();
 
 	private final String text;
 	private final String lang;
@@ -47,14 +49,17 @@ public final class ExpressionDefinition {
 	 * converting the expression int a form that accepts any type then perform a
 	 * match against the text
 	 * 
-	 * @param text the text to check
+	 * @param text   the text to check
+	 * @param locale the locale to use
 	 * @return <code>true</code> if this expression matches <code>false</code>
 	 *         otherwise
 	 */
-	public boolean matchIgnoreTypes(String text) {
+	public boolean matchIgnoreTypes(String text, Locale locale) {
 		try {
-			return EXPRESSION_FACTORY
-					.createExpression(CucumberExpressionParserSupport.replaceVariables(getText(), "{}"))
+			return EXPRESSION_FACTORY_MAP
+					.computeIfAbsent(locale, l -> new ExpressionFactory(new ParameterTypeRegistry(l)))
+					.createExpression(
+							CucumberExpressionParserSupport.replaceVariables(getText(), VariableReplacement.MATCH_ALL))
 					.match(text) != null;
 		} catch (RuntimeException e) {
 			return false;
@@ -65,7 +70,7 @@ public final class ExpressionDefinition {
 	 * @return the expression text but with all variables replaced
 	 */
 	public String getTextWithoutVariables() {
-		return CucumberExpressionParserSupport.replaceVariables(getText(), "");
+		return CucumberExpressionParserSupport.replaceVariables(getText(), VariableReplacement.DELETE);
 	}
 
 	@Override

@@ -53,7 +53,7 @@ public class CucumberStepQuickAssistProcessor implements IQuickAssistProcessor {
 				return CucumberTemplates.computeTemplateProposals(viewer, invocationContext.getOffset(), (proposal) -> {
 					String lineText = proposal.getLineText();
 					ExpressionDefinition expression = proposal.getStepDefinition().getExpression();
-					if (expression.matchIgnoreTypes(lineText)) {
+					if (expression.matchIgnoreTypes(lineText, editorDocument.getLocale())) {
 						proposal.setRelevance(Integer.MAX_VALUE);
 						return true;
 					}

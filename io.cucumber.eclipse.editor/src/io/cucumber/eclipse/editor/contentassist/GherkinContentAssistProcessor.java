@@ -18,6 +18,7 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 
 import io.cucumber.eclipse.editor.Activator;
+import io.cucumber.eclipse.editor.Images;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.document.GherkinKeyword;
 import io.cucumber.gherkin.GherkinDialect;
@@ -88,7 +89,7 @@ public class GherkinContentAssistProcessor implements IContentAssistProcessor {
 	private CompletionProposal createCompletionProposal(int offset, String typed, String displayString,
 			String fullString) {
 		return new CompletionProposal(fullString, offset - typed.length(), typed.length(), fullString.length(),
-				Activator.getDefault().getImageRegistry().get(Activator.ICON_CUKES), displayString, null, null);
+				Images.getCukesIcon(), displayString, null, null);
 	}
 
 	@Override
@@ -154,7 +155,7 @@ public class GherkinContentAssistProcessor implements IContentAssistProcessor {
 	private static CompletionProposal createFeatureKeyWordProposal(String keyWord, int offset, String typed) {
 		String fullString = keyWord + ": ";
 		return new CompletionProposal(fullString, offset - typed.length(), typed.length(), fullString.length(),
-				Activator.getDefault().getImageRegistry().get(Activator.ICON_CUKES), keyWord,
+				Images.getCukesIcon(), keyWord,
 				new ContextInformation("Name of Feature", "Enter the Name of the Feature under test"),
 				"Start a new feature");
 	}

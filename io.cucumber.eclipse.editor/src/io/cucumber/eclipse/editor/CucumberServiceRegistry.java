@@ -17,6 +17,7 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 
 import io.cucumber.eclipse.editor.hyperlinks.IStepDefinitionOpener;
+import io.cucumber.eclipse.editor.launching.ILauncher;
 import io.cucumber.eclipse.editor.steps.IStepDefinitionsProvider;
 
 /**
@@ -33,6 +34,9 @@ public class CucumberServiceRegistry {
 	private final List<IStepDefinitionsProvider> stepDefinitionsProvider = new CopyOnWriteArrayList<>();
 	@Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
 	private final List<IStepDefinitionOpener> stepDefinitionOpener = new CopyOnWriteArrayList<>();
+
+	@Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
+	private final List<ILauncher> cucumberLauncher = new CopyOnWriteArrayList<>();
 
 	private static final AtomicReference<CucumberServiceRegistry> REGISTRY = new AtomicReference<>();
 
@@ -52,6 +56,10 @@ public class CucumberServiceRegistry {
 
 	public static List<IStepDefinitionOpener> getStepDefinitionOpener() {
 		return Collections.unmodifiableList(get().stepDefinitionOpener);
+	}
+
+	public static List<ILauncher> getLauncher() {
+		return Collections.unmodifiableList(get().cucumberLauncher);
 	}
 
 	public static List<IStepDefinitionsProvider> getStepDefinitionsProvider(IResource resource) {

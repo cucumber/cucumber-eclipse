@@ -193,7 +193,7 @@
         <codeMiningProvider
               class="io.cucumber.eclipse.editor.codemining.GherkinCodeMiningProvider"
               id="io.cucumber.eclipse.editor.codeMiningProvider1"
-              label="Cucumber">
+              label="Gherkin Advanced Editing">
         </codeMiningProvider>
      </extension>
      <extension
@@ -213,4 +213,41 @@
               contentType="io.cucumber.eclipse.editor.content-type.feature">
         </quickAssistProcessor>
      </extension>
+     	<extension
+           point="org.eclipse.debug.ui.launchShortcuts">
+        <shortcut
+              class="io.cucumber.eclipse.editor.launching.CucumberFeatureLaunchShortcut"
+              description="Run this feature with cucumber-jvm"
+              icon="icons/cukes.gif"
+              id="io.cucumber.eclipse.editor.shortcut1"
+              label="Cucumber"
+              modes="run,debug">
+              <configurationType
+			        id="cucumber.eclipse.launching.localCucumberFeature">
+	          </configurationType>
+	          <contextualLaunch>
+		         <contextLabel mode="run" label="Cucumber Feature" />
+		         <contextLabel mode="debug" label="Cucumber Feature" />
+		         <enablement >
+		           <with variable="selection">
+			           <iterate>
+			            <adapt type="org.eclipse.core.resources.IResource">
+			                <and>
+			                <test property="org.eclipse.core.resources.name" value="*.feature"/>
+			            </and>
+			            </adapt>
+			           </iterate>
+			         </with>
+			       </enablement>
+			     </contextualLaunch>
+			   </shortcut>
+     </extension>
+      <extension
+            point="org.eclipse.ui.workbench.texteditor.codeMiningProviders">
+         <codeMiningProvider
+               class="io.cucumber.eclipse.editor.codemining.CucumberRunCodeMiningProvider"
+               id="io.cucumber.eclipse.editor.codeMiningProvider1"
+               label="Cucumber Run Annotations">
+         </codeMiningProvider>
+      </extension>
 </plugin>
