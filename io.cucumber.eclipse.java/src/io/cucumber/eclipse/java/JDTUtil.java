@@ -27,6 +27,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -135,13 +136,32 @@ public class JDTUtil {
 		public Enumeration<URL> getResources(String name) throws IOException {
 			Spliterator<URL> spliterator = Spliterators.spliteratorUnknownSize(super.getResources(name).asIterator(),
 					Spliterator.ORDERED);
-			return Collections.enumeration(StreamSupport.stream(spliterator, false).filter(url -> {
+			return Collections.enumeration(StreamSupport.stream(spliterator, false).map(url -> {
 				boolean equals = url.getProtocol().equals("bundleresource");
 				if (equals) {
-					System.out.println("Filtered " + url);
+					String host = url.getHost();
+					int indexOf = host.indexOf('.');
+					if (indexOf > 0) {
+						try {
+							long id = Long.parseLong(host.substring(0, indexOf));
+							if (id == Activator.getDefault().getBundle().getBundleId()) {
+								// we don't want resources to be loaded from our bundle...
+								return null;
+							}
+						} catch (Exception e) {
+						}
+						try {
+							URL fileURL = FileLocator.toFileURL(url);
+							if (fileURL.getProtocol().equals("file")) {
+								return fileURL;
+							}
+						} catch (IOException e) {
+						}
+					}
+					return null;
 				}
-				return !equals;
-			}).collect(Collectors.toList()));
+				return url;
+			}).filter(Objects::nonNull).collect(Collectors.toList()));
 		}
 
 	}

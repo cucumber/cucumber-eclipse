@@ -14,6 +14,11 @@ import java.util.stream.Stream;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Adapters;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.ICoreRunnable;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.ui.ILaunchShortcut;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
@@ -34,7 +39,8 @@ public class CucumberFeatureLaunchShortcut implements ILaunchShortcut {
 
 	private static final ILauncher NO_LAUNCHER = new ILauncher() {
 		@Override
-		public Stream<Envelope> launch(Map<GherkinEditorDocument, IStructuredSelection> selection, Mode mode) {
+		public Stream<Envelope> launch(Map<GherkinEditorDocument, IStructuredSelection> selection, Mode mode,
+				IProgressMonitor monitor) {
 			// TODO inform the user about unable to launch
 			return Stream.empty();
 		}
@@ -54,42 +60,50 @@ public class CucumberFeatureLaunchShortcut implements ILaunchShortcut {
 
 	@Override
 	public void launch(IEditorPart editor, String mode) {
-		System.out.println("CucumberFeatureLaunchShortcut.launch() editor=" + editor + ", mode = " + mode);
 		Mode modeType = Mode.valueOf(mode.toUpperCase());
 		if (editor instanceof ITextEditor) {
 			ITextEditor textEditor = (ITextEditor) editor;
 			IEditorInput editorInput = textEditor.getEditorInput();
 			IDocument document = textEditor.getDocumentProvider().getDocument(editorInput);
+			ISelection selection = textEditor.getSelectionProvider().getSelection();
 			if (document != null) {
-				ISelection selection = textEditor.getSelectionProvider().getSelection();
-				GherkinEditorDocument editorDocument = GherkinEditorDocument.get(document);
-				Optional<Feature> feature = editorDocument.getFeature();
-				if (feature.isPresent()) {
-					ILauncher launcher = getLauncher(modeType).filter(l -> l.supports(editorDocument.getResource()))
-							.findAny().orElse(NO_LAUNCHER);
-					IStructuredSelection selected;
-					if (!selection.isEmpty() && selection instanceof ITextSelection) {
-						ITextSelection textSelection = (ITextSelection) selection;
-						int startLine = textSelection.getStartLine() + 1;
-						int endLine = textSelection.getEndLine() + 1;
-						List<Object> selectedItems = new ArrayList<>();
-						editorDocument.getTags()
-								.filter(tag -> tag.getLocation().getLine() >= startLine
-										&& tag.getLocation().getLine() <= endLine)
-								.map(tag -> new LaunchTag(tag.getName(), true)).forEach(selectedItems::add);
-						editorDocument.getScenarios().filter(senario -> senario.getLocation().getLine() >= startLine
-								&& senario.getLocation().getLine() <= endLine).forEach(selectedItems::add);
-						if (selectedItems.isEmpty()) {
-							selectedItems.add(feature.get());
+				Job.create("Launching Cucumber", new ICoreRunnable() {
+
+					@Override
+					public void run(IProgressMonitor monitor) throws CoreException {
+						GherkinEditorDocument editorDocument = GherkinEditorDocument.get(document);
+						Optional<Feature> feature = editorDocument.getFeature();
+						if (feature.isPresent()) {
+							ILauncher launcher = getLauncher(modeType)
+									.filter(l -> l.supports(editorDocument.getResource())).findAny()
+									.orElse(NO_LAUNCHER);
+							IStructuredSelection selected;
+							if (!selection.isEmpty() && selection instanceof ITextSelection) {
+								ITextSelection textSelection = (ITextSelection) selection;
+								int startLine = textSelection.getStartLine() + 1;
+								int endLine = textSelection.getEndLine() + 1;
+								List<Object> selectedItems = new ArrayList<>();
+								editorDocument.getTags()
+										.filter(tag -> tag.getLocation().getLine() >= startLine
+												&& tag.getLocation().getLine() <= endLine)
+										.map(tag -> new LaunchTag(tag.getName(), true)).forEach(selectedItems::add);
+								editorDocument.getScenarios()
+										.filter(senario -> senario.getLocation().getLine() >= startLine
+												&& senario.getLocation().getLine() <= endLine)
+										.forEach(selectedItems::add);
+								if (selectedItems.isEmpty()) {
+									selectedItems.add(feature.get());
+								}
+								selected = new StructuredSelection(selectedItems);
+							} else {
+								selected = new StructuredSelection(feature.get());
+							}
+							launcher.launch(editorDocument, selected, modeType, monitor);
+						} else {
+							// TODO show error to the user
 						}
-						selected = new StructuredSelection(selectedItems);
-					} else {
-						selected = new StructuredSelection(feature.get());
 					}
-					launcher.launch(editorDocument, selected, modeType);
-				} else {
-					// TODO show error to the user
-				}
+				}).schedule();
 			}
 		}
 	}
@@ -97,26 +111,38 @@ public class CucumberFeatureLaunchShortcut implements ILaunchShortcut {
 	@Override
 	public void launch(ISelection selection, String mode) {
 		Mode modeType = Mode.valueOf(mode.toUpperCase());
-		if (selection instanceof StructuredSelection) {
-			Map<GherkinEditorDocument, StructuredSelection> documents = Arrays
-					.stream(((StructuredSelection) selection).toArray()).map(o -> Adapters.adapt(o, IFile.class))
-					.filter(Objects::nonNull).map(GherkinEditorDocument::get)
-					.filter(doc -> doc.getFeature().isPresent()).collect(Collectors.toMap(Function.identity(),
-							doc -> new StructuredSelection(doc.getFeature().get())));
-			if (documents.isEmpty()) {
-				// TODO inform the user, no launchabel documents!
-			}
-			List<ILauncher> launcher = getLauncher(modeType).collect(Collectors.toList());
-			Map<ILauncher, List<Entry<GherkinEditorDocument, StructuredSelection>>> launchMap = documents.entrySet()
-					.stream().collect(Collectors.groupingBy(entry -> launcher.stream()
-							.filter(l -> l.supports(entry.getKey().getResource())).findAny().orElse(NO_LAUNCHER)));
-			for (Entry<ILauncher, List<Entry<GherkinEditorDocument, StructuredSelection>>> entry : launchMap
-					.entrySet()) {
-				entry.getKey().launch(
-						entry.getValue().stream().collect(Collectors.toMap(Entry::getKey, Entry::getValue)), modeType);
-			}
+		Job.create("Launching Cucumber", new ICoreRunnable() {
 
-		}
+			@Override
+			public void run(IProgressMonitor monitor) throws CoreException {
+				if (selection instanceof StructuredSelection) {
+					Map<GherkinEditorDocument, StructuredSelection> documents = Arrays
+							.stream(((StructuredSelection) selection).toArray())
+							.map(o -> Adapters.adapt(o, IFile.class)).filter(Objects::nonNull)
+							.map(GherkinEditorDocument::get).filter(doc -> doc.getFeature().isPresent())
+							.collect(Collectors.toMap(Function.identity(),
+									doc -> new StructuredSelection(doc.getFeature().get())));
+					if (documents.isEmpty()) {
+						// TODO inform the user, no launchabel documents!
+					}
+					List<ILauncher> launcher = getLauncher(modeType).collect(Collectors.toList());
+					Map<ILauncher, List<Entry<GherkinEditorDocument, StructuredSelection>>> launchMap = documents
+							.entrySet().stream()
+							.collect(Collectors.groupingBy(
+									entry -> launcher.stream().filter(l -> l.supports(entry.getKey().getResource()))
+											.findAny().orElse(NO_LAUNCHER)));
+					SubMonitor subMonitor = SubMonitor.convert(monitor, launchMap.size() * 100);
+					for (Entry<ILauncher, List<Entry<GherkinEditorDocument, StructuredSelection>>> entry : launchMap
+							.entrySet()) {
+						entry.getKey().launch(
+								entry.getValue().stream().collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
+								modeType, subMonitor.split(100));
+					}
+
+				}
+			}
+		}).schedule();
+
 	}
 
 	private static Stream<ILauncher> getLauncher(Mode modeType) {

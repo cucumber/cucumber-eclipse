@@ -10,7 +10,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.ICoreRunnable;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
@@ -44,31 +47,31 @@ public class CucumberRunCodeMiningProvider implements ICodeMiningProvider {
 	public CompletableFuture<List<? extends ICodeMining>> provideCodeMinings(ITextViewer viewer,
 			IProgressMonitor monitor) {
 		return CompletableFuture.supplyAsync(() -> {
-			IDocument document = viewer.getDocument();
+					IDocument document = viewer.getDocument();
 
-			GherkinEditorDocument editorDocument = GherkinEditorDocument.get(document);
-			if (editorDocument == null) {
-				return Collections.emptyList();
-			}
-			List<ICodeMining> list = new ArrayList<>();
-			for (ILauncher launcher : CucumberServiceRegistry.getLauncher()) {
-				if (launcher.supports(editorDocument.getResource())) {
-					for (Mode mode : ILauncher.Mode.values()) {
-						if (launcher.supports(mode)) {
-							runnable(editorDocument.getScenarios(), Scenario::getLocation, editorDocument, launcher,
-									mode)
-									.forEach(list::add);
-							runnable(editorDocument.getFeature().stream(), Feature::getLocation, editorDocument,
-									launcher, mode)
-									.forEach(list::add);
-							runnable(editorDocument.getTags(), Tag::getLocation, editorDocument, launcher, mode)
-									.forEach(list::add);
+					GherkinEditorDocument editorDocument = GherkinEditorDocument.get(document);
+					if (editorDocument == null) {
+						return Collections.emptyList();
+					}
+					List<ICodeMining> list = new ArrayList<>();
+					for (ILauncher launcher : CucumberServiceRegistry.getLauncher()) {
+						if (launcher.supports(editorDocument.getResource())) {
+							for (Mode mode : ILauncher.Mode.values()) {
+								if (launcher.supports(mode)) {
+									runnable(editorDocument.getScenarios(), Scenario::getLocation, editorDocument, launcher,
+											mode)
+											.forEach(list::add);
+									runnable(editorDocument.getFeature().stream(), Feature::getLocation, editorDocument,
+											launcher, mode)
+											.forEach(list::add);
+									runnable(editorDocument.getTags(), Tag::getLocation, editorDocument, launcher, mode)
+											.forEach(list::add);
+								}
+							}
 						}
 					}
-				}
-			}
-			return list;
-		});
+					return list;
+				});
 	}
 
 	private <T> Stream<RunnableElementCodeMining> runnable(Stream<T> stream, Function<T, Location> locationProvider,
@@ -76,12 +79,10 @@ public class CucumberRunCodeMiningProvider implements ICodeMiningProvider {
 		return stream.map(runnable -> {
 			Location location = locationProvider.apply(runnable);
 			try {
-				System.out.println("runnable " + runnable.getClass().getSimpleName() + " at " + location.getLine()
-						+ "::" + location.getColumn());
-				return new RunnableElementCodeMining(document.getPosition(location), runnable, launcher, mode,
+				Position position = document.getEolPosition(location);
+				return new RunnableElementCodeMining(position, runnable, launcher, mode,
 						CucumberRunCodeMiningProvider.this);
 			} catch (BadLocationException e) {
-				System.err.println(e);
 				return null;
 			}
 		}).filter(Objects::nonNull);
@@ -119,9 +120,15 @@ public class CucumberRunCodeMiningProvider implements ICodeMiningProvider {
 			return CompletableFuture.runAsync(() -> {
 				setLabel(PREFIX + mode + " ");
 				action.set(event -> {
-					launcher.launch(GherkinEditorDocument.get(viewer.getDocument()),
-							new StructuredSelection(getElement()),
-							mode);
+					Job.create("Launching Cucumber", new ICoreRunnable() {
+
+						@Override
+						public void run(IProgressMonitor monitor) throws CoreException {
+							launcher.launch(GherkinEditorDocument.get(viewer.getDocument()),
+									new StructuredSelection(getElement()), mode, monitor);
+
+						}
+					}).schedule();
 				});
 			});
 		}

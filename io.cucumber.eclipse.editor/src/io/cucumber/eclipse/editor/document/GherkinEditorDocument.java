@@ -120,10 +120,39 @@ public final class GherkinEditorDocument {
 	}
 
 	public Position getPosition(io.cucumber.messages.Messages.Location location) throws BadLocationException {
+		return getPosition(location, 0);
+	}
+	
+	public Position getPosition(io.cucumber.messages.Messages.Location location, int lineOffset) throws BadLocationException {
+		int line = location.getLine();
+		int offset = document.getLineOffset(line - 1-lineOffset);
+		return new Position(offset + location.getColumn() - 1, 1);
+	}
+	
+	public Position getEolPosition(io.cucumber.messages.Messages.Location location) throws BadLocationException {
 		int line = location.getLine();
 		int offset = document.getLineOffset(line - 1);
 		int lineLength = document.getLineLength(line - 1);
-		return new Position(offset + lineLength - 1, 1);
+		// Workaround for Bug 570740
+		if (lineLength == 0) {
+			return new Position(offset + lineLength, 1);
+		}
+		if (lineLength == 1) {
+			char c = document.get(offset, 1).charAt(0);
+			if (c == '\n' || c == '\r') {
+				return new Position(offset, 1);
+			} else {
+				return new Position(offset + 1, 1);
+			}
+		}
+		int eolOffset;
+		char c = document.get(offset + lineLength - 2, 1).charAt(0);
+		if (c == '\r') {
+			eolOffset = 2;
+		} else {
+			eolOffset = 1;
+		}
+		return new Position(offset + lineLength - eolOffset, 1);
 	}
 
 	/**

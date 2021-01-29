@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.IStructuredSelection;
 
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
@@ -38,8 +40,9 @@ public interface ILauncher {
 		}
 	}
 
-	default Stream<Envelope> launch(GherkinEditorDocument document, IStructuredSelection selection, Mode mode) {
-		return launch(Collections.singletonMap(document, selection), mode);
+	default Stream<Envelope> launch(GherkinEditorDocument document, IStructuredSelection selection, Mode mode,
+			IProgressMonitor monitor) throws CoreException {
+		return launch(Collections.singletonMap(document, selection), mode, monitor);
 	}
 
 	/**
@@ -50,7 +53,8 @@ public interface ILauncher {
 	 * @param mode
 	 * @return a stream of messages for the given run
 	 */
-	Stream<Envelope> launch(Map<GherkinEditorDocument, IStructuredSelection> selection, Mode mode);
+	Stream<Envelope> launch(Map<GherkinEditorDocument, IStructuredSelection> selection, Mode mode,
+			IProgressMonitor monitor) throws CoreException;
 
 	/**
 	 * 
