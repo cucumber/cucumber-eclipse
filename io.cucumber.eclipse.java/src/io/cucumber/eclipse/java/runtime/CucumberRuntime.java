@@ -3,6 +3,7 @@ package io.cucumber.eclipse.java.runtime;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URI;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
@@ -97,33 +98,52 @@ public final class CucumberRuntime implements AutoCloseable {
 	}
 
 	public void run(IProgressMonitor monitor) {
+		run(monitor, null);
+	}
 
-		// TODO progressmonitor plugin!
+	public void run(IProgressMonitor monitor, PrintStream stream) {
+
+		// TODO progressmonitor plugin!?
 
 		RuntimeOptions options = runtimeOptions.build();
-		final Runtime runtime = Runtime.builder()//
-				.withRuntimeOptions(options)//
-				.withClassLoader(() -> classLoader)//
-				.withFeatureSupplier(() -> Collections.unmodifiableList(features))//
-				.withAdditionalPlugins(plugins.toArray(Plugin[]::new))//
-				.withBackendSupplier(new BackendSupplier() {
+		PrintStream old = System.out;
+		try {
+			if (stream != null) {
+				System.setOut(stream);
+			}
+			final Runtime runtime = Runtime.builder()//
+					.withRuntimeOptions(options)//
+					.withClassLoader(() -> classLoader)//
+					.withFeatureSupplier(() -> Collections.unmodifiableList(features))//
+					.withAdditionalPlugins(plugins.toArray(Plugin[]::new))//
+					.withBackendSupplier(new BackendSupplier() {
 
-					@Override
-					public Collection<? extends Backend> get() {
-						// TODO https://github.com/cucumber/cucumber-jvm/issues/2217
-						ThreadLocalObjectFactorySupplier supplier = new ThreadLocalObjectFactorySupplier(
-								new ObjectFactoryServiceLoader(options));
-						ObjectFactory objectFactory = supplier.get();
-						Set<Backend> backends = Collections.singleton(
-								BACKEND_PROVIDER_SERVICE.create(objectFactory, objectFactory, () -> classLoader));
-						return backends;
-					}
-				}).build();
-		runtime.run();
+						@Override
+						public Collection<? extends Backend> get() {
+							// TODO https://github.com/cucumber/cucumber-jvm/issues/2217
+							ThreadLocalObjectFactorySupplier supplier = new ThreadLocalObjectFactorySupplier(
+									new ObjectFactoryServiceLoader(options));
+							ObjectFactory objectFactory = supplier.get();
+							Set<Backend> backends = Collections.singleton(
+									BACKEND_PROVIDER_SERVICE.create(objectFactory, objectFactory, () -> classLoader));
+							return backends;
+						}
+					}).build();
+			// FIXME workaround for https://github.com/cucumber/cucumber-jvm/issues/2216
+			runtime.run();
+		} finally {
+			if (stream != null) {
+				System.setOut(old);
+			}
+		}
 	}
 
 	public void addFeature(IFile file) {
-			loadFeature(new FileResource(file)).ifPresent(features::add);
+		loadFeature(new FileResource(file)).ifPresent(features::add);
+	}
+
+	public void addFeature(Feature feature) {
+		features.add(feature);
 	}
 
 	public void addPlugin(Plugin plugin) {

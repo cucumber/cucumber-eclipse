@@ -1,4 +1,4 @@
-package cucumber.eclipse.launching;
+package io.cucumber.eclipse.java.launching;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -53,12 +53,14 @@ public class CucumberFeatureLaunchUtils {
 	}
 	
 	public static boolean updateFromConfig(ILaunchConfiguration config, String attrib) {
-		boolean b = false;
+		return getAttribute(config, attrib, false);
+	}
+
+	public static boolean getAttribute(ILaunchConfiguration config, String attrib, boolean defaultValue) {
 		try {
-			b = config.getAttribute(attrib, b);
+			return config.getAttribute(attrib, defaultValue);
 		} catch (CoreException e) {
-			e.printStackTrace();
 		}
-		return b;
+		return defaultValue;
 	}
 }

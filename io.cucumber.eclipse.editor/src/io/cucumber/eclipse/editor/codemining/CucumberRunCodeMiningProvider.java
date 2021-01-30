@@ -96,8 +96,6 @@ public class CucumberRunCodeMiningProvider implements ICodeMiningProvider {
 
 	private static final class RunnableElementCodeMining extends LineContentCodeMining {
 
-		private static final String PREFIX = " " + (char) 0x25B7 + " ";
-
 		AtomicReference<Consumer<MouseEvent>> action = new AtomicReference<>();
 
 		private Object element;
@@ -118,14 +116,16 @@ public class CucumberRunCodeMiningProvider implements ICodeMiningProvider {
 		@Override
 		protected CompletableFuture<Void> doResolve(ITextViewer viewer, IProgressMonitor monitor) {
 			return CompletableFuture.runAsync(() -> {
-				setLabel(PREFIX + mode + " ");
+				// workaround for bug Bug 570774
+				setLabel((mode.ordinal() == 0 ? " " : "") + mode.getSymbol() + " " + mode.toString());
 				action.set(event -> {
 					Job.create("Launching Cucumber", new ICoreRunnable() {
 
 						@Override
 						public void run(IProgressMonitor monitor) throws CoreException {
 							launcher.launch(GherkinEditorDocument.get(viewer.getDocument()),
-									new StructuredSelection(getElement()), mode, monitor);
+									new StructuredSelection(getElement()), mode, !(element instanceof Feature),
+									monitor);
 
 						}
 					}).schedule();

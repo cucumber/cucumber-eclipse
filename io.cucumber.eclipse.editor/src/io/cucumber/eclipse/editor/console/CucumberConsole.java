@@ -13,7 +13,7 @@ import io.cucumber.eclipse.editor.Images;
  * @author christoph
  *
  */
-public class CucumberConsole extends IOConsole {
+public class CucumberConsole extends IOConsole implements AutoCloseable {
 
 	public static final String TYPE = "cucumber";
 
@@ -30,16 +30,17 @@ public class CucumberConsole extends IOConsole {
 		return active.get();
 	}
 
-	public void setDone() {
-		active.set(false);
-	}
-
 	boolean reset() {
 		boolean reset = active.compareAndSet(false, true);
 		if (reset) {
 			clearConsole();
 		}
 		return reset;
+	}
+
+	@Override
+	public void close() {
+		active.set(false);
 	}
 
 }

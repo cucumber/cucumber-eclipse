@@ -221,7 +221,7 @@
               icon="icons/cukes.gif"
               id="io.cucumber.eclipse.editor.shortcut1"
               label="Cucumber"
-              modes="run,debug">
+              modes="run,debug,profile">
               <configurationType
 			        id="cucumber.eclipse.launching.localCucumberFeature">
 	          </configurationType>

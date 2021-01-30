@@ -30,18 +30,42 @@
          markerType="cucumber.eclipse.marker.gherkin.unmatched_step"
          class="io.cucumber.eclipse.java.quickfix.StepCreationMarkerResolutionGenerator"/>
    </extension>
- <extension
-       point="org.eclipse.core.filebuffers.documentSetup">
-    <participant
-          class="io.cucumber.eclipse.java.validation.CucumberGlueValidator"
-          contentTypeId="io.cucumber.eclipse.editor.content-type.feature">
-    </participant>
- </extension>
- <extension
-       point="org.eclipse.ui.workbench.texteditor.codeMiningProviders">
-    <codeMiningProvider
-          class="io.cucumber.eclipse.java.codemining.JavaReferencesCodeMiningProvider"
-          id="io.cucumber.eclipse.java.codeMiningProvider1">
-    </codeMiningProvider>
- </extension>
+	 <extension
+	       point="org.eclipse.core.filebuffers.documentSetup">
+	    <participant
+	          class="io.cucumber.eclipse.java.validation.CucumberGlueValidator"
+	          contentTypeId="io.cucumber.eclipse.editor.content-type.feature">
+	    </participant>
+	 </extension>
+	 <extension
+	       point="org.eclipse.ui.workbench.texteditor.codeMiningProviders">
+	    <codeMiningProvider
+	          class="io.cucumber.eclipse.java.codemining.JavaReferencesCodeMiningProvider"
+	          id="io.cucumber.eclipse.java.codeMiningProvider1">
+	    </codeMiningProvider>
+	 </extension>
+	 <extension point = "org.eclipse.debug.core.launchConfigurationTypes">
+	   <launchConfigurationType
+          delegate="io.cucumber.eclipse.java.launching.CucumberFeatureLocalApplicationLaunchConfigurationDelegate"
+          id="cucumber.eclipse.java.launching.localCucumberFeature"
+          modes="run,debug,profile"
+          name="Cucumber-JVM"
+          public="true"
+          sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
+	   </launchConfigurationType>
+	</extension>
+	<extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+	    <launchConfigurationTypeImage
+	        icon="icons/cukes.gif"
+	        configTypeID="cucumber.eclipse.java.launching.localCucumberFeature"
+	        id="cucumber.eclipse.launching.launchConfigurationTypeImage.localCucumberFeature">
+	    </launchConfigurationTypeImage>
+	</extension>
+	<extension point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+    <launchConfigurationTabGroup
+        type="cucumber.eclipse.java.launching.localCucumberFeature"
+        class="io.cucumber.eclipse.java.launching.CucumberFeatureTabGroup"
+        id="cucumber.eclipse.launching.launchConfigurationTabGroup.localCucumberFeature">
+    </launchConfigurationTabGroup>
+</extension>
 </plugin>

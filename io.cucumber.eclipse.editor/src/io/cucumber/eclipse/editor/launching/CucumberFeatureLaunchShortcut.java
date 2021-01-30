@@ -32,17 +32,15 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import io.cucumber.eclipse.editor.CucumberServiceRegistry;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.launching.ILauncher.Mode;
-import io.cucumber.messages.Messages.Envelope;
 import io.cucumber.messages.Messages.GherkinDocument.Feature;
 
 public class CucumberFeatureLaunchShortcut implements ILaunchShortcut {
 
 	private static final ILauncher NO_LAUNCHER = new ILauncher() {
 		@Override
-		public Stream<Envelope> launch(Map<GherkinEditorDocument, IStructuredSelection> selection, Mode mode,
-				IProgressMonitor monitor) {
+		public void launch(Map<GherkinEditorDocument, IStructuredSelection> selection, Mode mode,
+				boolean temporary, IProgressMonitor monitor) {
 			// TODO inform the user about unable to launch
-			return Stream.empty();
 		}
 
 		@Override
@@ -60,7 +58,11 @@ public class CucumberFeatureLaunchShortcut implements ILaunchShortcut {
 
 	@Override
 	public void launch(IEditorPart editor, String mode) {
-		Mode modeType = Mode.valueOf(mode.toUpperCase());
+		Mode modeType = Mode.parseString(mode);
+		if (modeType == null) {
+			// unsupported....
+			return;
+		}
 		if (editor instanceof ITextEditor) {
 			ITextEditor textEditor = (ITextEditor) editor;
 			IEditorInput editorInput = textEditor.getEditorInput();
@@ -98,7 +100,7 @@ public class CucumberFeatureLaunchShortcut implements ILaunchShortcut {
 							} else {
 								selected = new StructuredSelection(feature.get());
 							}
-							launcher.launch(editorDocument, selected, modeType, monitor);
+							launcher.launch(editorDocument, selected, modeType, true, monitor);
 						} else {
 							// TODO show error to the user
 						}
@@ -110,7 +112,11 @@ public class CucumberFeatureLaunchShortcut implements ILaunchShortcut {
 
 	@Override
 	public void launch(ISelection selection, String mode) {
-		Mode modeType = Mode.valueOf(mode.toUpperCase());
+		Mode modeType = Mode.parseString(mode);
+		if (modeType == null) {
+			// unsupported....
+			return;
+		}
 		Job.create("Launching Cucumber", new ICoreRunnable() {
 
 			@Override
@@ -136,7 +142,7 @@ public class CucumberFeatureLaunchShortcut implements ILaunchShortcut {
 							.entrySet()) {
 						entry.getKey().launch(
 								entry.getValue().stream().collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
-								modeType, subMonitor.split(100));
+								modeType, false, subMonitor.split(100));
 					}
 
 				}

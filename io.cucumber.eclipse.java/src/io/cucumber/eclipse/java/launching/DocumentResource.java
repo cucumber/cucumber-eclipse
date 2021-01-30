@@ -28,7 +28,7 @@ public class DocumentResource implements Resource {
 	public DocumentResource(GherkinEditorDocument document) {
 		this.document = document.getDocument();
 		IResource resource = document.getResource();
-		if (resource == null) {
+		if (resource != null) {
 			uri = Objects.requireNonNullElseGet(resource.getLocationURI(), () -> resource.getRawLocationURI());
 		} else {
 			try {

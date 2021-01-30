@@ -1,12 +1,22 @@
-package cucumber.eclipse.launching;
+package io.cucumber.eclipse.java.launching;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.internal.ui.SWTFactory;
+import org.eclipse.debug.ui.CommonTab;
+import org.eclipse.debug.ui.ILaunchConfigurationDialog;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
+import org.eclipse.debug.ui.sourcelookup.SourceLookupTab;
+import org.eclipse.jdt.debug.ui.launchConfigurations.JavaArgumentsTab;
+import org.eclipse.jdt.debug.ui.launchConfigurations.JavaClasspathTab;
+import org.eclipse.jdt.debug.ui.launchConfigurations.JavaDependenciesTab;
+import org.eclipse.jdt.debug.ui.launchConfigurations.JavaJRETab;
+import org.eclipse.jdt.internal.debug.ui.launcher.AbstractJavaMainTab;
 import org.eclipse.jdt.internal.debug.ui.launcher.LauncherMessages;
-import org.eclipse.jdt.internal.debug.ui.launcher.SharedJavaMainTab;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -22,11 +32,7 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 
-import io.cucumber.eclipse.editor.launching.CucumberFeatureLaunchConstants;
-
-public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigurationTab {
-
-
+public class CucumberMainTab extends AbstractJavaMainTab implements ILaunchConfigurationTab {
 
 	protected Text featurePathText;
 	protected Text gluePathText;
@@ -41,48 +47,57 @@ public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigu
 	private Button usageCheckbox;
 	private Button junitCheckbox;
 	private Button rerunCheckbox;
-
+	private Button buttonInternal;
+	private Button buttonExternal;
 
 	private class WidgetListener implements ModifyListener, SelectionListener {
 
+		@Override
 		public void modifyText(ModifyEvent e) {
 			updateLaunchConfigurationDialog();
 		}
 
+		@Override
 		public void widgetDefaultSelected(SelectionEvent e) {/* do nothing */
 		}
 
+		@Override
 		public void widgetSelected(SelectionEvent e) {
 			Object source = e.getSource();
 			if (source == featureButton) {
-			    // File standard dialog
-			    FileDialog fileDialog = new FileDialog(getShell());
-			    // Set the text
-			    fileDialog.setText("Select File");
-			    // Set filter on .txt files
-			    fileDialog.setFilterExtensions(new String[] { "*.feature" });
-			    // Put in a readable name for the filter
-			    fileDialog.setFilterNames(new String[] { "Features(*.feature)" });
-			    // Open Dialog and save result of selection
-			    fileDialog.setFileName(featurePathText.getText());
-			    featurePathText.setText( fileDialog.open() );
-			    //System.out.println(selected);
-			} else if (source == glueButton) {
-				// TODO
-			} else
+				// File standard dialog
+				FileDialog fileDialog = new FileDialog(getShell());
+				// Set the text
+				fileDialog.setText("Select File");
+				// Set filter on .txt files
+				fileDialog.setFilterExtensions(new String[] { "*.feature" });
+				// Put in a readable name for the filter
+				fileDialog.setFilterNames(new String[] { "Features(*.feature)" });
+				// Open Dialog and save result of selection
+				fileDialog.setFileName(featurePathText.getText());
+				featurePathText.setText(fileDialog.open());
+				// System.out.println(selected);
+			} else {
+				updateMessage();
+
 				updateLaunchConfigurationDialog();
+			}
 		}
+
+	}
+
+	public CucumberMainTab() {
 	}
 
 	@Override
 	public void createControl(Composite parent) {
 		Composite comp = SWTFactory.createComposite(parent, parent.getFont(), 1, 1, GridData.FILL_BOTH);
+		createRunnerSelection(comp);
 		createProjectEditor(comp);
-		setControl(comp);
 		createFeaturePathEditor(comp);
 		createGluePathEditor(comp);
 		createFormatterOptions(comp);
-
+		setControl(comp);
 	}
 
 	private void createFormatterOptions(Composite comp) {
@@ -95,43 +110,43 @@ public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigu
 		layout.numColumns = 2;
 		group.setLayout(layout);
 		group.setFont(font);
-		
-		monochromeCheckbox=new Button(group,SWT.CHECK);
+
+		monochromeCheckbox = new Button(group, SWT.CHECK);
 		monochromeCheckbox.addSelectionListener(listener);
 		monochromeCheckbox.setText("monochrome");
-		
-		prettyCheckbox=new Button(group,SWT.CHECK);
+
+		prettyCheckbox = new Button(group, SWT.CHECK);
 		prettyCheckbox.addSelectionListener(listener);
 		prettyCheckbox.setText("pretty");
-		
-		jsonCheckbox=new Button(group,SWT.CHECK);
+
+		jsonCheckbox = new Button(group, SWT.CHECK);
 		jsonCheckbox.addSelectionListener(listener);
 		jsonCheckbox.setText("JSON");
-		
-		progressCheckbox=new Button(group,SWT.CHECK);
+
+		progressCheckbox = new Button(group, SWT.CHECK);
 		progressCheckbox.addSelectionListener(listener);
 		progressCheckbox.setText("progress");
-		
-		rerunCheckbox=new Button(group,SWT.CHECK);
+
+		rerunCheckbox = new Button(group, SWT.CHECK);
 		rerunCheckbox.addSelectionListener(listener);
 		rerunCheckbox.setText("rerun");
-		
-		usageCheckbox=new Button(group,SWT.CHECK);
+
+		usageCheckbox = new Button(group, SWT.CHECK);
 		usageCheckbox.addSelectionListener(listener);
 		usageCheckbox.setText("usage");
 
 		// Need to add option to choose path before can enable
-		
-		htmlCheckbox=new Button(group,SWT.CHECK);
+
+		htmlCheckbox = new Button(group, SWT.CHECK);
 		htmlCheckbox.addSelectionListener(listener);
 		htmlCheckbox.setText("HTML");
 		htmlCheckbox.setVisible(false);
-		
-		junitCheckbox=new Button(group,SWT.CHECK);
+
+		junitCheckbox = new Button(group, SWT.CHECK);
 		junitCheckbox.addSelectionListener(listener);
 		junitCheckbox.setText("JUnit");
 		junitCheckbox.setVisible(false);
-		
+
 	}
 
 	private void createGluePathEditor(Composite comp) {
@@ -178,9 +193,31 @@ public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigu
 		featureButton.addSelectionListener(listener);
 	}
 
+	private void createRunnerSelection(Composite comp) {
+		Font font = comp.getFont();
+		Group group = new Group(comp, SWT.NONE);
+		group.setText("Runner Type:");
+		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+		group.setLayoutData(gd);
+		GridLayout layout = new GridLayout();
+		layout.numColumns = 2;
+		group.setLayout(layout);
+		group.setFont(font);
+		buttonInternal = new Button(group, SWT.RADIO);
+		buttonInternal.setText("Embedded Runner");
+		buttonInternal.setToolTipText(
+				"Run directly inside your IDE, this has faster start-up times but not all options are avaiable and your test shares memory with your running Eclipse");
+		buttonExternal = new Button(group, SWT.RADIO);
+		buttonExternal.setText("External Runner");
+		buttonExternal.setToolTipText("Run as a separate process");
+
+		buttonExternal.addSelectionListener(listener);
+		buttonInternal.addSelectionListener(listener);
+	}
+
 	@Override
 	public String getName() {
-		return CucumberFeatureLaunchConstants.CUCUMBER_FEATURE_RUNNER;
+		return "Cucumber JVM Options";
 	}
 
 	@Override
@@ -196,7 +233,7 @@ public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigu
 		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_USAGE, usageCheckbox.getSelection());
 		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_JUNIT, junitCheckbox.getSelection());
 		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_RERUN, rerunCheckbox.getSelection());
-		
+		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_INTERNAL_LAUNCHER, buttonInternal.getSelection());
 		mapResources(config);
 
 	}
@@ -211,7 +248,7 @@ public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigu
 		IProject javaProject = CucumberFeatureLaunchUtils.getProject();
 		String featurePath = CucumberFeatureLaunchUtils.getFeaturePath();
 		String gluePath = getDefaultGluePath();
-		
+
 		if (javaProject != null && CucumberFeatureLaunchUtils.getFeaturePath() != null) {
 			initializeCucumberProject(gluePath, featurePath, javaProject, config);
 		} else {
@@ -231,40 +268,50 @@ public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigu
 	}
 
 	@Override
-	protected void handleSearchButtonSelected() {
-
-	}
-
 	public void initializeFrom(ILaunchConfiguration config) {
 		super.initializeFrom(config);
 		updateFeaturePathFromConfig(config);
 		updateGluePathFromConfig(config);
 		updateFormattersFromConfig(config);
+		boolean internalLauncher = CucumberFeatureLaunchUtils.getAttribute(config,
+				CucumberFeatureLaunchConstants.ATTR_INTERNAL_LAUNCHER, true);
+		buttonInternal.setSelection(internalLauncher);
+		buttonExternal.setSelection(!internalLauncher);
+		updateMessage();
 	}
 
-	private void updateFormattersFromConfig(ILaunchConfiguration config) {		
-		monochromeCheckbox.setSelection(CucumberFeatureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_MONOCHROME));
-		jsonCheckbox.setSelection(CucumberFeatureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_JSON));
-		junitCheckbox.setSelection(CucumberFeatureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_JUNIT));
-		prettyCheckbox.setSelection(CucumberFeatureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_PRETTY));
-		progressCheckbox.setSelection(CucumberFeatureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_PROGRESS));
-		htmlCheckbox.setSelection(CucumberFeatureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_HTML));
-		usageCheckbox.setSelection(CucumberFeatureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_USAGE));
-		rerunCheckbox.setSelection(CucumberFeatureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_IS_RERUN));
-		
+	private void updateFormattersFromConfig(ILaunchConfiguration config) {
+		monochromeCheckbox.setSelection(
+				CucumberFeatureLaunchUtils.updateFromConfig(config, CucumberFeatureLaunchConstants.ATTR_IS_MONOCHROME));
+		jsonCheckbox.setSelection(
+				CucumberFeatureLaunchUtils.updateFromConfig(config, CucumberFeatureLaunchConstants.ATTR_IS_JSON));
+		junitCheckbox.setSelection(
+				CucumberFeatureLaunchUtils.updateFromConfig(config, CucumberFeatureLaunchConstants.ATTR_IS_JUNIT));
+		prettyCheckbox.setSelection(
+				CucumberFeatureLaunchUtils.updateFromConfig(config, CucumberFeatureLaunchConstants.ATTR_IS_PRETTY));
+		progressCheckbox.setSelection(
+				CucumberFeatureLaunchUtils.updateFromConfig(config, CucumberFeatureLaunchConstants.ATTR_IS_PROGRESS));
+		htmlCheckbox.setSelection(
+				CucumberFeatureLaunchUtils.updateFromConfig(config, CucumberFeatureLaunchConstants.ATTR_IS_HTML));
+		usageCheckbox.setSelection(
+				CucumberFeatureLaunchUtils.updateFromConfig(config, CucumberFeatureLaunchConstants.ATTR_IS_USAGE));
+		rerunCheckbox.setSelection(
+				CucumberFeatureLaunchUtils.updateFromConfig(config, CucumberFeatureLaunchConstants.ATTR_IS_RERUN));
+
 	}
 
 	private void updateGluePathFromConfig(ILaunchConfiguration config) {
-		CucumberFeatureLaunchUtils.updateFromConfig(config,CucumberFeatureLaunchConstants.ATTR_GLUE_PATH, gluePathText);
+		CucumberFeatureLaunchUtils.updateFromConfig(config, CucumberFeatureLaunchConstants.ATTR_GLUE_PATH,
+				gluePathText);
 	}
 
 	private void updateFeaturePathFromConfig(ILaunchConfiguration config) {
-		CucumberFeatureLaunchUtils.updateFromConfig(config, CucumberFeatureLaunchConstants.ATTR_FEATURE_PATH, featurePathText);
+		CucumberFeatureLaunchUtils.updateFromConfig(config, CucumberFeatureLaunchConstants.ATTR_FEATURE_PATH,
+				featurePathText);
 	}
 
-
-
-	protected void initializeCucumberProject(String gluePath, String featurePath, IProject javaProject, ILaunchConfigurationWorkingCopy config) {
+	protected void initializeCucumberProject(String gluePath, String featurePath, IProject javaProject,
+			ILaunchConfigurationWorkingCopy config) {
 		String name = null;
 		if (javaProject != null && javaProject.exists()) {
 			name = javaProject.getName();
@@ -281,6 +328,26 @@ public class CucumberMainTab extends SharedJavaMainTab implements ILaunchConfigu
 		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_RERUN, false);
 		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_JSON, false);
 		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_JUNIT, false);
+		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_INTERNAL_LAUNCHER, true);
+	}
+
+	private void updateMessage() {
+		boolean internal = buttonInternal.getSelection();
+		if (internal) {
+			ILaunchConfigurationDialog dialog = getLaunchConfigurationDialog();
+			List<String> names = new ArrayList<>();
+			for (ILaunchConfigurationTab tab : dialog.getTabs()) {
+				if (tab instanceof JavaArgumentsTab || tab instanceof JavaJRETab || tab instanceof JavaDependenciesTab
+						|| tab instanceof JavaClasspathTab || tab instanceof SourceLookupTab
+						|| tab instanceof CommonTab) {
+					names.add(tab.getName());
+				}
+			}
+			setWarningMessage("Some settings of the follwoing sections have no effect when using the embedded runner: "
+					+ String.join(", ", names));
+		} else {
+			setMessage(null);
+		}
 	}
 
 }
