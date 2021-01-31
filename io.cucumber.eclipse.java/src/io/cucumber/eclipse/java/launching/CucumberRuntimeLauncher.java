@@ -2,6 +2,9 @@ package io.cucumber.eclipse.java.launching;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -21,6 +24,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.osgi.service.component.annotations.Component;
 
+import io.cucumber.core.feature.FeatureWithLines;
 import io.cucumber.core.gherkin.Feature;
 import io.cucumber.core.options.RuntimeOptionsBuilder;
 import io.cucumber.eclipse.editor.console.CucumberConsole;
@@ -31,6 +35,9 @@ import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberEclipsePlugin;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;
 import io.cucumber.messages.Messages.Envelope;
+import io.cucumber.messages.Messages.GherkinDocument.Feature.Scenario;
+import io.cucumber.messages.Messages.Location;
+import io.cucumber.tagexpressions.Expression;
 import mnita.ansiconsole.preferences.AnsiConsolePreferenceUtils;
 
 /**
@@ -63,10 +70,38 @@ public class CucumberRuntimeLauncher implements ILauncher {
 			IJavaProject project = entry.getKey();
 			Map<GherkinEditorDocument, IStructuredSelection> map = entry.getValue().stream()
 					.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-			List<Feature> list = map.keySet().stream().map(DocumentResource::new).map(CucumberRuntime::loadFeature)
-					.flatMap(Optional::stream).collect(Collectors.toList());
+			List<FeatureWithLines> featureFilter = new ArrayList<>();
+			List<Expression> filters = new ArrayList<>();
+			List<Feature> list = map.entrySet().stream().flatMap(entry2 -> {
+				Optional<Feature> loadFeature = CucumberRuntime.loadFeature(new DocumentResource(entry2.getKey()));
+				loadFeature.ifPresent(feature -> {
+					for (Object obj : entry2.getValue()) {
+						if (obj instanceof Scenario) {
+							Scenario scenario = (Scenario) obj;
+							featureFilter.add(FeatureWithLines.create(feature.getUri(),
+									Collections.singleton(scenario.getLocation().getLine())));
+						} else if (obj instanceof Expression) {
+							filters.add((Expression) obj);
+						}
+					}
+				});
+				return loadFeature.stream();
+			}).collect(Collectors.toList());
+
+			for (Entry<GherkinEditorDocument, IStructuredSelection> entry2 : map.entrySet()) {
+				GherkinEditorDocument key = entry2.getKey();
+				for (Object obj : entry2.getValue()) {
+					if (obj instanceof Scenario) {
+						Location location = ((Scenario) obj).getLocation();
+						Feature feature = CucumberRuntime.loadFeature(new DocumentResource(key)).get();
+						featureFilter.add(
+								FeatureWithLines.create(feature.getUri(), Collections.singleton(location.getLine())));
+					}
+				}
+			}
+
 			try (CucumberConsole console = CucumberConsoleFactory.getConsole(true)) {
-				runFeaturesEmbedded(project, list, mode, console, subMonitor.split(100));
+				runFeaturesEmbedded(project, list, featureFilter, mode, console, subMonitor.split(100), filters);
 			}
 		}
 	}
@@ -81,9 +116,10 @@ public class CucumberRuntimeLauncher implements ILauncher {
 		return mode == Mode.DEBUG || mode == Mode.RUN || mode == Mode.PROFILE;
 	}
 
-	public static void runFeaturesEmbedded(IJavaProject javaProject, List<Feature> features, Mode mode,
-			CucumberConsole console,
-			IProgressMonitor monitor) throws CoreException {
+	public static void runFeaturesEmbedded(IJavaProject javaProject, List<Feature> features,
+			Collection<FeatureWithLines> featureFilter, Mode mode, CucumberConsole console, IProgressMonitor monitor,
+			Collection<Expression> tagFilters)
+			throws CoreException {
 		try (CucumberRuntime cucumberRuntime = CucumberRuntime.create(javaProject)) {
 			CucumberEclipsePlugin plugin = new CucumberEclipsePlugin(new Consumer<Envelope>() {
 
@@ -97,11 +133,17 @@ public class CucumberRuntimeLauncher implements ILauncher {
 				cucumberRuntime.addFeature(feature);
 			}
 			RuntimeOptionsBuilder options = cucumberRuntime.getRuntimeOptions();
+			for (FeatureWithLines featureWithLines : featureFilter) {
+				options.addFeature(featureWithLines);
+			}
+			for (Expression tagFilter : tagFilters) {
+				options.addTagFilter(tagFilter);
+			}
+			options.setPublishQuiet(true);
 			// TODO other options
 			options.addDefaultSummaryPrinterIfAbsent();
 			options.setThreads(java.lang.Runtime.getRuntime().availableProcessors());
 			options.setMonochrome(!AnsiConsolePreferenceUtils.isAnsiConsoleEnabled());
-
 			cucumberRuntime.addPlugin(plugin);
 			try {
 				try (IOConsoleOutputStream stream = console.newOutputStream()) {

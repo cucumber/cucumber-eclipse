@@ -28,6 +28,7 @@ import gherkin.formatter.model.Step;
 import gherkin.formatter.model.Tag;
 import gherkin.formatter.model.TagStatement;
 import gherkin.util.Mapper;
+import io.cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants.CucumberIndentationStyle;
 
 import java.text.NumberFormat;
 import java.text.ParsePosition;
@@ -39,8 +40,6 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants.CucumberIndentationStyle;
 
 /**
  * This class pretty prints feature files like they were in the source, only

@@ -3,6 +3,7 @@ package cucumber.eclipse.editor.editors;
 import gherkin.lexer.LexingError;
 import gherkin.parser.ParseError;
 import gherkin.parser.Parser;
+import io.cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -20,7 +21,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import cucumber.eclipse.editor.Activator;
-import cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants;
 
 public class GherkinFormatterUtil {
 

@@ -27,6 +27,9 @@ import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.osgi.service.debug.DebugTrace;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.texteditor.ITextEditor;
 
 import io.cucumber.core.gherkin.FeatureParserException;
 import io.cucumber.eclipse.editor.Tracing;
@@ -112,6 +115,10 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 		});
 	}
 
+	public static void revalidate(IDocument document) {
+		validate(document, 0, false);
+	}
+
 	@Override
 	public void setup(IDocument document) {
 		document.addDocumentListener(new IDocumentListener() {
@@ -130,7 +137,7 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 		validate(document, 0, false);
 	}
 
-	private void validate(IDocument document, int delay, boolean persistent) {
+	private static void validate(IDocument document, int delay, boolean persistent) {
 		jobMap.compute(document, (key, oldJob) -> {
 			if (oldJob != null && !oldJob.persistent) {
 				oldJob.cancel();
@@ -255,6 +262,22 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 										matchedSteps.size() + " step(s) /  " + steps.size() + " step(s)  matched, "
 												+ snippets.size() + " snippet(s) where suggested || total run time "
 												+ (System.currentTimeMillis() - start) + "ms)");
+								if (!monitor.isCanceled()) {
+									ITextFileBuffer buffer = FileBuffers.getTextFileBufferManager()
+											.getTextFileBuffer(document);
+									if (buffer != null) {
+										IEditorPart editorPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+												.getActivePage().getActiveEditor();
+										if (editorPart instanceof ITextEditor) {
+											ITextEditor textEditor = (ITextEditor) editorPart;
+											if (textEditor.getDocumentProvider()
+													.getDocument(textEditor.getEditorInput()) == document) {
+												// FIXME how to get the Textbuffer?
+											}
+										}
+
+									}
+								}
 
 							} catch (Throwable e) {
 								// TODO

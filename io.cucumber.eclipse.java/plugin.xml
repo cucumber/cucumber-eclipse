@@ -68,4 +68,13 @@
         id="cucumber.eclipse.launching.launchConfigurationTabGroup.localCucumberFeature">
     </launchConfigurationTabGroup>
 </extension>
+ <extension
+       point="org.eclipse.ui.preferencePages">
+    <page
+          category="cucumber.eclipse.editor.preferences.main"
+          class="io.cucumber.eclipse.java.preferences.JavaPreferencePage"
+          id="io.cucumber.eclipse.java.page1"
+          name="Java">
+    </page>
+ </extension>
 </plugin>

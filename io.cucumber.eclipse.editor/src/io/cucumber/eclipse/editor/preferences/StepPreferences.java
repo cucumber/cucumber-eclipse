@@ -1,4 +1,4 @@
-package cucumber.eclipse.steps.integration;
+package io.cucumber.eclipse.editor.preferences;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.IPreferencesService;

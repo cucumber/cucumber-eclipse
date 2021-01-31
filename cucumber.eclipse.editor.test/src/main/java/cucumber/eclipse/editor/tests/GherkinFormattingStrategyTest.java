@@ -12,8 +12,8 @@ import static org.hamcrest.CoreMatchers.*;
 
 import cucumber.eclipse.editor.Activator;
 import cucumber.eclipse.editor.editors.GherkinFormatterUtil;
-import cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants;
-import cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants.CucumberIndentationStyle;
+import io.cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants;
+import io.cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants.CucumberIndentationStyle;
 
 public class GherkinFormattingStrategyTest {
 

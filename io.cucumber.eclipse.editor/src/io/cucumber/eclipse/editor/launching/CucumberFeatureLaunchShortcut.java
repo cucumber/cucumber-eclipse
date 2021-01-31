@@ -33,6 +33,7 @@ import io.cucumber.eclipse.editor.CucumberServiceRegistry;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.launching.ILauncher.Mode;
 import io.cucumber.messages.Messages.GherkinDocument.Feature;
+import io.cucumber.tagexpressions.TagExpressionParser;
 
 public class CucumberFeatureLaunchShortcut implements ILaunchShortcut {
 
@@ -88,7 +89,8 @@ public class CucumberFeatureLaunchShortcut implements ILaunchShortcut {
 								editorDocument.getTags()
 										.filter(tag -> tag.getLocation().getLine() >= startLine
 												&& tag.getLocation().getLine() <= endLine)
-										.map(tag -> new LaunchTag(tag.getName(), true)).forEach(selectedItems::add);
+										.map(tag -> TagExpressionParser.parse(tag.getName()))
+										.forEach(selectedItems::add);
 								editorDocument.getScenarios()
 										.filter(senario -> senario.getLocation().getLine() >= startLine
 												&& senario.getLocation().getLine() <= endLine)

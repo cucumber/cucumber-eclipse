@@ -250,4 +250,16 @@
                label="Cucumber Run Annotations">
          </codeMiningProvider>
       </extension>
+      <extension
+		point="org.eclipse.core.runtime.preferences">
+		<initializer
+			class="io.cucumber.eclipse.editor.preferences.CucumberPreferenceInitializer"/>
+	</extension>
+	<extension
+		point="org.eclipse.ui.preferencePages">
+		<page
+			id="cucumber.eclipse.editor.preferences.main"
+			class="io.cucumber.eclipse.editor.preferences.CucumberPreferencePage"
+			name="Cucumber" />
+   </extension>
 </plugin>

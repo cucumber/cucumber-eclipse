@@ -1,27 +1,21 @@
-package cucumber.eclipse.editor.preferences;
+package io.cucumber.eclipse.editor.preferences;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.ComboFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
-import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
-import cucumber.eclipse.editor.Activator;
-import cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants.CucumberIndentationStyle;
-import cucumber.eclipse.steps.integration.StepPreferences;
+import io.cucumber.eclipse.editor.Activator;
+import io.cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants.CucumberIndentationStyle;
 
 public class CucumberPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 

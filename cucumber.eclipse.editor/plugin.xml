@@ -141,18 +141,7 @@
 			name="project"
 			class="org.eclipse.core.internal.resources.ProjectPreferences"/>
 	</extension>
-	<extension
-		point="org.eclipse.core.runtime.preferences">
-		<initializer
-			class="cucumber.eclipse.editor.preferences.CucumberPreferenceInitializer"/>
-	</extension>
-	<extension
-		point="org.eclipse.ui.preferencePages">
-		<page
-			id="cucumber.eclipse.editor.preferences.Page1"
-			class="cucumber.eclipse.editor.preferences.CucumberPreferencePage"
-			name="Cucumber" />
-   </extension>
+	
  <extension
        point="org.eclipse.ui.newWizards">
     <category

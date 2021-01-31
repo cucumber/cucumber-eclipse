@@ -29,6 +29,7 @@ import org.eclipse.jdt.launching.IVMRunner;
 import org.eclipse.jdt.launching.VMRunnerConfiguration;
 import org.osgi.framework.FrameworkUtil;
 
+import io.cucumber.core.feature.FeatureWithLines;
 import io.cucumber.core.gherkin.Feature;
 import io.cucumber.eclipse.editor.console.CucumberConsole;
 import io.cucumber.eclipse.editor.console.CucumberConsoleFactory;
@@ -37,6 +38,7 @@ import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberEclipsePlugin;
 import io.cucumber.eclipse.java.plugins.MessageEndpoint;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;
+import io.cucumber.tagexpressions.Expression;
 import mnita.ansiconsole.preferences.AnsiConsolePreferenceUtils;
 
 public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends AbstractJavaLaunchConfigurationDelegate
@@ -182,10 +184,13 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		if (resource instanceof IFile) {
 			Optional<Feature> feature = CucumberRuntime.loadFeature(new FileResource((IFile) resource));
 			if (feature.isPresent()) {
+				// TODO read from config...
+				List<FeatureWithLines> featureFilter = new ArrayList<>();
+				ArrayList<Expression> tagFilters = new ArrayList<>();
 				try (CucumberConsole console = CucumberConsoleFactory.getConsole(true)) {
 					CucumberRuntimeLauncher.runFeaturesEmbedded(project, Collections.singletonList(feature.get()),
-							Mode.parseString(mode),
-							console, monitor);
+							featureFilter, Mode.parseString(mode),
+							console, monitor, tagFilters);
 				}
 			} else {
 				throw new CoreException(

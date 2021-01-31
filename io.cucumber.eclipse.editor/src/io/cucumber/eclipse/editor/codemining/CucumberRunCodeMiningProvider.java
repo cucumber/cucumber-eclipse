@@ -28,11 +28,11 @@ import io.cucumber.eclipse.editor.CucumberServiceRegistry;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.launching.ILauncher;
 import io.cucumber.eclipse.editor.launching.ILauncher.Mode;
-import io.cucumber.eclipse.editor.launching.LaunchTag;
 import io.cucumber.messages.Messages.GherkinDocument.Feature;
 import io.cucumber.messages.Messages.GherkinDocument.Feature.Scenario;
 import io.cucumber.messages.Messages.GherkinDocument.Feature.Tag;
 import io.cucumber.messages.Messages.Location;
+import io.cucumber.tagexpressions.TagExpressionParser;
 
 /**
  * Supplies "run" tags as codeminings if available
@@ -136,7 +136,8 @@ public class CucumberRunCodeMiningProvider implements ICodeMiningProvider {
 
 		private Object getElement() {
 			if (element instanceof Tag) {
-				return new LaunchTag(((Tag) element).getName(), true);
+				String name = ((Tag) element).getName();
+				return TagExpressionParser.parse(name);
 			}
 			return element;
 		}

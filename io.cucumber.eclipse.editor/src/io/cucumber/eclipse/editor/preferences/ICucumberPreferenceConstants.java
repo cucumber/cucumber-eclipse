@@ -1,6 +1,6 @@
-package cucumber.eclipse.editor.preferences;
+package io.cucumber.eclipse.editor.preferences;
 
-import cucumber.eclipse.editor.Activator;
+import io.cucumber.eclipse.editor.Activator;
 
 public interface ICucumberPreferenceConstants {
 
