@@ -5,6 +5,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -35,8 +36,14 @@ import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberEclipsePlugin;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;
 import io.cucumber.messages.Messages.Envelope;
+import io.cucumber.messages.Messages.GherkinDocument;
+import io.cucumber.messages.Messages.GherkinDocument.Feature.FeatureChild;
 import io.cucumber.messages.Messages.GherkinDocument.Feature.Scenario;
 import io.cucumber.messages.Messages.Location;
+import io.cucumber.messages.Messages.TestCaseStarted;
+import io.cucumber.messages.Messages.TestStepFinished;
+import io.cucumber.messages.Messages.TestStepStarted;
+import io.cucumber.messages.Messages.Timestamp;
 import io.cucumber.tagexpressions.Expression;
 import mnita.ansiconsole.preferences.AnsiConsolePreferenceUtils;
 
@@ -123,9 +130,36 @@ public class CucumberRuntimeLauncher implements ILauncher {
 		try (CucumberRuntime cucumberRuntime = CucumberRuntime.create(javaProject)) {
 			CucumberEclipsePlugin plugin = new CucumberEclipsePlugin(new Consumer<Envelope>() {
 
+				private Map<String, TestStepPerfInfo> map = new HashMap<>();
+				private GherkinDocument gherkinDocument;
+				
 				@Override
 				public void accept(Envelope envelope) {
+					System.out.println(envelope);
+					if (envelope.hasTestCaseStarted()) {
+						TestCaseStarted testCaseStarted = envelope.getTestCaseStarted();
+						String testCaseId = testCaseStarted.getTestCaseId();
+//						System.out.println("Testcase started: " + testCaseId);
+					}
 					// TODO publish it
+					if (envelope.hasTestStepFinished()) {
+						TestStepFinished stepFinished = envelope.getTestStepFinished();
+						map.get(stepFinished.getTestStepId()).end = stepFinished.getTimestamp();
+					} else if (envelope.hasTestStepStarted()) {
+						TestStepStarted stepStarted = envelope.getTestStepStarted();
+						// stepStarted.getTestCaseStartedId()
+						map.put(stepStarted.getTestStepId(), new TestStepPerfInfo(stepStarted.getTimestamp()));
+					} else if (envelope.hasGherkinDocument()) {
+						gherkinDocument = envelope.getGherkinDocument();
+					} else if (envelope.hasTestRunFinished()) {
+						// Feature id maps to the pickle -> ast_node_ids
+						gherkinDocument.getFeature().getChildrenList().stream().filter(FeatureChild::hasScenario)
+								.map(FeatureChild::getScenario).forEach(s -> System.out.println(s.getId()));
+
+//						gherkinDocument.getFeature().getChildrenList().stream().filter(FeatureChild::hasScenario)
+//								.map(FeatureChild::getScenario).flatMap(scenario -> scenario.getStepsList().stream())
+//								.distinct();
+					}
 
 				}
 			});
@@ -153,6 +187,17 @@ public class CucumberRuntimeLauncher implements ILauncher {
 				throw new CoreException(new Status(IStatus.ERROR, CucumberRuntimeLauncher.class, "launch failed", e));
 			}
 		}
+	}
+
+	private static final class TestStepPerfInfo {
+
+		private Timestamp start;
+		protected Timestamp end;
+
+		public TestStepPerfInfo(Timestamp timestamp) {
+			this.start = timestamp;
+		}
+
 	}
 
 }

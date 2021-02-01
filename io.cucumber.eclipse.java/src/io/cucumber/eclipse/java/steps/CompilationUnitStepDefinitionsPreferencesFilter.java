@@ -1,7 +1,8 @@
-package cucumber.eclipse.steps.jdt.filter;
+package io.cucumber.eclipse.java.steps;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -9,9 +10,7 @@ import org.eclipse.jdt.core.IPackageDeclaration;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 
-import cucumber.eclipse.steps.integration.filter.Filter;
-
-public class CompilationUnitStepDefinitionsPreferencesFilter implements Filter<ICompilationUnit> {
+public class CompilationUnitStepDefinitionsPreferencesFilter implements Predicate<ICompilationUnit> {
 
 	private String[] filters;
 	
@@ -20,7 +19,7 @@ public class CompilationUnitStepDefinitionsPreferencesFilter implements Filter<I
 	}
 	
 	@Override
-	public boolean accept(ICompilationUnit element) {
+	public boolean test(ICompilationUnit element) {
 		
 		IPackageDeclaration packageDeclaration;
 		try {

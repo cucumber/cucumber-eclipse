@@ -23,6 +23,7 @@ import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.SearchMatch;
+import org.eclipse.jdt.core.search.SearchParticipant;
 import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.core.search.SearchRequestor;
 import org.eclipse.jface.text.ITextViewer;
@@ -35,6 +36,7 @@ import io.cucumber.eclipse.editor.steps.StepDefinition;
 import io.cucumber.eclipse.java.Activator;
 import io.cucumber.eclipse.java.CucumberAnnotation;
 import io.cucumber.eclipse.java.JDTUtil;
+import io.cucumber.eclipse.java.preferences.CucumberJavaPreferences;
 
 /**
  * Step definition provider that scans the java classpath for step definitions
@@ -62,14 +64,15 @@ public class JavaClasspathStepDefinitionProvider extends JavaStepDefinitionsProv
 
 	private Set<StepDefinition> getCukeSteps(IMethod method) throws JavaModelException {
 		Set<StepDefinition> stepDefinitions = new HashSet<StepDefinition>();
-//		if (CucumberJavaPreferences.isUseStepDefinitionsFilters()) {
-//			String[] filters = CucumberJavaPreferences.getStepDefinitionsFilters();
-//			MethodStepDefinitionsPreferencesFilter filter = new MethodStepDefinitionsPreferencesFilter(filters);
-//			if (!filter.accept(method)) {
-//				// skip
-//				return null;
-//			}
-//		}
+		if (CucumberJavaPreferences.isUseStepDefinitionsFilters()) {
+			String[] filters = CucumberJavaPreferences.getStepDefinitionsFilters();
+			CompilationUnitStepDefinitionsPreferencesFilter filter = new CompilationUnitStepDefinitionsPreferencesFilter(
+					filters);
+			if (!filter.test(method.getCompilationUnit())) {
+				// skip
+				return Collections.emptySet();
+			}
+		}
 
 		IAnnotation[] annotations = method.getAnnotations();
 		for (IAnnotation annotation : annotations) {
@@ -180,61 +183,61 @@ public class JavaClasspathStepDefinitionProvider extends JavaStepDefinitionsProv
 			IProgressMonitor monitor) throws CoreException {
 		// TODO improve monitor support
 		List<IJavaSearchScope> scope = new ArrayList<IJavaSearchScope>();
-//		if (CucumberJavaPreferences.isUseStepDefinitionsFilters()) {
-//			String[] filters = CucumberJavaPreferences.getStepDefinitionsFilters();
-//			final List<IJavaElement> pkgScope = new ArrayList<IJavaElement>();
-//			final List<IJavaElement> typeScope = new ArrayList<IJavaElement>();
-//
-//			IJavaSearchScope projectScope = SearchEngine.createJavaSearchScope(new IJavaElement[] { javaProject });
-//			SearchRequestor requestor = new SearchRequestor() {
-//				@Override
-//				public void acceptSearchMatch(SearchMatch match) throws CoreException {
-//					if (match.getAccuracy() == SearchMatch.A_ACCURATE) {
-//						if (match.getElement() instanceof IPackageFragment) {
-//							pkgScope.add((IJavaElement) match.getElement());
-//						} else if (match.getElement() instanceof IType) {
-//							typeScope.add((IJavaElement) match.getElement());
-//						}
-//					}
-//				}
-//			};
-//
-//			for (String filter : filters) {
-//				if (filter.endsWith(".*")) {
-//					// search for a package
-//					String filterWithoutStar = filter.substring(0, filter.length() - 2);
-//					SearchPattern searchPattern = SearchPattern.createPattern(filterWithoutStar,
-//							IJavaSearchConstants.PACKAGE, IJavaSearchConstants.DECLARATIONS,
-//							SearchPattern.R_EXACT_MATCH | SearchPattern.R_CASE_SENSITIVE);
-//
-//					searchEngine.search(searchPattern,
-//							new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() }, projectScope,
-//							requestor, monitor);
-//				} else {
-//					// search for a type
-//					SearchPattern searchPattern = SearchPattern.createPattern(filter, IJavaSearchConstants.TYPE,
-//							IJavaSearchConstants.DECLARATIONS,
-//							SearchPattern.R_EXACT_MATCH | SearchPattern.R_CASE_SENSITIVE);
-//
-//					searchEngine.search(searchPattern,
-//							new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() }, projectScope,
-//							requestor, monitor);
-//				}
-//			}
-//			if (!pkgScope.isEmpty()) {
-//				scope.add(SearchEngine.createJavaSearchScope(pkgScope.toArray(new IJavaElement[pkgScope.size()]),
-//						IJavaSearchScope.APPLICATION_LIBRARIES));
-//			}
-//			if (!typeScope.isEmpty()) {
-//				scope.add(SearchEngine.createJavaSearchScope(typeScope.toArray(new IJavaElement[typeScope.size()]),
-//						IJavaSearchScope.APPLICATION_LIBRARIES));
-//			}
-//
-//		} else {
+		if (CucumberJavaPreferences.isUseStepDefinitionsFilters()) {
+			String[] filters = CucumberJavaPreferences.getStepDefinitionsFilters();
+			final List<IJavaElement> pkgScope = new ArrayList<IJavaElement>();
+			final List<IJavaElement> typeScope = new ArrayList<IJavaElement>();
+
+			IJavaSearchScope projectScope = SearchEngine.createJavaSearchScope(new IJavaElement[] { javaProject });
+			SearchRequestor requestor = new SearchRequestor() {
+				@Override
+				public void acceptSearchMatch(SearchMatch match) throws CoreException {
+					if (match.getAccuracy() == SearchMatch.A_ACCURATE) {
+						if (match.getElement() instanceof IPackageFragment) {
+							pkgScope.add((IJavaElement) match.getElement());
+						} else if (match.getElement() instanceof IType) {
+							typeScope.add((IJavaElement) match.getElement());
+						}
+					}
+				}
+			};
+
+			for (String filter : filters) {
+				if (filter.endsWith(".*")) {
+					// search for a package
+					String filterWithoutStar = filter.substring(0, filter.length() - 2);
+					SearchPattern searchPattern = SearchPattern.createPattern(filterWithoutStar,
+							IJavaSearchConstants.PACKAGE, IJavaSearchConstants.DECLARATIONS,
+							SearchPattern.R_EXACT_MATCH | SearchPattern.R_CASE_SENSITIVE);
+
+					searchEngine.search(searchPattern,
+							new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() }, projectScope,
+							requestor, monitor);
+				} else {
+					// search for a type
+					SearchPattern searchPattern = SearchPattern.createPattern(filter, IJavaSearchConstants.TYPE,
+							IJavaSearchConstants.DECLARATIONS,
+							SearchPattern.R_EXACT_MATCH | SearchPattern.R_CASE_SENSITIVE);
+
+					searchEngine.search(searchPattern,
+							new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() }, projectScope,
+							requestor, monitor);
+				}
+			}
+			if (!pkgScope.isEmpty()) {
+				scope.add(SearchEngine.createJavaSearchScope(pkgScope.toArray(new IJavaElement[pkgScope.size()]),
+						IJavaSearchScope.APPLICATION_LIBRARIES));
+			}
+			if (!typeScope.isEmpty()) {
+				scope.add(SearchEngine.createJavaSearchScope(typeScope.toArray(new IJavaElement[typeScope.size()]),
+						IJavaSearchScope.APPLICATION_LIBRARIES));
+			}
+
+		} else {
 		scope.add(SearchEngine.createJavaSearchScope(new IJavaElement[] { javaProject },
 				IJavaSearchScope.APPLICATION_LIBRARIES | IJavaSearchScope.SOURCES
 						| IJavaSearchScope.REFERENCED_PROJECTS));
-//		}
+		}
 		return scope.toArray(new IJavaSearchScope[scope.size()]);
 	}
 

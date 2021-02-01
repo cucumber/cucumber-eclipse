@@ -72,7 +72,7 @@
        point="org.eclipse.ui.preferencePages">
     <page
           category="cucumber.eclipse.editor.preferences.main"
-          class="io.cucumber.eclipse.java.preferences.JavaPreferencePage"
+          class="io.cucumber.eclipse.java.preferences.CucumberJavaPreferencesPage"
           id="io.cucumber.eclipse.java.page1"
           name="Java">
     </page>

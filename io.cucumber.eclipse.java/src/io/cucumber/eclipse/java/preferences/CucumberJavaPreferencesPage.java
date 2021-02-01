@@ -1,4 +1,4 @@
-package cucumber.eclipse.steps.jdt.ui;
+package io.cucumber.eclipse.java.preferences;
 
 import java.util.ArrayList;
 
@@ -46,7 +46,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.dialogs.SelectionDialog;
 
-import cucumber.eclipse.steps.jdt.Activator;
+import io.cucumber.eclipse.java.Activator;
+import io.cucumber.eclipse.java.CucumberJavaUIMessages;
 
 /**
  * https://github.com/eclipse/eclipse.jdt.debug/blob/master/org.eclipse.jdt.debug.ui/ui/org/eclipse/jdt/internal/debug/ui/JavaStepFilterPreferencePage.java
@@ -85,9 +86,9 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 	private CheckboxTableViewer fTableViewer;
 	private Button fUseStepDefinitionsFiltersButton;
 	private Button fAddPackageButton;
-	private Button fAddTypeButton;
+//	private Button fAddTypeButton;
 	private Button fRemoveFilterButton;
-	private Button fAddFilterButton;
+//	private Button fAddFilterButton;
 	private Button fSelectAllButton;
 	private Button fDeselectAllButton;
 
@@ -216,9 +217,9 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 	 * @since 3.2
 	 */
 	protected void setPageEnablement(boolean enabled) {
-		fAddFilterButton.setEnabled(enabled);
+//		fAddFilterButton.setEnabled(enabled);
 		fAddPackageButton.setEnabled(enabled);
-		fAddTypeButton.setEnabled(enabled);
+//		fAddTypeButton.setEnabled(enabled);
 		fDeselectAllButton.setEnabled(enabled);
 		fSelectAllButton.setEnabled(enabled);
 		fTableViewer.getTable().setEnabled(enabled);
@@ -242,26 +243,26 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 		buttonLayout.marginWidth = 0;
 		buttonContainer.setLayout(buttonLayout);
 		// Add filter button
-		fAddFilterButton = SWTFactory.createPushButton(buttonContainer,
-				CucumberJavaUIMessages.CucumberJavaPreferencesPage__Add_filter,
-				CucumberJavaUIMessages.CucumberJavaPreferencesPage__Key_in_the_name_of_a_new_step_filter, null);
-		fAddFilterButton.addListener(SWT.Selection, new Listener() {
-			@Override
-			public void handleEvent(Event e) {
-				addFilter();
-			}
-		});
-		// Add type button
-		fAddTypeButton = SWTFactory.createPushButton(buttonContainer,
-				CucumberJavaUIMessages.CucumberJavaPreferencesPage__Add_Type,
-				CucumberJavaUIMessages.CucumberJavaPreferencesPage__Choose_a_Java_type_and_add_it_to_step_definitions_filters,
-				null);
-		fAddTypeButton.addListener(SWT.Selection, new Listener() {
-			@Override
-			public void handleEvent(Event e) {
-				addType();
-			}
-		});
+//		fAddFilterButton = SWTFactory.createPushButton(buttonContainer,
+//				CucumberJavaUIMessages.CucumberJavaPreferencesPage__Add_filter,
+//				CucumberJavaUIMessages.CucumberJavaPreferencesPage__Key_in_the_name_of_a_new_step_filter, null);
+//		fAddFilterButton.addListener(SWT.Selection, new Listener() {
+//			@Override
+//			public void handleEvent(Event e) {
+//				addFilter();
+//			}
+//		});
+//		// Add type button
+//		fAddTypeButton = SWTFactory.createPushButton(buttonContainer,
+//				CucumberJavaUIMessages.CucumberJavaPreferencesPage__Add_Type,
+//				CucumberJavaUIMessages.CucumberJavaPreferencesPage__Choose_a_Java_type_and_add_it_to_step_definitions_filters,
+//				null);
+//		fAddTypeButton.addListener(SWT.Selection, new Listener() {
+//			@Override
+//			public void handleEvent(Event e) {
+//				addType();
+//			}
+//		});
 		// Add package button
 		fAddPackageButton = SWTFactory.createPushButton(buttonContainer,
 				CucumberJavaUIMessages.CucumberJavaPreferencesPage__Add__Package,

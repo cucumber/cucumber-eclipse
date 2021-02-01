@@ -1,4 +1,4 @@
-package cucumber.eclipse.steps.jdt.ui;
+package io.cucumber.eclipse.java.preferences;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.StringTokenizer;
 
 import org.eclipse.core.runtime.Platform;
 
-import cucumber.eclipse.steps.jdt.Activator;
+import io.cucumber.eclipse.java.Activator;
 
 public abstract class CucumberJavaPreferences {
 

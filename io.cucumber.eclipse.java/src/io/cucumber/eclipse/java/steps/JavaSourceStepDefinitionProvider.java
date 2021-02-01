@@ -46,6 +46,7 @@ import io.cucumber.eclipse.java.CucumberAnnotation;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.JavaParser;
 import io.cucumber.eclipse.java.MethodDefinition;
+import io.cucumber.eclipse.java.preferences.CucumberJavaPreferences;
 
 /**
  * Scans the source files of a project for step-definitions
@@ -127,16 +128,15 @@ public class JavaSourceStepDefinitionProvider extends JavaStepDefinitionsProvide
 	private List<StepDefinition> getCukeSteps(ICompilationUnit compilationUnit, IProgressMonitor progressMonitor)
 			throws JavaModelException, CoreException {
 
-		//// TODO
-////	if (CucumberJavaPreferences.isUseStepDefinitionsFilters()) {
-////		String[] filters = CucumberJavaPreferences.getStepDefinitionsFilters();
-////		CompilationUnitStepDefinitionsPreferencesFilter filter = new CompilationUnitStepDefinitionsPreferencesFilter(
-////				filters);
-////		if (!filter.accept(compilationUnit)) {
-////			// skip
-////			return new HashSet<StepDefinition>();
-////		}
-////	}
+		if (CucumberJavaPreferences.isUseStepDefinitionsFilters()) {
+			String[] filters = CucumberJavaPreferences.getStepDefinitionsFilters();
+			CompilationUnitStepDefinitionsPreferencesFilter filter = new CompilationUnitStepDefinitionsPreferencesFilter(
+					filters);
+			if (!filter.test(compilationUnit)) {
+				// skip
+				return Collections.emptyList();
+			}
+		}
 		long start = System.currentTimeMillis();
 
 		List<StepDefinition> steps = new ArrayList<StepDefinition>();

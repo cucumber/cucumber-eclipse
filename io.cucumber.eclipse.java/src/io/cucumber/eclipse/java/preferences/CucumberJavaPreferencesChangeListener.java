@@ -1,15 +1,14 @@
-package cucumber.eclipse.steps.jdt.ui;
+package io.cucumber.eclipse.java.preferences;
 
-import static cucumber.eclipse.steps.jdt.ui.CucumberJavaPreferences.*;
+import static io.cucumber.eclipse.java.preferences.CucumberJavaPreferences.PREF_ACTIVE_FILTERS_LIST;
+import static io.cucumber.eclipse.java.preferences.CucumberJavaPreferences.PREF_INACTIVE_FILTERS_LIST;
+import static io.cucumber.eclipse.java.preferences.CucumberJavaPreferences.PREF_USE_STEP_DEFINITIONS_FILTERS;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-
-import cucumber.eclipse.steps.integration.builder.BuilderUtil;
 
 
 public class CucumberJavaPreferencesChangeListener implements IPropertyChangeListener {
@@ -21,7 +20,7 @@ public class CucumberJavaPreferencesChangeListener implements IPropertyChangeLis
 		List<String> listenedPreferences = Arrays.asList(PREF_USE_STEP_DEFINITIONS_FILTERS, PREF_ACTIVE_FILTERS_LIST, PREF_INACTIVE_FILTERS_LIST);
 		
 		if(listenedPreferences.contains(propertyChanged)) {
-			BuilderUtil.buildWorkspace(IncrementalProjectBuilder.FULL_BUILD);
+//			BuilderUtil.buildWorkspace(IncrementalProjectBuilder.FULL_BUILD);
 		}
 		
 	}

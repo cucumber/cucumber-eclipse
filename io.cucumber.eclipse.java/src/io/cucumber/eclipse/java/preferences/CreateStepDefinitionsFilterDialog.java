@@ -1,4 +1,4 @@
-package cucumber.eclipse.steps.jdt.ui;
+package io.cucumber.eclipse.java.preferences;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.internal.ui.actions.StatusInfo;
@@ -19,6 +19,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+
+import io.cucumber.eclipse.java.CucumberJavaUIMessages;
 
 public class CreateStepDefinitionsFilterDialog extends StatusDialog {
 

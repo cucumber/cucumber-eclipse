@@ -1,10 +1,10 @@
-package cucumber.eclipse.steps.jdt.ui;
+package io.cucumber.eclipse.java;
 
 import org.eclipse.osgi.util.NLS;
 
 public class CucumberJavaUIMessages extends NLS {
 
-	private static final String BUNDLE_NAME = "cucumber.eclipse.steps.jdt.ui.CucumberJavaUIMessages";//$NON-NLS-1$
+	private static final String BUNDLE_NAME = "io.cucumber.eclipse.java.CucumberJavaUIMessages";//$NON-NLS-1$
 
     public static String CucumberJavaPreferencesPage__Use_packages_filters;
 	public static String CucumberJavaPreferencesPage__Define_step_definitions_filters;
