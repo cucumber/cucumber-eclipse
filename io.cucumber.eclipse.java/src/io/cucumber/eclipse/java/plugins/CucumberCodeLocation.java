@@ -1,5 +1,6 @@
 package io.cucumber.eclipse.java.plugins;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 /**
@@ -14,46 +15,22 @@ public final class CucumberCodeLocation {
 	private final String type;
 	private final String methodName;
 	private final String[] parameter;
+	private final String returnType;
 	private String location;
 
 	public CucumberCodeLocation(String location) {
-		// examples:
-		// io.cucumber.examples.java.RpnCalculatorSteps.the_result_is(double)
-		// io.cucumber.examples.java.RpnCalculatorSteps.thePreviousEntries(java.util.List<io.cucumber.examples.java.RpnCalculatorSteps$Entry>)
-		// io.cucumber.examples.java.RpnCalculatorSteps.a_calculator_I_just_turned_on()
-		// io.cucumber.examples.java.RpnCalculatorSteps.I_press(java.lang.String)
-		// io.cucumber.examples.java.RpnCalculatorSteps.adding(int,int)
 		this.location = location;
-		int braceIndex = location.indexOf('(');
-		if (braceIndex > 0) {
-			String typeInfo = location.substring(0, braceIndex);
-			int indexOf = typeInfo.lastIndexOf('.');
-			type = indexOf > 0 ? typeInfo.substring(0, indexOf) : "";
+		String typeInfo = prefixOfChar(location, '(', true);
+		this.returnType = prefixOfChar(typeInfo, ' ', true);
+		this.type = prefixOfChar(typeInfo.substring(returnType.length()), '.', false).trim();
+		this.methodName = suffixOfChar(typeInfo, '.', false);
+		String parameterInfo = prefixOfChar(suffixOfChar(location, '(', true), ')', true);
+		if (parameterInfo.isBlank()) {
+			parameter = new String[0];
 		} else {
-			type = "";
-		}
-		{
-			String methodInfo = location.substring(type.length() + 1);
-			int indexOf = methodInfo.indexOf('(');
-			if (indexOf > 0) {
-				methodName = methodInfo.substring(0, indexOf);
-				int endIndex = methodInfo.indexOf(')', indexOf);
-				if (endIndex > 0) {
-					String parameterInfo = methodInfo.substring(indexOf + 1, endIndex);
-					if (parameterInfo.isBlank()) {
-						parameter = new String[0];
-					} else {
-						parameter = parameterInfo.split(",");
-						for (int i = 0; i < parameter.length; i++) {
-							parameter[i] = parameter[i].trim();
-						}
-					}
-				} else {
-					parameter = new String[0];
-				}
-			} else {
-				methodName = "";
-				parameter = new String[0];
+			parameter = parameterInfo.split(",");
+			for (int i = 0; i < parameter.length; i++) {
+				parameter[i] = parameter[i].trim();
 			}
 		}
 	}
@@ -94,6 +71,41 @@ public final class CucumberCodeLocation {
 
 	@Override
 	public String toString() {
-		return location;
+		return location + " [type=" + type + ", methodName=" + methodName + ", parameter=" + Arrays.toString(parameter)
+				+ ", returnType=" + returnType + "]";
+	}
+
+	private static String prefixOfChar(String string, char c, boolean first) {
+		int index;
+		if (first) {
+			index = string.indexOf(c);
+		} else {
+			index = string.lastIndexOf(c);
+		}
+		return index > 0 ? string.substring(0, index) : "";
+	}
+
+	private static String suffixOfChar(String string, char c, boolean first) {
+		int index;
+		if (first) {
+			index = string.indexOf(c);
+		} else {
+			index = string.lastIndexOf(c);
+		}
+		return index > 0 ? string.substring(index + 1, string.length()) : "";
+	}
+
+	public static void main(String[] args) {
+		System.out.println(
+				new CucumberCodeLocation("io.cucumber.examples.java.RpnCalculatorSteps.the_result_is(double)"));
+		System.out.println(new CucumberCodeLocation(
+				"io.cucumber.examples.java.RpnCalculatorSteps.thePreviousEntries(java.util.List<io.cucumber.examples.java.RpnCalculatorSteps$Entry>)"));
+		System.out.println(new CucumberCodeLocation(
+				"io.cucumber.examples.java.RpnCalculatorSteps.a_calculator_I_just_turned_on()"));
+		System.out.println(
+				new CucumberCodeLocation("io.cucumber.examples.java.RpnCalculatorSteps.I_press(java.lang.String)"));
+		System.out.println(new CucumberCodeLocation("io.cucumber.examples.java.RpnCalculatorSteps.adding(int,int)"));
+		System.out.println(
+				new CucumberCodeLocation("void io.cucumber.examples.java.RpnCalculatorSteps.givenClientIsAvailable()"));
 	}
 }

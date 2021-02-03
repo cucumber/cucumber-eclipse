@@ -37,7 +37,6 @@ import io.cucumber.eclipse.java.plugins.CucumberEclipsePlugin;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;
 import io.cucumber.messages.Messages.Envelope;
 import io.cucumber.messages.Messages.GherkinDocument;
-import io.cucumber.messages.Messages.GherkinDocument.Feature.FeatureChild;
 import io.cucumber.messages.Messages.GherkinDocument.Feature.Scenario;
 import io.cucumber.messages.Messages.Location;
 import io.cucumber.messages.Messages.TestCaseStarted;
@@ -135,7 +134,7 @@ public class CucumberRuntimeLauncher implements ILauncher {
 				
 				@Override
 				public void accept(Envelope envelope) {
-					System.out.println(envelope);
+//					System.out.println(envelope);
 					if (envelope.hasTestCaseStarted()) {
 						TestCaseStarted testCaseStarted = envelope.getTestCaseStarted();
 						String testCaseId = testCaseStarted.getTestCaseId();
@@ -153,8 +152,8 @@ public class CucumberRuntimeLauncher implements ILauncher {
 						gherkinDocument = envelope.getGherkinDocument();
 					} else if (envelope.hasTestRunFinished()) {
 						// Feature id maps to the pickle -> ast_node_ids
-						gherkinDocument.getFeature().getChildrenList().stream().filter(FeatureChild::hasScenario)
-								.map(FeatureChild::getScenario).forEach(s -> System.out.println(s.getId()));
+//						gherkinDocument.getFeature().getChildrenList().stream().filter(FeatureChild::hasScenario)
+//								.map(FeatureChild::getScenario).forEach(s -> System.out.println(s.getId()));
 
 //						gherkinDocument.getFeature().getChildrenList().stream().filter(FeatureChild::hasScenario)
 //								.map(FeatureChild::getScenario).flatMap(scenario -> scenario.getStepsList().stream())

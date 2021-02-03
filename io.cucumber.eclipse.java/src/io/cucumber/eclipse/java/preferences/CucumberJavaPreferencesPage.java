@@ -29,14 +29,13 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.TableItem;
@@ -84,7 +83,7 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 
 	// widgets
 	private CheckboxTableViewer fTableViewer;
-	private Button fUseStepDefinitionsFiltersButton;
+//	private Button fUseStepDefinitionsFiltersButton;
 	private Button fAddPackageButton;
 //	private Button fAddTypeButton;
 	private Button fRemoveFilterButton;
@@ -144,22 +143,26 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 	 */
 	private void createStepFilterPreferences(Composite parent) {
 		Composite container = SWTFactory.createComposite(parent, parent.getFont(), 2, 1, GridData.FILL_BOTH, 0, 0);
-		fUseStepDefinitionsFiltersButton = SWTFactory.createCheckButton(container,
-				CucumberJavaUIMessages.CucumberJavaPreferencesPage__Use_packages_filters, null,
-				CucumberJavaPreferences.isUseStepDefinitionsFilters(), 2);
-		fUseStepDefinitionsFiltersButton.addSelectionListener(new SelectionListener() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				setPageEnablement(fUseStepDefinitionsFiltersButton.getSelection());
-			}
-
-			@Override
-			public void widgetDefaultSelected(SelectionEvent e) {
-			}
-		});
-		SWTFactory.createLabel(container,
-				CucumberJavaUIMessages.CucumberJavaPreferencesPage__Define_step_definitions_filters, 2);
-		fTableViewer = CheckboxTableViewer.newCheckList(container,
+		Group group = new Group(container, SWT.NONE);
+		group.setText(" Cucumber Glue Packages ");
+		group.setLayout(new GridLayout(2, false));
+		group.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+//		fUseStepDefinitionsFiltersButton = SWTFactory.createCheckButton(container,
+//				CucumberJavaUIMessages.CucumberJavaPreferencesPage__Use_packages_filters, null,
+//				CucumberJavaPreferences.isUseStepDefinitionsFilters(), 2);
+//		fUseStepDefinitionsFiltersButton.addSelectionListener(new SelectionListener() {
+//			@Override
+//			public void widgetSelected(SelectionEvent e) {
+//				setPageEnablement(fUseStepDefinitionsFiltersButton.getSelection());
+//			}
+//
+//			@Override
+//			public void widgetDefaultSelected(SelectionEvent e) {
+//			}
+//		});
+//		SWTFactory.createLabel(container,
+//				CucumberJavaUIMessages.CucumberJavaPreferencesPage__Define_step_definitions_filters, 2);
+		fTableViewer = CheckboxTableViewer.newCheckList(group,
 				SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
 		fTableViewer.getTable().setFont(container.getFont());
 		fTableViewer.setLabelProvider(new FilterLabelProvider());
@@ -191,9 +194,9 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 			}
 		});
 
-		createStepFilterButtons(container);
+		createStepFilterButtons(group);
 
-		setPageEnablement(fUseStepDefinitionsFiltersButton.getSelection());
+//		setPageEnablement(fUseStepDefinitionsFiltersButton.getSelection());
 	}
 
 	/**
@@ -209,22 +212,22 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 		}
 	}
 
-	/**
-	 * Enables or disables the widgets on the page, with the exception of
-	 * <code>fUseStepFiltersButton</code> according to the passed boolean
-	 * 
-	 * @param enabled the new enablement status of the page's widgets
-	 * @since 3.2
-	 */
-	protected void setPageEnablement(boolean enabled) {
-//		fAddFilterButton.setEnabled(enabled);
-		fAddPackageButton.setEnabled(enabled);
-//		fAddTypeButton.setEnabled(enabled);
-		fDeselectAllButton.setEnabled(enabled);
-		fSelectAllButton.setEnabled(enabled);
-		fTableViewer.getTable().setEnabled(enabled);
-		fRemoveFilterButton.setEnabled(enabled & !fTableViewer.getSelection().isEmpty());
-	}
+//	/**
+//	 * Enables or disables the widgets on the page, with the exception of
+//	 * <code>fUseStepFiltersButton</code> according to the passed boolean
+//	 * 
+//	 * @param enabled the new enablement status of the page's widgets
+//	 * @since 3.2
+//	 */
+//	protected void setPageEnablement(boolean enabled) {
+////		fAddFilterButton.setEnabled(enabled);
+//		fAddPackageButton.setEnabled(enabled);
+////		fAddTypeButton.setEnabled(enabled);
+//		fDeselectAllButton.setEnabled(enabled);
+//		fSelectAllButton.setEnabled(enabled);
+//		fTableViewer.getTable().setEnabled(enabled);
+//		fRemoveFilterButton.setEnabled(enabled & !fTableViewer.getSelection().isEmpty());
+//	}
 
 	/**
 	 * Creates the button for the step filter options
@@ -397,7 +400,7 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 	public boolean performOk() {
 		
 		IPreferenceStore store = getPreferenceStore();
-		store.setValue(CucumberJavaPreferences.PREF_USE_STEP_DEFINITIONS_FILTERS, fUseStepDefinitionsFiltersButton.getSelection());
+//		store.setValue(CucumberJavaPreferences.PREF_USE_STEP_DEFINITIONS_FILTERS, fUseStepDefinitionsFiltersButton.getSelection());
 		
 		ArrayList<String> active = new ArrayList<String>();
 		ArrayList<String> inactive = new ArrayList<String>();
@@ -430,8 +433,8 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 	@Override
 	protected void performDefaults() {
 		boolean stepenabled = CucumberJavaPreferences.isUseStepDefinitionsFilters();
-		fUseStepDefinitionsFiltersButton.setSelection(stepenabled);
-		setPageEnablement(stepenabled);
+//		fUseStepDefinitionsFiltersButton.setSelection(stepenabled);
+//		setPageEnablement(stepenabled);
 		fTableViewer.getTable().removeAll();
 		initTableState(true);
 		super.performDefaults();

@@ -15,8 +15,8 @@ public abstract class CucumberJavaPreferences {
 	public static final String PREF_INACTIVE_FILTERS_LIST = Activator.PLUGIN_ID + ".inactive_filters";
 
 	public static boolean isUseStepDefinitionsFilters() {
-		return Platform.getPreferencesService().getBoolean(Activator.PLUGIN_ID, PREF_USE_STEP_DEFINITIONS_FILTERS,
-				false, null);
+
+		return getStepDefinitionsFilters().length > 0;
 	}
 
 	public static String[] getStepDefinitionsFilters() {

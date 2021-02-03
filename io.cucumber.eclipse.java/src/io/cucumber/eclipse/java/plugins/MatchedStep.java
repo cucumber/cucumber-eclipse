@@ -34,4 +34,9 @@ public abstract class MatchedStep<T extends TestStep> {
 		return codeLocation;
 	}
 
+	@Override
+	public String toString() {
+		return testStep + ": " + location + " -> " + codeLocation;
+	}
+
 }

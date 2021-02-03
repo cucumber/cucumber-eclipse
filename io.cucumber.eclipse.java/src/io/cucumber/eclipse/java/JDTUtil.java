@@ -35,6 +35,7 @@ import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IImportDeclaration;
 import org.eclipse.jdt.core.IJavaModel;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IType;
@@ -186,12 +187,48 @@ public class JDTUtil {
 			IMethod[] candidates = Arrays.stream(type.getMethods())
 					.filter(method -> method.getElementName().equals(methodName)).toArray(IMethod[]::new);
 			if (candidates.length > 1) {
-				// FIXME try to find match method parameters!
+				String[] parameter = codeLocation.getParameter();
+				return Arrays.stream(candidates).filter(method -> {
+					return method.getNumberOfParameters() == parameter.length;
+				}).filter(method -> {
+					try {
+						String[] resolvedMethodParameterNames = resolveMethodParameterNames(method);
+						for (int i = 0; i < parameter.length; i++) {
+							if (!resolvedMethodParameterNames[i].equals(parameter[i])) {
+								return false;
+							}
+						}
+						return true;
+					} catch (JavaModelException e) {
+						return false;
+					}
+				}).toArray(IMethod[]::new);
+
 			}
 			return candidates;
 		}
 		return new IMethod[0];
 	}
+
+	public static String[] resolveMethodParameterNames(IMethod method) throws JavaModelException {
+		ILocalVariable[] parameters = method.getParameters();
+		String[] strings = new String[parameters.length];
+		IType declaringType = method.getDeclaringType();
+		for (int i = 0; i < strings.length; i++) {
+			ILocalVariable v = parameters[i];
+			String name = v.getTypeSignature();
+			String simpleName = Signature.getSignatureSimpleName(name);
+			String[][] resolved = declaringType.resolveType(simpleName);
+			if (resolved != null) {
+				strings[i] = Signature.toQualifiedName(resolved[0]);
+			} else {
+				strings[i] = simpleName;
+			}
+
+		}
+		return strings;
+	}
+
 
 	public static String getMethodName(IMethod method) throws JavaModelException {
 		StringBuilder name = new StringBuilder();
