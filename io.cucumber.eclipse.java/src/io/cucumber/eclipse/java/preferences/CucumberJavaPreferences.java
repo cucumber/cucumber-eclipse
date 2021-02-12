@@ -13,10 +13,16 @@ public abstract class CucumberJavaPreferences {
 	public static final String PREF_USE_STEP_DEFINITIONS_FILTERS = Activator.PLUGIN_ID + ".use_step_definitions_filters";
 	public static final String PREF_ACTIVE_FILTERS_LIST = Activator.PLUGIN_ID + ".active_filters";
 	public static final String PREF_INACTIVE_FILTERS_LIST = Activator.PLUGIN_ID + ".inactive_filters";
+	public static final String PREF_SHOW_HOOK_ANNOTATIONS = Activator.PLUGIN_ID + ".show_hooks";
 
 	public static boolean isUseStepDefinitionsFilters() {
 
 		return getStepDefinitionsFilters().length > 0;
+	}
+
+	public static boolean showHooks() {
+
+		return Activator.getDefault().getPreferenceStore().getBoolean(PREF_SHOW_HOOK_ANNOTATIONS);
 	}
 
 	public static String[] getStepDefinitionsFilters() {

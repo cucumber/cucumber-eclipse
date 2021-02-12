@@ -27,9 +27,6 @@ import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.osgi.service.debug.DebugTrace;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.texteditor.ITextEditor;
 
 import io.cucumber.core.gherkin.FeatureParserException;
 import io.cucumber.eclipse.editor.Tracing;
@@ -177,18 +174,24 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 
 	public static Collection<MatchedStep<?>> getMatchedSteps(IDocument document, IProgressMonitor monitor)
 			throws OperationCanceledException, InterruptedException {
-		GlueJob job = sync(document, monitor);
-		if (job != null) {
-			return job.matchedSteps;
+//TODO		Objects.requireNonNull(document);
+		if (document != null) {
+			GlueJob job = sync(document, monitor);
+			if (job != null) {
+				return job.matchedSteps;
+			}
 		}
 		return Collections.emptyList();
 	}
 
 	public static Collection<CucumberStepDefinition> getAvaiableSteps(IDocument document, IProgressMonitor monitor)
 			throws OperationCanceledException, InterruptedException {
-		GlueJob job = sync(document, monitor);
-		if (job != null) {
-			return job.parsedSteps;
+		// TODO Objects.requireNonNull(document);
+		if (document != null) {
+			GlueJob job = sync(document, monitor);
+			if (job != null) {
+				return job.parsedSteps;
+			}
 		}
 		return Collections.emptyList();
 	}
@@ -252,9 +255,7 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 							try {
 								rt.run(monitor);
 								Map<Integer, Collection<String>> snippets = missingStepsPlugin.getSnippets();
-								MarkerFactory.missingSteps(resource, snippets,
-										Activator.PLUGIN_ID,
-										persistent);
+								MarkerFactory.missingSteps(resource, snippets, Activator.PLUGIN_ID, persistent);
 								Collection<CucumberStepDefinition> steps = stepParserPlugin.getStepList();
 								matchedSteps = Collections.unmodifiableCollection(matchedStepsPlugin.getMatchedSteps());
 								parsedSteps = Collections.unmodifiableCollection(stepParserPlugin.getStepList());
@@ -266,15 +267,15 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 									ITextFileBuffer buffer = FileBuffers.getTextFileBufferManager()
 											.getTextFileBuffer(document);
 									if (buffer != null) {
-										IEditorPart editorPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-												.getActivePage().getActiveEditor();
-										if (editorPart instanceof ITextEditor) {
-											ITextEditor textEditor = (ITextEditor) editorPart;
-											if (textEditor.getDocumentProvider()
-													.getDocument(textEditor.getEditorInput()) == document) {
-												// FIXME how to get the Textbuffer?
-											}
-										}
+//										IEditorPart editorPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+//												.getActivePage().getActiveEditor();
+//										if (editorPart instanceof ITextEditor) {
+//											ITextEditor textEditor = (ITextEditor) editorPart;
+//											if (textEditor.getDocumentProvider()
+//													.getDocument(textEditor.getEditorInput()) == document) {
+//												// FIXME how to get the Textbuffer?
+//											}
+//										}
 
 									}
 								}

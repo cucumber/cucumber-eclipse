@@ -29,16 +29,19 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Position;
 
 import io.cucumber.gherkin.Gherkin;
 import io.cucumber.gherkin.GherkinDialect;
 import io.cucumber.gherkin.GherkinDialectProvider;
 import io.cucumber.gherkin.Location;
+import io.cucumber.gherkin.ParserException.NoSuchLanguageException;
 import io.cucumber.messages.IdGenerator;
 import io.cucumber.messages.Messages.Envelope;
 import io.cucumber.messages.Messages.GherkinDocument;
 import io.cucumber.messages.Messages.GherkinDocument.Feature;
+import io.cucumber.messages.Messages.GherkinDocument.Feature.Background;
 import io.cucumber.messages.Messages.GherkinDocument.Feature.FeatureChild;
 import io.cucumber.messages.Messages.GherkinDocument.Feature.Scenario;
 import io.cucumber.messages.Messages.GherkinDocument.Feature.Scenario.Examples;
@@ -95,9 +98,24 @@ public final class GherkinEditorDocument {
 		this.document = document;
 		sources = Gherkin.fromSources(Collections.singletonList(Gherkin.makeSourceEnvelope(document.get(), "")), true,
 				true, false, new IdGenerator.Incrementing()).toArray(Envelope[]::new);
-		System.out.println("Created GherkinDocument with " + sources.length + " envelopes");
 		dialect = getFeature().map(f -> f.getLanguage()).filter(Objects::nonNull).filter(Predicate.not(String::isBlank))
-				.map(lang -> provider.getDialect(lang, new Location(-1, -1))).orElseGet(provider::getDefaultDialect);
+				.map(lang -> provider.getDialect(lang, new Location(-1, -1))).orElseGet(() -> {
+					try {
+						IRegion firstLine = document.getLineInformation(0);
+						String line = document.get(firstLine.getOffset(), firstLine.getLength()).trim();
+						if (line.startsWith("#")) {
+							String[] split = line.split("language:", 2);
+							if (split.length == 2) {
+								try {
+									return provider.getDialect(split[1].trim(), new Location(-1, -1));
+								} catch (NoSuchLanguageException e) {
+								}
+							}
+						}
+					} catch (BadLocationException e) {
+					}
+					return provider.getDefaultDialect();
+				});
 		locale = Locale.forLanguageTag(dialect.getLanguage());
 	}
 
@@ -122,13 +140,14 @@ public final class GherkinEditorDocument {
 	public Position getPosition(io.cucumber.messages.Messages.Location location) throws BadLocationException {
 		return getPosition(location, 0);
 	}
-	
-	public Position getPosition(io.cucumber.messages.Messages.Location location, int lineOffset) throws BadLocationException {
+
+	public Position getPosition(io.cucumber.messages.Messages.Location location, int lineOffset)
+			throws BadLocationException {
 		int line = location.getLine();
-		int offset = document.getLineOffset(line - 1-lineOffset);
+		int offset = document.getLineOffset(line - 1 - lineOffset);
 		return new Position(offset + location.getColumn() - 1, 1);
 	}
-	
+
 	public Position getEolPosition(io.cucumber.messages.Messages.Location location) throws BadLocationException {
 		int line = location.getLine();
 		int offset = document.getLineOffset(line - 1);
@@ -177,10 +196,17 @@ public final class GherkinEditorDocument {
 	}
 
 	public Stream<Step> getSteps() {
-		return getScenarios().flatMap(scenario -> scenario.getStepsList().stream()).distinct();
+		Stream<Step> backgroundSteps = getBackgrounds().flatMap(bg -> bg.getStepsList().stream());
+		Stream<Step> scenarioSteps = getScenarios().flatMap(scenario -> scenario.getStepsList().stream());
+		return Stream.concat(scenarioSteps, backgroundSteps).distinct();
+	}
+
+	public Stream<Background> getBackgrounds() {
+		return getFeatureChilds().filter(FeatureChild::hasBackground).map(FeatureChild::getBackground);
 	}
 
 	public Stream<Tag> getTags() {
+
 		return Stream.concat(getExamples().flatMap(example -> example.getTagsList().stream()),
 				Stream.concat(getScenarios().flatMap(scenario -> scenario.getTagsList().stream()),
 						getFeature().stream().flatMap(feature -> feature.getTagsList().stream())))

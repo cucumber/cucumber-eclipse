@@ -47,31 +47,32 @@ public class CucumberRunCodeMiningProvider implements ICodeMiningProvider {
 	public CompletableFuture<List<? extends ICodeMining>> provideCodeMinings(ITextViewer viewer,
 			IProgressMonitor monitor) {
 		return CompletableFuture.supplyAsync(() -> {
-					IDocument document = viewer.getDocument();
+			IDocument document = viewer.getDocument();
 
-					GherkinEditorDocument editorDocument = GherkinEditorDocument.get(document);
-					if (editorDocument == null) {
-						return Collections.emptyList();
-					}
-					List<ICodeMining> list = new ArrayList<>();
-					for (ILauncher launcher : CucumberServiceRegistry.getLauncher()) {
-						if (launcher.supports(editorDocument.getResource())) {
-							for (Mode mode : ILauncher.Mode.values()) {
-								if (launcher.supports(mode)) {
-									runnable(editorDocument.getScenarios(), Scenario::getLocation, editorDocument, launcher,
-											mode)
-											.forEach(list::add);
-									runnable(editorDocument.getFeature().stream(), Feature::getLocation, editorDocument,
-											launcher, mode)
-											.forEach(list::add);
-									runnable(editorDocument.getTags(), Tag::getLocation, editorDocument, launcher, mode)
-											.forEach(list::add);
-								}
-							}
+			GherkinEditorDocument editorDocument = GherkinEditorDocument.get(document);
+			if (editorDocument == null) {
+				return Collections.emptyList();
+			}
+			List<ICodeMining> list = new ArrayList<>();
+			for (Mode mode : ILauncher.Mode.values()) {
+				if (!mode.showShortcut()) {
+					continue;
+				}
+				for (ILauncher launcher : CucumberServiceRegistry.getLauncher()) {
+					if (launcher.supports(editorDocument.getResource())) {
+						if (launcher.supports(mode)) {
+							runnable(editorDocument.getScenarios(), Scenario::getLocation, editorDocument, launcher,
+									mode).forEach(list::add);
+							runnable(editorDocument.getFeature().stream(), Feature::getLocation, editorDocument,
+									launcher, mode).forEach(list::add);
+							runnable(editorDocument.getTags(), Tag::getLocation, editorDocument, launcher, mode)
+									.forEach(list::add);
 						}
 					}
-					return list;
-				});
+				}
+			}
+			return list;
+		});
 	}
 
 	private <T> Stream<RunnableElementCodeMining> runnable(Stream<T> stream, Function<T, Location> locationProvider,
@@ -105,8 +106,7 @@ public class CucumberRunCodeMiningProvider implements ICodeMiningProvider {
 		private ILauncher launcher;
 
 		public RunnableElementCodeMining(Position position, Object element, ILauncher launcher, Mode mode,
-				ICodeMiningProvider provider)
-				throws BadLocationException {
+				ICodeMiningProvider provider) throws BadLocationException {
 			super(position, provider);
 			this.element = element;
 			this.launcher = launcher;
@@ -132,7 +132,6 @@ public class CucumberRunCodeMiningProvider implements ICodeMiningProvider {
 				});
 			});
 		}
-
 
 		private Object getElement() {
 			if (element instanceof Tag) {

@@ -3,13 +3,17 @@ package io.cucumber.eclipse.java.quickfix;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.text.BadLocationException;
@@ -56,10 +60,9 @@ public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionG
 					if (editorDocument != null) {
 						Collection<ICompilationUnit> glueSources = JDTUtil.getGlueSources(project, null);
 						// TODO sort?, show sources that are used in the document first?
-						String snippet = marker.getAttribute(MarkerFactory.UNMATCHED_STEP_SNIPPET_ATTRIBUTE, "");
 						return glueSources.stream().filter(unit -> unit.getResource() instanceof IFile)
 								.sorted((c1, c2) -> c1.getElementName().compareToIgnoreCase(c2.getElementName()))
-								.map(unit -> new StepCreationMarkerResolution(unit, editorDocument, snippet))
+								.map(unit -> new StepCreationMarkerResolution(unit, editorDocument))
 								.toArray(IMarkerResolution[]::new);
 
 					}
@@ -84,23 +87,39 @@ public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionG
 	private static class StepCreationMarkerResolution extends WorkbenchMarkerResolution implements IMarkerResolution {
 		private ICompilationUnit unit;
 		private GherkinEditorDocument editorDocument;
-		private String snippet;
 
-		public StepCreationMarkerResolution(ICompilationUnit unit, GherkinEditorDocument editorDocument,
-				String snippet) {
+		public StepCreationMarkerResolution(ICompilationUnit unit, GherkinEditorDocument editorDocument) {
 			this.unit = unit;
 			this.editorDocument = editorDocument;
-			this.snippet = snippet;
 		}
 
 		@Override
 		public void run(IMarker marker) {
+			String snippet = marker.getAttribute(MarkerFactory.UNMATCHED_STEP_SNIPPET_ATTRIBUTE, "");
+			applySnippet(snippet);
+		}
+
+		private void applySnippet(String snippet) {
 			try {
 				SnippetApplicator.generateSnippet(snippet, (IFile) unit.getResource());
 				CucumberGlueValidator.revalidate(editorDocument.getDocument());
 			} catch (CoreException | MalformedTreeException | IOException | BadLocationException e) {
 				Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
 						String.format("Couldn't generate snippet %s for %s", snippet, unit.getResource()), e));
+			}
+		}
+
+		@Override
+		public void run(IMarker[] markers, IProgressMonitor monitor) {
+			// TODO apply as one big edit
+			SubMonitor subMonitor = SubMonitor.convert(monitor, markers.length);
+			Set<String> created = new HashSet<>();
+			for (IMarker marker : markers) {
+				String snippet = marker.getAttribute(MarkerFactory.UNMATCHED_STEP_SNIPPET_ATTRIBUTE, "");
+				if (created.add(snippet)) {
+					applySnippet(snippet);
+				}
+				subMonitor.worked(1);
 			}
 		}
 

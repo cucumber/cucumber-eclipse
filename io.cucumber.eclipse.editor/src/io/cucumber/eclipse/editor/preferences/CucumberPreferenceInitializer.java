@@ -4,6 +4,7 @@ import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import io.cucumber.eclipse.editor.Activator;
+import io.cucumber.eclipse.editor.launching.ILauncher.Mode;
 import io.cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants.CucumberIndentationStyle;
 
 public class CucumberPreferenceInitializer extends
@@ -21,6 +22,9 @@ public class CucumberPreferenceInitializer extends
 		
 		//#239:Only match step implementation in same package as feature file
 		store.setDefault(StepPreferences.PREF_GLUE_ONLY_IN_SAME_LOCATION, false);
+		for (Mode mode : Mode.values()) {
+			store.setDefault(ICucumberPreferenceConstants.PREF_SHOW_RUN_SHORTCUT_PREFIX + mode.name(), true);
+		}
 	}
 
 }

@@ -27,7 +27,7 @@ import io.cucumber.eclipse.editor.steps.IStepDefinitionsProvider;
  * @author christoph
  *
  */
-@Component(service = {})
+@Component(service = { CucumberServiceRegistry.class })
 public class CucumberServiceRegistry {
 
 	@Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)

@@ -22,6 +22,7 @@ public class SnippetApplicator {
 	
 	public static void generateSnippet(String snippet, IFile stepFile)
 			throws IOException, CoreException, MalformedTreeException, BadLocationException {
+		// TODO allow to define additional formating e.g. javadoc
 		ITextEditor editor = openEditor(stepFile);
 		IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
 		TextEdit textEdit = StepGenerator.createStepSnippet(snippet, document);

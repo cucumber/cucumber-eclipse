@@ -90,6 +90,7 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 //	private Button fAddFilterButton;
 	private Button fSelectAllButton;
 	private Button fDeselectAllButton;
+	private Button showHookAnnotations;
 
 	/**
 	 * Constructor
@@ -142,7 +143,7 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 	 * Create a group to contain the step filter related widgetry
 	 */
 	private void createStepFilterPreferences(Composite parent) {
-		Composite container = SWTFactory.createComposite(parent, parent.getFont(), 2, 1, GridData.FILL_BOTH, 0, 0);
+		Composite container = SWTFactory.createComposite(parent, parent.getFont(), 1, 1, GridData.FILL_BOTH, 0, 0);
 		Group group = new Group(container, SWT.NONE);
 		group.setText(" Cucumber Glue Packages ");
 		group.setLayout(new GridLayout(2, false));
@@ -197,6 +198,9 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 		createStepFilterButtons(group);
 
 //		setPageEnablement(fUseStepDefinitionsFiltersButton.getSelection());
+		showHookAnnotations = new Button(container, SWT.CHECK);
+		showHookAnnotations.setSelection(CucumberJavaPreferences.showHooks());
+		showHookAnnotations.setText("Show Hook Annotations in Feature files");
 	}
 
 	/**
@@ -418,6 +422,8 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 		store.setValue(CucumberJavaPreferences.PREF_ACTIVE_FILTERS_LIST, pref);
 		pref = CucumberJavaPreferences.serializeList(inactive.toArray(new String[inactive.size()]));
 		store.setValue(CucumberJavaPreferences.PREF_INACTIVE_FILTERS_LIST, pref);
+
+		store.setValue(CucumberJavaPreferences.PREF_SHOW_HOOK_ANNOTATIONS, showHookAnnotations.getSelection());
 		return super.performOk();
 	}
 
@@ -437,6 +443,8 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 //		setPageEnablement(stepenabled);
 		fTableViewer.getTable().removeAll();
 		initTableState(true);
+		showHookAnnotations.setSelection(
+				getPreferenceStore().getDefaultBoolean(CucumberJavaPreferences.PREF_SHOW_HOOK_ANNOTATIONS));
 		super.performDefaults();
 	}
 

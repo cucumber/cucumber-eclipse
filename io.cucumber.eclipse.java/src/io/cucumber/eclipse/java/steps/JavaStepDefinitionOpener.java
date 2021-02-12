@@ -1,5 +1,6 @@
 package io.cucumber.eclipse.java.steps;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -15,6 +16,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.JavaUI;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Display;
@@ -24,6 +26,7 @@ import org.eclipse.ui.PartInitException;
 import org.osgi.service.component.annotations.Component;
 
 import io.cucumber.eclipse.editor.hyperlinks.IStepDefinitionOpener;
+import io.cucumber.eclipse.java.Activator;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberCodeLocation;
 import io.cucumber.eclipse.java.plugins.MatchedPickleStep;
@@ -41,13 +44,11 @@ public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
 		try {
 			if (methods.length == 1) {
 				open(methods[0]);
+			} else {
+				Activator.getDefault().getLog().warn("More than one method matches: " + Arrays.toString(methods));
 			}
-		} catch (PartInitException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JavaModelException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (PartInitException | JavaModelException e) {
+			Activator.error("Open target method failed", e);
 		}
 	}
 
@@ -61,10 +62,12 @@ public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
 	public boolean openInEditor(ITextViewer textViewer, IResource resource, Step step) throws CoreException {
 		IJavaProject project = JDTUtil.getJavaProject(resource);
 		if (project == null) {
+			Activator.getDefault().getLog().warn("Not a javaproject, canOpen not called?");
 			return false;
 		}
 		AtomicReference<IMethod[]> resolvedMethods = new AtomicReference<>();
 		Display display = textViewer.getTextWidget().getDisplay();
+		IDocument document = textViewer.getDocument();
 		BusyIndicator.showWhile(display, () -> {
 			AtomicBoolean done = new AtomicBoolean();
 			Job job = Job.create("Search for step '" + step.getText() + "'", new ICoreRunnable() {
@@ -73,17 +76,42 @@ public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
 				public void run(IProgressMonitor monitor) throws CoreException {
 					try {
 						Collection<MatchedStep<?>> steps = CucumberGlueValidator
-								.getMatchedSteps(textViewer.getDocument(), monitor);
+								.getMatchedSteps(document, monitor);
+
+						StringBuilder sb = new StringBuilder();
+						sb.append("step '");
+						sb.append(step.getText());
+						sb.append("' line: ");
+						sb.append(step.getLocation().getLine());
+						sb.append("\r\nmatched steps are:\r\n");
+						for (MatchedStep<?> matched : steps) {
+							if (matched instanceof MatchedPickleStep) {
+								MatchedPickleStep pickleStep = (MatchedPickleStep) matched;
+								sb.append(
+										"pickleStep.getTestStep().getPattern='" + pickleStep.getTestStep().getPattern()
+										+ " -> "
+												+ "' ["
+										+ pickleStep.getCodeLocation() + "]");
+								sb.append(" line: " + matched.getLocation().getLine());
+								sb.append("  getTestStep().getStep().getText='"
+										+ pickleStep.getTestStep().getStep().getText());
+								sb.append("'\r\n");
+							}
+						}
 
 						CucumberCodeLocation location = steps.stream()
 								.filter(matched -> step.getLocation().getLine() == matched.getLocation().getLine())
 								.filter(MatchedPickleStep.class::isInstance).map(MatchedPickleStep.class::cast)
-								.filter(matched -> matched.getTestStep().getStep().getText()
-										.equalsIgnoreCase(step.getText()))
+						// FIXME we need the data from the messages here....
+//								.filter(matched -> matched.getTestStep().getStep().getText()
+//										.equalsIgnoreCase(step.getText()))
 								.map(matched -> matched.getCodeLocation()).findFirst().orElse(null);
+						sb.append(" found -> " + location + "\r\n");
+						Activator.getDefault().getLog().info(sb.toString());
 						if (location != null) {
 							resolvedMethods.set(JDTUtil.resolveMethod(project, location, monitor));
 						}
+
 					} catch (InterruptedException e) {
 					} finally {
 						done.set(true);

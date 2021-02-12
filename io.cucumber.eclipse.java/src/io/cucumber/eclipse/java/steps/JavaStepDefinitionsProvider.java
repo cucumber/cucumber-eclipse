@@ -160,6 +160,10 @@ public abstract class JavaStepDefinitionsProvider implements IStepDefinitionsPro
 
 	protected static StepParameter[] getParameter(IMethod method) throws JavaModelException {
 
+		return getParameterInternal(method, Runtime.getRuntime().availableProcessors());
+	}
+
+	private static StepParameter[] getParameterInternal(IMethod method, int retry) throws JavaModelException {
 		ILocalVariable[] parameters = method.getParameters();
 		StepParameter[] stepParameters = new StepParameter[parameters.length];
 		for (int i = 0; i < stepParameters.length; i++) {
@@ -168,7 +172,8 @@ public abstract class JavaStepDefinitionsProvider implements IStepDefinitionsPro
 			String simpleName = Signature.getSignatureSimpleName(name);
 			String[] values = null;
 			if (simpleName != null) {
-				String[][] resolved = method.getDeclaringType().resolveType(simpleName);
+				String[][] resolved = JDTUtil.resolveTypeWithRetry(method.getDeclaringType().getDeclaringType(),
+						simpleName);
 				if (resolved != null) {
 					String qualifiedName = Signature.toQualifiedName(resolved[0]);
 					IType type = method.getJavaProject().findType(qualifiedName);

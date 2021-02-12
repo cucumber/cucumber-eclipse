@@ -33,7 +33,6 @@ import io.cucumber.messages.Messages.GherkinDocument.Feature.FeatureChild;
  */
 public class GherkinContentAssistProcessor implements IContentAssistProcessor {
 
-
 	@Override
 	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
 
@@ -41,43 +40,45 @@ public class GherkinContentAssistProcessor implements IContentAssistProcessor {
 		GherkinEditorDocument editorDocument = GherkinEditorDocument.get(document);
 		try {
 			IRegion line = viewer.getDocument().getLineInformationOfOffset(offset);
-
 			String typed = viewer.getDocument().get(line.getOffset(), offset - line.getOffset()).stripLeading();
-
-			Optional<Feature> feature = editorDocument.getFeature();
-			if (feature.isEmpty()) {
-				// if the document do not contain a feature this is the only choice
-				return editorDocument.getFeatureKeywords()
-						.filter(keyWord -> keyWord.prefix(typed))
-						.map(featureKeyWord -> createFeatureKeyWordProposal(featureKeyWord.getKey(), offset, typed))
-						.toArray(ICompletionProposal[]::new);
-			}
 			String nl = TextUtilities.getDefaultLineDelimiter(document);
-			Predicate<FeatureChild> hasTopLevelElement = FeatureChild::hasBackground;
-			hasTopLevelElement = hasTopLevelElement.or(FeatureChild::hasRule);
-			hasTopLevelElement = hasTopLevelElement.or(FeatureChild::hasScenario);
-			if (editorDocument.getFeatureChilds().filter(hasTopLevelElement).count() == 0) {
-				// in this case Rule, Scenario or background are required
-				return editorDocument.getTopLevelKeywords()//
-						.filter(keyWord -> keyWord.prefix(typed)).sorted(GherkinKeyword.KEY_ORDER) //
-						.map(keyWord -> createCompletionProposal(offset, typed, keyWord.getKey(),
-								keyWord.getKey() + ":" + nl))
-						.toArray(ICompletionProposal[]::new);
+			if (typed.isBlank()) {
+				// TODO if the line is not blank, we might try to assume that the document is
+				// only invalid because the user is typing, we could try to use the latest valid
+				// document to analyze its structure...
+				Optional<Feature> feature = editorDocument.getFeature();
+				if (feature.isEmpty()) {
+					// if the document do not contain a feature this is the only choice
+					return editorDocument.getFeatureKeywords().filter(keyWord -> keyWord.prefix(typed))
+							.map(featureKeyWord -> createFeatureKeyWordProposal(featureKeyWord.getKey(), offset, typed))
+							.toArray(ICompletionProposal[]::new);
+				}
+				Predicate<FeatureChild> hasTopLevelElement = FeatureChild::hasBackground;
+				hasTopLevelElement = hasTopLevelElement.or(FeatureChild::hasRule);
+				hasTopLevelElement = hasTopLevelElement.or(FeatureChild::hasScenario);
+				if (editorDocument.getFeatureChilds().filter(hasTopLevelElement).count() == 0) {
+					// in this case Rule, Scenario or background are required
+					return editorDocument.getTopLevelKeywords()//
+							.filter(keyWord -> keyWord.prefix(typed)).sorted(GherkinKeyword.KEY_ORDER) //
+							.map(keyWord -> createCompletionProposal(offset, typed, keyWord.getKey(),
+									keyWord.getKey() + ":" + nl))
+							.toArray(ICompletionProposal[]::new);
+				}
 			}
 
 			// TODO other constrains, filtering etc...
 			List<ICompletionProposal> result = new ArrayList<ICompletionProposal>();
-			editorDocument.getTopLevelKeywords()
-					.filter(keyWord -> keyWord.prefix(typed)).sorted(GherkinKeyword.KEY_ORDER)
+			editorDocument.getTopLevelKeywords().filter(keyWord -> keyWord.prefix(typed))
+					.sorted(GherkinKeyword.KEY_ORDER)
 					.map(keyWord -> createCompletionProposal(offset, typed, keyWord.getKey(),
 							keyWord.getKey() + ":" + nl))
 					.forEach(result::add);
 
-			editorDocument.getStepElementKeywords()
-					.filter(keyWord -> keyWord.prefix(typed)).sorted(GherkinKeyword.KEY_ORDER)
+			editorDocument.getStepElementKeywords().filter(keyWord -> keyWord.prefix(typed))
+					.sorted(GherkinKeyword.KEY_ORDER)
 					.map(keyWord -> createCompletionProposal(offset, typed, keyWord.getKey(), keyWord.getKey() + " "))
 					.forEach(result::add);
-			//TODO datatables, docstrings, ...
+			// TODO datatables, docstrings, ...
 			return result.toArray(ICompletionProposal[]::new);
 		} catch (BadLocationException e) {
 			Activator.getDefault().getLog().warn("Invalid location encountered while computing proposals", e);
@@ -136,8 +137,7 @@ public class GherkinContentAssistProcessor implements IContentAssistProcessor {
 
 			@Override
 			public boolean isContextInformationValid(int offset) {
-				System.out.println(
-						"isContextInformationValid()");
+				System.out.println("isContextInformationValid()");
 				// TODO Auto-generated method stub
 				return true;
 			}
@@ -145,8 +145,7 @@ public class GherkinContentAssistProcessor implements IContentAssistProcessor {
 			@Override
 			public void install(IContextInformation info, ITextViewer viewer, int offset) {
 				// TODO Auto-generated method stub
-				System.out.println(
-						"install()");
+				System.out.println("install()");
 
 			}
 		};

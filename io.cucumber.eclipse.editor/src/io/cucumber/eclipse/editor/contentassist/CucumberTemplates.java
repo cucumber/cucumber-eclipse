@@ -230,8 +230,10 @@ public class CucumberTemplates {
 					return provider.findStepDefinitions(viewer, offset, project, monitor).stream();
 				} catch (CoreException e) {
 					Activator.getDefault().getLog().log(e.getStatus());
-					return Stream.empty();
+				} catch (RuntimeException e) {
+					Activator.getDefault().getLog().error("Internal error while computing step definitions", e);
 				}
+				return Stream.empty();
 			}).collect(Collectors.toList());
 			return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
 		}

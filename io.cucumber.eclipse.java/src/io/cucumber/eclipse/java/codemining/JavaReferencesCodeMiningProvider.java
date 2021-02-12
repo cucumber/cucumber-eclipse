@@ -39,6 +39,7 @@ import io.cucumber.eclipse.editor.SWTUtil;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.MatchedHookStep;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
+import io.cucumber.eclipse.java.preferences.CucumberJavaPreferences;
 import io.cucumber.eclipse.java.steps.JavaStepDefinitionOpener;
 import io.cucumber.eclipse.java.validation.CucumberGlueValidator;
 import io.cucumber.plugin.event.HookType;
@@ -57,38 +58,40 @@ public class JavaReferencesCodeMiningProvider implements ICodeMiningProvider {
 	public CompletableFuture<List<? extends ICodeMining>> provideCodeMinings(ITextViewer viewer,
 			IProgressMonitor monitor) {
 		return CompletableFuture.supplyAsync(() -> {
-			try {
-				IDocument document = viewer.getDocument();
-				IJavaProject javaProject = JDTUtil.getJavaProject(document);
-				if (javaProject != null) {
-					Collection<MatchedStep<?>> steps = CucumberGlueValidator.getMatchedSteps(document, monitor);
-					List<ICodeMining> list = new ArrayList<>();
+			if (CucumberJavaPreferences.showHooks()) {
+				try {
+					IDocument document = viewer.getDocument();
+					IJavaProject javaProject = JDTUtil.getJavaProject(document);
+					if (javaProject != null) {
+						Collection<MatchedStep<?>> steps = CucumberGlueValidator.getMatchedSteps(document, monitor);
+						List<ICodeMining> list = new ArrayList<>();
 
-					Map<Integer, List<MatchedHookStep>> stepByLine = steps.stream()
-							.filter(MatchedHookStep.class::isInstance).map(MatchedHookStep.class::cast)
-							.collect(Collectors.groupingBy(step -> step.getLocation().getLine()));
-					for (Entry<Integer, List<MatchedHookStep>> entry : stepByLine.entrySet()) {
-						int lineNumber = entry.getKey() - 1;
-						Map<HookType, List<MatchedHookStep>> hooksByType = entry.getValue().stream()
-								.collect(Collectors.groupingBy(hookStep -> hookStep.getTestStep().getHookType()));
-						hooksByType.entrySet().stream()
-								.sorted((e1, e2) -> e1.getKey().ordinal() - e2.getKey().ordinal()).map(e -> {
-									try {
-										return new HooksCodeMining(lineNumber, document,
-												JavaReferencesCodeMiningProvider.this, e.getKey(), e.getValue(),
-												javaProject);
-									} catch (BadLocationException e3) {
-										return null;
-									}
-								}).filter(Objects::nonNull).forEach(list::add);
+						Map<Integer, List<MatchedHookStep>> stepByLine = steps.stream()
+								.filter(MatchedHookStep.class::isInstance).map(MatchedHookStep.class::cast)
+								.collect(Collectors.groupingBy(step -> step.getLocation().getLine()));
+						for (Entry<Integer, List<MatchedHookStep>> entry : stepByLine.entrySet()) {
+							int lineNumber = entry.getKey() - 1;
+							Map<HookType, List<MatchedHookStep>> hooksByType = entry.getValue().stream()
+									.collect(Collectors.groupingBy(hookStep -> hookStep.getTestStep().getHookType()));
+							hooksByType.entrySet().stream()
+									.sorted((e1, e2) -> e1.getKey().ordinal() - e2.getKey().ordinal()).map(e -> {
+										try {
+											return new HooksCodeMining(lineNumber, document,
+													JavaReferencesCodeMiningProvider.this, e.getKey(), e.getValue(),
+													javaProject);
+										} catch (BadLocationException e3) {
+											return null;
+										}
+									}).filter(Objects::nonNull).forEach(list::add);
+						}
+						return list;
 					}
-					return list;
+				} catch (OperationCanceledException e) {
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				} catch (CoreException e) {
+					e.printStackTrace();
 				}
-			} catch (OperationCanceledException e) {
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-			} catch (CoreException e) {
-				e.printStackTrace();
 			}
 			return Collections.emptyList();
 		});

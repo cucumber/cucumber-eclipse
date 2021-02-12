@@ -11,7 +11,9 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.ILaunchMode;
 import org.eclipse.jface.viewers.IStructuredSelection;
 
+import io.cucumber.eclipse.editor.Activator;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
+import io.cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants;
 import io.cucumber.messages.Messages.GherkinDocument.Feature;
 import io.cucumber.messages.Messages.GherkinDocument.Feature.Scenario;
 
@@ -91,6 +93,11 @@ public interface ILauncher {
 				return "";
 			}
 
+		}
+
+		public boolean showShortcut() {
+			return Activator.getDefault().getPreferenceStore()
+					.getBoolean(ICucumberPreferenceConstants.PREF_SHOW_RUN_SHORTCUT_PREFIX + name());
 		}
 	}
 

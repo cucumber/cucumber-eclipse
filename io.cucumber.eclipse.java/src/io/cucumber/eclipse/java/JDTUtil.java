@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -218,7 +219,7 @@ public class JDTUtil {
 			ILocalVariable v = parameters[i];
 			String name = v.getTypeSignature();
 			String simpleName = Signature.getSignatureSimpleName(name);
-			String[][] resolved = declaringType.resolveType(simpleName);
+			String[][] resolved = resolveTypeWithRetry(declaringType, simpleName);
 			if (resolved != null) {
 				strings[i] = Signature.toQualifiedName(resolved[0]);
 			} else {
@@ -229,6 +230,24 @@ public class JDTUtil {
 		return strings;
 	}
 
+	public static String[][] resolveTypeWithRetry(IType type, String simpleName) throws JavaModelException {
+		return bug571150(type, simpleName, Runtime.getRuntime().availableProcessors());
+	}
+
+	// Workaround for bug 571150 ...
+	private static String[][] bug571150(IType type, String simpleName, int retries) throws JavaModelException {
+		try {
+			return type.resolveType(simpleName);
+		} catch (ConcurrentModificationException e) {
+			if (retries <= 0) {
+				// give up then...
+				return null;
+			} else {
+				Thread.yield();
+				return bug571150(type, simpleName, retries - 1);
+			}
+		}
+	}
 
 	public static String getMethodName(IMethod method) throws JavaModelException {
 		StringBuilder name = new StringBuilder();

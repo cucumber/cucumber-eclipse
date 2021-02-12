@@ -16,6 +16,8 @@ public interface ICucumberPreferenceConstants {
 	public static final String PREF_INDENTATION_STYLE =
 			_PREFIX + "indentation_style"; //$NON-NLS-1$
 	
+	public static final String PREF_SHOW_RUN_SHORTCUT_PREFIX = _PREFIX + "show_run_shortcut_"; //$NON-NLS-1$
+
 	public static enum CucumberIndentationStyle {
 		TWO_SPACES("2 Spaces", "  "), 
 		FOUR_SPACES("4 Spaces", "    "), 

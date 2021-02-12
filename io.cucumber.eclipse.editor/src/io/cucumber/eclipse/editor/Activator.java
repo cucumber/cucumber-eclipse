@@ -9,8 +9,7 @@ import org.eclipse.osgi.service.debug.DebugOptionsListener;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
-
-import io.cucumber.eclipse.editor.preferences.StepDefinitionsScanPropertyChangeListener;
+import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -41,9 +40,10 @@ public class Activator extends AbstractUIPlugin {
 		plugin = this;
 		tracingRegistration = context.registerService(DebugOptionsListener.class, TRACING,
 				new Hashtable<>(Collections.singletonMap(DebugOptions.LISTENER_SYMBOLICNAME, PLUGIN_ID)));
-		// TODO listen to color changes!
-		getPreferenceStore().addPropertyChangeListener(new StepDefinitionsScanPropertyChangeListener());
+		// trigger activation of the service registry
+		new ServiceTracker<>(context, CucumberServiceRegistry.class, null).open();
 	}
+
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
