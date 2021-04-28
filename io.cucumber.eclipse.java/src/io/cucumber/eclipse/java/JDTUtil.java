@@ -231,6 +231,9 @@ public class JDTUtil {
 	}
 
 	public static String[][] resolveTypeWithRetry(IType type, String simpleName) throws JavaModelException {
+		if (type == null) {
+			return null;
+		}
 		return bug571150(type, simpleName, Runtime.getRuntime().availableProcessors());
 	}
 

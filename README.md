@@ -1,28 +1,24 @@
-# Cucumber-Eclipse
+# Cucumber-Eclipse 2.0
 
 [![Build Status](https://travis-ci.org/cucumber/cucumber-eclipse.svg?branch=master)](https://travis-ci.org/cucumber/cucumber-eclipse)
 
-An Eclipse plugin for [Cucumber](https://cucumber.io/).
+An Eclipse plugin for [Cucumber Version 6+](https://cucumber.io/). For the previous version 
+of this plugin take a look at the [1.x](https://github.com/cucumber/cucumber-eclipse/tree/1.x) branch.
 
+CAUTION: **This is currently work-inprogress!**
 
 ## Highlighted Features :
 
-- [Lambda Expression support for Cucumber-Java8](https://github.com/cucumber/cucumber-eclipse/wiki/Lambda-Expression-support-for-Cucumber-Java8)
-- [Reusing Of Step-Definitions From External Class-Path Dependencies(JAR/POM...etc)](https://github.com/cucumber/cucumber-eclipse/wiki/Reusing-Of-Step-Definitions-From-External-Class-Path-Dependencies(JAR-POM...etc))
-- [Content Assistance For Feature File](https://github.com/cucumber/cucumber-eclipse/wiki/Content-Assistance-for-feature-file)
-- [Syntax Highlighting](https://github.com/cucumber/cucumber-eclipse/wiki/I18n-Syntax-highlighting)
-- [New Step-Definition File Wizard](https://github.com/cucumber/cucumber-eclipse/wiki/New-Step-Definition-File-Wizard)
+-
+-
+-
 
 ## Screenshots and Features of the plugin
-Please consult our [Wiki](https://github.com/cucumber/cucumber-eclipse/wiki) for a full list of available features with screenshots.
+-
 
 
 ## Eclipse-Marketplace Details
-
-![Eclipse-Marketplace](https://github.com/cucumber/cucumber-eclipse/blob/gh-pages/images/EclipseMarketPPlace.png)
-
-- Available in [Eclipse-Marketplace](https://marketplace.eclipse.org/content/cucumber-eclipse-plugin).
-- Please refer our [Eclipse-Marketplace-Wiki](https://github.com/cucumber/cucumber-eclipse/wiki/Eclipse-Market-Place-For-Cucumber-Eclipse-Plugin) page for detail information.
+-
 
 ## Download the plugin
 ![Download-Plugin](https://github.com/cucumber/cucumber-eclipse/blob/gh-pages/images/Download.png)
@@ -44,13 +40,8 @@ You are welcome to [report any issue](https://github.com/cucumber/cucumber-eclip
 ## Installation and further information
 
 - Please head over to the [plugin website](http://cucumber.github.com/cucumber-eclipse) for more information.
-
-- After you install the Cucumber-Eclipse plugin, you can use it to run Cucumber-JVM. To do this, you will need to install all the libraries you want to use for Cucumber-JVM into your Eclipse project's build-path libraries. The list of required dependencies can be found here [cucumber-jvm-installation](https://docs.cucumber.io/installation/java/). Another good resource for reference is the [cucumber-java-skeleton](https://github.com/cucumber/cucumber-java-skeleton/) example at GitHub.
-
-- If the output to the console has jumbled characters in it, you may want to install the [ANSI Escape in Console plugin](https://marketplace.eclipse.org/content/ansi-escape-console). This interprets the jumbled characters to create nicely colored text in the console output.
-
+- After you install the Cucumber-Eclipse plugin, you can use it to run Cucumber-JVM.
 - Create a new feature file from Eclipse by selecting New => File from the menu and naming it with a ".feature" suffix to bring up the Feature Editor. After typing in the Gherkin code for a test, select Run => Run to invoke Cucumber-JVM on that feature. This will also create a run configuration, which you can modify and rename by selecting Run => Run Configurarations.... Tags are not available in Cucumber-Eclipse, but you can organize your features into directories and select the Feature Path that you want the run configuration to use. You can execute run configurations from the Run => Run History menu.
-
 - Another alternative is to use Cucumber-Eclipse for editing feature files and getting the generated step-definition stubs, but then running a Junit file with a @RunWith(cucumber.class) annotation similar to the cucumber-java-skeleton [RunCukesTest.java](https://github.com/cucumber/cucumber-java-skeleton/blob/master/src/test/java/skeleton/RunCukesTest.java). The @CucumberOptions most useful are
 
 * Run the feature or all features below the directory
@@ -81,7 +72,7 @@ To use the latest features, you can choose to build and install from source.
 
 - Build the plugin using Maven (https://maven.apache.org/) <code>mvn clean install</code>
 - Open Eclipse and navigate to `Help` -> `Install New Software...` -> `Add`
-- Point to the update-site built in step 1: <code>file:path_to_repo/cucumber.eclipse.p2updatesite/target/repository</code>
+- Point to the update-site built in step 1 <code>file:path_to_repo/io.cucumber.eclipse.updatesite/target/repository</code>
 - Proceed to install like any other plug-in
 
 ## How soon will my ticket be fixed?
