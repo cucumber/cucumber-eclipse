@@ -1,20 +1,10 @@
 package io.cucumber.eclipse.java.launching;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.internal.ui.SWTFactory;
-import org.eclipse.debug.ui.CommonTab;
-import org.eclipse.debug.ui.ILaunchConfigurationDialog;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
-import org.eclipse.debug.ui.sourcelookup.SourceLookupTab;
-import org.eclipse.jdt.debug.ui.launchConfigurations.JavaArgumentsTab;
-import org.eclipse.jdt.debug.ui.launchConfigurations.JavaClasspathTab;
-import org.eclipse.jdt.debug.ui.launchConfigurations.JavaDependenciesTab;
-import org.eclipse.jdt.debug.ui.launchConfigurations.JavaJRETab;
 import org.eclipse.jdt.internal.debug.ui.launcher.AbstractJavaMainTab;
 import org.eclipse.jdt.internal.debug.ui.launcher.LauncherMessages;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
@@ -47,8 +37,8 @@ public class CucumberMainTab extends AbstractJavaMainTab implements ILaunchConfi
 	private Button usageCheckbox;
 	private Button junitCheckbox;
 	private Button rerunCheckbox;
-	private Button buttonInternal;
-	private Button buttonExternal;
+//	private Button buttonInternal;
+//	private Button buttonExternal;
 
 	private class WidgetListener implements ModifyListener, SelectionListener {
 
@@ -203,16 +193,16 @@ public class CucumberMainTab extends AbstractJavaMainTab implements ILaunchConfi
 		layout.numColumns = 2;
 		group.setLayout(layout);
 		group.setFont(font);
-		buttonInternal = new Button(group, SWT.RADIO);
-		buttonInternal.setText("Embedded Runner");
-		buttonInternal.setToolTipText(
-				"Run directly inside your IDE, this has faster start-up times but not all options are avaiable and your test shares memory with your running Eclipse");
-		buttonExternal = new Button(group, SWT.RADIO);
-		buttonExternal.setText("External Runner");
-		buttonExternal.setToolTipText("Run as a separate process");
-
-		buttonExternal.addSelectionListener(listener);
-		buttonInternal.addSelectionListener(listener);
+//		buttonInternal = new Button(group, SWT.RADIO);
+//		buttonInternal.setText("Embedded Runner");
+//		buttonInternal.setToolTipText(
+//				"Run directly inside your IDE, this has faster start-up times but not all options are avaiable and your test shares memory with your running Eclipse");
+//		buttonExternal = new Button(group, SWT.RADIO);
+//		buttonExternal.setText("External Runner");
+//		buttonExternal.setToolTipText("Run as a separate process");
+//
+//		buttonExternal.addSelectionListener(listener);
+//		buttonInternal.addSelectionListener(listener);
 	}
 
 	@Override
@@ -233,7 +223,7 @@ public class CucumberMainTab extends AbstractJavaMainTab implements ILaunchConfi
 		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_USAGE, usageCheckbox.getSelection());
 		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_JUNIT, junitCheckbox.getSelection());
 		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_RERUN, rerunCheckbox.getSelection());
-		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_INTERNAL_LAUNCHER, buttonInternal.getSelection());
+//		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_INTERNAL_LAUNCHER, buttonInternal.getSelection());
 		mapResources(config);
 
 	}
@@ -273,10 +263,10 @@ public class CucumberMainTab extends AbstractJavaMainTab implements ILaunchConfi
 		updateFeaturePathFromConfig(config);
 		updateGluePathFromConfig(config);
 		updateFormattersFromConfig(config);
-		boolean internalLauncher = CucumberFeatureLaunchUtils.getAttribute(config,
-				CucumberFeatureLaunchConstants.ATTR_INTERNAL_LAUNCHER, true);
-		buttonInternal.setSelection(internalLauncher);
-		buttonExternal.setSelection(!internalLauncher);
+//		boolean internalLauncher = CucumberFeatureLaunchUtils.getAttribute(config,
+//				CucumberFeatureLaunchConstants.ATTR_INTERNAL_LAUNCHER, true);
+//		buttonInternal.setSelection(internalLauncher);
+//		buttonExternal.setSelection(!internalLauncher);
 		updateMessage();
 	}
 
@@ -328,26 +318,26 @@ public class CucumberMainTab extends AbstractJavaMainTab implements ILaunchConfi
 		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_RERUN, false);
 		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_JSON, false);
 		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_IS_JUNIT, false);
-		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_INTERNAL_LAUNCHER, true);
+//		config.setAttribute(CucumberFeatureLaunchConstants.ATTR_INTERNAL_LAUNCHER, true);
 	}
 
 	private void updateMessage() {
-		boolean internal = buttonInternal.getSelection();
-		if (internal) {
-			ILaunchConfigurationDialog dialog = getLaunchConfigurationDialog();
-			List<String> names = new ArrayList<>();
-			for (ILaunchConfigurationTab tab : dialog.getTabs()) {
-				if (tab instanceof JavaArgumentsTab || tab instanceof JavaJRETab || tab instanceof JavaDependenciesTab
-						|| tab instanceof JavaClasspathTab || tab instanceof SourceLookupTab
-						|| tab instanceof CommonTab) {
-					names.add(tab.getName());
-				}
-			}
-			setWarningMessage("Some settings of the follwoing sections have no effect when using the embedded runner: "
-					+ String.join(", ", names));
-		} else {
-			setMessage(null);
-		}
+//		boolean internal = buttonInternal.getSelection();
+//		if (internal) {
+//			ILaunchConfigurationDialog dialog = getLaunchConfigurationDialog();
+//			List<String> names = new ArrayList<>();
+//			for (ILaunchConfigurationTab tab : dialog.getTabs()) {
+//				if (tab instanceof JavaArgumentsTab || tab instanceof JavaJRETab || tab instanceof JavaDependenciesTab
+//						|| tab instanceof JavaClasspathTab || tab instanceof SourceLookupTab
+//						|| tab instanceof CommonTab) {
+//					names.add(tab.getName());
+//				}
+//			}
+//			setWarningMessage("Some settings of the follwoing sections have no effect when using the embedded runner: "
+//					+ String.join(", ", names));
+//		} else {
+//			setMessage(null);
+//		}
 	}
 
 }

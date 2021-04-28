@@ -47,11 +47,9 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 	@Override
 	public void launch(ILaunchConfiguration config, String mode, ILaunch launch, IProgressMonitor monitor)
 			throws CoreException {
-		if (config.getAttribute(CucumberFeatureLaunchConstants.ATTR_INTERNAL_LAUNCHER,
-				CucumberFeatureLaunchConstants.DEFAULT_INTERNAL_LAUNCHER)) {
-			runEmbedded(config, mode, launch, monitor);
-			return;
-		}
+
+		String withLine = config.getAttribute(CucumberFeatureLaunchConstants.ATTR_FEATURE_WITH_LINE, "");
+		String tags = config.getAttribute(CucumberFeatureLaunchConstants.ATTR_TAGS, "");
 
 		IVMInstall vm = verifyVMInstall(config);
 		IVMRunner runner = vm.getVMRunner(mode);
@@ -103,8 +101,11 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		String glue = "--glue";
 		String formatter = "--plugin"; // Cucumber-JVM's --format option is deprecated. Please use --plugin instead.
 		Collection<String> args = new ArrayList<String>();
-		// String[] args = new String[6];
-		args.add(featurePath);
+		if (withLine.isBlank()) {
+			args.add(featurePath);
+		} else {
+			args.add(withLine);
+		}
 		args.add(glue);
 		args.add(gluePath);
 
@@ -144,6 +145,10 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		}
 		if (!AnsiConsolePreferenceUtils.isAnsiConsoleEnabled()) {
 			args.add("--monochrome");
+		}
+		if (!tags.isBlank()) {
+			args.add("--tags");
+			args.add(tags);
 		}
 		MessageEndpoint endpoint;
 		try {
@@ -189,8 +194,7 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 				ArrayList<Expression> tagFilters = new ArrayList<>();
 				try (CucumberConsole console = CucumberConsoleFactory.getConsole(true)) {
 					CucumberRuntimeLauncher.runFeaturesEmbedded(project, Collections.singletonList(feature.get()),
-							featureFilter, Mode.parseString(mode),
-							console, monitor, tagFilters);
+							featureFilter, Mode.parseString(mode), console, monitor, tagFilters);
 				}
 			} else {
 				throw new CoreException(

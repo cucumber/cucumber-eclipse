@@ -2,6 +2,7 @@ package io.cucumber.eclipse.java.launching;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -9,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -20,7 +20,13 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchConfigurationType;
+import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.osgi.service.component.annotations.Component;
@@ -29,7 +35,6 @@ import io.cucumber.core.feature.FeatureWithLines;
 import io.cucumber.core.gherkin.Feature;
 import io.cucumber.core.options.RuntimeOptionsBuilder;
 import io.cucumber.eclipse.editor.console.CucumberConsole;
-import io.cucumber.eclipse.editor.console.CucumberConsoleFactory;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.launching.ILauncher;
 import io.cucumber.eclipse.java.JDTUtil;
@@ -38,7 +43,6 @@ import io.cucumber.eclipse.java.runtime.CucumberRuntime;
 import io.cucumber.messages.Messages.Envelope;
 import io.cucumber.messages.Messages.GherkinDocument;
 import io.cucumber.messages.Messages.GherkinDocument.Feature.Scenario;
-import io.cucumber.messages.Messages.Location;
 import io.cucumber.messages.Messages.TestCaseStarted;
 import io.cucumber.messages.Messages.TestStepFinished;
 import io.cucumber.messages.Messages.TestStepStarted;
@@ -56,60 +60,66 @@ import mnita.ansiconsole.preferences.AnsiConsolePreferenceUtils;
 public class CucumberRuntimeLauncher implements ILauncher {
 
 	@Override
-	public void launch(Map<GherkinEditorDocument, IStructuredSelection> selection, Mode mode, boolean temporary,
+	public void launch(Map<GherkinEditorDocument, IStructuredSelection> launchMap, Mode mode, boolean temporary,
 			IProgressMonitor monitor) throws OperationCanceledException, CoreException {
-		Map<IJavaProject, List<Entry<GherkinEditorDocument, IStructuredSelection>>> projectMap = selection.entrySet()
-				.stream().filter(entry -> supports(entry.getKey().getResource()))
-				.collect(Collectors.groupingBy(entry -> {
-					try {
-						return JDTUtil.getJavaProject(entry.getKey().getResource());
-					} catch (CoreException e) {
-						throw new RuntimeException(e);
-					}
-				}));
-		SubMonitor subMonitor = SubMonitor.convert(monitor, projectMap.size() * 100);
-
-		// FIXME choose between embedded runner and external runner!
-
-		for (Entry<IJavaProject, List<Entry<GherkinEditorDocument, IStructuredSelection>>> entry : projectMap
-				.entrySet()) {
-			IJavaProject project = entry.getKey();
-			Map<GherkinEditorDocument, IStructuredSelection> map = entry.getValue().stream()
-					.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-			List<FeatureWithLines> featureFilter = new ArrayList<>();
-			List<Expression> filters = new ArrayList<>();
-			List<Feature> list = map.entrySet().stream().flatMap(entry2 -> {
-				Optional<Feature> loadFeature = CucumberRuntime.loadFeature(new DocumentResource(entry2.getKey()));
-				loadFeature.ifPresent(feature -> {
-					for (Object obj : entry2.getValue()) {
-						if (obj instanceof Scenario) {
-							Scenario scenario = (Scenario) obj;
-							featureFilter.add(FeatureWithLines.create(feature.getUri(),
-									Collections.singleton(scenario.getLocation().getLine())));
-						} else if (obj instanceof Expression) {
-							filters.add((Expression) obj);
-						}
-					}
-				});
-				return loadFeature.stream();
-			}).collect(Collectors.toList());
-
-			for (Entry<GherkinEditorDocument, IStructuredSelection> entry2 : map.entrySet()) {
-				GherkinEditorDocument key = entry2.getKey();
-				for (Object obj : entry2.getValue()) {
-					if (obj instanceof Scenario) {
-						Location location = ((Scenario) obj).getLocation();
-						Feature feature = CucumberRuntime.loadFeature(new DocumentResource(key)).get();
-						featureFilter.add(
-								FeatureWithLines.create(feature.getUri(), Collections.singleton(location.getLine())));
+		ILaunchManager lm = DebugPlugin.getDefault().getLaunchManager();
+		ILaunchConfigurationType type = lm.getLaunchConfigurationType(CucumberFeatureLaunchConstants.TYPE_ID);
+		SubMonitor subMonitor = SubMonitor.convert(monitor, launchMap.size() * 100);
+		for (Entry<GherkinEditorDocument, IStructuredSelection> entry : launchMap.entrySet()) {
+			GherkinEditorDocument document = entry.getKey();
+			IResource resource = document.getResource();
+			IJavaProject javaProject = JDTUtil.getJavaProject(resource);
+			if (javaProject == null) {
+				continue;
+			}
+			ILaunchConfiguration lc = getLaunchConfiguration(javaProject, resource, type);
+			String identifier = mode.getLaunchMode().getIdentifier();
+			if (temporary) {
+				ILaunchConfigurationWorkingCopy copy = lc.getWorkingCopy();
+				List<FeatureWithLines> featuresWithLines = new ArrayList<>();
+				List<Expression> filters = new ArrayList<>();
+				IStructuredSelection selection = entry.getValue();
+				for (Object object : selection) {
+					if (object instanceof Scenario) {
+						Scenario scenario = (Scenario) object;
+						URI locationURI = resource.getLocationURI();
+						featuresWithLines.add(FeatureWithLines.create(locationURI,
+								Collections.singleton(scenario.getLocation().getLine())));
+					} else if (object instanceof Expression) {
+						filters.add((Expression) object);
 					}
 				}
-			}
-
-			try (CucumberConsole console = CucumberConsoleFactory.getConsole(true)) {
-				runFeaturesEmbedded(project, list, featureFilter, mode, console, subMonitor.split(100), filters);
+				copy.setAttribute(CucumberFeatureLaunchConstants.ATTR_FEATURE_WITH_LINE,
+						featuresWithLines.stream().map(FeatureWithLines::toString).collect(Collectors.joining(" ")));
+				copy.setAttribute(CucumberFeatureLaunchConstants.ATTR_TAGS,
+						filters.stream()
+								.map(Expression::toString).collect(Collectors.joining(" and ")));
+				copy.launch(identifier, subMonitor.slice(100));
+			} else {
+				lc.launch(identifier, subMonitor.slice(100));
 			}
 		}
+	}
+
+	private ILaunchConfiguration getLaunchConfiguration(IJavaProject javaProject, IResource resource,
+			ILaunchConfigurationType type) throws CoreException {
+		ILaunchManager lm = DebugPlugin.getDefault().getLaunchManager();
+		String featurePath = resource.getProjectRelativePath().toPortableString();
+		for (ILaunchConfiguration configuration : lm.getLaunchConfigurations(type)) {
+			String projectName = configuration.getAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, "");
+			if (projectName.equals(javaProject.getElementName())) {
+				if (featurePath
+						.equals(configuration.getAttribute(CucumberFeatureLaunchConstants.ATTR_FEATURE_PATH, ""))) {
+					return configuration;
+				}
+			}
+		}
+		ILaunchConfigurationWorkingCopy wc = type.newInstance(null,
+				lm.generateLaunchConfigurationName(resource.getName()));
+		wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, javaProject.getElementName());
+		wc.setAttribute(CucumberFeatureLaunchConstants.ATTR_FEATURE_PATH, featurePath);
+		wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_VM_ARGUMENTS, "-Dcucumber.publish.quiet=true");
+		return wc.doSave();
 	}
 
 	@Override
@@ -124,14 +134,13 @@ public class CucumberRuntimeLauncher implements ILauncher {
 
 	public static void runFeaturesEmbedded(IJavaProject javaProject, List<Feature> features,
 			Collection<FeatureWithLines> featureFilter, Mode mode, CucumberConsole console, IProgressMonitor monitor,
-			Collection<Expression> tagFilters)
-			throws CoreException {
+			Collection<Expression> tagFilters) throws CoreException {
 		try (CucumberRuntime cucumberRuntime = CucumberRuntime.create(javaProject)) {
 			CucumberEclipsePlugin plugin = new CucumberEclipsePlugin(new Consumer<Envelope>() {
 
 				private Map<String, TestStepPerfInfo> map = new HashMap<>();
 				private GherkinDocument gherkinDocument;
-				
+
 				@Override
 				public void accept(Envelope envelope) {
 //					System.out.println(envelope);
