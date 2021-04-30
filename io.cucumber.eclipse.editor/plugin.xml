@@ -262,4 +262,11 @@
 			class="io.cucumber.eclipse.editor.preferences.CucumberPreferencePage"
 			name="Cucumber" />
    </extension>
+   <extension
+       point="org.eclipse.unittest.ui.unittestViewSupport">
+    <viewSupport
+          class="io.cucumber.eclipse.editor.testresults.CucumberTestViewSupport"
+          id="io.cucumber.eclipse.editor.testresults">
+    </viewSupport>
+ </extension>
 </plugin>

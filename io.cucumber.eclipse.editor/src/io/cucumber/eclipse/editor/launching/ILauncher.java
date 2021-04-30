@@ -10,6 +10,7 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.ILaunchMode;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.unittest.ui.ConfigureViewerSupport;
 
 import io.cucumber.eclipse.editor.Activator;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
@@ -25,6 +26,10 @@ import io.cucumber.messages.Messages.GherkinDocument.Feature.Scenario;
  *
  */
 public interface ILauncher {
+
+
+	public static final ConfigureViewerSupport TEST_RESULT_LISTENER_CONFIGURER = new ConfigureViewerSupport(
+			"io.cucumber.eclipse.editor.testresults");
 
 	enum Mode {
 		RUN, DEBUG, PROFILE;

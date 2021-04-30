@@ -110,7 +110,8 @@ public class CucumberRuntimeLauncher implements ILauncher {
 			if (projectName.equals(javaProject.getElementName())) {
 				if (featurePath
 						.equals(configuration.getAttribute(CucumberFeatureLaunchConstants.ATTR_FEATURE_PATH, ""))) {
-					return configuration;
+//					configuration.delete();
+					 return configuration;
 				}
 			}
 		}
@@ -119,6 +120,7 @@ public class CucumberRuntimeLauncher implements ILauncher {
 		wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, javaProject.getElementName());
 		wc.setAttribute(CucumberFeatureLaunchConstants.ATTR_FEATURE_PATH, featurePath);
 		wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_VM_ARGUMENTS, "-Dcucumber.publish.quiet=true");
+		TEST_RESULT_LISTENER_CONFIGURER.apply(wc);
 		return wc.doSave();
 	}
 

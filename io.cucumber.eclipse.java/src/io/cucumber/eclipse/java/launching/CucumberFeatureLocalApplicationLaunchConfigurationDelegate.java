@@ -36,7 +36,6 @@ import io.cucumber.eclipse.editor.console.CucumberConsoleFactory;
 import io.cucumber.eclipse.editor.launching.ILauncher.Mode;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberEclipsePlugin;
-import io.cucumber.eclipse.java.plugins.MessageEndpoint;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;
 import io.cucumber.tagexpressions.Expression;
 import mnita.ansiconsole.preferences.AnsiConsolePreferenceUtils;
@@ -150,11 +149,9 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 			args.add("--tags");
 			args.add(tags);
 		}
-		MessageEndpoint endpoint;
+		MessageEndpointProcess endpoint;
 		try {
-			endpoint = new MessageEndpoint(envelope -> {
-				// TODO publish!
-			});
+			endpoint = new MessageEndpointProcess(launch);
 			endpoint.addArguments(args);
 		} catch (IOException e) {
 			throw new CoreException(
@@ -165,12 +162,13 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 			String[] finalArgs = args.toArray(new String[0]);
 			runConfig.setProgramArguments(finalArgs);
 			endpoint.start();
+			launch.addProcess(endpoint);
 			runner.run(runConfig, launch, monitor);
 		} catch (CoreException core) {
-			endpoint.close();
+			endpoint.terminate();
 			throw core;
 		} catch (RuntimeException runtime) {
-			endpoint.close();
+			endpoint.terminate();
 			throw runtime;
 		}
 

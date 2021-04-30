@@ -6,7 +6,6 @@ import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Collection;
-import java.util.function.Consumer;
 
 import io.cucumber.messages.Messages.Envelope;
 import io.cucumber.messages.internal.com.google.protobuf.Parser;
@@ -17,14 +16,11 @@ import io.cucumber.messages.internal.com.google.protobuf.Parser;
  * @author christoph
  *
  */
-public class MessageEndpoint {
-
+public abstract class MessageEndpoint {
 
 	private ServerSocket serverSocket;
-	private Consumer<Envelope> consumer;
 
-	public MessageEndpoint(Consumer<Envelope> consumer) throws IOException {
-		this.consumer = consumer;
+	public MessageEndpoint() throws IOException {
 		serverSocket = new ServerSocket(0);
 	}
 
@@ -34,6 +30,8 @@ public class MessageEndpoint {
 		} catch (IOException e) {
 		}
 	}
+
+	protected abstract void handleMessage(Envelope envelope);
 
 	public void start() {
 		Thread thread = new Thread(new Runnable() {
@@ -52,7 +50,7 @@ public class MessageEndpoint {
 							}
 							inputStream.readFully(buffer, 0, framelength);
 							Envelope envelope = parser.parseFrom(buffer, 0, framelength);
-							consumer.accept(envelope);
+							handleMessage(envelope);
 							if (envelope.hasTestRunFinished()) {
 								break;
 							}
@@ -82,7 +80,11 @@ public class MessageEndpoint {
 		args.add(CucumberEclipsePlugin.class.getName() + ":" + String.valueOf(serverSocket.getLocalPort()));
 	}
 
-	public void close() {
+	public boolean isTerminated() {
+		return serverSocket.isClosed();
+	}
+
+	public void terminate() {
 		try {
 			serverSocket.close();
 		} catch (IOException e) {
