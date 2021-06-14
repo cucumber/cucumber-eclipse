@@ -109,8 +109,10 @@ public class CucumberTemplates {
 							j.schedule();
 						} else {
 							if (j.definitions != null) {
-								j.definitions = null;
 								// update existing definitions
+								j.definitions = null;
+								j.viewer = viewer;
+								j.offset = offset;
 								j.schedule();
 							}
 						}
