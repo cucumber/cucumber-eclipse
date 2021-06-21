@@ -25,11 +25,11 @@ jobs:
         skip_cleanup: true
         overwrite: $IS_SNAPSHOT
         on:
-          branch: master
+          branch: main
       - provider: pages
         repo: $GITHUB_PAGES_REPO 
         skip-cleanup: true
         github-token: $GITHUB_OAUTH_TOKEN
         local-dir: cucumber.eclipse.p2updatesite/target/repository/
         on:
-          branch: master
+          branch: main
