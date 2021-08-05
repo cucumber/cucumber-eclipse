@@ -5,7 +5,7 @@ name: Build cucumber-eclipse plugin
 
 on:
   push:
-    branches: [ main, 1.x, v0.x ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
