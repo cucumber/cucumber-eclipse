@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +84,8 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 	private final BuildStorage<GlueRepository> glueStorage = GlueStorage.INSTANCE;
 	private volatile boolean fullBuildRequired = false; 
 
+	private final Set<IResource> resources = new HashSet<>();
+
 	@Override
 	protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
 		boolean glueDetectionEnabled = StepPreferences.INSTANCE.isStepDefinitionsMatchingEnabled();
@@ -111,12 +114,16 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 		try {
 			fullBuildRequired = false;
 			delta.accept(new CucumberGherkinBuildCheckVisitor(glueDetectionEnabled));
-			// the visitor does the work.
+			// the visitor shouldn't do the processing, it blocks user interactions on large jobs
 			if (fullBuildRequired) {
 				System.out.println(">gherkin builder: force full build");
 				fullBuild(glueDetectionEnabled, monitor);
 			} else {
-				delta.accept(new CucumberGherkinBuildVisitor(markerFactory, glueDetectionEnabled, monitor));
+				/* no steps changed -> re-build only deltas. */
+				final CucumberGherkinBuildVisitor visitorBuilder = new CucumberGherkinBuildVisitor(markerFactory, resources, glueDetectionEnabled, monitor);
+				delta.accept(visitorBuilder);
+				/* Perform linking with any gherkin resources found. */
+				build(visitorBuilder, glueDetectionEnabled, monitor);
 			}
 			glueStorage.persist(getProject(), monitor);
 		} catch (CoreException e) {
@@ -127,11 +134,39 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 
 	private void fullBuild(boolean glueDetectionEnabled, IProgressMonitor monitor) throws CoreException {
 		try {
-			getProject().accept(new CucumberGherkinBuildVisitor(markerFactory, glueDetectionEnabled, monitor));
+			final CucumberGherkinBuildVisitor visitorBuilder = new CucumberGherkinBuildVisitor(markerFactory, resources, glueDetectionEnabled, monitor);
+			getProject().accept(visitorBuilder);
+			/* Perform linking with any gherkin resources found. */
+			build(visitorBuilder, glueDetectionEnabled, monitor);
 			glueStorage.persist(getProject(), monitor);
 		} catch (CoreException e) {
 			throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
 		}
+	}
+
+	private void build(final CucumberGherkinBuildVisitor visitorBuilder, boolean glueDetectionEnabled, IProgressMonitor monitor) throws CoreException {
+		/* Fetching all steps for the project is expensive, do it once. */
+		final List<StepDefinition> allStepDefinitions = new ArrayList<>();
+		allStepDefinitions.addAll(stepDefinitionsProvider.getStepDefinitions(getProject()));
+
+		Iterator<IResource> iterator = resources.iterator();
+		while (iterator.hasNext()) {
+			IResource resource = iterator.next();
+			// stop the visitor pattern if a cancellation, or user interaction was requested
+			if (monitor.isCanceled() || isInterrupted()) {
+				monitor.setCanceled(true);
+				return;
+			}
+
+			if (!resource.exists()) {
+				// skip
+				iterator.remove();
+				continue;
+			}
+			visitorBuilder.buildGherkin(resource, allStepDefinitions, glueDetectionEnabled);
+			iterator.remove();
+		}
+		monitor.done();
 	}
 
 	/**
@@ -203,27 +238,31 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 
 		private IProgressMonitor monitor;
 		private MarkerFactory markerFactory;
+
+		private Set<IResource> gherkinsToBuild;
+
 		private boolean glueDetectionEnabled;
 
-		public CucumberGherkinBuildVisitor(MarkerFactory markerFactory, boolean glueDetectionEnabled,
+		public CucumberGherkinBuildVisitor(MarkerFactory markerFactory, Set<IResource> gherkinsToBuild, boolean glueDetectionEnabled,
 				IProgressMonitor monitor) {
 			this.monitor = monitor;
 			this.markerFactory = markerFactory;
+			this.gherkinsToBuild = gherkinsToBuild;
 			this.glueDetectionEnabled = glueDetectionEnabled;
 		}
 
 		@Override
 		public boolean visit(IResource resource) throws CoreException {
-			return buildGherkin(resource, false, glueDetectionEnabled);
+			return collectFeature(resource, false, glueDetectionEnabled);
 		}
 
 		@Override
 		public boolean visit(IResourceDelta delta) throws CoreException {
 			IResource resource = delta.getResource();
-			return buildGherkin(resource, true, glueDetectionEnabled);
+			return collectFeature(resource, true, glueDetectionEnabled);
 		}
 
-		protected boolean buildGherkin(IResource resource, boolean isIncrementalBuild, boolean glueDetectionEnabled)
+		protected boolean collectFeature(IResource resource, boolean isIncrementalBuild, boolean glueDetectionEnabled)
 				throws CoreException {
 
 			// stop the visitor pattern if a cancellation was requested
@@ -235,8 +274,6 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 				// skip
 				return false;
 			}
-
-			long start = System.currentTimeMillis();
 
 			if (!(resource instanceof IFile)) {
 				return true;
@@ -259,9 +296,19 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			// Compile only gherkin files
 			String fileExtension = file.getFileExtension();
 			boolean isGherkinFile = "feature".equals(fileExtension) || "story".equals(fileExtension);
-			if (!isGherkinFile) {
-				return true;
+			if (isGherkinFile) {
+				gherkinsToBuild.add(resource);
 			}
+			// Maybe this is a folder with gherkin files in it, look within
+			return true;
+		}
+
+		protected void buildGherkin(IResource resource, List<StepDefinition> allStepDefinitions, boolean glueDetectionEnabled)
+				throws CoreException {
+
+			IFile file = (IFile) resource;
+
+			long start = System.currentTimeMillis();
 
 			// System.out.println(String.format("gherkin %s builder compile: %s",
 			// (isIncrementalBuild ? "incremental" : "full"), resource));
@@ -298,7 +345,6 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 
 			long end = System.currentTimeMillis();
 			System.out.println("Gherkin Compile " + resource.getName() + " in " + (end - start) + " ms.");
-			return true;
 		}
 
 	}
