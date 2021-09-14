@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature id="cucumber.eclipse.feature">
+      <category name="cucumber_eclipse_category_id"/>
+   </feature>
+   <feature id="net.mihai-nita.ansicon">
+      <category name="ansicon"/>
+   </feature>
+   <feature id="io.cucumber.eclipse.thirdparty.feature">
+      <category name="cucumber_eclipse_category_id"/>
+   </feature>
+   <category-def name="cucumber_eclipse_category_id" label="Cucumber Eclipse Plugin">
+      <description>
+         Offical Eclipse Plugin for Cucumber
+      </description>
+   </category-def>
+   <category-def name="ansicon" label="Ansi Console"/>
+</site>

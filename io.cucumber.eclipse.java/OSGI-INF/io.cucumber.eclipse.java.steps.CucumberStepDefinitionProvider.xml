@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="io.cucumber.eclipse.java.steps.CucumberStepDefinitionProvider">
+   <property name="name" value="Cucumber JVM Runtime"/>
+   <property name="service.ranking" type="Integer" value="100"/>
+   <service>
+      <provide interface="io.cucumber.eclipse.editor.steps.IStepDefinitionsProvider"/>
+   </service>
+   <implementation class="io.cucumber.eclipse.java.steps.CucumberStepDefinitionProvider"/>
+</scr:component>

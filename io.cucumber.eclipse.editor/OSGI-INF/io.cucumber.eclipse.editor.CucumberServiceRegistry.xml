@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.3.0" activate="start" deactivate="stop" name="io.cucumber.eclipse.editor.CucumberServiceRegistry">
+   <service>
+      <provide interface="io.cucumber.eclipse.editor.CucumberServiceRegistry"/>
+   </service>
+   <reference cardinality="0..n" field="cucumberLauncher" field-option="update" interface="io.cucumber.eclipse.editor.launching.ILauncher" name="cucumberLauncher" policy="dynamic"/>
+   <reference cardinality="0..n" field="stepDefinitionOpener" field-option="update" interface="io.cucumber.eclipse.editor.hyperlinks.IStepDefinitionOpener" name="stepDefinitionOpener" policy="dynamic"/>
+   <reference cardinality="0..n" field="stepDefinitionsProvider" field-option="update" interface="io.cucumber.eclipse.editor.steps.IStepDefinitionsProvider" name="stepDefinitionsProvider" policy="dynamic"/>
+   <implementation class="io.cucumber.eclipse.editor.CucumberServiceRegistry"/>
+</scr:component>

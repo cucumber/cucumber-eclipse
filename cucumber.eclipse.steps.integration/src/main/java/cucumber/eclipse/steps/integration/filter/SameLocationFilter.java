@@ -3,7 +3,7 @@ package cucumber.eclipse.steps.integration.filter;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
 
-import cucumber.eclipse.steps.integration.StepDefinition;
+import io.cucumber.eclipse.editor.steps.StepDefinition;
 
 public class SameLocationFilter implements Filter<StepDefinition> {
 

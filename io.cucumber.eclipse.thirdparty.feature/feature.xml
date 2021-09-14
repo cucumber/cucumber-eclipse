@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="io.cucumber.eclipse.thirdparty.feature"
+      label="third party dependencies"
+      version="2.0.0.qualifier">
+
+   <description>
+      Contains thrid party dependencies for cucumber
+   </description>
+
+   <copyright>
+      Please see the individual plugins for details
+   </copyright>
+
+   <license url="">
+      Please see the individual plugins for details
+   </license>
+
+   <plugin
+         id="org.apache.commons.commons-text"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.commons.lang3"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.unittest.ui"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>

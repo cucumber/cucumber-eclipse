@@ -21,11 +21,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 
 import cucumber.eclipse.editor.properties.ProjectGlueCodeOptions;
-import cucumber.eclipse.steps.integration.ExpressionDefinition;
 import cucumber.eclipse.steps.integration.GherkinStepWrapper;
 import cucumber.eclipse.steps.integration.Glue;
-import cucumber.eclipse.steps.integration.StepDefinition;
-import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 import gherkin.I18n;
 import gherkin.formatter.model.Step;
 import io.cucumber.cucumberexpressions.CucumberExpression;
@@ -33,6 +30,10 @@ import io.cucumber.cucumberexpressions.CucumberExpressionException;
 import io.cucumber.cucumberexpressions.Expression;
 import io.cucumber.cucumberexpressions.ExpressionFactory;
 import io.cucumber.cucumberexpressions.ParameterTypeRegistry;
+import io.cucumber.eclipse.editor.StorageHelper;
+import io.cucumber.eclipse.editor.marker.MarkerFactory;
+import io.cucumber.eclipse.editor.steps.ExpressionDefinition;
+import io.cucumber.eclipse.editor.steps.StepDefinition;
 
 public class GlueRepository implements Externalizable {
 

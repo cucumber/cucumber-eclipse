@@ -5,6 +5,7 @@ import java.io.Serializable;
 import org.eclipse.core.resources.IResource;
 
 import gherkin.formatter.model.Step;
+import io.cucumber.eclipse.editor.ResourceHelper;
 
 /**
  * Convenient class to associate a gherkin step with the file where is come

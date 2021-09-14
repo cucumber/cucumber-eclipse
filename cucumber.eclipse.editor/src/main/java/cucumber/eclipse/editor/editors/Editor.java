@@ -32,8 +32,10 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import cucumber.eclipse.editor.Activator;
 import cucumber.eclipse.editor.nature.CucumberProjectNature;
 import cucumber.eclipse.editor.template.GherkinSampleTemplate;
-import cucumber.eclipse.steps.integration.marker.MarkerFactory;
+import io.cucumber.eclipse.editor.ColorManager;
+import io.cucumber.eclipse.editor.marker.MarkerFactory;
 
+//FIXME obsolete
 public class Editor extends TextEditor {
 
 	private ColorManager colorManager;
@@ -97,7 +99,7 @@ public class Editor extends TextEditor {
 		annotationModel = viewer.getProjectionAnnotationModel();
 
 		// register the editor scope context
-		IContextService service = (IContextService) getSite().getService(IContextService.class);
+		IContextService service = getSite().getService(IContextService.class);
 		if (service != null) {
 			service.activateContext("cucumber.eclipse.editor.featureEditorScope");
 		}
@@ -167,6 +169,7 @@ public class Editor extends TextEditor {
 		return fileEditorInput.getFile();
 	}
 
+	@Override
 	public void dispose() {
 		super.dispose();
 
@@ -174,6 +177,7 @@ public class Editor extends TextEditor {
 
 	}
 
+	@Override
 	public Object getAdapter(Class required) {
 		if (IContentOutlinePage.class.equals(required)) {
 			if (outlinePage == null) {

@@ -2,7 +2,7 @@ package cucumber.eclipse.editor.snippet;
 
 import org.eclipse.core.resources.IFile;
 
-import cucumber.eclipse.steps.integration.IStepDefinitionGenerator;
+import io.cucumber.eclipse.editor.document.IStepDefinitionGenerator;
 
 public interface IStepGeneratorProvider {
 

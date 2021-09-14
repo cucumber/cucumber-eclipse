@@ -11,58 +11,7 @@
             name="Editor">
       </editor>
    	</extension>
-   <extension
-         point="org.eclipse.ui.themes">
-        <themeElementCategory label="Gherkin" id="cucumber.eclipse.editor.presentation"/>
-        <colorDefinition 
-        	categoryId="cucumber.eclipse.editor.presentation"
-        	id="cucumber.eclipse.editor.presentation.gherkin_string_colour"
-        	label="String Colour"
-        	value="0,128,0">
-        </colorDefinition>
-        <colorDefinition 
-        	categoryId="cucumber.eclipse.editor.presentation"
-        	id="cucumber.eclipse.editor.presentation.gherkin_comment_colour"
-        	label="Comment Colour"
-        	value="128,0,0">
-        </colorDefinition>
-        <colorDefinition 
-        	categoryId="cucumber.eclipse.editor.presentation"
-        	id="cucumber.eclipse.editor.presentation.gherkin_text_colour"
-        	label="Text Colour"
-        	value="0,0,0">
-        </colorDefinition>
-        <colorDefinition 
-        	categoryId="cucumber.eclipse.editor.presentation"
-        	id="cucumber.eclipse.editor.presentation.gherkin_keyword_colour"
-        	label="Keyword Colour"
-        	value="128,128,0">
-        </colorDefinition>
-        <colorDefinition 
-        	categoryId="cucumber.eclipse.editor.presentation"
-        	id="cucumber.eclipse.editor.presentation.gherkin_placeholder_colour"
-        	label="Placeholder Colour"
-        	value="255,128,0">
-        </colorDefinition>
-        <colorDefinition 
-        	categoryId="cucumber.eclipse.editor.presentation"
-        	id="cucumber.eclipse.editor.presentation.gherkin_step_colour"
-        	label="Step Colour"
-        	value="0,128,128">
-        </colorDefinition>
-        <colorDefinition 
-        	categoryId="cucumber.eclipse.editor.presentation"
-        	id="cucumber.eclipse.editor.presentation.gherkin_tag_colour"
-        	label="Tag Colour"
-        	value="0,128,255">
-        </colorDefinition>
-        <colorDefinition 
-        	categoryId="cucumber.eclipse.editor.presentation"
-        	id="cucumber.eclipse.editor.presentation.gherkin_numeric_literal_colour"
-        	label="Numeric Colour"
-        	value="0,128,0">
-        </colorDefinition>
-     </extension>
+   
    <extension
          point="org.eclipse.ui.commands">
       <category
@@ -170,62 +119,7 @@
             sequence="F5">
       </key>      
    </extension>
-   <extension point = "org.eclipse.debug.core.launchConfigurationTypes">
-   <launchConfigurationType
-   	   id="cucumber.eclipse.launching.localCucumberFeature"
-	   name="Cucumber Feature"
-	   delegate="cucumber.eclipse.launching.CucumberFeatureLocalApplicationLaunchConfigurationDelegate"
-	   modes= "run,debug"
-	   >
-   </launchConfigurationType>
-</extension>
-<extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
-    <launchConfigurationTypeImage
-        icon="icons/cukes.gif"
-        configTypeID="cucumber.eclipse.launching.localCucumberFeature"
-        id="cucumber.eclipse.launching.launchConfigurationTypeImage.localCucumberFeature">
-    </launchConfigurationTypeImage>
-</extension>
-<extension point="org.eclipse.debug.ui.launchConfigurationTabGroups">
-    <launchConfigurationTabGroup
-        type="cucumber.eclipse.launching.localCucumberFeature"
-        class="cucumber.eclipse.launching.CucumberFeatureTabGroup"
-        id="cucumber.eclipse.launching.launchConfigurationTabGroup.localCucumberFeature">
-    </launchConfigurationTabGroup>
-</extension>
-<extension point="org.eclipse.debug.ui.launchShortcuts">
-    <shortcut
-        id="cucumber.eclipse.launching.featureLaunchShortcut"
-        class="cucumber.eclipse.launching.CucumberFeatureLaunchShortcut"
-        label="Feature"
-        icon="icons/cukes.gif"
-        modes="run, debug">
-        <configurationType
-        id="cucumber.eclipse.launching.localCucumberFeature">
-        </configurationType>
-           <contextualLaunch>
-         <contextLabel mode="run" label="Cucumber Feature" />
-         <contextLabel mode="debug" label="Cucumber Feature" />
-         <enablement >
-           <with variable="selection">
-           <count value="1"/>
-          <iterate>
-            <adapt type="org.eclipse.core.resources.IResource">
-                <and>
-                <test property="org.eclipse.core.resources.name" value="*.feature"/>
-            </and>
-        </adapt>
-          </iterate>
-           </with>
-       </enablement>
-     </contextualLaunch>
-    </shortcut>
-</extension>
-   <extension point="org.eclipse.ui.ide.markerResolution">
-      <markerResolutionGenerator
-         markerType="cucumber.eclipse.marker.gherkin.unmatched_step"
-         class="cucumber.eclipse.editor.markers.StepCreationMarkerResolutionGenerator"/>
-   </extension>
+   
    <extension point="org.eclipse.ui.ide.markerResolution">
       <markerResolutionGenerator
          markerType="cucumber.eclipse.marker.not_a_cucumber_project"
@@ -247,18 +141,7 @@
 			name="project"
 			class="org.eclipse.core.internal.resources.ProjectPreferences"/>
 	</extension>
-	<extension
-		point="org.eclipse.core.runtime.preferences">
-		<initializer
-			class="cucumber.eclipse.editor.preferences.CucumberPreferenceInitializer"/>
-	</extension>
-	<extension
-		point="org.eclipse.ui.preferencePages">
-		<page
-			id="cucumber.eclipse.editor.preferences.Page1"
-			class="cucumber.eclipse.editor.preferences.CucumberPreferencePage"
-			name="Cucumber" />
-   </extension>
+	
  <extension
        point="org.eclipse.ui.newWizards">
     <category

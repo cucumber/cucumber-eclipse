@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Cucumber Java Backend
 Bundle-SymbolicName: cucumber.eclipse.backends.java;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.equinox.registry,
  org.eclipse.core.resources;bundle-version="3.10.1",

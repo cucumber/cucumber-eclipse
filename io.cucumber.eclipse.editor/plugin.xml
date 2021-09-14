@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+	<extension-point id="io.cucumber.eclipse.editor.steps.integration" name="Cucumber Steps Integration" schema="schema/cucumber.eclipse.steps.integration.exsd"/>
+    <extension point="org.eclipse.ui.editors">
+      <editorContentTypeBinding
+            contentTypeId="io.cucumber.eclipse.editor.content-type.feature"
+            editorId="org.eclipse.ui.genericeditor.GenericEditor">
+      </editorContentTypeBinding>
+   	</extension>
+	 <extension
+	       point="org.eclipse.core.contenttype.contentTypes">
+	    <content-type
+	          base-type="org.eclipse.core.runtime.text"
+	          default-charset="UTF-8"
+	          file-extensions="feature"
+	          id="io.cucumber.eclipse.editor.content-type.feature"
+	          name="Cucumber Feature"
+	          priority="high">
+	    </content-type>
+	 </extension>
+  <extension
+        point="org.eclipse.ui.genericeditor.presentationReconcilers">
+     <presentationReconciler
+           class="io.cucumber.eclipse.editor.syntaxhighlight.GherkinPresentationReconciler"
+           contentType="io.cucumber.eclipse.editor.content-type.feature">
+     </presentationReconciler>
+  </extension>
+  <extension
+        point="org.eclipse.core.filebuffers.documentSetup">
+     <participant
+           class="io.cucumber.eclipse.editor.validation.GherkinSyntaxValidator"
+           contentTypeId="io.cucumber.eclipse.editor.content-type.feature">
+     </participant>
+  </extension>
+  <extension
+         point="org.eclipse.ui.themes">
+        <themeElementCategory label="Gherkin" id="cucumber.eclipse.editor.presentation"/>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_string_colour"
+        	label="String Colour"
+        	value="0,128,0">
+        </colorDefinition>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_comment_colour"
+        	label="Comment Colour"
+        	value="128,0,0">
+        </colorDefinition>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_text_colour"
+        	label="Text Colour"
+        	value="0,0,0">
+        </colorDefinition>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_keyword_colour"
+        	label="Keyword Colour"
+        	value="128,128,0">
+        </colorDefinition>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_placeholder_colour"
+        	label="Placeholder Colour"
+        	value="255,128,0">
+        </colorDefinition>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_step_colour"
+        	label="Step Colour"
+        	value="0,128,128">
+        </colorDefinition>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_tag_colour"
+        	label="Tag Colour"
+        	value="0,128,255">
+        </colorDefinition>
+        <colorDefinition 
+        	categoryId="cucumber.eclipse.editor.presentation"
+        	id="cucumber.eclipse.editor.presentation.gherkin_numeric_literal_colour"
+        	label="Numeric Colour"
+        	value="0,128,0">
+        </colorDefinition>
+     </extension>
+ 	<extension
+           id="cucumber.eclipse.marker"
+           point="org.eclipse.core.resources.markers">
+           <super type="org.eclipse.core.resources.textmarker"/>
+           <persistent value="true"/>
+	</extension>
+     <extension
+           id="cucumber.eclipse.marker.gherkin.syntaxerror"
+           point="org.eclipse.core.resources.markers"
+           name="Gherkin syntax error">
+           <super type="org.eclipse.core.resources.problemmarker"/>
+           <super type="cucumber.eclipse.marker"/>
+           <persistent value="true"/>
+	</extension>
+	<extension
+	    id="cucumber.eclipse.marker.gherkin.unmatched_step"
+	    name="Unmatched step"
+	    point="org.eclipse.core.resources.markers">
+	    <super type="org.eclipse.core.resources.problemmarker"/>
+	  	<super type="cucumber.eclipse.marker"/>
+	  	<attribute name="cucumber.eclipse.marker.gherkin.unmatched_step.keyword"/>
+	  	<attribute name="cucumber.eclipse.marker.gherkin.unmatched_step.name"/>
+	  	<attribute name="cucumber.eclipse.marker.gherkin.unmatched_step.path"/>
+	  	<persistent value="true"/>
+	</extension>
+	<extension
+         point="org.eclipse.ui.editors.markerAnnotationSpecification">
+      <specification
+            annotationType="cucumber.eclipse.annotation.gherkin.unmatched_step"
+            colorPreferenceKey="cucumber.eclipse.marker.gherkin.unmatched_step.color"
+            colorPreferenceValue="247,207,84"
+            contributesToHeader="false"
+            highlightPreferenceKey="cucumber.eclipse.marker.gherkin.unmatched_step.highlight"
+            highlightPreferenceValue="true"
+            includeOnPreferencePage="true"
+            label="Cucumber unmatched step"
+            overviewRulerPreferenceKey="cucumber.eclipse.marker.gherkin.unmatched_step.overview"
+            overviewRulerPreferenceValue="true"
+            presentationLayer="0"
+            textPreferenceKey="cucumber.eclipse.marker.gherkin.unmatched_step.text"
+            textPreferenceValue="true"
+            textStylePreferenceValue="BOX"
+            verticalRulerPreferenceKey="cucumber.eclipse.marker.gherkin.unmatched_step.ruler"
+            verticalRulerPreferenceValue="true">
+      </specification>
+   </extension>
+   <extension
+	  point="org.eclipse.ui.editors.annotationTypes">
+	  <type
+	        markerType="cucumber.eclipse.marker.gherkin.unmatched_step"
+	        name="cucumber.eclipse.annotation.gherkin.unmatched_step">
+	  </type>
+	</extension>
+	<extension
+	  point="org.eclipse.ui.editors.annotationTypes">
+	  <type
+	        markerType="cucumber.eclipse.marker.scenario_outline_example_unmatch"
+	        name="cucumber.eclipse.annotation.gherkin.unmatched_step">
+	  </type>
+	</extension>
+     <extension
+           point="org.eclipse.ui.genericeditor.contentAssistProcessors">
+        <contentAssistProcessor
+              class="io.cucumber.eclipse.editor.contentassist.GherkinContentAssistProcessor"
+              contentType="io.cucumber.eclipse.editor.content-type.feature">
+        </contentAssistProcessor>
+        <contentAssistProcessor
+              class="io.cucumber.eclipse.editor.contentassist.CucumberStepContentAssistProcessor"
+              contentType="io.cucumber.eclipse.editor.content-type.feature">
+        </contentAssistProcessor>
+     </extension>
+     <extension
+           point="org.eclipse.ui.trace.traceComponents">
+        <component
+              id="io.cucumber.eclipse.editor.trace.cucumber"
+              label="Cucumber Editor">
+           <bundle
+                 name="io.cucumber.eclipse.editor"></bundle>
+        </component>
+     </extension>
+     <extension
+           point="org.eclipse.ui.genericeditor.icons">
+        <icon
+              contentType="io.cucumber.eclipse.editor.content-type.feature"
+              icon="icons/cukes.gif">
+        </icon>
+     </extension>
+     <extension
+           point="org.eclipse.ui.console.consoleFactories">
+        <consoleFactory
+              class="io.cucumber.eclipse.editor.console.CucumberConsoleFactory"
+              icon="icons/cukes.gif"
+              label="Cucumber Console">
+        </consoleFactory>
+     </extension>
+     <!-- TODO is this required? seems to work without already... -->
+      <extension
+           point="org.eclipse.ui.genericeditor.reconcilers">
+        <reconciler
+              class="org.eclipse.jface.text.codemining.CodeMiningReconciler"
+              contentType="io.cucumber.eclipse.editor.content-type.feature">
+        </reconciler>
+     </extension>
+     <extension
+           point="org.eclipse.ui.workbench.texteditor.codeMiningProviders">
+        <codeMiningProvider
+              class="io.cucumber.eclipse.editor.codemining.GherkinCodeMiningProvider"
+              id="io.cucumber.eclipse.editor.codeMiningProvider1"
+              label="Gherkin Advanced Editing">
+        </codeMiningProvider>
+     </extension>
+     <extension
+           point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
+        <hyperlinkDetector
+              activate="true"
+              class="io.cucumber.eclipse.editor.hyperlinks.StepHyperlinkDetector"
+              id="io.cucumber.eclipse.editor.hyperlinkDetector1"
+              name="Gherkin Steps"
+              targetId="org.eclipse.ui.genericeditor.GenericEditor">
+        </hyperlinkDetector>
+     </extension>
+     <extension
+           point="org.eclipse.ui.genericeditor.quickAssistProcessors">
+        <quickAssistProcessor
+              class="io.cucumber.eclipse.editor.contentassist.CucumberStepQuickAssistProcessor"
+              contentType="io.cucumber.eclipse.editor.content-type.feature">
+        </quickAssistProcessor>
+     </extension>
+     	<extension
+           point="org.eclipse.debug.ui.launchShortcuts">
+        <shortcut
+              class="io.cucumber.eclipse.editor.launching.CucumberFeatureLaunchShortcut"
+              description="Run this feature with cucumber-jvm"
+              icon="icons/cukes.gif"
+              id="io.cucumber.eclipse.editor.shortcut1"
+              label="Cucumber"
+              modes="run,debug,profile">
+              <configurationType
+			        id="cucumber.eclipse.launching.localCucumberFeature">
+	          </configurationType>
+	          <contextualLaunch>
+		         <contextLabel mode="run" label="Cucumber Feature" />
+		         <contextLabel mode="debug" label="Cucumber Feature" />
+		         <enablement >
+		           <with variable="selection">
+			           <iterate>
+			            <adapt type="org.eclipse.core.resources.IResource">
+			                <and>
+			                <test property="org.eclipse.core.resources.name" value="*.feature"/>
+			            </and>
+			            </adapt>
+			           </iterate>
+			         </with>
+			       </enablement>
+			     </contextualLaunch>
+			   </shortcut>
+     </extension>
+      <extension
+            point="org.eclipse.ui.workbench.texteditor.codeMiningProviders">
+         <codeMiningProvider
+               class="io.cucumber.eclipse.editor.codemining.CucumberRunCodeMiningProvider"
+               id="io.cucumber.eclipse.editor.codeMiningProvider1"
+               label="Cucumber Run Annotations">
+         </codeMiningProvider>
+      </extension>
+      <extension
+		point="org.eclipse.core.runtime.preferences">
+		<initializer
+			class="io.cucumber.eclipse.editor.preferences.CucumberPreferenceInitializer"/>
+	</extension>
+	<extension
+		point="org.eclipse.ui.preferencePages">
+		<page
+			id="cucumber.eclipse.editor.preferences.main"
+			class="io.cucumber.eclipse.editor.preferences.CucumberPreferencePage"
+			name="Cucumber" />
+   </extension>
+   <extension
+       point="org.eclipse.unittest.ui.unittestViewSupport">
+    <viewSupport
+          class="io.cucumber.eclipse.editor.testresults.CucumberTestViewSupport"
+          id="io.cucumber.eclipse.editor.testresults">
+    </viewSupport>
+ </extension>
+</plugin>

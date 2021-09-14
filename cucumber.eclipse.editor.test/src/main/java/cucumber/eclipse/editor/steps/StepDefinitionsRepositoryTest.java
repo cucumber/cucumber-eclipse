@@ -17,9 +17,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import cucumber.eclipse.editor.tests.MockFile;
-import cucumber.eclipse.steps.integration.ExpressionDefinition;
-import cucumber.eclipse.steps.integration.ResourceHelper;
-import cucumber.eclipse.steps.integration.StepDefinition;
+import io.cucumber.eclipse.editor.ResourceHelper;
+import io.cucumber.eclipse.editor.StorageHelper;
+import io.cucumber.eclipse.editor.steps.ExpressionDefinition;
+import io.cucumber.eclipse.editor.steps.StepDefinition;
+import io.cucumber.eclipse.editor.steps.StepDefinitionsRepository;
 
 public class StepDefinitionsRepositoryTest {
 

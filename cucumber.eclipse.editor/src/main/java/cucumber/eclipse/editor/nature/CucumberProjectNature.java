@@ -14,7 +14,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import cucumber.eclipse.editor.builder.CucumberGherkinBuilder;
 import cucumber.eclipse.editor.builder.CucumberStepDefinitionsBuilder;
 import cucumber.eclipse.steps.integration.builder.BuilderUtil;
-import cucumber.eclipse.steps.integration.marker.MarkerFactory;
+import io.cucumber.eclipse.editor.marker.MarkerFactory;
 
 public class CucumberProjectNature implements IProjectNature {
 	

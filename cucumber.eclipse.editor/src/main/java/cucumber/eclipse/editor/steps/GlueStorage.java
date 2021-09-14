@@ -16,6 +16,8 @@ import org.eclipse.ui.IFileEditorInput;
 
 import cucumber.eclipse.editor.Activator;
 import cucumber.eclipse.editor.editors.Editor;
+import io.cucumber.eclipse.editor.BuildStorage;
+import io.cucumber.eclipse.editor.StorageHelper;
 
 /**
  * Each project have its own scope of step definitions defined by its own

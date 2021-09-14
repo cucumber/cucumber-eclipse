@@ -15,8 +15,8 @@ import org.eclipse.core.runtime.Status;
 
 import cucumber.eclipse.editor.Activator;
 import cucumber.eclipse.editor.steps.UniversalStepDefinitionsProvider;
-import cucumber.eclipse.steps.integration.StepPreferences;
-import cucumber.eclipse.steps.integration.marker.MarkerFactory;
+import io.cucumber.eclipse.editor.marker.MarkerFactory;
+import io.cucumber.eclipse.editor.preferences.StepPreferences;
 
 /**
  * Incremental builder of step definitions.

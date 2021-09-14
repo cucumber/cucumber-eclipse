@@ -24,21 +24,15 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 
-import cucumber.eclipse.editor.steps.BuildStorage;
 import cucumber.eclipse.editor.steps.GlueRepository;
 import cucumber.eclipse.editor.steps.GlueStorage;
-import cucumber.eclipse.editor.steps.StepDefinitionsRepository;
-import cucumber.eclipse.editor.steps.StepDefinitionsStorage;
 import cucumber.eclipse.editor.steps.UniversalStepDefinitionsProvider;
 import cucumber.eclipse.editor.util.FileUtil;
 import cucumber.eclipse.steps.integration.Activator;
 import cucumber.eclipse.steps.integration.GherkinStepWrapper;
 import cucumber.eclipse.steps.integration.Glue;
-import cucumber.eclipse.steps.integration.StepDefinition;
-import cucumber.eclipse.steps.integration.StepPreferences;
 import cucumber.eclipse.steps.integration.filter.FilterUtil;
 import cucumber.eclipse.steps.integration.filter.SameLocationFilter;
-import cucumber.eclipse.steps.integration.marker.MarkerFactory;
 import gherkin.formatter.Formatter;
 import gherkin.formatter.model.Background;
 import gherkin.formatter.model.Examples;
@@ -49,6 +43,12 @@ import gherkin.formatter.model.ScenarioOutline;
 import gherkin.formatter.model.Step;
 import gherkin.lexer.LexingError;
 import gherkin.parser.Parser;
+import io.cucumber.eclipse.editor.BuildStorage;
+import io.cucumber.eclipse.editor.marker.MarkerFactory;
+import io.cucumber.eclipse.editor.preferences.StepPreferences;
+import io.cucumber.eclipse.editor.steps.StepDefinition;
+import io.cucumber.eclipse.editor.steps.StepDefinitionsRepository;
+import io.cucumber.eclipse.editor.steps.StepDefinitionsStorage;
 
 /**
  * Incremental builder of gherkin steps.
@@ -439,10 +439,10 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			String derivateGherkinStepSource = getResolvedStepStringForExample(scenarioOutlineStepLine,
 					exampleVariablesMap);
 
-			Set<cucumber.eclipse.steps.integration.StepDefinition> allStepDefinitions = stepDefinitionsProvider
+			Set<io.cucumber.eclipse.editor.steps.StepDefinition> allStepDefinitions = stepDefinitionsProvider
 					.getStepDefinitions(project);
 			Set<StepDefinition> stepDefinitionsScope = this.filter((IFile) gherkinFile, allStepDefinitions);
-			cucumber.eclipse.steps.integration.StepDefinition glueStepDefinition = glueRepository.findMatchingStep(stepDefinitionsScope, derivateGherkinStepSource);
+			io.cucumber.eclipse.editor.steps.StepDefinition glueStepDefinition = glueRepository.findMatchingStep(stepDefinitionsScope, derivateGherkinStepSource);
 
 			boolean isFound = glueStepDefinition != null;
 			GherkinStepWrapper gherkinStepWrapper = new GherkinStepWrapper(scenarioOutlineStepLine, gherkinFile);

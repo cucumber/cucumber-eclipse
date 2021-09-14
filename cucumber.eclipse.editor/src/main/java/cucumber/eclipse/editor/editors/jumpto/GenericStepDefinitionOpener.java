@@ -9,8 +9,8 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 
-import cucumber.eclipse.steps.integration.IStepDefinitionOpener;
-import cucumber.eclipse.steps.integration.StepDefinition;
+import io.cucumber.eclipse.editor.hyperlinks.IStepDefinitionOpener;
+import io.cucumber.eclipse.editor.steps.StepDefinition;
 
 public class GenericStepDefinitionOpener implements IStepDefinitionOpener {
 

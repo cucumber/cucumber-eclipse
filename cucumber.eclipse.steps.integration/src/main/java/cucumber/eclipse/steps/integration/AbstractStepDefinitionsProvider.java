@@ -8,7 +8,9 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import cucumber.eclipse.steps.integration.marker.MarkerFactory;
+import io.cucumber.eclipse.editor.marker.MarkerFactory;
+import io.cucumber.eclipse.editor.steps.IStepDefinitionsProvider;
+import io.cucumber.eclipse.editor.steps.StepDefinition;
 
 public abstract class AbstractStepDefinitionsProvider implements IStepDefinitionsProvider {
 

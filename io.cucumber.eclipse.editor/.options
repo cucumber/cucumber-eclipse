@@ -1,0 +1,3 @@
+io.cucumber.eclipse.editor/debug=false
+io.cucumber.eclipse.editor/perf=false
+io.cucumber.eclipse.editor/perf/steps=false

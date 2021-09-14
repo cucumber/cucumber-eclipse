@@ -10,7 +10,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import cucumber.eclipse.editor.editors.Editor;
-import cucumber.eclipse.steps.integration.StepDefinition;
+import io.cucumber.eclipse.editor.steps.StepDefinition;
 
 public class JumpToStepDefinitionHandler extends AbstractHandler {
 	

@@ -1,28 +1,29 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<version>1.0.0-SNAPSHOT</version>
-	<groupId>cucumber.eclipse</groupId>
+	<version>2.0.0-SNAPSHOT</version>
+	<groupId>io.cucumber.eclipse</groupId>
 	<artifactId>parent</artifactId>
 	<packaging>pom</packaging>
 	<name>Cucumber Eclipse Parent</name>
 
 	<properties>
-		<tycho-version>1.7.0</tycho-version>
+		<tycho-version>2.3.0</tycho-version>
 		<maven-scm-plugin-version>1.11.1</maven-scm-plugin-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.source>11</maven.compiler.source>
+    	<maven.compiler.target>11</maven.compiler.target>
 	</properties>
 
 	<modules>
-		<module>cucumber.eclipse.editor</module>
-		<module>cucumber.eclipse.editor.test</module>
-		<module>cucumber.eclipse.feature</module>
-		<module>cucumber.eclipse.runner</module>
-		<module>cucumber.eclipse.steps.integration</module>
-		<module>cucumber.eclipse.steps.jdt</module>
-		<module>cucumber.eclipse.backends.java</module>
-		<module>cucumber.eclipse.p2updatesite</module>
-		<module>cucumber.eclipse.targetdefinition</module>
+		<module>io.cucumber.eclipse.targetdefinition</module>
+		<module>io.cucumber.eclipse.editor</module>
+		<module>io.cucumber.eclipse.java</module>
+		<module>io.cucumber.eclipse.java.plugins</module>
+		<module>io.cucumber.eclipse.feature</module>
+		<module>io.cucumber.eclipse.thirdparty.feature</module>
+		<module>io.cucumber.eclipse.product</module>
+		<module>io.cucumber.eclipse.updatesite</module>
 	</modules>
 
 	<build>
@@ -33,11 +34,7 @@
 				<version>${tycho-version}</version>
 				<configuration>
 					<target>
-						<artifact>
-							<groupId>cucumber.eclipse</groupId>
-							<artifactId>cucumber.eclipse.targetdefinition</artifactId>
-							<version>${project.version}</version>
-						</artifact>
+						<file>../io.cucumber.eclipse.targetdefinition/cucumber.eclipse.targetdefinition.target</file>
 					</target>
 					<environments>
 						<environment>

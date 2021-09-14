@@ -11,9 +11,9 @@ import org.eclipse.jface.text.Region;
 import org.junit.Before;
 import org.junit.Test;
 
-import cucumber.eclipse.editor.editors.jumpto.StepHyperlink;
-import cucumber.eclipse.steps.integration.ExpressionDefinition;
-import cucumber.eclipse.steps.integration.StepDefinition;
+import io.cucumber.eclipse.editor.hyperlinks.StepHyperlink;
+import io.cucumber.eclipse.editor.steps.ExpressionDefinition;
+import io.cucumber.eclipse.editor.steps.StepDefinition;
 
 public class StepHyperlinkTest {
 
