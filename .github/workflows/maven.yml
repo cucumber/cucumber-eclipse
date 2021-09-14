@@ -2,17 +2,23 @@ name: cucumber-eclipse plugin (1.x)
 
 on:
   push:
-    branches: [ 1.x ]
+    branches: [ v1.x ]
   pull_request:
-    branches: [ 1.x ]
+    branches: [ v1.x ]
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
+      with:
+        path: code
+    - uses: actions/checkout@v2
+      with:
+        path: gh-pages
+        ref: gh-pages
+      if: github.event_name != 'pull_request'
     - name: Set up JDK 8
       uses: actions/setup-java@v2
       with:
