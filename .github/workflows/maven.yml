@@ -1,0 +1,51 @@
+name: cucumber-eclipse plugin (0.x)
+
+on:
+  push:
+    branches: [ v0.x ]
+  pull_request:
+    branches: [ v0.x ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        path: code
+    - name: Checkout pages
+      uses: actions/checkout@v2
+      with:
+        path: gh-pages
+        ref: gh-pages
+      if: github.event_name != 'pull_request'
+    - name: Set up JDK 8
+      uses: actions/setup-java@v2
+      with:
+        java-version: '8'
+        distribution: 'adopt'
+        architecture: 'x64'
+    - name: Cache local Maven repository
+      uses: actions/cache@v2
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+         ${{ runner.os }}-maven-
+    - name: Build with Maven
+      working-directory: code
+      run: mvn -B package --file pom.xml
+    - name: deploy
+      working-directory: gh-pages
+      run: |
+        cp -R ../code/cucumber.eclipse.p2updatesite/target/repository/* update-site/v0.x/
+        git add .
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git commit -m "Add latest update-site for version v0.x"
+        git push
+      if: github.event_name != 'pull_request'
+
+
