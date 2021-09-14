@@ -8,6 +8,5 @@ target
 DS_Store
 .DS_Store
 bin/
-examples/
 io.cucumber.eclipse.lsp/
 .polyglot*
