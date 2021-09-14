@@ -37,13 +37,13 @@ jobs:
     - name: Build with Maven
       run: mvn -B package --file code/pom.xml
     - name: deploy
+      working-directory: gh-pages
       run: |
-        cp -R code/cucumber.eclipse.p2updatesite/target/repository/ gh-pages/update-site/v1.x/
-        cd gh-pages
+        cp -R ../code/cucumber.eclipse.p2updatesite/target/repository/ update-site/v1.x/
         git add --update .
         git config user.name github-actions
         git config user.email github-actions@github.com
-        git commit -m "Add latest update-site for version {{ github.ref }}"
+        git commit -m "Add latest update-site for version v1.x"
         git push
       if: github.event_name != 'pull_request'
 
