@@ -269,4 +269,45 @@
           id="io.cucumber.eclipse.editor.testresults">
     </viewSupport>
  </extension>
+   <extension
+         point="org.eclipse.debug.core.breakpoints">
+      <breakpoint
+            class="io.cucumber.eclipse.editor.debug.GherkingBreakpoint"
+            id="io.cucumber.eclipse.editor.breakpoint"
+            markerType="io.cucumber.eclipse.editor.lineBreakpoint.marker"
+            name="Cucumber Breakpoint">
+      </breakpoint>
+   </extension>
+  <extension
+       id="io.cucumber.eclipse.editor.lineBreakpoint.marker"
+       point="org.eclipse.core.resources.markers">
+       <super type="org.eclipse.debug.core.lineBreakpointMarker"/>
+       <persistent value="true"/>
+    </extension>
+    <!-- Workaround for Bug 575970 -->
+     <extension point="org.eclipse.ui.editorActions">
+	    <editorContribution
+	          targetID="org.eclipse.ui.genericeditor.GenericEditor"
+	          id="Bug575970.rulerActions">
+	       <action
+	             label="Not Used"
+	             class="org.eclipse.debug.ui.actions.RulerToggleBreakpointActionDelegate"
+	             style="push"
+	             actionID="RulerDoubleClick"
+	             id="Bug575970.doubleClickBreakpointAction"/>
+	    </editorContribution>
+	 </extension>
+	<extension point="org.eclipse.ui.popupMenus">
+		   <!-- what is the correct id? -->
+		   <viewerContribution
+		     targetID="org.eclipse.ui.genericeditor.GenericEditor"
+		     id="Bug575970.RulerPopupActions">
+		       <action
+		         label="Toggle Breakpoint"
+		         class="org.eclipse.debug.ui.actions.RulerToggleBreakpointActionDelegate"
+		         menubarPath="additions"
+		         id="Bug575970.rulerContextMenu.toggleBreakpointAction">
+		       </action>
+		   </viewerContribution>
+		 </extension>
 </plugin>

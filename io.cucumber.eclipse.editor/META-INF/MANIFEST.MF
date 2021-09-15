@@ -49,4 +49,6 @@ Export-Package: io.cucumber.eclipse.editor,
 Bundle-ClassPath: META-INF/cucumber-expressions-11.0.0.jar,
  .
 Import-Package: org.osgi.service.component.annotations;version="1.3.0"
-Service-Component: OSGI-INF/io.cucumber.eclipse.editor.CucumberServiceRegistry.xml
+Service-Component: OSGI-INF/io.cucumber.eclipse.editor.CucumberServiceRegistry.xml,
+ OSGI-INF/io.cucumber.eclipse.editor.debug.GenericEditorBreakPointAdapter.xml,
+ OSGI-INF/io.cucumber.eclipse.editor.debug.GherkingToggleBreakpointsTarget.xml
