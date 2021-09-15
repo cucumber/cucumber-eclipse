@@ -3,6 +3,7 @@ package io.cucumber.eclipse.java.plugins;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,7 +23,8 @@ import io.cucumber.plugin.event.EventPublisher;
 public class CucumberEclipsePlugin implements ConcurrentEventListener {
 
 	private Consumer<Envelope> consumer;
-	public static final int GOOD_BY_MESSAGE = 0;
+	public static final int HANDLED_MESSAGE = 0x1;
+	public static final int GOOD_BY_MESSAGE = 0x0;
 
 	public CucumberEclipsePlugin(String port) throws IOException {
 		this(new SocketConsumer(port));
@@ -44,21 +46,23 @@ public class CucumberEclipsePlugin implements ConcurrentEventListener {
 	private static final class SocketConsumer implements Consumer<Envelope> {
 
 		private final Socket socket;
-		private final DataOutputStream stream;
+		private final DataOutputStream output;
 		private final ByteArrayOutputStream buffer = new ByteArrayOutputStream(1024 * 1024 * 10);
 		private AtomicInteger written = new AtomicInteger();
+		private InputStream input;
 
 		public SocketConsumer(String port) throws NumberFormatException, UnknownHostException, IOException {
 			try {
 				socket = new Socket((String) null, Integer.parseInt(port));
-				stream = new DataOutputStream(socket.getOutputStream());
+				output = new DataOutputStream(socket.getOutputStream());
+				input = socket.getInputStream();
 				Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 
 					@Override
 					public void run() {
 						try {
 							if (!socket.isClosed()) {
-								stream.writeInt(0);
+								output.writeInt(0);
 								socket.close();
 							}
 						} catch (IOException e) {
@@ -73,15 +77,19 @@ public class CucumberEclipsePlugin implements ConcurrentEventListener {
 
 		@Override
 		public void accept(Envelope env) {
-			// TODO use async I/O instead!?
 			synchronized (socket) {
+				if (socket.isClosed()) {
+					return;
+				}
 				try {
 					buffer.reset();
 					env.writeTo(buffer);
-					stream.writeInt(buffer.size());
-					buffer.writeTo(stream);
+					output.writeInt(buffer.size());
+					buffer.writeTo(output);
+					output.flush();
+					int read = input.read() & 0xFF;
 					written.incrementAndGet();
-					if (env.hasTestRunFinished()) {
+					if (env.hasTestRunFinished() || read == GOOD_BY_MESSAGE) {
 						finish();
 					}
 				} catch (IOException e) {
@@ -91,9 +99,9 @@ public class CucumberEclipsePlugin implements ConcurrentEventListener {
 		}
 
 		private void finish() throws IOException {
-			stream.writeInt(GOOD_BY_MESSAGE);
-			stream.flush();
-			socket.getInputStream().read();
+			output.writeInt(GOOD_BY_MESSAGE);
+			output.flush();
+			input.read();
 			socket.close();
 		}
 

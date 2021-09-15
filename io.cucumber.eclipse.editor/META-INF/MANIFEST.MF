@@ -41,6 +41,7 @@ Automatic-Module-Name: io.cucumber.eclipse.editor
 Bundle-ActivationPolicy: lazy
 Export-Package: io.cucumber.eclipse.editor,
  io.cucumber.eclipse.editor.console,
+ io.cucumber.eclipse.editor.debug,
  io.cucumber.eclipse.editor.document,
  io.cucumber.eclipse.editor.hyperlinks,
  io.cucumber.eclipse.editor.launching,

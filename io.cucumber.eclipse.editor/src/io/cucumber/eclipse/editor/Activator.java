@@ -21,6 +21,8 @@ public class Activator extends AbstractUIPlugin {
 	// The plug-in ID
 	public static final String PLUGIN_ID = "io.cucumber.eclipse.editor"; //$NON-NLS-1$
 
+	public static final String DEBUG_MODEL_ID = "gherking.debugModel";
+
 	// The shared instance
 	private static Activator plugin;
 	

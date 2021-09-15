@@ -72,7 +72,6 @@ public class CucumberTestRunnerClient implements ITestRunnerClient, EnvelopeList
 
 	@Override
 	public void startMonitoring() {
-		System.out.println("startMonitoring()");
 		ILaunch launch = session.getLaunch();
 		IProcess[] processes = launch.getProcesses();
 		for (IProcess process : processes) {

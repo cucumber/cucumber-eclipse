@@ -44,7 +44,7 @@ public class GherkingToggleBreakpointsTarget implements IToggleBreakpointsTarget
 
 	@Override
 	public void toggleMethodBreakpoints(IWorkbenchPart part, ISelection selection) throws CoreException {
-//not supported
+		// not supported
 	}
 
 	@Override
@@ -74,7 +74,7 @@ public class GherkingToggleBreakpointsTarget implements IToggleBreakpointsTarget
 					ITextSelection textSelection = (ITextSelection) selection;
 					int lineNumber = textSelection.getStartLine();
 					IBreakpoint[] breakpoints = DebugPlugin.getDefault().getBreakpointManager()
-							.getBreakpoints(GherkingBreakpoint.ID);
+							.getBreakpoints(GherkingBreakpoint.MODEL_ID);
 					for (IBreakpoint breakpoint : breakpoints) {
 						if (breakpoint instanceof ILineBreakpoint) {
 							if (resource.equals(breakpoint.getMarker().getResource())) {

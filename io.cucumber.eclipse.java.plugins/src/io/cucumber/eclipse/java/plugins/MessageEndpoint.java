@@ -31,7 +31,7 @@ public abstract class MessageEndpoint {
 		}
 	}
 
-	protected abstract void handleMessage(Envelope envelope);
+	protected abstract void handleMessage(Envelope envelope) throws InterruptedException;
 
 	public void start() {
 		Thread thread = new Thread(new Runnable() {
@@ -40,7 +40,8 @@ public abstract class MessageEndpoint {
 			public void run() {
 				try {
 					Socket socket = serverSocket.accept();
-					try (DataInputStream inputStream = new DataInputStream(socket.getInputStream())) {
+					try (DataInputStream inputStream = new DataInputStream(socket.getInputStream());
+							OutputStream outputStream = socket.getOutputStream()) {
 						int framelength;
 						byte[] buffer = new byte[1024 * 1024 * 10];
 						Parser<Envelope> parser = Envelope.parser();
@@ -50,16 +51,19 @@ public abstract class MessageEndpoint {
 							}
 							inputStream.readFully(buffer, 0, framelength);
 							Envelope envelope = parser.parseFrom(buffer, 0, framelength);
-							handleMessage(envelope);
+							try {
+								handleMessage(envelope);
+							} catch (InterruptedException e) {
+								break;
+							}
+							outputStream.write(CucumberEclipsePlugin.HANDLED_MESSAGE);
+							outputStream.flush();
 							if (envelope.hasTestRunFinished()) {
 								break;
 							}
 						}
-						// send goodby to the client...
-						try (OutputStream stream = socket.getOutputStream()) {
-							stream.write(CucumberEclipsePlugin.GOOD_BY_MESSAGE);
-							stream.flush();
-						}
+						outputStream.write(CucumberEclipsePlugin.GOOD_BY_MESSAGE);
+						outputStream.flush();
 					}
 					socket.close();
 				} catch (IOException e) {

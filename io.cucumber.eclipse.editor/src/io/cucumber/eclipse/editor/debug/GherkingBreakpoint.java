@@ -15,7 +15,7 @@ import org.eclipse.debug.core.model.LineBreakpoint;
  */
 public class GherkingBreakpoint extends LineBreakpoint {
 
-	public static final String ID = GherkingBreakpoint.class.getName();
+	public static final String MODEL_ID = GherkingBreakpoint.class.getName();
 
 	public GherkingBreakpoint() {
 	}
@@ -25,13 +25,12 @@ public class GherkingBreakpoint extends LineBreakpoint {
 		setMarker(marker);
 		setEnabled(true);
 		ensureMarker().setAttribute(IMarker.LINE_NUMBER, lineNumber);
-		ensureMarker().setAttribute(IBreakpoint.ID, ID);
+		ensureMarker().setAttribute(IBreakpoint.ID, MODEL_ID);
 	}
 
 	@Override
 	public String getModelIdentifier() {
-		// TODO Auto-generated method stub
-		return ID;
+		return MODEL_ID;
 	}
 
 }

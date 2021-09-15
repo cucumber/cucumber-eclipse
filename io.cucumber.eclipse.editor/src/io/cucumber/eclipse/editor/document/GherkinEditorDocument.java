@@ -39,17 +39,6 @@ import io.cucumber.gherkin.Location;
 import io.cucumber.gherkin.ParserException.NoSuchLanguageException;
 import io.cucumber.messages.IdGenerator;
 import io.cucumber.messages.Messages.Envelope;
-import io.cucumber.messages.Messages.GherkinDocument;
-import io.cucumber.messages.Messages.GherkinDocument.Feature;
-import io.cucumber.messages.Messages.GherkinDocument.Feature.Background;
-import io.cucumber.messages.Messages.GherkinDocument.Feature.FeatureChild;
-import io.cucumber.messages.Messages.GherkinDocument.Feature.Scenario;
-import io.cucumber.messages.Messages.GherkinDocument.Feature.Scenario.Examples;
-import io.cucumber.messages.Messages.GherkinDocument.Feature.Step;
-import io.cucumber.messages.Messages.GherkinDocument.Feature.Step.DataTable;
-import io.cucumber.messages.Messages.GherkinDocument.Feature.TableRow;
-import io.cucumber.messages.Messages.GherkinDocument.Feature.Tag;
-import io.cucumber.messages.Messages.ParseError;
 
 /**
  * 
@@ -58,7 +47,7 @@ import io.cucumber.messages.Messages.ParseError;
  * @author christoph
  *
  */
-public final class GherkinEditorDocument {
+public final class GherkinEditorDocument extends GherkinStream {
 
 	private static final List<Function<GherkinDialect, List<String>>> STEP_KEYWORD_KEYS = Arrays.asList(
 			GherkinDialect::getGivenKeywords, GherkinDialect::getWhenKeywords, GherkinDialect::getThenKeywords,
@@ -69,18 +58,20 @@ public final class GherkinEditorDocument {
 			GherkinDialect::getRuleKeywords, GherkinDialect::getBackgroundKeywords,
 			GherkinDialect::getExamplesKeywords);
 
-	private static final ConcurrentHashMap<IDocument, GherkinEditorDocument> DOCUMENT_MAP = new ConcurrentHashMap<>();
-	private volatile boolean dirty;
-	private final Envelope[] sources;
 	// TODO allow definition of default language in preferences
 	private final GherkinDialectProvider provider = new GherkinDialectProvider();
-	private final GherkinDialect dialect;
+
+	private static final ConcurrentHashMap<IDocument, GherkinEditorDocument> DOCUMENT_MAP = new ConcurrentHashMap<>();
+	private volatile boolean dirty;
 	private final IDocument document;
+	private final GherkinDialect dialect;
 	private final Locale locale;
 
 	private Supplier<IResource> resourceSupplier;
 
 	private GherkinEditorDocument(IDocument document, Supplier<IResource> resourceSupplier) {
+		super(Gherkin.fromSources(Collections.singletonList(Gherkin.makeSourceEnvelope(document.get(), "")), true, true,
+				false, new IdGenerator.Incrementing()).toArray(Envelope[]::new));
 		this.resourceSupplier = resourceSupplier;
 		document.addDocumentListener(new IDocumentListener() {
 
@@ -96,8 +87,6 @@ public final class GherkinEditorDocument {
 			}
 		});
 		this.document = document;
-		sources = Gherkin.fromSources(Collections.singletonList(Gherkin.makeSourceEnvelope(document.get(), "")), true,
-				true, false, new IdGenerator.Incrementing()).toArray(Envelope[]::new);
 		dialect = getFeature().map(f -> f.getLanguage()).filter(Objects::nonNull).filter(Predicate.not(String::isBlank))
 				.map(lang -> provider.getDialect(lang, new Location(-1, -1))).orElseGet(() -> {
 					try {
@@ -117,6 +106,7 @@ public final class GherkinEditorDocument {
 					return provider.getDefaultDialect();
 				});
 		locale = Locale.forLanguageTag(dialect.getLanguage());
+
 	}
 
 	/**
@@ -172,69 +162,6 @@ public final class GherkinEditorDocument {
 			eolOffset = 1;
 		}
 		return new Position(offset + lineLength - eolOffset, 1);
-	}
-
-	/**
-	 * 
-	 * @return the {@link Feature} of the document or an empty optional if no
-	 *         feature is present (either none is defined or there are parse errors)
-	 */
-	public Optional<Feature> getFeature() {
-		return getGherkinDocument().filter(GherkinDocument::hasFeature).map(GherkinDocument::getFeature);
-	}
-
-	public Optional<GherkinDocument> getGherkinDocument() {
-		return Arrays.stream(sources).filter(Envelope::hasGherkinDocument).map(s -> s.getGherkinDocument()).findFirst();
-	}
-
-	public Stream<FeatureChild> getFeatureChilds() {
-		return getFeature().stream().flatMap(feature -> feature.getChildrenList().stream());
-	}
-
-	public Stream<Scenario> getScenarios() {
-		return getFeatureChilds().filter(FeatureChild::hasScenario).map(FeatureChild::getScenario);
-	}
-
-	public Stream<Step> getSteps() {
-		Stream<Step> backgroundSteps = getBackgrounds().flatMap(bg -> bg.getStepsList().stream());
-		Stream<Step> scenarioSteps = getScenarios().flatMap(scenario -> scenario.getStepsList().stream());
-		return Stream.concat(scenarioSteps, backgroundSteps).distinct();
-	}
-
-	public Stream<Background> getBackgrounds() {
-		return getFeatureChilds().filter(FeatureChild::hasBackground).map(FeatureChild::getBackground);
-	}
-
-	public Stream<Tag> getTags() {
-
-		return Stream.concat(getExamples().flatMap(example -> example.getTagsList().stream()),
-				Stream.concat(getScenarios().flatMap(scenario -> scenario.getTagsList().stream()),
-						getFeature().stream().flatMap(feature -> feature.getTagsList().stream())))
-				.distinct();
-	}
-
-	public Stream<Examples> getExamples() {
-		return getScenarios().flatMap(s -> s.getExamplesList().stream());
-	}
-
-	public Stream<TableRow> getTableHeaders() {
-		return getExamples().filter(Examples::hasTableHeader).map(Examples::getTableHeader).distinct();
-	}
-
-	public Stream<List<TableRow>> getTableBodys() {
-		return getExamples().filter(Examples::hasTableHeader).map(Examples::getTableBodyList).distinct();
-	}
-
-	public Stream<DataTable> getDataTables() {
-		return getScenarios().flatMap(scenario -> scenario.getStepsList().stream()).filter(Step::hasDataTable)
-				.map(Step::getDataTable).distinct();
-	}
-
-	/**
-	 * @return a stream of parse errors for the given document
-	 */
-	public Stream<ParseError> getParseError() {
-		return Arrays.stream(sources).filter(Envelope::hasParseError).map(Envelope::getParseError);
 	}
 
 	/**

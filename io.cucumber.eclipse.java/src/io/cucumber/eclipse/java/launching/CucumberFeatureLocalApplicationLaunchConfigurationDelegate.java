@@ -20,6 +20,7 @@ import org.eclipse.core.variables.VariablesPlugin;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate2;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.AbstractJavaLaunchConfigurationDelegate;
@@ -33,6 +34,11 @@ import io.cucumber.core.feature.FeatureWithLines;
 import io.cucumber.core.gherkin.Feature;
 import io.cucumber.eclipse.editor.console.CucumberConsole;
 import io.cucumber.eclipse.editor.console.CucumberConsoleFactory;
+import io.cucumber.eclipse.editor.debug.GherkingBreakpoint;
+import io.cucumber.eclipse.editor.debug.GherkingDebugTarget;
+import io.cucumber.eclipse.editor.debug.GherkingThread;
+import io.cucumber.eclipse.editor.document.GherkinMessageHandler;
+import io.cucumber.eclipse.editor.document.TestStepEvent;
 import io.cucumber.eclipse.editor.launching.ILauncher.Mode;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberEclipsePlugin;
@@ -46,7 +52,7 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 	@Override
 	public void launch(ILaunchConfiguration config, String mode, ILaunch launch, IProgressMonitor monitor)
 			throws CoreException {
-
+		Mode launchMode = Mode.parseString(mode);
 		String withLine = config.getAttribute(CucumberFeatureLaunchConstants.ATTR_FEATURE_WITH_LINE, "");
 		String tags = config.getAttribute(CucumberFeatureLaunchConstants.ATTR_TAGS, "");
 
@@ -163,6 +169,46 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 			runConfig.setProgramArguments(finalArgs);
 			endpoint.start();
 			launch.addProcess(endpoint);
+
+			if (launchMode == Mode.DEBUG) {
+				GherkingDebugTarget<MessageEndpointProcess> debugTarget = new GherkingDebugTarget<MessageEndpointProcess>(
+						launch, endpoint);
+				IBreakpoint[] breakpoints = DebugPlugin.getDefault().getBreakpointManager()
+						.getBreakpoints(GherkingBreakpoint.MODEL_ID);
+				endpoint.addEnvelopeListener(new GherkinMessageHandler() {
+					
+					@Override
+					protected void handleTestStepStart(TestStepEvent event) {
+						try {
+							for (IBreakpoint breakpoint : breakpoints) {
+								if (breakpoint instanceof GherkingBreakpoint) {
+									GherkingBreakpoint gbp = (GherkingBreakpoint) breakpoint;
+									if (gbp.getLineNumber() == event.getStep().getLocation().getLine()) {
+//										System.out.println("Hit: ");
+//										System.out.println("testCase: " + testCase);
+//										System.out.println("testStep: " + testStep);
+//										System.out.println("pickle: " + pickle);
+//										System.out.println("pickleStep: " + pickleStep);
+//										System.out.println("step: " + step);
+										System.out.println("Waiting....");
+										GherkingThread thread = debugTarget.getThread();
+										thread.suspend(gbp, event.getStackTrace(thread)).await();
+										System.out.println("continue...");
+									}
+								}
+							}
+						} catch (CoreException e) {
+							e.printStackTrace();
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+
+
+				});
+				launch.addDebugTarget(debugTarget);
+			}
 			runner.run(runConfig, launch, monitor);
 		} catch (CoreException core) {
 			endpoint.terminate();
