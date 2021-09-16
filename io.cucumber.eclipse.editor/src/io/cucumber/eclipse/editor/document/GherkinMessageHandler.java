@@ -72,12 +72,14 @@ public abstract class GherkinMessageHandler implements EnvelopeListener {
 				stepLink = null;
 			}
 			if (stepLink != null) {
+
 				stepLink.link().flatMap(link -> {
 					return link.backtrace().map(backtrace -> {
 
 						// TODO
 						StepDefinition stepDefinition = stepLink.stepDefinitions().findFirst().orElse(null);
-						return new TestStepEvent(backtrace.feature, backtrace.scenario, backtrace.step);
+						return new TestStepEvent(backtrace.feature, backtrace.scenario, backtrace.step,
+								stepLink.testStep, stepDefinition);
 					});
 				}).ifPresent(event -> {
 					if (testStepStarted) {

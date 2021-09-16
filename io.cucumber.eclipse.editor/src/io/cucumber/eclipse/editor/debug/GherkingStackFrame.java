@@ -1,5 +1,8 @@
 package io.cucumber.eclipse.editor.debug;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IRegisterGroup;
 import org.eclipse.debug.core.model.IStackFrame;
@@ -17,6 +20,7 @@ public class GherkingStackFrame extends GherkingDebugElement implements IStackFr
 	private IThread thread;
 	private int lineNumber;
 	private String name;
+	private List<IVariable> variables = new ArrayList<>();
 
 	public GherkingStackFrame(IThread thread, int lineNumber, String name) {
 		super(thread.getDebugTarget());
@@ -113,13 +117,12 @@ public class GherkingStackFrame extends GherkingDebugElement implements IStackFr
 
 	@Override
 	public IVariable[] getVariables() throws DebugException {
-		// TODO Auto-generated method stub
-		return new IVariable[0];
+		return variables.toArray(IVariable[]::new);
 	}
 
 	@Override
 	public boolean hasVariables() throws DebugException {
-		return getVariables().length > 0;
+		return variables.size() > 0;
 	}
 
 	@Override
@@ -150,6 +153,10 @@ public class GherkingStackFrame extends GherkingDebugElement implements IStackFr
 	@Override
 	public boolean hasRegisterGroups() throws DebugException {
 		return false;
+	}
+
+	public void addVariable(IVariable variable) {
+		variables.add(variable);
 	}
 
 }

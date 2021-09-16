@@ -19,7 +19,7 @@
 <repository location="https://download.eclipse.org/tools/orbit/downloads/2020-12/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-	<repository location="http://download.eclipse.org/releases/2021-03"/>
+	<repository location="http://download.eclipse.org/releases/2021-09"/>
 	<unit id="org.eclipse.sdk.ide" version="0.0.0"/>
 	<unit id="org.eclipse.equinox.sdk.feature.group" version="0.0.0"/>
 </location>
