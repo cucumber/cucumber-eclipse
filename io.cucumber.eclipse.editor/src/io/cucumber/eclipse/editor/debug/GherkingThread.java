@@ -68,7 +68,6 @@ public class GherkingThread extends GherkingDebugElement implements IThread {
 
 	@Override
 	public boolean canStepOver() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -148,10 +147,10 @@ public class GherkingThread extends GherkingDebugElement implements IThread {
 
 	@Override
 	public IBreakpoint[] getBreakpoints() {
-		return context().map(c -> new IBreakpoint[] { c.breakpoint }).orElseGet(() -> new IBreakpoint[0]);
+		return context().map(SuspendContext::getBreakPoints).orElseGet(() -> new IBreakpoint[0]);
 	}
 
-	public synchronized CountDownLatch suspend(GherkingBreakpoint breakpoint, IStackFrame[] stackFrames) {
+	public synchronized CountDownLatch suspend(IBreakpoint breakpoint, IStackFrame[] stackFrames) {
 		if (context != null) {
 			throw new IllegalStateException();
 		}
@@ -160,13 +159,29 @@ public class GherkingThread extends GherkingDebugElement implements IThread {
 		return context.latch;
 	}
 
+	public CountDownLatch suspend(IStackFrame[] stackFrames, int detail) {
+		if (context != null) {
+			throw new IllegalStateException();
+		}
+		context = new SuspendContext(null, stackFrames);
+		fireSuspendEvent(detail);
+		return context.latch;
+	}
+
 	private static final class SuspendContext {
-		private GherkingBreakpoint breakpoint;
+		private IBreakpoint breakpoint;
 		private IStackFrame[] stackFrames;
 
-		public SuspendContext(GherkingBreakpoint breakpoint, IStackFrame[] stackFrames) {
+		public SuspendContext(IBreakpoint breakpoint, IStackFrame[] stackFrames) {
 			this.breakpoint = breakpoint;
 			this.stackFrames = stackFrames;
+		}
+
+		public IBreakpoint[] getBreakPoints() {
+			if (breakpoint == null) {
+				return null;
+			}
+			return new IBreakpoint[] { breakpoint };
 		}
 
 		private CountDownLatch latch = new CountDownLatch(1);

@@ -27,11 +27,13 @@ public class GherkingDebugTarget<Process extends IProcess & ISuspendResume & IDi
 	private Process endpointProcess;
 	private ILaunch launch;
 	private GherkingThread thread;
+	private String name;
 
-	public GherkingDebugTarget(ILaunch launch, Process endpointProcess) {
+	public GherkingDebugTarget(ILaunch launch, Process endpointProcess, String name) {
 		super(null);
 		this.launch = launch;
 		this.endpointProcess = endpointProcess;
+		this.name = name;
 		this.thread = new GherkingThread(this);
 	}
 
@@ -144,6 +146,9 @@ public class GherkingDebugTarget<Process extends IProcess & ISuspendResume & IDi
 
 	@Override
 	public IThread[] getThreads() throws DebugException {
+		if (isTerminated()) {
+			return new IThread[0];
+		}
 		return new IThread[] { thread };
 	}
 
@@ -154,7 +159,7 @@ public class GherkingDebugTarget<Process extends IProcess & ISuspendResume & IDi
 
 	@Override
 	public String getName() throws DebugException {
-		return "Gherking";
+		return name;
 	}
 
 	@Override

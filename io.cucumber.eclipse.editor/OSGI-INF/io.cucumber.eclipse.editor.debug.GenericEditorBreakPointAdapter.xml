@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="start" deactivate="stop" name="io.cucumber.eclipse.editor.debug.GenericEditorBreakPointAdapter">
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="io.cucumber.eclipse.editor.debug.GenericEditorBreakPointAdapter">
    <property name="adaptableClass" value="org.eclipse.ui.internal.genericeditor.ExtensionBasedTextEditor"/>
    <property name="adapterNames" value="org.eclipse.debug.ui.actions.IToggleBreakpointsTarget"/>
    <service>
       <provide interface="org.eclipse.core.runtime.IAdapterFactory"/>
    </service>
-   <reference bind="addService" cardinality="1..n" interface="org.eclipse.debug.ui.actions.IToggleBreakpointsTarget" name="Service" unbind="removeService"/>
    <implementation class="io.cucumber.eclipse.editor.debug.GenericEditorBreakPointAdapter"/>
 </scr:component>

@@ -17,11 +17,13 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.variables.VariablesPlugin;
+import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate2;
+import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.AbstractJavaLaunchConfigurationDelegate;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
@@ -36,6 +38,7 @@ import io.cucumber.eclipse.editor.console.CucumberConsole;
 import io.cucumber.eclipse.editor.console.CucumberConsoleFactory;
 import io.cucumber.eclipse.editor.debug.GherkingBreakpoint;
 import io.cucumber.eclipse.editor.debug.GherkingDebugTarget;
+import io.cucumber.eclipse.editor.debug.GherkingStepStackFrame;
 import io.cucumber.eclipse.editor.debug.GherkingThread;
 import io.cucumber.eclipse.editor.document.GherkinMessageHandler;
 import io.cucumber.eclipse.editor.document.TestStepEvent;
@@ -172,39 +175,52 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 
 			if (launchMode == Mode.DEBUG) {
 				GherkingDebugTarget<MessageEndpointProcess> debugTarget = new GherkingDebugTarget<MessageEndpointProcess>(
-						launch, endpoint);
+						launch, endpoint, "cucumber-jvm");
 				IBreakpoint[] breakpoints = DebugPlugin.getDefault().getBreakpointManager()
 						.getBreakpoints(GherkingBreakpoint.MODEL_ID);
 				endpoint.addEnvelopeListener(new GherkinMessageHandler() {
-					
+
+					private volatile boolean suspendOnNextStep;
+
 					@Override
 					protected void handleTestStepStart(TestStepEvent event) {
 						try {
+							if (suspendOnNextStep) {
+								suspendOnNextStep = false;
+								GherkingThread thread = debugTarget.getThread();
+								thread.suspend(trace(event, thread), DebugEvent.STEP_OVER).await();
+								return;
+							}
 							for (IBreakpoint breakpoint : breakpoints) {
 								if (breakpoint instanceof GherkingBreakpoint) {
 									GherkingBreakpoint gbp = (GherkingBreakpoint) breakpoint;
 									if (gbp.getLineNumber() == event.getStep().getLocation().getLine()) {
-//										System.out.println("Hit: ");
-//										System.out.println("testCase: " + testCase);
-//										System.out.println("testStep: " + testStep);
-//										System.out.println("pickle: " + pickle);
-//										System.out.println("pickleStep: " + pickleStep);
-//										System.out.println("step: " + step);
-										System.out.println("Waiting....");
 										GherkingThread thread = debugTarget.getThread();
-										thread.suspend(gbp, event.getStackTrace(thread)).await();
-										System.out.println("continue...");
+										thread.suspend(gbp, trace(event, thread)).await();
+										return;
 									}
 								}
 							}
 						} catch (CoreException e) {
 							e.printStackTrace();
 						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
 
+					private IStackFrame[] trace(TestStepEvent event, GherkingThread thread) {
+						IStackFrame[] stackFrames = event.getStackTrace(thread);
+						for (IStackFrame frame : stackFrames) {
+							if (frame instanceof GherkingStepStackFrame) {
+								GherkingStepStackFrame stepStackFrame = (GherkingStepStackFrame) frame;
+								stepStackFrame.setStepOverHandler(() -> {
+									suspendOnNextStep = true;
+									thread.resume();
+								});
+							}
+						}
+						return stackFrames;
+					}
 
 				});
 				launch.addDebugTarget(debugTarget);

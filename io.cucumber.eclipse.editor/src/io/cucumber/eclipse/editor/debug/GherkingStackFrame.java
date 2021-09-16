@@ -31,19 +31,16 @@ public class GherkingStackFrame extends GherkingDebugElement implements IStackFr
 
 	@Override
 	public boolean canStepInto() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean canStepOver() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean canStepReturn() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -54,20 +51,15 @@ public class GherkingStackFrame extends GherkingDebugElement implements IStackFr
 
 	@Override
 	public void stepInto() throws DebugException {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void stepOver() throws DebugException {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void stepReturn() throws DebugException {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override

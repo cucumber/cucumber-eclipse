@@ -1,16 +1,10 @@
 package io.cucumber.eclipse.editor.document;
 
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
-import org.eclipse.debug.core.model.IVariable;
 
-import io.cucumber.eclipse.editor.debug.GherkingGroupValue;
 import io.cucumber.eclipse.editor.debug.GherkingStackFrame;
-import io.cucumber.eclipse.editor.debug.GherkingStepDefinitionValue;
-import io.cucumber.eclipse.editor.debug.GherkingStepVariable;
+import io.cucumber.eclipse.editor.debug.GherkingStepStackFrame;
 import io.cucumber.messages.Messages.GherkinDocument.Feature;
 import io.cucumber.messages.Messages.GherkinDocument.Feature.Scenario;
 import io.cucumber.messages.Messages.GherkinDocument.Feature.Step;
@@ -52,17 +46,8 @@ public class TestStepEvent {
 	}
 
 	public IStackFrame[] getStackTrace(IThread thread) {
-		GherkingStackFrame stepFrame = new GherkingStackFrame(thread, step.getLocation().getLine(),
-				"[" + step.getKeyword().strip() + "] " + step.getText());
-		if (stepDefinition != null) {
-			System.out.println(stepDefinition);
-			GherkingStepDefinitionValue value = new GherkingStepDefinitionValue(stepFrame, stepDefinition,
-					step.getText());
-			stepFrame.addVariable(new GherkingStepVariable(stepFrame, stepDefinition.getPattern().getSource(), value));
-			addGroups(stepFrame, value::addVariable);
-		} else {
-			addGroups(stepFrame, stepFrame::addVariable);
-		}
+		GherkingStackFrame stepFrame = new GherkingStepStackFrame(thread, testStep, step, stepDefinition);
+
 		GherkingStackFrame scenarioFrame = new GherkingStackFrame(thread, scenario.getLocation().getLine(),
 				"[" + scenario.getKeyword().strip() + "] " + scenario.getName());
 		GherkingStackFrame featureFrame = new GherkingStackFrame(thread, feature.getLocation().getLine(),
@@ -70,14 +55,6 @@ public class TestStepEvent {
 		return new IStackFrame[] { stepFrame, scenarioFrame, featureFrame };
 	}
 
-	private void addGroups(GherkingStackFrame stepFrame, Consumer<IVariable> variableConsumer) {
-		AtomicInteger counter = new AtomicInteger();
-		testStep.getStepMatchArgumentsListsList().stream().flatMap(list -> list.getStepMatchArgumentsList().stream())
-				.forEach(argument -> {
-					String type = argument.getParameterTypeName();
-					variableConsumer.accept(new GherkingStepVariable(stepFrame, "arg" + counter.get(),
-							new GherkingGroupValue(stepFrame.getDebugTarget(), type, argument.getGroup())));
-				});
-	}
+
 
 }

@@ -54,7 +54,7 @@ public class MessageEndpointProcess extends MessageEndpoint
 
 	@Override
 	public String getLabel() {
-		return "Cucumber";
+		return "Cucumber Message Listener";
 	}
 
 	@Override
