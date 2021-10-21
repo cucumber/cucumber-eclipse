@@ -115,17 +115,22 @@ public class CucumberGherkinBuilder extends IncrementalProjectBuilder {
 			fullBuildRequired = false;
 			delta.accept(new CucumberGherkinBuildCheckVisitor(glueDetectionEnabled));
 			// the visitor shouldn't do the processing, it blocks user interactions on large jobs
+			boolean featuresHasChanged = false;
 			if (fullBuildRequired) {
 				System.out.println(">gherkin builder: force full build");
 				fullBuild(glueDetectionEnabled, monitor);
+				featuresHasChanged = true;
 			} else {
 				/* no steps changed -> re-build only deltas. */
 				final CucumberGherkinBuildVisitor visitorBuilder = new CucumberGherkinBuildVisitor(markerFactory, resources, glueDetectionEnabled, monitor);
 				delta.accept(visitorBuilder);
+				featuresHasChanged = !resources.isEmpty();
 				/* Perform linking with any gherkin resources found. */
 				build(visitorBuilder, glueDetectionEnabled, monitor);
 			}
-			glueStorage.persist(getProject(), monitor);
+			if(featuresHasChanged) {
+				glueStorage.persist(getProject(), monitor);
+			}
 		} catch (CoreException e) {
 			throw new CoreException(new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e));
 		}
