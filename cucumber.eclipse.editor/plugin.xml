@@ -64,39 +64,6 @@
         </colorDefinition>
      </extension>
    <extension
-         point="org.eclipse.ui.commands">
-      <category
-            name="Formatter"
-            id="cucumber.eclipse.editor.formmtter">
-      </category>
-      <category 
-            name="findstep"
-            id="cucumber.eclipse.editor.find">
-      </category>     
-      <command
-            categoryId="cucumber.eclipse.editor.formmtter"
-            description="Format"
-            id="cucumber.eclipse.editor.formmater.pretty_formatter"
-            name="Pretty format feature file">
-      </command>
-      <command
-            categoryId="cucumber.eclipse.editor.find"
-            description="Find step"
-            id="cucumber.eclipse.editor.navigation.findstep"
-            name="Find step">
-      </command>
-      <command
-            description="Toggle comment"
-            id="cucumber.eclipse.editor.toggle.comment"
-            name="Toggle comment">
-      </command>
-      <command
-            description="Recalculate"
-            id="cucumber.eclipse.editor.toggle.recalculate"
-            name="Recalculate steps">      		
-      </command>
-   </extension>
-   <extension
          point="org.eclipse.ui.handlers">
       <handler
             commandId="cucumber.eclipse.editor.formmater.pretty_formatter"
@@ -327,6 +294,30 @@
          categoryId="cucumber.eclipse.category"
          id="cucumber.eclipse.commands.addNatureCommand"
          name="Convert to Cucumber Project...">
+   </command>
+   <command
+         categoryId="cucumber.eclipse.category"
+         description="Format"
+         id="cucumber.eclipse.editor.formmater.pretty_formatter"
+         name="Pretty format feature file">
+   </command>
+   <command
+         categoryId="cucumber.eclipse.category"
+         description="Find step"
+         id="cucumber.eclipse.editor.navigation.findstep"
+         name="Find step">
+   </command>
+   <command
+         categoryId="cucumber.eclipse.category"
+         description="Toggle comment"
+         id="cucumber.eclipse.editor.toggle.comment"
+         name="Toggle comment">
+   </command>
+   <command
+         categoryId="cucumber.eclipse.category"
+         description="Recalculate"
+         id="cucumber.eclipse.editor.toggle.recalculate"
+         name="Recalculate steps">      		
    </command>
 </extension>
 <extension
