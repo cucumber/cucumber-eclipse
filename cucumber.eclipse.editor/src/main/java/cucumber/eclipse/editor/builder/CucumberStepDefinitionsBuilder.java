@@ -90,8 +90,11 @@ public class CucumberStepDefinitionsBuilder extends IncrementalProjectBuilder {
 				stepDefinitionsProvider.load(project);
 			}
 			// the visitor does the work.
-			delta.accept(new CucumberStepDefinitionsBuildVisitor(markerFactory, monitor));
-			stepDefinitionsProvider.persist(getProject(), monitor);
+			CucumberStepDefinitionsBuildVisitor visitor = new CucumberStepDefinitionsBuildVisitor(markerFactory, monitor);
+			delta.accept(visitor);
+			if(visitor.hasProcessedAtLeastOneFile()) {
+				stepDefinitionsProvider.persist(getProject(), monitor);
+			}
 		} catch (CoreException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -104,6 +107,7 @@ public class CucumberStepDefinitionsBuilder extends IncrementalProjectBuilder {
 
 		private IProgressMonitor monitor;
 		private MarkerFactory markerFactory;
+		private boolean hasProcessedAtLeastOneFile = false;
 
 		public CucumberStepDefinitionsBuildVisitor(MarkerFactory markerFactory, IProgressMonitor monitor) {
 			this.monitor = monitor;
@@ -126,6 +130,7 @@ public class CucumberStepDefinitionsBuilder extends IncrementalProjectBuilder {
 				return true;
 			}
 			if(stepDefinitionsProvider.support(resource)) {
+				this.hasProcessedAtLeastOneFile = true;
 				this.markerFactory.cleanMarkers(resource);
 				stepDefinitionsProvider.findStepDefinitions(resource, markerFactory, monitor);
 			}
@@ -155,6 +160,13 @@ public class CucumberStepDefinitionsBuilder extends IncrementalProjectBuilder {
 			}
 			
 			return true;
+		}
+		
+		/**
+		 * @return true if at least one file has be really processed by this visitor.
+		 */
+		public boolean hasProcessedAtLeastOneFile() {
+			return this.hasProcessedAtLeastOneFile;
 		}
 
 	}
