@@ -189,14 +189,6 @@
         </reconciler>
      </extension>
      <extension
-           point="org.eclipse.ui.workbench.texteditor.codeMiningProviders">
-        <codeMiningProvider
-              class="io.cucumber.eclipse.editor.codemining.GherkinCodeMiningProvider"
-              id="io.cucumber.eclipse.editor.codeMiningProvider1"
-              label="Gherkin Advanced Editing">
-        </codeMiningProvider>
-     </extension>
-     <extension
            point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
         <hyperlinkDetector
               activate="true"
