@@ -8,7 +8,7 @@
 	<name>Cucumber Eclipse Parent</name>
 
 	<properties>
-		<tycho-version>2.3.0</tycho-version>
+		<tycho-version>2.7.3</tycho-version>
 		<maven-scm-plugin-version>1.11.1</maven-scm-plugin-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>11</maven.compiler.source>
