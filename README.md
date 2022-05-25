@@ -37,7 +37,6 @@ You are welcome to [report any issue](https://github.com/cucumber/cucumber-eclip
 
 ## Installation and further information
 
-- Please head over to the [plugin website](http://cucumber.github.com/cucumber-eclipse) for more information.
 - After you install the Cucumber-Eclipse plugin, you can use it to run Cucumber-JVM.
 - Create a new feature file from Eclipse by selecting New => File from the menu and naming it with a ".feature" suffix to bring up the Feature Editor. After typing in the Gherkin code for a test, select Run => Run to invoke Cucumber-JVM on that feature. This will also create a run configuration, which you can modify and rename by selecting Run => Run Configurarations.... Tags are not available in Cucumber-Eclipse, but you can organize your features into directories and select the Feature Path that you want the run configuration to use. You can execute run configurations from the Run => Run History menu.
 - Another alternative is to use Cucumber-Eclipse for editing feature files and getting the generated step-definition stubs, but then running a Junit file with a @RunWith(cucumber.class) annotation similar to the cucumber-java-skeleton [RunCukesTest.java](https://github.com/cucumber/cucumber-java-skeleton/blob/master/src/test/java/skeleton/RunCukesTest.java). The @CucumberOptions most useful are
