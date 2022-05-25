@@ -22,15 +22,12 @@ CAUTION: **This is currently work-inprogress!**
 -
 
 ## Download the plugin
-![Download-Plugin](https://github.com/cucumber/cucumber-eclipse/blob/gh-pages/images/Download.png)
-
  - Releases and snapshots versions can be [downloaded](https://github.com/cucumber/cucumber-eclipse/releases) as zip format.
-
  - Please refer our [Plugin-Download/Installation-Wiki](https://github.com/cucumber/cucumber-eclipse/wiki/Download-and-Offline-Installation-Of-The-Plugin-From-Zip) for detail information
 
 ## Follow the latest snapshot
 
-For users who wants to keep up-to-date with the latest development version, there is a dedicated [eclipse update site for the cucumber eclipse plugin](https://github.com/cucumber/cucumber-eclipse-update-site-snapshot). 
+For users who wants to keep up-to-date with the latest development version, there is a dedicated [eclipse update site for the cucumber eclipse plugin](https://cucumber.github.io/cucumber-eclipse/update-site/main/). 
 
 With this one, you will be notified on each new snapshot.
 
