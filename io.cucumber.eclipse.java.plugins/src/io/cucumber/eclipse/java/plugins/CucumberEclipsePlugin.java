@@ -4,10 +4,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+
+import com.google.gson.Gson;
 
 import io.cucumber.messages.types.Envelope;
 import io.cucumber.plugin.ConcurrentEventListener;
@@ -83,7 +86,7 @@ public class CucumberEclipsePlugin implements ConcurrentEventListener {
 				}
 				try {
 					buffer.reset();
-					env.writeTo(buffer);
+					new Gson().toJson(env,new OutputStreamWriter(buffer));
 					output.writeInt(buffer.size());
 					buffer.writeTo(output);
 					output.flush();

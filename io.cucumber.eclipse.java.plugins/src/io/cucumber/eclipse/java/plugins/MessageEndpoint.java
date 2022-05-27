@@ -1,16 +1,18 @@
 package io.cucumber.eclipse.java.plugins;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Collection;
 
+import com.google.gson.Gson;
+
 import io.cucumber.messages.types.Envelope;
-import io.cucumber.messages.types.GherkinDocument;
-import io.cucumber.messages.types.Source;
-import io.cucumber.messages.types.SourceMediaType;
 
 /**
  * open an server endpoint to communicate with a remote cucumber instance
@@ -47,15 +49,16 @@ public abstract class MessageEndpoint {
 						int framelength;
 						byte[] buffer = new byte[1024 * 1024 * 10];
 						//Parser<Envelope> parser = Envelope.parser();
-//						GherkinParser parser = GherkinParser.builder().build();
+						Gson gson =new Gson();
 						while ((framelength = inputStream.readInt()) > 0) {
 							if (buffer.length < framelength) {
 								buffer = new byte[framelength];
 							}
-//							inputStream.readFully(buffer, 0, framelength);
+							inputStream.readFully(buffer, 0, framelength);
 							
 //							Envelope envelope = parser.parseFrom(buffer, 0, framelength);
-							Envelope envelope = Envelope.of(new Source("inputStream", new String(buffer), SourceMediaType.TEXT_X_CUCUMBER_GHERKIN_PLAIN));
+							ByteArrayInputStream bais = new ByteArrayInputStream(buffer, 0, framelength);
+							Envelope envelope = gson.fromJson((Reader) new InputStreamReader(bais), Envelope.class);
 							try {
 								handleMessage(envelope);
 							} catch (InterruptedException e) {

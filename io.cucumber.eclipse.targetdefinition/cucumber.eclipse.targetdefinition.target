@@ -132,5 +132,15 @@ Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io
 Export-Package:        *;version="${version}";-noimport:=true
 ]]></instructions>
 	</location>
+	<location includeDependencyDepth="none" includeSource="true" missingManifest="generate" type="Maven">
+		<dependencies>
+			<dependency>
+				<groupId>com.google.code.gson</groupId>
+				<artifactId>gson</artifactId>
+				<version>2.9.0</version>
+				<type>jar</type>
+			</dependency>
+		</dependencies>
+	</location>
 </locations>
 </target>
