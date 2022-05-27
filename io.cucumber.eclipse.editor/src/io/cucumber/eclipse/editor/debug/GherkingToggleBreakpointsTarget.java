@@ -19,8 +19,8 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.osgi.service.component.annotations.Component;
 
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
-import io.cucumber.messages.Messages.GherkinDocument.Feature.Step;
-import io.cucumber.messages.Messages.Location;
+import io.cucumber.messages.types.Step;
+import io.cucumber.messages.types.Location;
 
 /**
  * Service for providing breakpoints to the generic editor
@@ -102,7 +102,7 @@ public class GherkingToggleBreakpointsTarget implements IToggleBreakpointsTarget
 					ITextSelection textSelection = (ITextSelection) selection;
 					int lineNumber = textSelection.getStartLine() + 1;
 					Stream<Location> stream = editorDocument.getSteps().map(Step::getLocation);
-					return stream.mapToInt(Location::getLine).filter(line -> line == lineNumber).findAny().isPresent();
+					return stream.mapToLong(Location::getLine).filter(line -> line == lineNumber).findAny().isPresent();
 				}
 			}
 		}

@@ -20,9 +20,9 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 
 import io.cucumber.eclipse.editor.Activator;
-import io.cucumber.messages.Messages.Location;
-import io.cucumber.messages.Messages.ParseError;
-import io.cucumber.messages.Messages.SourceReference;
+import io.cucumber.messages.types.Location;
+import io.cucumber.messages.types.ParseError;
+import io.cucumber.messages.types.SourceReference;
 
 /**
  * The marker factory exposes methods to put makers: - unmatched step - gherkin
@@ -136,15 +136,15 @@ public class MarkerFactory {
 				Map<Object, IMarker> existingMarker = getExistingMarker(resource, GHERKIN_SYNTAX_ERROR);
 				for (ParseError error : errors) {
 					String sourceId;
-					int line;
-					int column;
-					if (error.hasSource()) {
+					Long line;
+					long column;
+					if (error.getSource().getLocation().isPresent()) {
 						SourceReference source = error.getSource();
-						Location location = source.getLocation();
+						Location location = source.getLocation().get();
 						line = location.getLine();
-						column = location.getColumn();
+						column = location.getColumn().orElse(-1l);
 					} else {
-						line = -1;
+						line = -1l;
 						column = -1;
 					}
 					if (line > 0) {

@@ -15,8 +15,8 @@ import org.eclipse.unittest.ui.ConfigureViewerSupport;
 import io.cucumber.eclipse.editor.Activator;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants;
-import io.cucumber.messages.Messages.GherkinDocument.Feature;
-import io.cucumber.messages.Messages.GherkinDocument.Feature.Scenario;
+import io.cucumber.messages.types.Feature;
+import io.cucumber.messages.types.Scenario;
 
 /**
  * a launcher is capable of launching a cucumber run for a given resource and a

@@ -4,7 +4,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.text.ITextViewer;
 
-import io.cucumber.messages.Messages.GherkinDocument.Feature.Step;
+import io.cucumber.messages.types.Step;
 
 /**
  * The cucumber editor try to jump to step definition resource by itself when it

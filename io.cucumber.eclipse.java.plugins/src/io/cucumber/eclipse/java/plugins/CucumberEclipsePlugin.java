@@ -9,7 +9,7 @@ import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-import io.cucumber.messages.Messages.Envelope;
+import io.cucumber.messages.types.Envelope;
 import io.cucumber.plugin.ConcurrentEventListener;
 import io.cucumber.plugin.event.EventPublisher;
 
@@ -89,7 +89,7 @@ public class CucumberEclipsePlugin implements ConcurrentEventListener {
 					output.flush();
 					int read = input.read() & 0xFF;
 					written.incrementAndGet();
-					if (env.hasTestRunFinished() || read == GOOD_BY_MESSAGE) {
+					if (env.getTestRunFinished().isPresent() || read == GOOD_BY_MESSAGE) {
 						finish();
 					}
 				} catch (IOException e) {

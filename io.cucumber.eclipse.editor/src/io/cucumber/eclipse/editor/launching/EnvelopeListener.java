@@ -1,6 +1,6 @@
 package io.cucumber.eclipse.editor.launching;
 
-import io.cucumber.messages.Messages.Envelope;
+import io.cucumber.messages.types.Envelope;
 
 /**
  * A listener that is notified about new envelopes

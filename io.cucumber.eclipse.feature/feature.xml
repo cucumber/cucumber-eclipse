@@ -59,13 +59,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
          id="io.cucumber.gherkin"
          download-size="0"
          install-size="0"
-         version="16.0.0"/>
+         version="23.0.1"/>
 
    <plugin
          id="io.cucumber.messages"
          download-size="0"
          install-size="0"
-         version="13.2.1"/>
+         version="18.0.0"/>
 
    <plugin
          id="io.cucumber.eclipse.editor"
@@ -77,68 +77,62 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
          id="io.cucumber.cucumber-java"
          download-size="0"
          install-size="0"
-         version="6.9.1"/>
+         version="7.3.4"/>
 
    <plugin
          id="io.cucumber.cucumber-core"
          download-size="0"
          install-size="0"
-         version="6.9.1"/>
+         version="7.3.4"/>
 
    <plugin
          id="io.cucumber.cucumber-plugin"
          download-size="0"
          install-size="0"
-         version="6.9.1"/>
+         version="7.3.4"/>
 
    <plugin
          id="io.cucumber.cucumber-gherkin"
          download-size="0"
          install-size="0"
-         version="6.9.1"/>
-
-   <plugin
-         id="io.cucumber.cucumber-gherkin-messages"
-         download-size="0"
-         install-size="0"
-         version="6.9.1"/>
+         version="7.3.4"/>
 
    <plugin
          id="io.cucumber.cucumber-expressions"
          download-size="0"
          install-size="0"
-         version="11.0.0"/>
+         version="15.2.0"/>
 
    <plugin
          id="io.cucumber.datatable"
          download-size="0"
          install-size="0"
-         version="3.5.0"/>
+         version="7.3.4"/>
 
    <plugin
          id="io.cucumber.docstring"
          download-size="0"
          install-size="0"
-         version="6.9.1"/>
+         version="7.3.4"/>
 
    <plugin
          id="io.cucumber.tag-expressions"
          download-size="0"
          install-size="0"
-         version="3.0.0"/>
+         version="4.1.0"/>
 
    <plugin
          id="io.cucumber.create-meta"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="6.0.4"
          unpack="false"/>
 
    <plugin
          id="io.cucumber.html-formatter"
          download-size="0"
          install-size="0"
-         version="0.0.0"
+         version="19.1.0"
          unpack="false"/>
 
    <plugin
@@ -147,5 +141,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
          install-size="0"
          version="0.0.0"
          unpack="false"/>
+
+   <plugin
+         id="io.cucumber.cucumber-gherkin-messages"
+         download-size="0"
+         install-size="0"
+         version="7.3.4"/>
 
 </feature>

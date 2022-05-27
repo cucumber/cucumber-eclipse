@@ -22,8 +22,8 @@ import io.cucumber.eclipse.editor.Images;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.document.GherkinKeyword;
 import io.cucumber.gherkin.GherkinDialect;
-import io.cucumber.messages.Messages.GherkinDocument.Feature;
-import io.cucumber.messages.Messages.GherkinDocument.Feature.FeatureChild;
+import io.cucumber.messages.types.Feature;
+import io.cucumber.messages.types.FeatureChild;
 
 /**
  * Provides content assist for gherkin keywords
@@ -53,9 +53,9 @@ public class GherkinContentAssistProcessor implements IContentAssistProcessor {
 							.map(featureKeyWord -> createFeatureKeyWordProposal(featureKeyWord.getKey(), offset, typed))
 							.toArray(ICompletionProposal[]::new);
 				}
-				Predicate<FeatureChild> hasTopLevelElement = FeatureChild::hasBackground;
-				hasTopLevelElement = hasTopLevelElement.or(FeatureChild::hasRule);
-				hasTopLevelElement = hasTopLevelElement.or(FeatureChild::hasScenario);
+				Predicate<FeatureChild> hasTopLevelElement = f->f.getBackground().isPresent();
+				hasTopLevelElement = hasTopLevelElement.or(f->f.getRule().isPresent());
+				hasTopLevelElement = hasTopLevelElement.or(f->f.getScenario().isPresent());
 				if (editorDocument.getFeatureChilds().filter(hasTopLevelElement).count() == 0) {
 					// in this case Rule, Scenario or background are required
 					return editorDocument.getTopLevelKeywords()//
@@ -102,7 +102,7 @@ public class GherkinContentAssistProcessor implements IContentAssistProcessor {
 		try {
 			IRegion line = viewer.getDocument().getLineInformationOfOffset(offset);
 
-			String typed = viewer.getDocument().get(line.getOffset(), offset - line.getOffset()).stripLeading();
+			/* String typed = */ viewer.getDocument().get(line.getOffset(), offset - line.getOffset()).stripLeading();
 
 			editorDocument.keyWords(GherkinDialect::getFeatureKeywords);
 

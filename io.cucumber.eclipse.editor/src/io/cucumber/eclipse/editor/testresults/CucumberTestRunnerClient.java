@@ -20,18 +20,18 @@ import org.eclipse.unittest.model.ITestSuiteElement;
 
 import io.cucumber.eclipse.editor.launching.EnvelopeListener;
 import io.cucumber.eclipse.editor.launching.EnvelopeProvider;
-import io.cucumber.messages.Messages.Envelope;
-import io.cucumber.messages.Messages.GherkinDocument;
-import io.cucumber.messages.Messages.GherkinDocument.Feature;
-import io.cucumber.messages.Messages.Pickle;
-import io.cucumber.messages.Messages.Pickle.PickleStep;
-import io.cucumber.messages.Messages.TestCase;
-import io.cucumber.messages.Messages.TestCase.TestStep;
-import io.cucumber.messages.Messages.TestCaseStarted;
-import io.cucumber.messages.Messages.TestStepFinished;
-import io.cucumber.messages.Messages.TestStepFinished.TestStepResult;
-import io.cucumber.messages.Messages.TestStepFinished.TestStepResult.Status;
-import io.cucumber.messages.Messages.TestStepStarted;
+import io.cucumber.messages.types.Envelope;
+import io.cucumber.messages.types.GherkinDocument;
+import io.cucumber.messages.types.Feature;
+import io.cucumber.messages.types.Pickle;
+import io.cucumber.messages.types.PickleStep;
+import io.cucumber.messages.types.TestCase;
+import io.cucumber.messages.types.TestStep;
+import io.cucumber.messages.types.TestCaseStarted;
+import io.cucumber.messages.types.TestStepFinished;
+import io.cucumber.messages.types.TestStepResult;
+import io.cucumber.messages.types.TestStepResultStatus;
+import io.cucumber.messages.types.TestStepStarted;
 
 /**
  * {@link ITestRunnerClient} that converts cucumber events into appropriate
@@ -87,38 +87,38 @@ public class CucumberTestRunnerClient implements ITestRunnerClient, EnvelopeList
 
 	@Override
 	public void handleEnvelope(Envelope env) {
-		if (env.hasTestRunStarted()) {
+		if (env.getTestRunStarted().isPresent()) {
 			session.notifyTestSessionStarted(null);
 			return;
 		}
 
-		if (env.hasGherkinDocument()) {
-			GherkinDocument document = env.getGherkinDocument();
-			Feature feature = document.getFeature();
+		if (env.getGherkinDocument().isPresent()) {
+			GherkinDocument document = env.getGherkinDocument().get();
+			Feature feature = document.getFeature().get();
 			// TODO get number of tests?
-			session.newTestSuite(document.getUri(), feature.getName(), null, null, feature.getName(), "");
+			session.newTestSuite(document.getUri().get(), feature.getName(), null, null, feature.getName(), "");
 			return;
 		}
-		if (env.hasPickle()) {
-			Pickle pickle = env.getPickle();
+		if (env.getPickle().isPresent()) {
+			Pickle pickle = env.getPickle().get();
 			pickles.put(pickle.getId(), pickle);
 			return;
 		}
-		if (env.hasTestCase()) {
+		if (env.getTestCase().isPresent()) {
 			// TODO support "parameterized" test for scenario outlines see Eclipse Bug
 			// 573263
-			TestCase testCase = env.getTestCase();
+			TestCase testCase = env.getTestCase().get();
 			testcases.put(testCase.getId(), testCase);
 			Pickle pickle = pickles.get(testCase.getPickleId());
 			// TODO match the pickle to the scenario/... item... and use this as the "method
 			// name"
-			Map<String, PickleStep> pickleSteps = pickle.getStepsList().stream()
+			Map<String, PickleStep> pickleSteps = pickle.getSteps().stream()
 					.collect(Collectors.toMap(PickleStep::getId, Function.identity()));
-			ITestSuiteElement testSuite = session.newTestSuite(testCase.getId(), pickle.getAstNodeIdsList().toString(),
-					testCase.getTestStepsCount(), (ITestSuiteElement) session.getTestElement(pickle.getUri()),
+			ITestSuiteElement testSuite = session.newTestSuite(testCase.getId(), pickle.getAstNodeIds().toString(),
+					testCase.getTestSteps().size(), (ITestSuiteElement) session.getTestElement(pickle.getUri()),
 					pickle.getName(), env.toString());
-			for (TestStep step : testCase.getTestStepsList()) {
-				String pickleStepId = step.getPickleStepId();
+			for (TestStep step : testCase.getTestSteps()) {
+				String pickleStepId = step.getPickleStepId().get();
 				if (pickleStepId.isBlank()) {
 					continue;
 				}
@@ -127,29 +127,29 @@ public class CucumberTestRunnerClient implements ITestRunnerClient, EnvelopeList
 			}
 			return;
 		}
-		if (env.hasTestCaseStarted()) {
-			TestCaseStarted testCaseStarted = env.getTestCaseStarted();
+		if (env.getTestCaseStarted().isPresent()) {
+			TestCaseStarted testCaseStarted = env.getTestCaseStarted().get();
 			started.put(testCaseStarted.getId(), testCaseStarted);
 			return;
 		}
-		if (env.hasTestStepStarted()) {
-			TestStepStarted testStepStarted = env.getTestStepStarted();
+		if (env.getTestStepStarted().isPresent()) {
+			TestStepStarted testStepStarted = env.getTestStepStarted().get();
 			// TODO pass time-stamps see see Eclipse Bug 573264
 			session.notifyTestStarted(session.getTestElement(testStepStarted.getTestStepId()));
 			return;
 		}
-		if (env.hasTestStepFinished()) {
+		if (env.getTestStepFinished().isPresent()) {
 			// TODO pass time-stamps see see Eclipse Bug 573264
-			TestStepFinished testStepFinished = env.getTestStepFinished();
+			TestStepFinished testStepFinished = env.getTestStepFinished().get();
 			TestStepResult testStepResult = testStepFinished.getTestStepResult();
-			Status status = testStepResult.getStatus();
-			if (status == Status.PASSED || status == Status.PENDING || status == Status.SKIPPED) {
+			TestStepResultStatus status = testStepResult.getStatus();
+			if (status == TestStepResultStatus.PASSED || status == TestStepResultStatus.PENDING || status == TestStepResultStatus.SKIPPED) {
 				session.notifyTestEnded(session.getTestElement(testStepFinished.getTestStepId()),
-						status != Status.PASSED);
+						status != TestStepResultStatus.PASSED);
 			} else {
 				String expected = null;
 				String actual = null;
-				String message = testStepResult.getMessage();
+				String message = testStepResult.getMessage().get();
 				message = message.replace("\\r", "\r").replace("\\n", "\n").replace("\\t", "\t");
 				Matcher matcher = OPENTEST4J.matcher(message);
 				if (matcher.find()) {
@@ -158,16 +158,16 @@ public class CucumberTestRunnerClient implements ITestRunnerClient, EnvelopeList
 				}
 				FailureTrace trace = new FailureTrace(message, expected, actual);
 				session.notifyTestFailed(session.getTestElement(testStepFinished.getTestStepId()),
-						status == Status.FAILED ? Result.FAILURE : Result.ERROR, status == Status.UNDEFINED, trace);
+						status == TestStepResultStatus.FAILED ? Result.FAILURE : Result.ERROR, status == TestStepResultStatus.UNDEFINED, trace);
 			}
 			return;
 		}
 
-		if (env.hasTestCaseFinished()) {
+		if (env.getTestCaseFinished().isPresent()) {
 //			TestCaseFinished testCaseFinished = env.getTestCaseFinished();
 //			TestCaseStarted testCaseStarted = started.get(testCaseFinished.getTestCaseStartedId());
 		}
-		if (env.hasTestRunFinished()) {
+		if (env.getTestRunFinished().isPresent()) {
 			// TODO pass duration?
 			session.notifyTestSessionCompleted(null);
 			return;
