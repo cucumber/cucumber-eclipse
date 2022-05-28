@@ -98,6 +98,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
          version="7.3.4"/>
 
    <plugin
+         id="io.cucumber.cucumber-gherkin-messages"
+         download-size="0"
+         install-size="0"
+         version="7.3.4"/>
+
+   <plugin
          id="io.cucumber.cucumber-expressions"
          download-size="0"
          install-size="0"
@@ -141,11 +147,5 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
          install-size="0"
          version="0.0.0"
          unpack="false"/>
-
-   <plugin
-         id="io.cucumber.cucumber-gherkin-messages"
-         download-size="0"
-         install-size="0"
-         version="7.3.4"/>
 
 </feature>

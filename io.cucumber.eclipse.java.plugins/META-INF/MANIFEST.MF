@@ -6,6 +6,5 @@ Bundle-Version: 2.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Automatic-Module-Name: io.cucumber.eclipse.java.plugins
 Require-Bundle: io.cucumber.cucumber-plugin,
- io.cucumber.messages,
- com.google.gson
-Export-Package: io.cucumber.eclipse.java.plugins
+ io.cucumber.messages
+Export-Package: io.cucumber.eclipse.java.plugins,io.cucumber.cienvironment

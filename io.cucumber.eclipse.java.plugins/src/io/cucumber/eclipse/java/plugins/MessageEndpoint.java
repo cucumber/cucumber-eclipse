@@ -4,13 +4,14 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Collection;
 
-import com.google.gson.Gson;
+//import com.google.gson.Gson;
 
 import io.cucumber.messages.types.Envelope;
 
@@ -49,7 +50,7 @@ public abstract class MessageEndpoint {
 						int framelength;
 						byte[] buffer = new byte[1024 * 1024 * 10];
 						//Parser<Envelope> parser = Envelope.parser();
-						Gson gson =new Gson();
+						
 						while ((framelength = inputStream.readInt()) > 0) {
 							if (buffer.length < framelength) {
 								buffer = new byte[framelength];
@@ -58,7 +59,13 @@ public abstract class MessageEndpoint {
 							
 //							Envelope envelope = parser.parseFrom(buffer, 0, framelength);
 							ByteArrayInputStream bais = new ByteArrayInputStream(buffer, 0, framelength);
-							Envelope envelope = gson.fromJson((Reader) new InputStreamReader(bais), Envelope.class);
+							ObjectInputStream ois = new ObjectInputStream(bais);
+							Envelope envelope;
+							try {
+								envelope = (Envelope) ois.readObject();
+							} catch (ClassNotFoundException e1) {
+								throw new RuntimeException(e1);
+							}
 							try {
 								handleMessage(envelope);
 							} catch (InterruptedException e) {
