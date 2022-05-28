@@ -8,3 +8,4 @@ io.cucumber.eclipse.lsp/
 cucumber.*/
 .polyglot*
 /.project
+.settings/

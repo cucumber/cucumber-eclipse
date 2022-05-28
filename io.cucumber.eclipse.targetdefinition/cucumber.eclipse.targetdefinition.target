@@ -16,10 +16,10 @@
 <unit id="org.hamcrest.text.source" version="1.1.0.v20090501071000"/>
 <unit id="org.mockito.source" version="2.23.0.v20200310-1642"/>
 <unit id="org.hamcrest.library" version="1.3.0.v20180524-2246"/>
-<repository location="https://download.eclipse.org/tools/orbit/downloads/2020-12/"/>
+<repository location="https://download.eclipse.org/tools/orbit/downloads/2022-03/"/>
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-	<repository location="http://download.eclipse.org/releases/2021-09"/>
+	<repository location="http://download.eclipse.org/releases/2022-03"/>
 	<unit id="org.eclipse.sdk.ide" version="0.0.0"/>
 	<unit id="org.eclipse.equinox.sdk.feature.group" version="0.0.0"/>
 </location>
@@ -83,8 +83,8 @@ Export-Package:        *;version="${version}";-noimport:=true]]></instructions>
 				<type>jar</type>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-		<repository location="https://download.eclipse.org/eclipse/updates/4.18/R-4.18-202012021800/"/>
-		<unit id="org.eclipse.unittest.ui" version="1.0.0.v20201121-0633"/>
+		<repository location="https://download.eclipse.org/eclipse/updates/4.23/"/>
+		<unit id="org.eclipse.unittest.ui"/>
 	</location>
 	<location includeDependencyScope="compile" includeSource="true" missingManifest="generate" type="Maven">
 		<groupId>io.cucumber</groupId>

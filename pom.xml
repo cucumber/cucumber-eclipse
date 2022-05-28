@@ -22,7 +22,7 @@
 		<module>io.cucumber.eclipse.java.plugins</module>
 		<module>io.cucumber.eclipse.feature</module>
 		<module>io.cucumber.eclipse.thirdparty.feature</module>
-		<module>io.cucumber.eclipse.product</module>
+		<!--<module>io.cucumber.eclipse.product</module>-->
 		<module>io.cucumber.eclipse.updatesite</module>
 	</modules>
 
