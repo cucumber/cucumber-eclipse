@@ -121,9 +121,10 @@ public final class GherkinEditorDocument extends GherkinStream {
 //				false, new IdGenerator.Incrementing()).toArray(Envelope[]::new)
 		GherkinParser parser = GherkinParser.builder()
 				.includeSource(true)
-				.includePickles(true)
+				.includeGherkinDocument(true)
+				.includePickles(false)
 				.build();
-		Source source = new Source(document.get(), "", SourceMediaType.TEXT_X_CUCUMBER_GHERKIN_PLAIN);
+		Source source = new Source("", document.get(), SourceMediaType.TEXT_X_CUCUMBER_GHERKIN_PLAIN);
 		Envelope envelope = Envelope.of(source);
 		return parser.parse(envelope).toArray(Envelope[]::new);
 	}

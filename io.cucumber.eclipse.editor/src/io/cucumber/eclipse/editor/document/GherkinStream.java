@@ -92,7 +92,7 @@ public class GherkinStream {
 	}
 
 	public Stream<List<TableRow>> getTableBodys() {
-		return getExamples().map(Examples::getTableBody).distinct();
+		return getExamples().filter(e->e.getTableHeader().isPresent()).map(Examples::getTableBody).distinct();
 	}
 
 	public Stream<DataTable> getDataTables() {
