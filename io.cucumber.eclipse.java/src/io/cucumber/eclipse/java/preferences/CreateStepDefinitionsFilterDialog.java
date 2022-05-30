@@ -3,7 +3,7 @@ package io.cucumber.eclipse.java.preferences;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.internal.ui.actions.StatusInfo;
 import org.eclipse.jdt.debug.ui.IJavaDebugUIConstants;
-import org.eclipse.jdt.internal.debug.ui.Filter;
+//import org.eclipse.jdt.internal.debug.ui.Filter;
 import org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -27,32 +27,32 @@ public class CreateStepDefinitionsFilterDialog extends StatusDialog {
 	private static final String DEFAULT_NEW_FILTER_TEXT = ""; //$NON-NLS-1$
 
 	private Text text;
-	private Filter filter;
+//	private Filter filter;
 	private Button okButton;
 
 	private boolean filterValid;
 	private boolean okClicked;
-	private Filter[] existingFilters;
+//	private Filter[] existingFilters;
 
-	private CreateStepDefinitionsFilterDialog(Shell parent, Filter filter, Filter[] existingFilters) {
+	private CreateStepDefinitionsFilterDialog(Shell parent/* , Filter filter, Filter[] existingFilters */) {
 		super(parent);
 		setShellStyle(getShellStyle() | SWT.RESIZE);
-		this.filter = filter;
-		this.existingFilters = existingFilters;
+//		this.filter = filter;
+//		this.existingFilters = existingFilters;
 
 		setTitle(CucumberJavaUIMessages.CreateStepDefinitionsFilterDialog);
 		setStatusLineAboveButtons(false);
 
 	}
 
-	static Filter showCreateStepFilterDialog(Shell parent, Filter[] existingFilters) {
-		CreateStepDefinitionsFilterDialog createStepFilterDialog = new CreateStepDefinitionsFilterDialog(parent,
-				new Filter(DEFAULT_NEW_FILTER_TEXT, true), existingFilters);
-		createStepFilterDialog.create();
-		createStepFilterDialog.open();
-
-		return createStepFilterDialog.filter;
-	}
+//	static Filter showCreateStepFilterDialog(Shell parent, Filter[] existingFilters) {
+//		CreateStepDefinitionsFilterDialog createStepFilterDialog = new CreateStepDefinitionsFilterDialog(parent,
+//				new Filter(DEFAULT_NEW_FILTER_TEXT, true), existingFilters);
+//		createStepFilterDialog.create();
+//		createStepFilterDialog.open();
+//
+//		return createStepFilterDialog.filter;
+//	}
 
 	@Override
 	protected void createButtonsForButtonBar(Composite parent) {
@@ -96,12 +96,12 @@ public class CreateStepDefinitionsFilterDialog extends StatusDialog {
 		text.addModifyListener(new ModifyListener() {
 			@Override
 			public void modifyText(ModifyEvent e) {
-				validateChange();
+//				validateChange();
 				if (!filterValid) {
 					updateStatus(new StatusInfo(IStatus.ERROR, CucumberJavaUIMessages.CreateStepDefinitionsFilterDialog_4));
-				} else if (isDuplicateFilter(text.getText().trim())) {
-					updateStatus(new StatusInfo(IStatus.WARNING, CucumberJavaUIMessages.CreateStepDefinitionsFilterDialog_5));
-					return;
+//				} else if (isDuplicateFilter(text.getText().trim())) {
+//					updateStatus(new StatusInfo(IStatus.WARNING, CucumberJavaUIMessages.CreateStepDefinitionsFilterDialog_5));
+//					return;
 				} else {
 					updateStatus(new StatusInfo());
 				}
@@ -111,28 +111,28 @@ public class CreateStepDefinitionsFilterDialog extends StatusDialog {
 		return container;
 	}
 
-	private void validateChange() {
-		String trimmedValue = text.getText().trim();
+//	private void validateChange() {
+//		String trimmedValue = text.getText().trim();
+//
+//		if (trimmedValue.length() > 0 && validateInput(trimmedValue)) {
+//			okButton.setEnabled(true);
+//			filter.setName(text.getText());
+//			filterValid = true;
+//		} else {
+//			okButton.setEnabled(false);
+//			filter.setName(DEFAULT_NEW_FILTER_TEXT);
+//			filterValid = false;
+//		}
+//	}
 
-		if (trimmedValue.length() > 0 && validateInput(trimmedValue)) {
-			okButton.setEnabled(true);
-			filter.setName(text.getText());
-			filterValid = true;
-		} else {
-			okButton.setEnabled(false);
-			filter.setName(DEFAULT_NEW_FILTER_TEXT);
-			filterValid = false;
-		}
-	}
-
-	private boolean isDuplicateFilter(String trimmedValue) {
-		for (int i = 0; i < existingFilters.length; i++) {
-			if (existingFilters[i].getName().equals(trimmedValue)) {
-				return true;
-			}
-		}
-		return false;
-	}
+//	private boolean isDuplicateFilter(String trimmedValue) {
+//		for (int i = 0; i < existingFilters.length; i++) {
+//			if (existingFilters[i].getName().equals(trimmedValue)) {
+//				return true;
+//			}
+//		}
+//		return false;
+//	}
 
 	/**
 	 * A valid step filter is simply one that is a valid Java identifier. and, as
@@ -182,7 +182,7 @@ public class CreateStepDefinitionsFilterDialog extends StatusDialog {
 	public boolean close() {
 		if (!okClicked) {
 			filterValid = false;
-			filter = null;
+//			filter = null;
 		}
 		return super.close();
 	}

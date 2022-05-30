@@ -7,9 +7,9 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.search.SearchEngine;
-import org.eclipse.jdt.internal.debug.ui.Filter;
-import org.eclipse.jdt.internal.debug.ui.FilterLabelProvider;
-import org.eclipse.jdt.internal.debug.ui.FilterViewerComparator;
+//import org.eclipse.jdt.internal.debug.ui.Filter;
+//import org.eclipse.jdt.internal.debug.ui.FilterLabelProvider;
+//import org.eclipse.jdt.internal.debug.ui.FilterViewerComparator;
 import org.eclipse.jdt.internal.debug.ui.JDIDebugUIPlugin;
 import org.eclipse.jdt.internal.ui.util.ExceptionHandler;
 import org.eclipse.jdt.ui.IJavaElementSearchConstants;
@@ -58,28 +58,28 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 
 	public static final String PAGE_ID = "cucumber.eclipse.editor.steps.jdt.CucumberJavaPreferencesPage"; //$NON-NLS-1$
 
-	/**
-	 * Content provider for the table. Content consists of instances of StepFilter.
-	 * 
-	 */
-	class StepDefinitionsFilterContentProvider implements IStructuredContentProvider {
-		public StepDefinitionsFilterContentProvider() {
-			initTableState(false);
-		}
-
-		@Override
-		public Object[] getElements(Object inputElement) {
-			return getAllFiltersFromTable();
-		}
-
-		@Override
-		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-		}
-
-		@Override
-		public void dispose() {
-		}
-	}
+//	/**
+//	 * Content provider for the table. Content consists of instances of StepFilter.
+//	 * 
+//	 */
+//	class StepDefinitionsFilterContentProvider implements IStructuredContentProvider {
+//		public StepDefinitionsFilterContentProvider() {
+//			initTableState(false);
+//		}
+//
+//		@Override
+//		public Object[] getElements(Object inputElement) {
+//			return getAllFiltersFromTable();
+//		}
+//
+//		@Override
+//		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+//		}
+//
+//		@Override
+//		public void dispose() {
+//		}
+//	}
 
 	// widgets
 	private CheckboxTableViewer fTableViewer;
@@ -166,17 +166,17 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 		fTableViewer = CheckboxTableViewer.newCheckList(group,
 				SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
 		fTableViewer.getTable().setFont(container.getFont());
-		fTableViewer.setLabelProvider(new FilterLabelProvider());
-		fTableViewer.setComparator(new FilterViewerComparator());
-		fTableViewer.setContentProvider(new StepDefinitionsFilterContentProvider());
-		fTableViewer.setInput(getAllStoredFilters(false));
+//		fTableViewer.setLabelProvider(new FilterLabelProvider());
+//		fTableViewer.setComparator(new FilterViewerComparator());
+//		fTableViewer.setContentProvider(new StepDefinitionsFilterContentProvider());
+//		fTableViewer.setInput(getAllStoredFilters(false));
 		fTableViewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
-		fTableViewer.addCheckStateListener(new ICheckStateListener() {
-			@Override
-			public void checkStateChanged(CheckStateChangedEvent event) {
-				((Filter) event.getElement()).setChecked(event.getChecked());
-			}
-		});
+//		fTableViewer.addCheckStateListener(new ICheckStateListener() {
+//			@Override
+//			public void checkStateChanged(CheckStateChangedEvent event) {
+//				((Filter) event.getElement()).setChecked(event.getChecked());
+//			}
+//		});
 		fTableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
@@ -209,11 +209,11 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 	 * @since 3.2
 	 */
 	private void initTableState(boolean defaults) {
-		Filter[] filters = getAllStoredFilters(defaults);
-		for (int i = 0; i < filters.length; i++) {
-			fTableViewer.add(filters[i]);
-			fTableViewer.setChecked(filters[i], filters[i].isChecked());
-		}
+//		Filter[] filters = getAllStoredFilters(defaults);
+//		for (int i = 0; i < filters.length; i++) {
+//			fTableViewer.add(filters[i]);
+//			fTableViewer.setChecked(filters[i], filters[i].isChecked());
+//		}
 	}
 
 //	/**
@@ -323,18 +323,18 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 
 	}
 
-	/**
-	 * Allows a new filter to be added to the listing
-	 */
-	private void addFilter() {
-		Filter newfilter = CreateStepDefinitionsFilterDialog.showCreateStepFilterDialog(getShell(),
-				getAllFiltersFromTable());
-		if (newfilter != null) {
-			fTableViewer.add(newfilter);
-			fTableViewer.setChecked(newfilter, true);
-			fTableViewer.refresh(newfilter);
-		}
-	}
+//	/**
+//	 * Allows a new filter to be added to the listing
+//	 */
+//	private void addFilter() {
+//		Filter newfilter = CreateStepDefinitionsFilterDialog.showCreateStepFilterDialog(getShell(),
+//				getAllFiltersFromTable());
+//		if (newfilter != null) {
+//			fTableViewer.add(newfilter);
+//			fTableViewer.setChecked(newfilter, true);
+//			fTableViewer.refresh(newfilter);
+//		}
+//	}
 
 	/**
 	 * add a new type to the listing of available filters
@@ -409,15 +409,15 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 		ArrayList<String> active = new ArrayList<String>();
 		ArrayList<String> inactive = new ArrayList<String>();
 		String name = ""; //$NON-NLS-1$
-		Filter[] filters = getAllFiltersFromTable();
-		for (int i = 0; i < filters.length; i++) {
-			name = filters[i].getName();
-			if (filters[i].isChecked()) {
-				active.add(name);
-			} else {
-				inactive.add(name);
-			}
-		}
+//		Filter[] filters = getAllFiltersFromTable();
+//		for (int i = 0; i < filters.length; i++) {
+//			name = filters[i].getName();
+//			if (filters[i].isChecked()) {
+//				active.add(name);
+//			} else {
+//				inactive.add(name);
+//			}
+//		}
 		String pref = CucumberJavaPreferences.serializeList(active.toArray(new String[active.size()]));
 		store.setValue(CucumberJavaPreferences.PREF_ACTIVE_FILTERS_LIST, pref);
 		pref = CucumberJavaPreferences.serializeList(inactive.toArray(new String[inactive.size()]));
@@ -457,58 +457,58 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 	 */
 	protected void addFilter(String filter, boolean checked) {
 		if (filter != null) {
-			Filter f = new Filter(filter, checked);
-			fTableViewer.add(f);
-			fTableViewer.setChecked(f, checked);
+//			Filter f = new Filter(filter, checked);
+//			fTableViewer.add(f);
+//			fTableViewer.setChecked(f, checked);
 		}
 	}
 
-	/**
-	 * returns all of the filters from the table, this includes ones that have not
-	 * yet been saved
-	 * 
-	 * @return a possibly empty lits of filters fron the table
-	 * @since 3.2
-	 */
-	protected Filter[] getAllFiltersFromTable() {
-		TableItem[] items = fTableViewer.getTable().getItems();
-		Filter[] filters = new Filter[items.length];
-		for (int i = 0; i < items.length; i++) {
-			filters[i] = (Filter) items[i].getData();
-			filters[i].setChecked(items[i].getChecked());
-		}
-		return filters;
-	}
+//	/**
+//	 * returns all of the filters from the table, this includes ones that have not
+//	 * yet been saved
+//	 * 
+//	 * @return a possibly empty lits of filters fron the table
+//	 * @since 3.2
+//	 */
+//	protected Filter[] getAllFiltersFromTable() {
+//		TableItem[] items = fTableViewer.getTable().getItems();
+//		Filter[] filters = new Filter[items.length];
+//		for (int i = 0; i < items.length; i++) {
+//			filters[i] = (Filter) items[i].getData();
+//			filters[i].setChecked(items[i].getChecked());
+//		}
+//		return filters;
+//	}
 
-	/**
-	 * Returns all of the committed filters
-	 * 
-	 * @param defaults when true defaults values are used
-	 * @return an array of committed filters
-	 * @since 3.2
-	 */
-	protected Filter[] getAllStoredFilters(boolean defaults) {
-		Filter[] filters = null;
-		String[] activefilters, inactivefilters;
-		IPreferenceStore store = getPreferenceStore();
-		if (defaults) {
-			activefilters = CucumberJavaPreferences
-					.parseList(store.getDefaultString(CucumberJavaPreferences.PREF_ACTIVE_FILTERS_LIST));
-			inactivefilters = CucumberJavaPreferences
-					.parseList(store.getDefaultString(CucumberJavaPreferences.PREF_INACTIVE_FILTERS_LIST));
-		} else {
-			activefilters = CucumberJavaPreferences
-					.parseList(store.getString(CucumberJavaPreferences.PREF_ACTIVE_FILTERS_LIST));
-			inactivefilters = CucumberJavaPreferences
-					.parseList(store.getString(CucumberJavaPreferences.PREF_INACTIVE_FILTERS_LIST));
-		}
-		filters = new Filter[activefilters.length + inactivefilters.length];
-		for (int i = 0; i < activefilters.length; i++) {
-			filters[i] = new Filter(activefilters[i], true);
-		}
-		for (int i = 0; i < inactivefilters.length; i++) {
-			filters[i + activefilters.length] = new Filter(inactivefilters[i], false);
-		}
-		return filters;
-	}
+//	/**
+//	 * Returns all of the committed filters
+//	 * 
+//	 * @param defaults when true defaults values are used
+//	 * @return an array of committed filters
+//	 * @since 3.2
+//	 */
+//	protected Filter[] getAllStoredFilters(boolean defaults) {
+//		Filter[] filters = null;
+//		String[] activefilters, inactivefilters;
+//		IPreferenceStore store = getPreferenceStore();
+//		if (defaults) {
+//			activefilters = CucumberJavaPreferences
+//					.parseList(store.getDefaultString(CucumberJavaPreferences.PREF_ACTIVE_FILTERS_LIST));
+//			inactivefilters = CucumberJavaPreferences
+//					.parseList(store.getDefaultString(CucumberJavaPreferences.PREF_INACTIVE_FILTERS_LIST));
+//		} else {
+//			activefilters = CucumberJavaPreferences
+//					.parseList(store.getString(CucumberJavaPreferences.PREF_ACTIVE_FILTERS_LIST));
+//			inactivefilters = CucumberJavaPreferences
+//					.parseList(store.getString(CucumberJavaPreferences.PREF_INACTIVE_FILTERS_LIST));
+//		}
+//		filters = new Filter[activefilters.length + inactivefilters.length];
+//		for (int i = 0; i < activefilters.length; i++) {
+//			filters[i] = new Filter(activefilters[i], true);
+//		}
+//		for (int i = 0; i < inactivefilters.length; i++) {
+//			filters[i + activefilters.length] = new Filter(inactivefilters[i], false);
+//		}
+//		return filters;
+//	}
 }
