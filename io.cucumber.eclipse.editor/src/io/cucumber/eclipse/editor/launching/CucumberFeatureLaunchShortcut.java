@@ -32,7 +32,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import io.cucumber.eclipse.editor.CucumberServiceRegistry;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.launching.ILauncher.Mode;
-import io.cucumber.messages.Messages.GherkinDocument.Feature;
+import io.cucumber.messages.types.Feature;
 import io.cucumber.tagexpressions.TagExpressionParser;
 
 public class CucumberFeatureLaunchShortcut implements ILaunchShortcut {

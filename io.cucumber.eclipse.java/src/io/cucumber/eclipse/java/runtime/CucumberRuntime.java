@@ -15,6 +15,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -120,9 +121,10 @@ public final class CucumberRuntime implements AutoCloseable {
 
 						@Override
 						public Collection<? extends Backend> get() {
+							Supplier<ClassLoader> classLoaderSupplier = ()->this.getClass().getClassLoader();
 							// TODO https://github.com/cucumber/cucumber-jvm/issues/2217
 							ThreadLocalObjectFactorySupplier supplier = new ThreadLocalObjectFactorySupplier(
-									new ObjectFactoryServiceLoader(options));
+									new ObjectFactoryServiceLoader(classLoaderSupplier, options));
 							ObjectFactory objectFactory = supplier.get();
 							Set<Backend> backends = Collections.singleton(
 									BACKEND_PROVIDER_SERVICE.create(objectFactory, objectFactory, () -> classLoader));

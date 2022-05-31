@@ -44,7 +44,7 @@ import io.cucumber.eclipse.editor.document.GherkinMessageHandler;
 import io.cucumber.eclipse.editor.document.TestStepEvent;
 import io.cucumber.eclipse.editor.launching.ILauncher.Mode;
 import io.cucumber.eclipse.java.JDTUtil;
-import io.cucumber.eclipse.java.plugins.CucumberEclipsePlugin;
+import io.cucumber.eclipse.java.plugins.Cucumber7EclipsePlugin;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;
 import io.cucumber.tagexpressions.Expression;
 import mnita.ansiconsole.preferences.AnsiConsolePreferenceUtils;
@@ -268,7 +268,7 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 	private VMRunnerConfiguration createRunConfig(String[][] classpathAndModules) {
 		List<String> classPath = new ArrayList<>(Arrays.asList(classpathAndModules[0]));
 		try {
-			File file = FileLocator.getBundleFile(FrameworkUtil.getBundle(CucumberEclipsePlugin.class));
+			File file = FileLocator.getBundleFile(FrameworkUtil.getBundle(Cucumber7EclipsePlugin.class));
 			if (file != null) {
 				if (file.isDirectory() && !new File(file, "io").exists()) {
 					// try to get the path for the IDE...

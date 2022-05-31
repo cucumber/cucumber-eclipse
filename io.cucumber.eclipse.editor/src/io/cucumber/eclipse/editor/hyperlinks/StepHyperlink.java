@@ -9,7 +9,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 
-import io.cucumber.messages.Messages.GherkinDocument.Feature.Step;
+import io.cucumber.messages.types.Step;
 
 public class StepHyperlink implements IHyperlink {
 

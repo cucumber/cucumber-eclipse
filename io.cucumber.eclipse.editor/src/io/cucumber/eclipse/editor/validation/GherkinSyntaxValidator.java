@@ -17,7 +17,7 @@ import org.eclipse.jface.text.IDocumentListener;
 
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.marker.MarkerFactory;
-import io.cucumber.messages.Messages.ParseError;
+import io.cucumber.messages.types.ParseError;
 
 /**
  * Performs syntax-validation of the document on each change updating the

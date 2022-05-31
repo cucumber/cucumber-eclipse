@@ -3,7 +3,7 @@ package io.cucumber.eclipse.editor.debug;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IDebugElement;
 
-import io.cucumber.messages.Messages.TestCase.TestStep.StepMatchArgumentsList.StepMatchArgument.Group;
+import io.cucumber.messages.types.Group;
 
 /**
  * A group value
@@ -22,7 +22,7 @@ public class GherkingGroupValue extends GherkingValue {
 
 	@Override
 	public String getValueString() throws DebugException {
-		return group.getValue();
+		return group.getValue().orElse(null);
 	}
 
 }

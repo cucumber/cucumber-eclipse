@@ -38,15 +38,15 @@ import io.cucumber.eclipse.editor.console.CucumberConsole;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.launching.ILauncher;
 import io.cucumber.eclipse.java.JDTUtil;
-import io.cucumber.eclipse.java.plugins.CucumberEclipsePlugin;
+import io.cucumber.eclipse.java.plugins.Cucumber7EclipsePlugin;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;
-import io.cucumber.messages.Messages.Envelope;
-import io.cucumber.messages.Messages.GherkinDocument;
-import io.cucumber.messages.Messages.GherkinDocument.Feature.Scenario;
-import io.cucumber.messages.Messages.TestCaseStarted;
-import io.cucumber.messages.Messages.TestStepFinished;
-import io.cucumber.messages.Messages.TestStepStarted;
-import io.cucumber.messages.Messages.Timestamp;
+import io.cucumber.messages.types.Envelope;
+import io.cucumber.messages.types.GherkinDocument;
+import io.cucumber.messages.types.Scenario;
+import io.cucumber.messages.types.TestCaseStarted;
+import io.cucumber.messages.types.TestStepFinished;
+import io.cucumber.messages.types.TestStepStarted;
+import io.cucumber.messages.types.Timestamp;
 import io.cucumber.tagexpressions.Expression;
 import mnita.ansiconsole.preferences.AnsiConsolePreferenceUtils;
 
@@ -84,7 +84,7 @@ public class CucumberRuntimeLauncher implements ILauncher {
 						Scenario scenario = (Scenario) object;
 						URI locationURI = resource.getLocationURI();
 						featuresWithLines.add(FeatureWithLines.create(locationURI,
-								Collections.singleton(scenario.getLocation().getLine())));
+								Collections.singleton(scenario.getLocation().getLine().intValue())));
 					} else if (object instanceof Expression) {
 						filters.add((Expression) object);
 					}
@@ -138,7 +138,7 @@ public class CucumberRuntimeLauncher implements ILauncher {
 			Collection<FeatureWithLines> featureFilter, Mode mode, CucumberConsole console, IProgressMonitor monitor,
 			Collection<Expression> tagFilters) throws CoreException {
 		try (CucumberRuntime cucumberRuntime = CucumberRuntime.create(javaProject)) {
-			CucumberEclipsePlugin plugin = new CucumberEclipsePlugin(new Consumer<Envelope>() {
+			Cucumber7EclipsePlugin plugin = new Cucumber7EclipsePlugin(new Consumer<Envelope>() {
 
 				private Map<String, TestStepPerfInfo> map = new HashMap<>();
 				private GherkinDocument gherkinDocument;
@@ -146,22 +146,22 @@ public class CucumberRuntimeLauncher implements ILauncher {
 				@Override
 				public void accept(Envelope envelope) {
 //					System.out.println(envelope);
-					if (envelope.hasTestCaseStarted()) {
-						TestCaseStarted testCaseStarted = envelope.getTestCaseStarted();
+					if (envelope.getTestCaseStarted().isPresent()) {
+						TestCaseStarted testCaseStarted = envelope.getTestCaseStarted().get();
 						String testCaseId = testCaseStarted.getTestCaseId();
 //						System.out.println("Testcase started: " + testCaseId);
 					}
 					// TODO publish it
-					if (envelope.hasTestStepFinished()) {
-						TestStepFinished stepFinished = envelope.getTestStepFinished();
+					if (envelope.getTestStepFinished().isPresent()) {
+						TestStepFinished stepFinished = envelope.getTestStepFinished().get();
 						map.get(stepFinished.getTestStepId()).end = stepFinished.getTimestamp();
-					} else if (envelope.hasTestStepStarted()) {
-						TestStepStarted stepStarted = envelope.getTestStepStarted();
+					} else if (envelope.getTestStepStarted().isPresent()) {
+						TestStepStarted stepStarted = envelope.getTestStepStarted().get();
 						// stepStarted.getTestCaseStartedId()
 						map.put(stepStarted.getTestStepId(), new TestStepPerfInfo(stepStarted.getTimestamp()));
-					} else if (envelope.hasGherkinDocument()) {
-						gherkinDocument = envelope.getGherkinDocument();
-					} else if (envelope.hasTestRunFinished()) {
+					} else if (envelope.getGherkinDocument().isPresent()) {
+						gherkinDocument = envelope.getGherkinDocument().get();
+					} else if (envelope.getTestRunFinished().isPresent()) {
 						// Feature id maps to the pickle -> ast_node_ids
 //						gherkinDocument.getFeature().getChildrenList().stream().filter(FeatureChild::hasScenario)
 //								.map(FeatureChild::getScenario).forEach(s -> System.out.println(s.getId()));
@@ -185,7 +185,8 @@ public class CucumberRuntimeLauncher implements ILauncher {
 			}
 			options.setPublishQuiet(true);
 			// TODO other options
-			options.addDefaultSummaryPrinterIfAbsent();
+//			options.addDefaultSummaryPrinterIfAbsent();
+			options.addDefaultSummaryPrinterIfNotDisabled();
 			options.setThreads(java.lang.Runtime.getRuntime().availableProcessors());
 			options.setMonochrome(!AnsiConsolePreferenceUtils.isAnsiConsoleEnabled());
 			cucumberRuntime.addPlugin(plugin);

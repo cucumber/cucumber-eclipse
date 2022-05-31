@@ -1,14 +1,16 @@
 package io.cucumber.eclipse.java.plugins;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Collection;
 
-import io.cucumber.messages.Messages.Envelope;
-import io.cucumber.messages.internal.com.google.protobuf.Parser;
+import io.cucumber.messages.types.Envelope;
+
 
 /**
  * open an server endpoint to communicate with a remote cucumber instance
@@ -44,29 +46,41 @@ public abstract class MessageEndpoint {
 							OutputStream outputStream = socket.getOutputStream()) {
 						int framelength;
 						byte[] buffer = new byte[1024 * 1024 * 10];
-						Parser<Envelope> parser = Envelope.parser();
+						//Parser<Envelope> parser = Envelope.parser();
+						
 						while ((framelength = inputStream.readInt()) > 0) {
 							if (buffer.length < framelength) {
 								buffer = new byte[framelength];
 							}
 							inputStream.readFully(buffer, 0, framelength);
-							Envelope envelope = parser.parseFrom(buffer, 0, framelength);
+//							Envelope envelope = DtoToMessageConverter.convert(Jackson.OBJECT_MAPPER.readValue(buffer, 0, framelength, io.cucumber.eclipse.java.plugins.dto.Envelope.class));
+							ByteArrayInputStream bais = new ByteArrayInputStream(buffer, 0, framelength);
+							ObjectInputStream ois = new ObjectInputStream(bais);
+							Envelope envelope;
 							try {
-								handleMessage(envelope);
-							} catch (InterruptedException e) {
-								break;
-							}
-							outputStream.write(CucumberEclipsePlugin.HANDLED_MESSAGE);
-							outputStream.flush();
-							if (envelope.hasTestRunFinished()) {
-								break;
+								envelope = DtoToMessageConverter.convert(
+										(io.cucumber.eclipse.java.plugins.dto.Envelope) ois.readObject());
+							
+								try {
+									handleMessage(envelope);
+								} catch (InterruptedException e) {
+									break;
+								}
+								outputStream.write(Cucumber7EclipsePlugin.HANDLED_MESSAGE);
+								outputStream.flush();
+								if (envelope.getTestRunFinished().isPresent()) {
+									break;
+								}
+							} catch (ClassNotFoundException e1) {
+								e1.printStackTrace();
 							}
 						}
-						outputStream.write(CucumberEclipsePlugin.GOOD_BY_MESSAGE);
+						outputStream.write(Cucumber7EclipsePlugin.GOOD_BY_MESSAGE);
 						outputStream.flush();
 					}
 					socket.close();
 				} catch (IOException e) {
+					e.printStackTrace();
 				} finally {
 					try {
 						serverSocket.close();
@@ -81,7 +95,7 @@ public abstract class MessageEndpoint {
 
 	public void addArguments(Collection<String> args) {
 		args.add("-p");
-		args.add(CucumberEclipsePlugin.class.getName() + ":" + String.valueOf(serverSocket.getLocalPort()));
+		args.add(Cucumber7EclipsePlugin.class.getName() + ":" + String.valueOf(serverSocket.getLocalPort()));
 	}
 
 	public boolean isTerminated() {

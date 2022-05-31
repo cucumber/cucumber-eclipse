@@ -3,7 +3,7 @@ package io.cucumber.eclipse.editor.debug;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IDebugElement;
 
-import io.cucumber.messages.Messages.StepDefinition;
+import io.cucumber.messages.types.StepDefinition;
 
 /**
  * A value representing a step definition

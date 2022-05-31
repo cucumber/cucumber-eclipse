@@ -47,10 +47,10 @@ public class StepHyperlinkDetector implements IHyperlinkDetector {
 
 					IHyperlink[] hyperlinks = editorDocument.getSteps()
 							.filter(step -> step.getLocation().getLine() == lineNumber).map(step -> {
-								int column = step.getLocation().getColumn() - 1;
+								long column = step.getLocation().getColumn().orElse(0l) - 1;
 								String keyword = step.getKeyword();
-								int statementStartOffset = lineStartOffset + column + keyword.length();
-								IRegion stepRegion = new Region(statementStartOffset, step.getText().length());
+								Long statementStartOffset = lineStartOffset + column + keyword.length();
+								IRegion stepRegion = new Region(statementStartOffset.intValue(), step.getText().length());
 
 								return new StepHyperlink(stepRegion, step, textViewer, resource, openers);
 							}).filter(Objects::nonNull).toArray(IHyperlink[]::new);

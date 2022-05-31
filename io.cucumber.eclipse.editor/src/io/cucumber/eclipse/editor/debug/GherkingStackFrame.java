@@ -29,6 +29,8 @@ public class GherkingStackFrame extends GherkingDebugElement implements IStackFr
 		this.name = name;
 	}
 
+	
+
 	@Override
 	public boolean canStepInto() {
 		return false;
