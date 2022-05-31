@@ -38,7 +38,7 @@
 version:               ${version_cleanup;${mvnVersion}}
 Bundle-SymbolicName:   ${mvnGroupId}.${mvnArtifactId}
 Bundle-Version:        ${version}
-Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
+Import-Package:        !sun.*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
 Export-Package:        *;version="${version}";-noimport:=true]]></instructions>
 	</location>
 	<location includeDependencyScope="compile" includeSource="true" missingManifest="generate" type="Maven">
@@ -50,7 +50,7 @@ Export-Package:        *;version="${version}";-noimport:=true]]></instructions>
 version:               ${version_cleanup;${mvnVersion}}
 Bundle-SymbolicName:   ${mvnGroupId}.${mvnArtifactId}
 Bundle-Version:        ${version}
-Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
+Import-Package:        !sun.*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
 Export-Package:        *;version="${version}";-noimport:=true]]></instructions>
 	</location>
 	<location includeDependencyScope="compile" includeSource="true" missingManifest="generate" type="Maven">
@@ -62,9 +62,10 @@ Export-Package:        *;version="${version}";-noimport:=true]]></instructions>
 version:               ${version_cleanup;${mvnVersion}}
 Bundle-SymbolicName:   ${mvnGroupId}.${mvnArtifactId}
 Bundle-Version:        ${version}
-Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
+Import-Package:        !sun.*,!io.cucumber.cienvironment,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
 Export-Package:        *;version="${version}";-noimport:=true]]></instructions>
 	</location>
+	
 	<location includeDependencyScope="compile" includeSource="true" missingManifest="generate" type="Maven">
 				<groupId>io.cucumber</groupId>
 				<artifactId>cucumber-expressions</artifactId>
@@ -74,7 +75,7 @@ Export-Package:        *;version="${version}";-noimport:=true]]></instructions>
 version:               ${version_cleanup;${mvnVersion}}
 Bundle-SymbolicName:   ${mvnGroupId}.${mvnArtifactId}
 Bundle-Version:        ${version}
-Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
+Import-Package:        !sun.*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
 Export-Package:        *;version="${version}";-noimport:=true]]></instructions>
 	</location>
 	<location includeDependencyScope="compile" includeSource="true" missingManifest="ignore" type="Maven">
@@ -96,7 +97,7 @@ Export-Package:        *;version="${version}";-noimport:=true]]></instructions>
 version:               ${version_cleanup;${mvnVersion}}
 Bundle-SymbolicName:   ${mvnGroupId}.${mvnArtifactId}
 Bundle-Version:        ${version}
-Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
+Import-Package:        !sun.*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
 Export-Package:        *;version="${version}";-noimport:=true]]></instructions>
 	</location>
 </locations>
