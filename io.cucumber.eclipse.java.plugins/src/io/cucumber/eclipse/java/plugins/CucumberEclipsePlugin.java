@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -86,8 +85,7 @@ public class CucumberEclipsePlugin implements ConcurrentEventListener {
 				}
 				try {
 					buffer.reset();
-					ObjectOutputStream oos = new ObjectOutputStream(buffer);
-					oos.writeObject(env);
+					Jackson.OBJECT_MAPPER.writeValue(buffer, env);
 					output.writeInt(buffer.size());
 					buffer.writeTo(output);
 					output.flush();
@@ -97,6 +95,7 @@ public class CucumberEclipsePlugin implements ConcurrentEventListener {
 						finish();
 					}
 				} catch (IOException e) {
+					e.printStackTrace();
 				}
 			}
 

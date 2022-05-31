@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -118,11 +119,11 @@ public class CucumberTestRunnerClient implements ITestRunnerClient, EnvelopeList
 					testCase.getTestSteps().size(), (ITestSuiteElement) session.getTestElement(pickle.getUri()),
 					pickle.getName(), env.toString());
 			for (TestStep step : testCase.getTestSteps()) {
-				String pickleStepId = step.getPickleStepId().get();
-				if (pickleStepId.isBlank()) {
+				Optional<String> pickleStepId = step.getPickleStepId();
+				if (pickleStepId.isEmpty()|| pickleStepId.get().isBlank()) {
 					continue;
 				}
-				PickleStep pickleStep = pickleSteps.get(pickleStepId);
+				PickleStep pickleStep = pickleSteps.get(pickleStepId.get());
 				session.newTestCase(step.getId(), pickleStep.getId(), testSuite, pickleStep.getText(), step.toString());
 			}
 			return;

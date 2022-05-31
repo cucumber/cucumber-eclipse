@@ -1,19 +1,14 @@
 package io.cucumber.eclipse.java.plugins;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
 import java.io.OutputStream;
-import java.io.Reader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Collection;
 
-//import com.google.gson.Gson;
-
 import io.cucumber.messages.types.Envelope;
+
 
 /**
  * open an server endpoint to communicate with a remote cucumber instance
@@ -56,16 +51,7 @@ public abstract class MessageEndpoint {
 								buffer = new byte[framelength];
 							}
 							inputStream.readFully(buffer, 0, framelength);
-							
-//							Envelope envelope = parser.parseFrom(buffer, 0, framelength);
-							ByteArrayInputStream bais = new ByteArrayInputStream(buffer, 0, framelength);
-							ObjectInputStream ois = new ObjectInputStream(bais);
-							Envelope envelope;
-							try {
-								envelope = (Envelope) ois.readObject();
-							} catch (ClassNotFoundException e1) {
-								throw new RuntimeException(e1);
-							}
+							Envelope envelope = DtoToMessageConverter.convert(Jackson.OBJECT_MAPPER.readValue(buffer, 0, framelength, io.cucumber.eclipse.java.plugins.dto.Envelope.class));
 							try {
 								handleMessage(envelope);
 							} catch (InterruptedException e) {
@@ -82,6 +68,7 @@ public abstract class MessageEndpoint {
 					}
 					socket.close();
 				} catch (IOException e) {
+					e.printStackTrace();
 				} finally {
 					try {
 						serverSocket.close();
