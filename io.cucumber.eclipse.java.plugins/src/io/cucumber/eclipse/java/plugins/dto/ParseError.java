@@ -1,6 +1,12 @@
 package io.cucumber.eclipse.java.plugins.dto;
 
-public class ParseError {
+import java.io.Serializable;
+
+public class ParseError implements Serializable {
 	public SourceReference source;
     public String message;
+	public ParseError(SourceReference source, String message) {
+		this.source = source;
+		this.message = message;
+	}
 }

@@ -1,433 +1,441 @@
-//package io.cucumber.eclipse.java.plugins;
-//
-//import static java.util.stream.Collectors.toList;
-//
-//import java.util.List;
-//import java.util.Optional;
-//import java.util.function.Function;
-//
-//import io.cucumber.eclipse.java.plugins.dto.Envelope;
-//import io.cucumber.eclipse.java.plugins.dto.GherkinDocument;
-//import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.Background;
-//import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.Comment;
-//import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.DataTable;
-//import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.DocString;
-//import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.Examples;
-//import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.Feature;
-//import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.FeatureChild;
-//import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.Rule;
-//import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.RuleChild;
-//import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.Scenario;
-//import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.Step;
-//import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.TableCell;
-//import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.TableRow;
-//import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.Tag;
-//import io.cucumber.eclipse.java.plugins.dto.Pickle.PickleStep;
-//import io.cucumber.eclipse.java.plugins.dto.Pickle.PickleTableCell;
-//import io.cucumber.eclipse.java.plugins.dto.Pickle.PickleTableRow;
-//import io.cucumber.eclipse.java.plugins.dto.Pickle.PickleTag;
-//import io.cucumber.eclipse.java.plugins.dto.TestCase.StepMatchArgument;
-//import io.cucumber.eclipse.java.plugins.dto.TestCase.StepMatchArgumentsList;
-//import io.cucumber.eclipse.java.plugins.dto.TestCase.TestStep;
-//import io.cucumber.messages.types.Attachment;
-//import io.cucumber.messages.types.Ci;
-//import io.cucumber.messages.types.Duration;
-//import io.cucumber.messages.types.Git;
-//import io.cucumber.messages.types.Group;
-//import io.cucumber.messages.types.Hook;
-//import io.cucumber.messages.types.JavaMethod;
-//import io.cucumber.messages.types.JavaStackTraceElement;
-//import io.cucumber.messages.types.Meta;
-//import io.cucumber.messages.types.ParameterType;
-//import io.cucumber.messages.types.ParseError;
-//import io.cucumber.messages.types.Pickle;
-//import io.cucumber.messages.types.PickleDocString;
-//import io.cucumber.messages.types.PickleStepArgument;
-//import io.cucumber.messages.types.PickleTable;
-//import io.cucumber.messages.types.Product;
-//import io.cucumber.messages.types.Source;
-//import io.cucumber.messages.types.SourceReference;
-//import io.cucumber.messages.types.StepDefinition;
-//import io.cucumber.messages.types.StepDefinitionPattern;
-//import io.cucumber.messages.types.TestCase;
-//import io.cucumber.messages.types.TestCaseFinished;
-//import io.cucumber.messages.types.TestCaseStarted;
-//import io.cucumber.messages.types.TestRunFinished;
-//import io.cucumber.messages.types.TestRunStarted;
-//import io.cucumber.messages.types.TestStepFinished;
-//import io.cucumber.messages.types.TestStepResult;
-//import io.cucumber.messages.types.TestStepStarted;
-//import io.cucumber.messages.types.Timestamp;
-//import io.cucumber.messages.types.UndefinedParameterType;
-//
-//public class MessageToDtoConverter {
-//	
-//	public static Envelope convert(io.cucumber.messages.types.Envelope d) {
-//		if (d == null)
-//			return null;
-//		return new Envelope(
-//				convert(d.getAttachment()), 
-//				convert(d.getGherkinDocument()),
-//				convert(d.getHook()), 
-//				convert(d.getMeta()), 
-//				convert(d.getParameterType()), 
-//				convert(d.getParseError()), 
-//				convert(d.getPickle()),
-//				convert(d.getSource()), 
-//				convert(d.getStepDefinition()), 
-//				convert(d.getTestCase()), 
-//				convert(d.getTestCaseFinished()),
-//				convert(d.getTestCaseStarted()), 
-//				convert(d.getTestRunFinished()), 
-//				convert(d.getTestRunStarted()),
-//				convert(d.getTestStepFinished()), 
-//				convert(d.getTestStepStarted()), 
-//				convert(d.getUndefinedParameterType()));
-//	}
-//
-//	public static <T, K> List<K> convertList(List<T> list, Function<T, K> converter) {
-//		Optional<List<K>> map = Optional.ofNullable(list)
-//				.map(l -> l.stream().map(v -> converter.apply(v)).collect(toList()));
-//		return map.orElse(null);
-//	}
-//
-//	public static UndefinedParameterType convert(io.cucumber.eclipse.java.plugins.dto.UndefinedParameterType d) {
-//		if (d == null)
-//			return null;
-//		return new UndefinedParameterType(d.expression, d.name);
-//	}
-//
-//	public static TestStepStarted convert(io.cucumber.eclipse.java.plugins.dto.TestStepStarted d) {
-//		if (d == null)
-//			return null;
-//		return new TestStepStarted(d.testCaseStartedId, d.testStepId, convert(d.timestamp));
-//	}
-//
-//	public static Timestamp convert(io.cucumber.eclipse.java.plugins.dto.Timestamp d) {
-//		if (d == null)
-//			return null;
-//		return new Timestamp(d.seconds, d.nanos);
-//	}
-//
-//	public static TestStepFinished convert(io.cucumber.eclipse.java.plugins.dto.TestStepFinished d) {
-//		if (d == null)
-//			return null;
-//		return new TestStepFinished(d.testCaseStartedId, d.testStepId, convert(d.testStepResult), convert(d.timestamp));
-//	}
-//
-//	public static TestStepResult convert(io.cucumber.eclipse.java.plugins.dto.TestStepFinished.TestStepResult d) {
-//		if (d == null)
-//			return null;
-//		return new TestStepResult(convert(d.duration), d.message, d.status);
-//	}
-//
-//	public static Duration convert(io.cucumber.eclipse.java.plugins.dto.Duration d) {
-//		if (d == null)
-//			return null;
-//		return new Duration(d.seconds, d.nanos);
-//	}
-//
-//	public static TestRunStarted convert(io.cucumber.eclipse.java.plugins.dto.TestRunStarted d) {
-//		if (d == null)
-//			return null;
-//		return new TestRunStarted(convert(d.timestamp));
-//	}
-//
-//	public static TestRunFinished convert(io.cucumber.eclipse.java.plugins.dto.TestRunFinished d) {
-//		if (d == null)
-//			return null;
-//		return new TestRunFinished(d.message, d.success, convert(d.timestamp));
-//	}
-//
-//	public static TestCaseStarted convert(io.cucumber.eclipse.java.plugins.dto.TestCaseStarted d) {
-//		if (d == null)
-//			return null;
-//		return new TestCaseStarted(d.attempt, d.id, d.testCaseId, convert(d.timestamp));
-//	}
-//
-//	public static TestCaseFinished convert(io.cucumber.eclipse.java.plugins.dto.TestCaseFinished d) {
-//		if (d == null)
-//			return null;
-//		return new TestCaseFinished(d.testCaseStartedId, convert(d.timestamp), d.willBeRetried);
-//	}
-//
-//	public static TestCase convert(io.cucumber.eclipse.java.plugins.dto.TestCase d) {
-//		if (d == null)
-//			return null;
-//		return new TestCase(d.id, d.pickleId, convertList(d.testSteps,DtoToMessageConverter::convert));
-//	}
-//
-//	public static io.cucumber.messages.types.TestStep convert(TestStep d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.TestStep(d.hookId, d.id, d.pickleStepId, d.stepDefinitionIds,
-//				convertList(d.stepMatchArgumentsLists, DtoToMessageConverter::convert));
-//	}
-//
-//	public static io.cucumber.messages.types.StepMatchArgumentsList convert(StepMatchArgumentsList d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.StepMatchArgumentsList(
-//				convertList(d.stepMatchArguments, DtoToMessageConverter::convert));
-//	}
-//
-//	public static io.cucumber.messages.types.StepMatchArgument convert(StepMatchArgument d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.StepMatchArgument(convert(d.group), d.parameterTypeName);
-//	}
-//
-//	public static Group convert(io.cucumber.eclipse.java.plugins.dto.TestCase.Group d) {
-//		if (d == null)
-//			return null;
-//		return new Group(convertList(d.children,DtoToMessageConverter::convert), d.start, d.value);
-//	}
-//
-//	public static StepDefinition convert(io.cucumber.eclipse.java.plugins.dto.StepDefinition d) {
-//		if (d == null)
-//			return null;
-//		return new StepDefinition(d.id, convert(d.pattern), convert(d.sourceReference));
-//	}
-//
-//	public static StepDefinitionPattern convert(
-//			io.cucumber.eclipse.java.plugins.dto.StepDefinition.StepDefinitionPattern d) {
-//		if (d == null)
-//			return null;
-//		return new StepDefinitionPattern(d.source, d.type);
-//	}
-//
-//	public static Source convert(io.cucumber.eclipse.java.plugins.dto.Source d) {
-//		if (d == null)
-//			return null;
-//		return new Source(d.uri, d.data, d.mediaType);
-//	}
-//
-//	public static Pickle convert(io.cucumber.eclipse.java.plugins.dto.Pickle d) {
-//		if (d == null)
-//			return null;
-//		return new Pickle(d.id, d.uri, d.name, d.language, convertList(d.steps,DtoToMessageConverter::convert),
-//				convertList(d.tags,DtoToMessageConverter::convert), d.astNodeIds);
-//	}
-//
-//	public static io.cucumber.messages.types.PickleTag convert(PickleTag d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.PickleTag(d.name, d.astNodeId);
-//	}
-//
-//	public static io.cucumber.messages.types.PickleStep convert(PickleStep d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.PickleStep(convert(d.argument), d.astNodeIds, d.id, d.text);
-//	}
-//
-//	public static PickleStepArgument convert(io.cucumber.eclipse.java.plugins.dto.Pickle.PickleStepArgument d) {
-//		if (d == null)
-//			return null;
-//		return new PickleStepArgument(convert(d.docString), convert(d.dataTable));
-//	}
-//
-//	public static PickleTable convert(io.cucumber.eclipse.java.plugins.dto.Pickle.PickleTable d) {
-//		if (d == null)
-//			return null;
-//		return new PickleTable(convertList(d.rows,DtoToMessageConverter::convert));
-//	}
-//
-//	public static io.cucumber.messages.types.PickleTableRow convert(PickleTableRow d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.PickleTableRow(convertList(d.cells,DtoToMessageConverter::convert));
-//	}
-//
-//	public static io.cucumber.messages.types.PickleTableCell convert(PickleTableCell d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.PickleTableCell(d.value);
-//	}
-//
-//	public static PickleDocString convert(io.cucumber.eclipse.java.plugins.dto.Pickle.PickleDocString d) {
-//		if (d == null)
-//			return null;
-//		return new PickleDocString(d.mediaType, d.content);
-//	}
-//
-//	public static ParseError convert(io.cucumber.eclipse.java.plugins.dto.ParseError d) {
-//		if (d == null)
-//			return null;
-//		return new ParseError(convert(d.source), d.message);
-//	}
-//
-//	public static ParameterType convert(io.cucumber.eclipse.java.plugins.dto.ParameterType d) {
-//		if (d == null)
-//			return null;
-//		return new ParameterType(d.name, d.regularExpressions, d.preferForRegularExpressionMatch, d.useForSnippets,
-//				d.id);
-//	}
-//
-//	public static Meta convert(io.cucumber.eclipse.java.plugins.dto.Meta d) {
-//		if (d == null)
-//			return null;
-//		return new Meta(d.protocolVersion, convert(d.implementation), convert(d.runtime), convert(d.os), convert(d.cpu),
-//				convert(d.ci));
-//	}
-//
-//	public static Ci convert(io.cucumber.eclipse.java.plugins.dto.Meta.Ci d) {
-//		if (d == null)
-//			return null;
-//		return new Ci(d.name, d.url, d.buildNumber, convert(d.git));
-//	}
-//
-//	public static Git convert(io.cucumber.eclipse.java.plugins.dto.Meta.Git d) {
-//		if (d == null)
-//			return null;
-//		return new Git(d.remote, d.revision, d.branch, d.tag);
-//	}
-//
-//	public static Product convert(io.cucumber.eclipse.java.plugins.dto.Meta.Product d) {
-//		if (d == null)
-//			return null;
-//		return new Product(d.name, d.version);
-//	}
-//
-//	public static Hook convert(io.cucumber.eclipse.java.plugins.dto.Hook d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.Hook(d.id, d.name, convert(d.sourceReference), d.tagExpression);
-//	}
-//
-//	public static SourceReference convert(io.cucumber.eclipse.java.plugins.dto.SourceReference d) {
-//		if (d == null)
-//			return null;
-//		return new SourceReference(d.uri, convert(d.javaMethod), convert(d.javaStackTraceElement), convert(d.location));
-//	}
-//
-//	public static JavaMethod convert(io.cucumber.eclipse.java.plugins.dto.SourceReference.JavaMethod d) {
-//		if (d == null)
-//			return null;
-//		return new JavaMethod(d.className, d.methodName, d.methodParameterTypes);
-//	}
-//
-//	public static JavaStackTraceElement convert(
-//			io.cucumber.eclipse.java.plugins.dto.SourceReference.JavaStackTraceElement d) {
-//		if (d == null)
-//			return null;
-//		return new JavaStackTraceElement(d.className, d.fileName, d.methodName);
-//	}
-//
-//	public static Attachment convert(io.cucumber.eclipse.java.plugins.dto.Attachment d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.Attachment(d.body, d.contentEncoding, d.fileName, d.mediaType, d.source,
-//				d.testCaseStartedId, d.testStepId, d.url);
-//	}
-//
-//	public static io.cucumber.messages.types.Comment convert(Comment d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.Comment(convert(d.location), d.text);
-//	}
-//
-//	public static io.cucumber.messages.types.Feature convert(Feature d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.Feature(convert(d.location),
-//				convertList(d.tags,DtoToMessageConverter::convert), d.language, d.keyword, d.name, d.description,
-//				convertList(d.children,DtoToMessageConverter::convert));
-//	}
-//
-//	public static io.cucumber.messages.types.Tag convert(Tag d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.Tag(convert(d.location), d.name, d.id);
-//	}
-//
-//	public static io.cucumber.messages.types.FeatureChild convert(FeatureChild d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.FeatureChild(convert(d.rule), convert(d.background), convert(d.scenario));
-//	}
-//
-//	public static io.cucumber.messages.types.Scenario convert(Scenario d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.Scenario(convert(d.location),
-//				convertList(d.tags,DtoToMessageConverter::convert), d.keyword, d.name, d.description,
-//				convertList(d.steps,DtoToMessageConverter::convert),
-//				convertList(d.examples,DtoToMessageConverter::convert), d.id);
-//	}
-//
-//	public static io.cucumber.messages.types.Examples convert(Examples d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.Examples(convert(d.location),
-//				convertList(d.tags,DtoToMessageConverter::convert), d.keyword, d.name, d.description,
-//				convert(d.tableHeader), convertList(d.tableBody,DtoToMessageConverter::convert), d.id);
-//	}
-//
-//	public static io.cucumber.messages.types.Rule convert(Rule d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.Rule(convert(d.location),
-//				convertList(d.tags,DtoToMessageConverter::convert), d.keyword, d.name, d.description,
-//				convertList(d.children,DtoToMessageConverter::convert), d.id);
-//	}
-//
-//	public static io.cucumber.messages.types.RuleChild convert(RuleChild d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.RuleChild(DtoToMessageConverter.convert(d.background), convert(d.scenario));
-//	}
-//
-//	public static io.cucumber.messages.types.Background convert(Background d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.Background(convert(d.location), d.keyword, d.name, d.description,
-//				convertList(d.steps,DtoToMessageConverter::convert), d.id);
-//	}
-//
-//	public static io.cucumber.messages.types.Step convert(Step d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.Step(convert(d.location), d.keyword, d.text, convert(d.docString),
-//				convert(d.dataTable), d.id);
-//	}
-//
-//	public static io.cucumber.messages.types.DocString convert(DocString d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.DocString(convert(d.location), d.mediaType, d.content, d.delimiter);
-//	}
-//
-//	public static io.cucumber.messages.types.DataTable convert(DataTable d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.DataTable(convert(d.location),
-//				convertList(d.rows,DtoToMessageConverter::convert));
-//	}
-//
-//	public static io.cucumber.messages.types.TableRow convert(TableRow d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.TableRow(convert(d.location),
-//				convertList(d.cells,DtoToMessageConverter::convert), d.id);
-//	}
-//
-//	public static io.cucumber.messages.types.TableCell convert(TableCell d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.TableCell(convert(d.location), d.value);
-//	}
-//
-//	public static io.cucumber.messages.types.GherkinDocument convert(GherkinDocument d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.GherkinDocument(d.uri, convert(d.feature),
-//				convertList(d.comments,DtoToMessageConverter::convert));
-//	}
-//
-//	public static io.cucumber.messages.types.Location convert(io.cucumber.eclipse.java.plugins.dto.Location d) {
-//		if (d == null)
-//			return null;
-//		return new io.cucumber.messages.types.Location(d.line, d.column);
-//	}
-//}
+package io.cucumber.eclipse.java.plugins;
+
+import static java.util.stream.Collectors.toList;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+
+import io.cucumber.eclipse.java.plugins.dto.Attachment;
+import io.cucumber.eclipse.java.plugins.dto.Duration;
+import io.cucumber.eclipse.java.plugins.dto.Envelope;
+import io.cucumber.eclipse.java.plugins.dto.GherkinDocument;
+import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.Background;
+import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.Comment;
+import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.DataTable;
+import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.DocString;
+import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.Examples;
+import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.Feature;
+import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.FeatureChild;
+import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.Rule;
+import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.RuleChild;
+import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.Scenario;
+import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.Step;
+import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.TableCell;
+import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.TableRow;
+import io.cucumber.eclipse.java.plugins.dto.GherkinDocument.Tag;
+import io.cucumber.eclipse.java.plugins.dto.Hook;
+import io.cucumber.eclipse.java.plugins.dto.Location;
+import io.cucumber.eclipse.java.plugins.dto.Meta;
+import io.cucumber.eclipse.java.plugins.dto.Meta.Ci;
+import io.cucumber.eclipse.java.plugins.dto.Meta.Git;
+import io.cucumber.eclipse.java.plugins.dto.Meta.Product;
+import io.cucumber.eclipse.java.plugins.dto.ParameterType;
+import io.cucumber.eclipse.java.plugins.dto.ParseError;
+import io.cucumber.eclipse.java.plugins.dto.Pickle;
+import io.cucumber.eclipse.java.plugins.dto.Pickle.PickleDocString;
+import io.cucumber.eclipse.java.plugins.dto.Pickle.PickleStep;
+import io.cucumber.eclipse.java.plugins.dto.Pickle.PickleStepArgument;
+import io.cucumber.eclipse.java.plugins.dto.Pickle.PickleTable;
+import io.cucumber.eclipse.java.plugins.dto.Pickle.PickleTableCell;
+import io.cucumber.eclipse.java.plugins.dto.Pickle.PickleTableRow;
+import io.cucumber.eclipse.java.plugins.dto.Pickle.PickleTag;
+import io.cucumber.eclipse.java.plugins.dto.Source;
+import io.cucumber.eclipse.java.plugins.dto.SourceReference;
+import io.cucumber.eclipse.java.plugins.dto.SourceReference.JavaMethod;
+import io.cucumber.eclipse.java.plugins.dto.SourceReference.JavaStackTraceElement;
+import io.cucumber.eclipse.java.plugins.dto.StepDefinition;
+import io.cucumber.eclipse.java.plugins.dto.StepDefinition.StepDefinitionPattern;
+import io.cucumber.eclipse.java.plugins.dto.TestCase;
+import io.cucumber.eclipse.java.plugins.dto.TestCase.Group;
+import io.cucumber.eclipse.java.plugins.dto.TestCase.StepMatchArgument;
+import io.cucumber.eclipse.java.plugins.dto.TestCase.StepMatchArgumentsList;
+import io.cucumber.eclipse.java.plugins.dto.TestCase.TestStep;
+import io.cucumber.eclipse.java.plugins.dto.TestCaseFinished;
+import io.cucumber.eclipse.java.plugins.dto.TestCaseStarted;
+import io.cucumber.eclipse.java.plugins.dto.TestRunFinished;
+import io.cucumber.eclipse.java.plugins.dto.TestRunStarted;
+import io.cucumber.eclipse.java.plugins.dto.TestStepFinished;
+import io.cucumber.eclipse.java.plugins.dto.TestStepFinished.TestStepResult;
+import io.cucumber.eclipse.java.plugins.dto.TestStepStarted;
+import io.cucumber.eclipse.java.plugins.dto.Timestamp;
+import io.cucumber.eclipse.java.plugins.dto.UndefinedParameterType;
+
+public class MessageToDtoConverter {
+
+	public static Envelope convert(io.cucumber.messages.types.Envelope d) {
+		if (d == null)
+			return null;
+		return new Envelope(
+				d.getAttachment().map(MessageToDtoConverter::convert).orElse(null),
+				d.getGherkinDocument().map(MessageToDtoConverter::convert).orElse(null),
+				d.getHook().map(MessageToDtoConverter::convert).orElse(null),
+				d.getMeta().map(MessageToDtoConverter::convert).orElse(null),
+				d.getParameterType().map(MessageToDtoConverter::convert).orElse(null),
+				d.getParseError().map(MessageToDtoConverter::convert).orElse(null),
+				d.getPickle().map(MessageToDtoConverter::convert).orElse(null),
+				d.getSource().map(MessageToDtoConverter::convert).orElse(null),
+				d.getStepDefinition().map(MessageToDtoConverter::convert).orElse(null),
+				d.getTestCase().map(MessageToDtoConverter::convert).orElse(null),
+				d.getTestCaseFinished().map(MessageToDtoConverter::convert).orElse(null),
+				d.getTestCaseStarted().map(MessageToDtoConverter::convert).orElse(null),
+				d.getTestRunFinished().map(MessageToDtoConverter::convert).orElse(null),
+				d.getTestRunStarted().map(MessageToDtoConverter::convert).orElse(null),
+				d.getTestStepFinished().map(MessageToDtoConverter::convert).orElse(null),
+				d.getTestStepStarted().map(MessageToDtoConverter::convert).orElse(null),
+				d.getUndefinedParameterType().map(MessageToDtoConverter::convert).orElse(null));
+	}
+
+	public static <T, K> List<K> convertList(List<T> list, Function<T, K> converter) {
+		Optional<List<K>> map = Optional.ofNullable(list)
+				.map(l -> l.stream().map(v -> converter.apply(v)).collect(toList()));
+		return map.orElse(null);
+	}
+
+	public static <T, K> List<K> convertList(Optional<List<T>> list, Function<T, K> converter) {
+		Optional<List<K>> map = list.map(l -> l.stream().map(v -> converter.apply(v)).collect(toList()));
+		return map.orElse(null);
+	}
+
+	private static UndefinedParameterType convert(io.cucumber.messages.types.UndefinedParameterType d) {
+		if (d == null)
+			return null;
+		return new UndefinedParameterType(d.getExpression(), d.getName());
+	}
+
+	public static TestStepStarted convert(io.cucumber.messages.types.TestStepStarted d) {
+		if (d == null)
+			return null;
+		return new TestStepStarted(d.getTestCaseStartedId(), d.getTestStepId(), convert(d.getTimestamp()));
+	}
+
+	public static Timestamp convert(io.cucumber.messages.types.Timestamp d) {
+		if (d == null)
+			return null;
+		return new Timestamp(d.getSeconds(), d.getNanos());
+	}
+
+	public static TestStepFinished convert(io.cucumber.messages.types.TestStepFinished d) {
+		if (d == null)
+			return null;
+		return new TestStepFinished(d.getTestCaseStartedId(), d.getTestStepId(), convert(d.getTestStepResult()),
+				convert(d.getTimestamp()));
+	}
+
+	public static TestStepResult convert(io.cucumber.messages.types.TestStepResult d) {
+		if (d == null)
+			return null;
+		return new TestStepResult(convert(d.getDuration()), d.getMessage().orElse(null), d.getStatus());
+	}
+
+	public static Duration convert(io.cucumber.messages.types.Duration d) {
+		if (d == null)
+			return null;
+		return new Duration(d.getSeconds(), d.getNanos());
+	}
+
+	public static TestRunStarted convert(io.cucumber.messages.types.TestRunStarted d) {
+		if (d == null)
+			return null;
+		return new TestRunStarted(convert(d.getTimestamp()));
+	}
+
+	public static TestRunFinished convert(io.cucumber.messages.types.TestRunFinished d) {
+		if (d == null)
+			return null;
+		return new TestRunFinished(d.getMessage().orElse(null), d.getSuccess(), convert(d.getTimestamp()));
+	}
+
+	public static TestCaseStarted convert(io.cucumber.messages.types.TestCaseStarted d) {
+		if (d == null)
+			return null;
+		return new TestCaseStarted(d.getAttempt(), d.getId(), d.getTestCaseId(), convert(d.getTimestamp()));
+	}
+
+	public static TestCaseFinished convert(io.cucumber.messages.types.TestCaseFinished d) {
+		if (d == null)
+			return null;
+		return new TestCaseFinished(d.getTestCaseStartedId(), convert(d.getTimestamp()), d.getWillBeRetried());
+	}
+
+	public static TestCase convert(io.cucumber.messages.types.TestCase d) {
+		if (d == null)
+			return null;
+		return new TestCase(d.getId(), d.getPickleId(), convertList(d.getTestSteps(), MessageToDtoConverter::convert));
+	}
+
+	public static TestStep convert(io.cucumber.messages.types.TestStep d) {
+		if (d == null)
+			return null;
+		return new TestStep(d.getHookId().orElse(null), d.getId(), d.getPickleStepId().orElse(null),
+				d.getStepDefinitionIds().orElse(null),
+				convertList(d.getStepMatchArgumentsLists(), MessageToDtoConverter::convert));
+	}
+
+	public static StepMatchArgumentsList convert(io.cucumber.messages.types.StepMatchArgumentsList d) {
+		if (d == null)
+			return null;
+		return new StepMatchArgumentsList(convertList(d.getStepMatchArguments(), MessageToDtoConverter::convert));
+	}
+
+	public static StepMatchArgument convert(io.cucumber.messages.types.StepMatchArgument d) {
+		if (d == null)
+			return null;
+		return new StepMatchArgument(convert(d.getGroup()), d.getParameterTypeName().orElse(null));
+	}
+
+	public static Group convert(io.cucumber.messages.types.Group d) {
+		if (d == null)
+			return null;
+		return new Group(convertList(d.getChildren(), MessageToDtoConverter::convert), d.getStart().orElse(null),
+				d.getValue().orElse(null));
+	}
+
+	public static StepDefinition convert(io.cucumber.messages.types.StepDefinition d) {
+		if (d == null)
+			return null;
+		return new StepDefinition(d.getId(), convert(d.getPattern()), convert(d.getSourceReference()));
+	}
+
+	public static StepDefinitionPattern convert(io.cucumber.messages.types.StepDefinitionPattern d) {
+		if (d == null)
+			return null;
+		return new StepDefinitionPattern(d.getSource(), d.getType());
+	}
+
+	public static Source convert(io.cucumber.messages.types.Source d) {
+		if (d == null)
+			return null;
+		return new Source(d.getUri(), d.getData(), d.getMediaType());
+	}
+
+	public static Pickle convert(io.cucumber.messages.types.Pickle d) {
+		if (d == null)
+			return null;
+		return new Pickle(d.getId(), d.getUri(), d.getName(), d.getLanguage(), convertList(d.getSteps(), MessageToDtoConverter::convert),
+				convertList(d.getTags(), MessageToDtoConverter::convert), d.getAstNodeIds());
+	}
+
+	public static PickleTag convert(io.cucumber.messages.types.PickleTag d) {
+		if (d == null)
+			return null;
+		return new PickleTag(d.getName(), d.getAstNodeId());
+	}
+
+	public static PickleStep convert(io.cucumber.messages.types.PickleStep d) {
+		if (d == null)
+			return null;
+		return new PickleStep(convert(d.getArgument().orElse(null)), d.getAstNodeIds(), d.getId(), d.getText());
+	}
+
+	public static PickleStepArgument convert(io.cucumber.messages.types.PickleStepArgument d) {
+		if (d == null)
+			return null;
+		return new PickleStepArgument(convert(d.getDocString().orElse(null)), convert(d.getDataTable().orElse(null)));
+	}
+
+	public static PickleTable convert(io.cucumber.messages.types.PickleTable d) {
+		if (d == null)
+			return null;
+		return new PickleTable(convertList(d.getRows(), MessageToDtoConverter::convert));
+	}
+
+	public static PickleTableRow convert(io.cucumber.messages.types.PickleTableRow d) {
+		if (d == null)
+			return null;
+		return new PickleTableRow(convertList(d.getCells(), MessageToDtoConverter::convert));
+	}
+
+	public static PickleTableCell convert(io.cucumber.messages.types.PickleTableCell d) {
+		if (d == null)
+			return null;
+		return new PickleTableCell(d.getValue());
+	}
+
+	public static PickleDocString convert(io.cucumber.messages.types.PickleDocString d) {
+		if (d == null)
+			return null;
+		return new PickleDocString(d.getMediaType().orElse(null), d.getContent());
+	}
+
+	public static ParseError convert(io.cucumber.messages.types.ParseError d) {
+		if (d == null)
+			return null;
+		return new ParseError(convert(d.getSource()), d.getMessage());
+	}
+
+	public static ParameterType convert(io.cucumber.messages.types.ParameterType d) {
+		if (d == null)
+			return null;
+		return new ParameterType(d.getName(), d.getRegularExpressions(), d.getPreferForRegularExpressionMatch(), d.getUseForSnippets(),
+				d.getId());
+	}
+
+	public static Meta convert(io.cucumber.messages.types.Meta d) {
+		if (d == null)
+			return null;
+		return new Meta(d.getProtocolVersion(), convert(d.getImplementation()), convert(d.getRuntime()), convert(d.getOs()), convert(d.getCpu()),
+				convert(d.getCi().orElse(null)));
+	}
+
+	public static Ci convert(io.cucumber.messages.types.Ci d) {
+		if (d == null)
+			return null;
+		return new Ci(d.getName(), d.getUrl().orElse(null), d.getBuildNumber().orElse(null), convert(d.getGit().orElse(null)));
+	}
+
+	public static Git convert(io.cucumber.messages.types.Git d) {
+		if (d == null)
+			return null;
+		return new Git(d.getRemote(), d.getRevision(), d.getBranch().orElse(null), d.getTag().orElse(null));
+	}
+
+	public static Product convert(io.cucumber.messages.types.Product d) {
+		if (d == null)
+			return null;
+		return new Product(d.getName(), d.getVersion().orElse(null));
+	}
+
+	public static Hook convert(io.cucumber.messages.types.Hook d) {
+		if (d == null)
+			return null;
+		return new Hook(d.getId(), d.getName().orElse(null), convert(d.getSourceReference()), d.getTagExpression().orElse(null));
+	}
+
+	public static SourceReference convert(io.cucumber.messages.types.SourceReference d) {
+		if (d == null)
+			return null;
+		return new SourceReference(d.getUri().orElse(null), convert(d.getJavaMethod().orElse(null)), convert(d.getJavaStackTraceElement().orElse(null)), convert(d.getLocation().orElse(null)));
+	}
+
+	public static JavaMethod convert(io.cucumber.messages.types.JavaMethod d) {
+		if (d == null)
+			return null;
+		return new JavaMethod(d.getClassName(), d.getMethodName(), d.getMethodParameterTypes());
+	}
+
+	public static JavaStackTraceElement convert(io.cucumber.messages.types.JavaStackTraceElement d) {
+		if (d == null)
+			return null;
+		return new JavaStackTraceElement(d.getClassName(), d.getFileName(), d.getMethodName());
+	}
+
+	public static Attachment convert(io.cucumber.messages.types.Attachment d) {
+		if (d == null)
+			return null;
+		return new Attachment(d.getBody(), d.getContentEncoding(), d.getFileName().orElse(null), d.getMediaType(), d.getSource().orElse(null),
+				d.getTestCaseStartedId().orElse(null), d.getTestStepId().orElse(null), d.getUrl().orElse(null));
+	}
+
+	public static Comment convert(io.cucumber.messages.types.Comment d) {
+		if (d == null)
+			return null;
+		return new Comment(convert(d.getLocation()), d.getText());
+	}
+
+	public static Feature convert(io.cucumber.messages.types.Feature d) {
+		if (d == null)
+			return null;
+		return new Feature(convert(d.getLocation()),
+				convertList(d.getTags(), MessageToDtoConverter::convert), d.getLanguage(), d.getKeyword(), d.getName(), d.getDescription(),
+				convertList(d.getChildren(), MessageToDtoConverter::convert));
+	}
+
+	public static Tag convert(io.cucumber.messages.types.Tag d) {
+		if (d == null)
+			return null;
+		return new Tag(convert(d.getLocation()), d.getName(), d.getId());
+	}
+
+	public static FeatureChild convert(io.cucumber.messages.types.FeatureChild d) {
+		if (d == null)
+			return null;
+		return new FeatureChild(convert(d.getRule().orElse(null)), convert(d.getBackground().orElse(null)),
+				convert(d.getScenario().orElse(null)));
+	}
+
+	public static Scenario convert(io.cucumber.messages.types.Scenario d) {
+		if (d == null)
+			return null;
+		return new Scenario(convert(d.getLocation()),
+				convertList(d.getTags(), MessageToDtoConverter::convert), d.getKeyword(), d.getName(), d.getDescription(),
+				convertList(d.getSteps(), MessageToDtoConverter::convert),
+				convertList(d.getExamples(), MessageToDtoConverter::convert), d.getId());
+	}
+
+	public static Examples convert(io.cucumber.messages.types.Examples d) {
+		if (d == null)
+			return null;
+		return new Examples(convert(d.getLocation()),
+				convertList(d.getTags(), MessageToDtoConverter::convert), d.getKeyword(), d.getName(), d.getDescription(),
+				convert(d.getTableHeader().orElse(null)), convertList(d.getTableBody(), MessageToDtoConverter::convert), d.getId());
+	}
+
+	public static Rule convert(io.cucumber.messages.types.Rule d) {
+		if (d == null)
+			return null;
+		return new Rule(convert(d.getLocation()),
+				convertList(d.getTags(), MessageToDtoConverter::convert), d.getKeyword(), d.getName(), d.getDescription(),
+				convertList(d.getChildren(), MessageToDtoConverter::convert), d.getId());
+	}
+
+	public static RuleChild convert(io.cucumber.messages.types.RuleChild d) {
+		if (d == null)
+			return null;
+		return new RuleChild(MessageToDtoConverter.convert(d.getBackground().orElse(null)),
+				convert(d.getScenario().orElse(null)));
+	}
+
+	public static Background convert(io.cucumber.messages.types.Background d) {
+		if (d == null)
+			return null;
+		return new Background(convert(d.getLocation()), d.getKeyword(), d.getName(), d.getDescription(),
+				convertList(d.getSteps(), MessageToDtoConverter::convert), d.getId());
+	}
+
+	public static Step convert(io.cucumber.messages.types.Step d) {
+		if (d == null)
+			return null;
+		return new Step(convert(d.getLocation()), d.getKeyword(), d.getText(), convert(d.getDocString().orElse(null)),
+				convert(d.getDataTable().orElse(null)), d.getId());
+	}
+
+	public static DocString convert(io.cucumber.messages.types.DocString d) {
+		if (d == null)
+			return null;
+		return new DocString(convert(d.getLocation()), d.getMediaType().orElse(null), d.getContent(), d.getDelimiter());
+	}
+
+	public static DataTable convert(io.cucumber.messages.types.DataTable d) {
+		if (d == null)
+			return null;
+		return new DataTable(convert(d.getLocation()),
+				convertList(d.getRows(), MessageToDtoConverter::convert));
+	}
+
+	public static TableRow convert(io.cucumber.messages.types.TableRow d) {
+		if (d == null)
+			return null;
+		return new TableRow(convert(d.getLocation()),
+				convertList(d.getCells(), MessageToDtoConverter::convert), d.getId());
+	}
+
+	public static TableCell convert(io.cucumber.messages.types.TableCell d) {
+		if (d == null)
+			return null;
+		return new TableCell(convert(d.getLocation()), d.getValue());
+	}
+
+	public static GherkinDocument convert(io.cucumber.messages.types.GherkinDocument d) {
+		if (d == null)
+			return null;
+		return new GherkinDocument(d.getUri().orElse(null), convert(d.getFeature().orElse(null)),
+				convertList(d.getComments(), MessageToDtoConverter::convert));
+	}
+
+	public static Location convert(io.cucumber.messages.types.Location d) {
+		if (d == null)
+			return null;
+		return new Location(d.getLine(), d.getColumn().orElse(null));
+	}
+}

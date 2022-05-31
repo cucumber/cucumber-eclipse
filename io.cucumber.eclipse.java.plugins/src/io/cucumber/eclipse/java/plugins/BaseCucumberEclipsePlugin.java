@@ -4,56 +4,40 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-//import com.google.gson.Gson;
-
 import io.cucumber.messages.types.Envelope;
 import io.cucumber.plugin.ConcurrentEventListener;
 import io.cucumber.plugin.event.EventPublisher;
 
-/**
- * Specialized plugin that allows to transfer the {@link Envelope}s emitted to a
- * remote process or consume them locally
- * 
- * @author christoph
- *
- */
-public class CucumberEclipsePlugin implements ConcurrentEventListener {
+public abstract class BaseCucumberEclipsePlugin implements ConcurrentEventListener {
 
-	private Consumer<Envelope> consumer;
+	protected Consumer<Envelope> consumer;
 	public static final int HANDLED_MESSAGE = 0x1;
 	public static final int GOOD_BY_MESSAGE = 0x0;
 
-	public CucumberEclipsePlugin(String port) throws IOException {
-		this(new SocketConsumer(port));
-	}
-
-	public CucumberEclipsePlugin(Consumer<Envelope> consumer) {
+	public BaseCucumberEclipsePlugin(Consumer<Envelope> consumer) {
 		this.consumer = consumer;
 	}
-
-	@Override
-	public void setEventPublisher(EventPublisher publisher) {
-		publisher.registerHandlerFor(Envelope.class, this::writeMessage);
+	public BaseCucumberEclipsePlugin(String port) throws IOException {
+		this.consumer = new SocketConsumer(port, this) ;
 	}
-
-	private void writeMessage(Envelope envelope) {
-		consumer.accept(envelope);
-	}
-
-	private static final class SocketConsumer implements Consumer<Envelope> {
+	
+	protected static final class SocketConsumer implements Consumer<Envelope> {
 
 		private final Socket socket;
 		private final DataOutputStream output;
 		private final ByteArrayOutputStream buffer = new ByteArrayOutputStream(1024 * 1024 * 10);
 		private AtomicInteger written = new AtomicInteger();
 		private InputStream input;
+		private BaseCucumberEclipsePlugin plugin;
 
-		public SocketConsumer(String port) throws NumberFormatException, UnknownHostException, IOException {
+		public SocketConsumer(String port,BaseCucumberEclipsePlugin plugin) throws IOException {
+			this.plugin = plugin;
 			try {
 				socket = new Socket((String) null, Integer.parseInt(port));
 				output = new DataOutputStream(socket.getOutputStream());
@@ -85,13 +69,14 @@ public class CucumberEclipsePlugin implements ConcurrentEventListener {
 				}
 				try {
 					buffer.reset();
-					Jackson.OBJECT_MAPPER.writeValue(buffer, env);
+					ObjectOutputStream oos = new ObjectOutputStream(buffer);
+					oos.writeObject(plugin.convert(env));
 					output.writeInt(buffer.size());
 					buffer.writeTo(output);
 					output.flush();
 					int read = input.read() & 0xFF;
 					written.incrementAndGet();
-					if (env.getTestRunFinished().isPresent() || read == GOOD_BY_MESSAGE) {
+					if (env.getTestRunFinished().isPresent()|| read == GOOD_BY_MESSAGE) {
 						finish();
 					}
 				} catch (IOException e) {
@@ -109,4 +94,19 @@ public class CucumberEclipsePlugin implements ConcurrentEventListener {
 		}
 
 	}
+
+	@Override
+	public void setEventPublisher(EventPublisher publisher) {
+		publisher.registerHandlerFor(Envelope.class, this::writeMessage);
+	}
+
+	private void writeMessage(Envelope envelope) {
+		consumer.accept(envelope);
+	}
+
+	protected abstract io.cucumber.eclipse.java.plugins.dto.Envelope convert(
+			io.cucumber.messages.types.Envelope envelope);
+
+	
+
 }
