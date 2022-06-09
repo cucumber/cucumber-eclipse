@@ -225,7 +225,7 @@ public class MessageToDtoConverter {
 	public static PickleStep convert(io.cucumber.messages.types.PickleStep d) {
 		if (d == null)
 			return null;
-		return new PickleStep(convert(d.getArgument().orElse(null)), d.getAstNodeIds(), d.getId(), d.getText(),/*d.getType().map(PickleStepType::value).orElse(null)*/null);
+		return new PickleStep(convert(d.getArgument().orElse(null)), d.getAstNodeIds(), d.getId(),/*d.getType().map(PickleStepType::value).orElse(null)*/null, d.getText());
 	}
 
 	public static PickleStepArgument convert(io.cucumber.messages.types.PickleStepArgument d) {

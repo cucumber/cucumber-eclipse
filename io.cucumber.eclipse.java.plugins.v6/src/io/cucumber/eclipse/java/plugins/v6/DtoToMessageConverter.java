@@ -471,6 +471,9 @@ public class DtoToMessageConverter {
 
 		var builder = Feature.newBuilder().setLanguage(d.language).setKeyword(d.keyword).setName(d.name)
 				.setDescription(d.description);
+		if (d.children != null)
+			builder.addAllChildren(convertList(d.children, DtoToMessageConverter::convert));
+
 		if (d.location != null)
 			builder.setLocation(convert(d.location));
 		return builder.build();

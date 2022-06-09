@@ -241,7 +241,7 @@ public class MessageToDtoConverter {
 		if (d == null)
 			return null;
 		return new PickleStep(d.hasArgument() ? convert(d.getArgument()) : null, convertList(d.getAstNodeIdsList()),
-				d.getId(), d.getText(), null);
+				d.getId(),null, d.getText());
 	}
 
 	public static PickleStepArgument convert(io.cucumber.messages.Messages.PickleStepArgument d) {
