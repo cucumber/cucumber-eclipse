@@ -38,7 +38,7 @@ import io.cucumber.eclipse.editor.console.CucumberConsole;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.launching.ILauncher;
 import io.cucumber.eclipse.java.JDTUtil;
-import io.cucumber.eclipse.java.plugins.CucumberEclipsePlugin;
+import io.cucumber.eclipse.java.plugins.v6.CucumberV6EclipsePlugin;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;
 import io.cucumber.messages.Messages.Envelope;
 import io.cucumber.messages.Messages.GherkinDocument;
@@ -138,7 +138,7 @@ public class CucumberRuntimeLauncher implements ILauncher {
 			Collection<FeatureWithLines> featureFilter, Mode mode, CucumberConsole console, IProgressMonitor monitor,
 			Collection<Expression> tagFilters) throws CoreException {
 		try (CucumberRuntime cucumberRuntime = CucumberRuntime.create(javaProject)) {
-			CucumberEclipsePlugin plugin = new CucumberEclipsePlugin(new Consumer<Envelope>() {
+			CucumberV6EclipsePlugin plugin = new CucumberV6EclipsePlugin(new Consumer<Envelope>() {
 
 				private Map<String, TestStepPerfInfo> map = new HashMap<>();
 				private GherkinDocument gherkinDocument;

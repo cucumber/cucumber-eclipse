@@ -123,6 +123,8 @@ public class CucumberTestRunnerClient implements ITestRunnerClient, EnvelopeList
 					continue;
 				}
 				PickleStep pickleStep = pickleSteps.get(pickleStepId);
+				if(pickleStep == null)
+					continue;
 				session.newTestCase(step.getId(), pickleStep.getId(), testSuite, pickleStep.getText(), step.toString());
 			}
 			return;

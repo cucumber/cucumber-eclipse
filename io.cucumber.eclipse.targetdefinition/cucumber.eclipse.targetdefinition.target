@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde version="3.8"?>
-<target name="targetdefinition" sequenceNumber="10">
+<target name="targetdefinition" sequenceNumber="11">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.hamcrest.library.source" version="1.3.0.v20180524-2246"/>
@@ -22,69 +22,140 @@
 	<repository location="http://download.eclipse.org/releases/2021-09"/>
 	<unit id="org.eclipse.sdk.ide" version="0.0.0"/>
 	<unit id="org.eclipse.equinox.sdk.feature.group" version="0.0.0"/>
+	<unit id="org.eclipse.m2e.feature.feature.group" version="0.0.0"/>
 </location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<repository location="https://www.mihai-nita.net/eclipse"/>
 		<unit id="net.mihai-nita.ansicon.feature.group" version="1.4.3.202012111715"/>
 	</location>
-	<location path="${eclipse_home}" type="Profile"/>
-	<location includeDependencyScope="compile" includeSource="true" missingManifest="generate" type="Maven">
-		<groupId>io.cucumber</groupId>
-		<artifactId>gherkin</artifactId>
-		<version>16.0.0</version>
-		<type>jar</type>
-		<instructions><![CDATA[Bundle-Name:           ${mvnGroupId}:${mvnArtifactId}:${mvnVersion}
-version:               ${version_cleanup;${mvnVersion}}
-Bundle-SymbolicName:   ${mvnGroupId}.${mvnArtifactId}
-Bundle-Version:        ${version}
-Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
-Export-Package:        *;version="${version}";-noimport:=true]]></instructions>
-	</location>
-	<location includeDependencyScope="compile" includeSource="true" missingManifest="generate" type="Maven">
-		<groupId>io.cucumber</groupId>
-		<artifactId>cucumber-java</artifactId>
-		<version>6.9.1</version>
-		<type>jar</type>
-		<instructions><![CDATA[Bundle-Name:           ${mvnGroupId}:${mvnArtifactId}:${mvnVersion}
-version:               ${version_cleanup;${mvnVersion}}
-Bundle-SymbolicName:   ${mvnGroupId}.${mvnArtifactId}
-Bundle-Version:        ${version}
-Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
-Export-Package:        *;version="${version}";-noimport:=true]]></instructions>
-	</location>
-	<location includeDependencyScope="compile" includeSource="true" missingManifest="generate" type="Maven">
-		<groupId>io.cucumber</groupId>
-		<artifactId>cucumber-core</artifactId>
-		<version>6.9.1</version>
-		<type>jar</type>
-		<instructions><![CDATA[Bundle-Name:           ${mvnGroupId}:${mvnArtifactId}:${mvnVersion}
-version:               ${version_cleanup;${mvnVersion}}
-Bundle-SymbolicName:   ${mvnGroupId}.${mvnArtifactId}
-Bundle-Version:        ${version}
-Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
-Export-Package:        *;version="${version}";-noimport:=true]]></instructions>
-	</location>
-	<location includeDependencyScope="compile" includeSource="true" missingManifest="generate" type="Maven">
-		<groupId>io.cucumber</groupId>
-		<artifactId>cucumber-expressions</artifactId>
-		<version>11.0.0</version>
-		<type>jar</type>
-		<instructions><![CDATA[Bundle-Name:           ${mvnGroupId}:${mvnArtifactId}:${mvnVersion}
-version:               ${version_cleanup;${mvnVersion}}
-Bundle-SymbolicName:   ${mvnGroupId}.${mvnArtifactId}
-Bundle-Version:        ${version}
-Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
-Export-Package:        *;version="${version}";-noimport:=true]]></instructions>
-	</location>
-	<location includeDependencyScope="compile" includeSource="true" missingManifest="ignore" type="Maven">
-		<groupId>org.apache.commons</groupId>
-		<artifactId>commons-text</artifactId>
-		<version>1.9</version>
-		<type>jar</type>
-	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<repository location="https://download.eclipse.org/eclipse/updates/4.18/R-4.18-202012021800/"/>
 		<unit id="org.eclipse.unittest.ui" version="1.0.0.v20201121-0633"/>
 	</location>
+	<location includeDependencyDepth="infinite" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
+		<dependencies>
+			<dependency>
+				<groupId>io.cucumber</groupId>
+				<artifactId>gherkin</artifactId>
+				<version>16.0.0</version>
+				<type>jar</type>
+			</dependency>
+		</dependencies>
+		<instructions><![CDATA[
+Bundle-Name:           ${mvnGroupId}:${mvnArtifactId}:${mvnVersion}
+version:               ${version_cleanup;${mvnVersion}}
+Bundle-SymbolicName:   ${mvnGroupId}.${mvnArtifactId}
+Bundle-Version:        ${version}
+Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
+Export-Package:        *;version="${version}";-noimport:=true
+]]></instructions>
+	</location>
+	<location includeDependencyDepth="infinite" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
+		<dependencies>
+			<dependency>
+				<groupId>io.cucumber</groupId>
+				<artifactId>cucumber-java</artifactId>
+				<version>6.9.1</version>
+				<type>jar</type>
+			</dependency>
+		</dependencies>
+		<instructions><![CDATA[
+Bundle-Name:           ${mvnGroupId}:${mvnArtifactId}:${mvnVersion}
+version:               ${version_cleanup;${mvnVersion}}
+Bundle-SymbolicName:   ${mvnGroupId}.${mvnArtifactId}
+Bundle-Version:        ${version}
+Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
+Export-Package:        *;version="${version}";-noimport:=true
+]]></instructions>
+	</location>
+	<location includeDependencyDepth="infinite" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
+		<dependencies>
+			<dependency>
+				<groupId>io.cucumber</groupId>
+				<artifactId>cucumber-core</artifactId>
+				<version>6.9.1</version>
+				<type>jar</type>
+			</dependency>
+		</dependencies>
+		<instructions><![CDATA[
+Bundle-Name:           ${mvnGroupId}:${mvnArtifactId}:${mvnVersion}
+version:               ${version_cleanup;${mvnVersion}}
+Bundle-SymbolicName:   ${mvnGroupId}.${mvnArtifactId}
+Bundle-Version:        ${version}
+Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
+Export-Package:        *;version="${version}";-noimport:=true
+]]></instructions>
+	</location>
+	<location includeDependencyDepth="infinite" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
+		<dependencies>
+			<dependency>
+				<groupId>io.cucumber</groupId>
+				<artifactId>cucumber-expressions</artifactId>
+				<version>11.0.0</version>
+				<type>jar</type>
+			</dependency>
+		</dependencies>
+		<instructions><![CDATA[
+Bundle-Name:           ${mvnGroupId}:${mvnArtifactId}:${mvnVersion}
+version:               ${version_cleanup;${mvnVersion}}
+Bundle-SymbolicName:   ${mvnGroupId}.${mvnArtifactId}
+Bundle-Version:        ${version}
+Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
+Export-Package:        *;version="${version}";-noimport:=true
+]]></instructions>
+	</location>
+	<location includeDependencyDepth="infinite" includeDependencyScopes="compile" includeSource="true" missingManifest="ignore" type="Maven">
+		<dependencies>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-text</artifactId>
+				<version>1.9</version>
+				<type>jar</type>
+			</dependency>
+		</dependencies>
+	</location>
+	
+	
+	<location includeDependencyDepth="infinite" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
+		<dependencies>
+			<dependency>
+				<groupId>io.cucumber</groupId>
+				<artifactId>cucumber-plugin</artifactId>
+				<version>7.3.4</version>
+				<type>jar</type>
+			</dependency>
+		</dependencies>
+		<instructions><![CDATA[
+Bundle-Name:           ${mvnGroupId}:${mvnArtifactId}:${mvnVersion}
+version:               ${version_cleanup;${mvnVersion}}
+Bundle-SymbolicName:   ${mvnGroupId}.${mvnArtifactId}
+Bundle-Version:        ${version}
+Import-Package:        !io.cucumber.cienvironment*,!sun.*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
+Export-Package:        *;version="${version}";-noimport:=true
+]]></instructions>
+	</location>
+
+
+
+	<location includeDependencyDepth="infinite" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
+		<dependencies>
+			<dependency>
+				<groupId>io.cucumber</groupId>
+				<artifactId>messages</artifactId>
+				<version>18.0.0</version>
+				<type>jar</type>
+			</dependency>
+		</dependencies>
+		<instructions><![CDATA[
+Bundle-Name:           ${mvnGroupId}:${mvnArtifactId}:${mvnVersion}
+version:               ${version_cleanup;${mvnVersion}}
+Bundle-SymbolicName:   ${mvnGroupId}.${mvnArtifactId}
+Bundle-Version:        ${version}
+Import-Package:        !io.cucumber.cienvironment*,!sun.*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
+Export-Package:        *;version="${version}";-noimport:=true
+]]></instructions>
+	</location>
+	
+	
 </locations>
 </target>

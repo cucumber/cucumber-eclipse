@@ -5,6 +5,5 @@ Bundle-SymbolicName: io.cucumber.eclipse.java.plugins
 Bundle-Version: 2.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Automatic-Module-Name: io.cucumber.eclipse.java.plugins
-Require-Bundle: io.cucumber.cucumber-plugin,
- io.cucumber.messages
-Export-Package: io.cucumber.eclipse.java.plugins
+Export-Package: io.cucumber.eclipse.java.plugins,
+ io.cucumber.eclipse.java.plugins.dto

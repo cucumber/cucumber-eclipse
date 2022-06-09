@@ -44,7 +44,9 @@ import io.cucumber.eclipse.editor.document.GherkinMessageHandler;
 import io.cucumber.eclipse.editor.document.TestStepEvent;
 import io.cucumber.eclipse.editor.launching.ILauncher.Mode;
 import io.cucumber.eclipse.java.JDTUtil;
-import io.cucumber.eclipse.java.plugins.CucumberEclipsePlugin;
+import io.cucumber.eclipse.java.plugins.BaseCucumberEclipsePlugin;
+import io.cucumber.eclipse.java.plugins.MessageEndpoint;
+import io.cucumber.eclipse.java.plugins.v7.CucumberV7EclipsePlugin;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;
 import io.cucumber.tagexpressions.Expression;
 import mnita.ansiconsole.preferences.AnsiConsolePreferenceUtils;
@@ -268,22 +270,8 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 	private VMRunnerConfiguration createRunConfig(String[][] classpathAndModules) {
 		List<String> classPath = new ArrayList<>(Arrays.asList(classpathAndModules[0]));
 		try {
-			File file = FileLocator.getBundleFile(FrameworkUtil.getBundle(CucumberEclipsePlugin.class));
-			if (file != null) {
-				if (file.isDirectory() && !new File(file, "io").exists()) {
-					// try to get the path for the IDE...
-					File binDirectory = new File(file, "bin");
-					if (binDirectory.exists()) {
-						file = binDirectory;
-					} else {
-						File targetDirectory = new File(file, "target/classes");
-						if (targetDirectory.exists()) {
-							file = targetDirectory;
-						}
-					}
-				}
-				classPath.add(file.getAbsolutePath());
-			}
+			addBundleContaining(classPath, BaseCucumberEclipsePlugin.class);
+			addBundleContaining(classPath, MessageEndpoint.PLUGIN_CLASS);
 		} catch (IOException e1) {
 		}
 		String[] finalClassPath = classPath.toArray(String[]::new);
@@ -293,6 +281,26 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		VMRunnerConfiguration runConfig = new VMRunnerConfiguration(
 				CucumberFeatureLaunchConstants.CUCUMBER_API_CLI_MAIN, finalClassPath);
 		return runConfig;
+	}
+
+	private void addBundleContaining(List<String> classPath, Class<?> classFromBundle)
+			throws IOException {
+		File file = FileLocator.getBundleFile(FrameworkUtil.getBundle(classFromBundle));
+		if (file != null) {
+			if (file.isDirectory() && !new File(file, "io").exists()) {
+				// try to get the path for the IDE...
+				File binDirectory = new File(file, "bin");
+				if (binDirectory.exists()) {
+					file = binDirectory;
+				} else {
+					File targetDirectory = new File(file, "target/classes");
+					if (targetDirectory.exists()) {
+						file = targetDirectory;
+					}
+				}
+			}
+			classPath.add(file.getAbsolutePath());
+		}
 	}
 
 	/**
