@@ -4,10 +4,10 @@ import java.io.Serializable;
 import java.util.List;
 
 public class SourceReference implements Serializable{
-    public String uri;
-    public JavaMethod javaMethod;
-    public JavaStackTraceElement javaStackTraceElement;
-    public Location location;
+    public final String uri;
+    public final JavaMethod javaMethod;
+    public final JavaStackTraceElement javaStackTraceElement;
+    public final Location location;
     
     public static class JavaMethod implements Serializable{
         public String className;

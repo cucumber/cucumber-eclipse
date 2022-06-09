@@ -4,16 +4,16 @@ import java.io.Serializable;
 
 
 public class Attachment implements Serializable{
-	public String body;
-	public String contentEncoding;
-	public String fileName;
-	public String mediaType;
-	public Source source;
-	public String testCaseStartedId;
-	public String testStepId;
-	public String url;
+	public final String body;
+	public final String contentEncoding;
+	public final String fileName;
+	public final String mediaType;
+	public final SourceReference source;
+	public final String testCaseStartedId;
+	public final String testStepId;
+	public final String url;
 	public Attachment(String body, String contentEncoding, String fileName, String mediaType,
-			Source source, String testCaseStartedId, String testStepId, String url) {
+			SourceReference source, String testCaseStartedId, String testStepId, String url) {
 		this.body = body;
 		this.contentEncoding = contentEncoding;
 		this.fileName = fileName;

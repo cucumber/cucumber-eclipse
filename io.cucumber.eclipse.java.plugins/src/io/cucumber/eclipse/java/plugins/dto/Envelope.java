@@ -3,23 +3,23 @@ package io.cucumber.eclipse.java.plugins.dto;
 import java.io.Serializable;
 
 public final class Envelope implements Serializable{
-	public Attachment attachment;
-	public GherkinDocument gherkinDocument;
-	public Hook hook;
-	public Meta meta;
-	public ParameterType parameterType;
-	public ParseError parseError;
-	public Pickle pickle;
-	public Source source;
-	public StepDefinition stepDefinition;
-	public TestCase testCase;
-	public TestCaseFinished testCaseFinished;
-	public TestCaseStarted testCaseStarted;
-	public TestRunFinished testRunFinished;
-	public TestRunStarted testRunStarted;
-	public TestStepFinished testStepFinished;
-	public TestStepStarted testStepStarted;
-	public UndefinedParameterType undefinedParameterType;
+	public final Attachment attachment;
+	public final GherkinDocument gherkinDocument;
+	public final Hook hook;
+	public final Meta meta;
+	public final ParameterType parameterType;
+	public final ParseError parseError;
+	public final Pickle pickle;
+	public final Source source;
+	public final StepDefinition stepDefinition;
+	public final TestCase testCase;
+	public final TestCaseFinished testCaseFinished;
+	public final TestCaseStarted testCaseStarted;
+	public final TestRunFinished testRunFinished;
+	public final TestRunStarted testRunStarted;
+	public final TestStepFinished testStepFinished;
+	public final TestStepStarted testStepStarted;
+	public final UndefinedParameterType undefinedParameterType;
 	
 	public Envelope(Attachment attachment, GherkinDocument gherkinDocument, Hook hook, Meta meta,
 			ParameterType parameterType, ParseError parseError, Pickle pickle, Source source,

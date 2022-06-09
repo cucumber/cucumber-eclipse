@@ -66,8 +66,7 @@ public class MessageToDtoConverter {
 	public static Envelope convert(io.cucumber.messages.types.Envelope d) {
 		if (d == null)
 			return null;
-		return new Envelope(
-				d.getAttachment().map(MessageToDtoConverter::convert).orElse(null),
+		return new Envelope(d.getAttachment().map(MessageToDtoConverter::convert).orElse(null),
 				d.getGherkinDocument().map(MessageToDtoConverter::convert).orElse(null),
 				d.getHook().map(MessageToDtoConverter::convert).orElse(null),
 				d.getMeta().map(MessageToDtoConverter::convert).orElse(null),
@@ -212,7 +211,8 @@ public class MessageToDtoConverter {
 	public static Pickle convert(io.cucumber.messages.types.Pickle d) {
 		if (d == null)
 			return null;
-		return new Pickle(d.getId(), d.getUri(), d.getName(), d.getLanguage(), convertList(d.getSteps(), MessageToDtoConverter::convert),
+		return new Pickle(d.getId(), d.getUri(), d.getName(), d.getLanguage(),
+				convertList(d.getSteps(), MessageToDtoConverter::convert),
 				convertList(d.getTags(), MessageToDtoConverter::convert), d.getAstNodeIds());
 	}
 
@@ -225,7 +225,8 @@ public class MessageToDtoConverter {
 	public static PickleStep convert(io.cucumber.messages.types.PickleStep d) {
 		if (d == null)
 			return null;
-		return new PickleStep(convert(d.getArgument().orElse(null)), d.getAstNodeIds(), d.getId(),/*d.getType().map(PickleStepType::value).orElse(null)*/null, d.getText());
+		return new PickleStep(convert(d.getArgument().orElse(null)), d.getAstNodeIds(), d.getId(),
+				/* d.getType().map(PickleStepType::value).orElse(null) */null, d.getText());
 	}
 
 	public static PickleStepArgument convert(io.cucumber.messages.types.PickleStepArgument d) {
@@ -267,21 +268,22 @@ public class MessageToDtoConverter {
 	public static ParameterType convert(io.cucumber.messages.types.ParameterType d) {
 		if (d == null)
 			return null;
-		return new ParameterType(d.getName(), d.getRegularExpressions(), d.getPreferForRegularExpressionMatch(), d.getUseForSnippets(),
-				d.getId());
+		return new ParameterType(d.getName(), d.getRegularExpressions(), d.getPreferForRegularExpressionMatch(),
+				d.getUseForSnippets(), d.getId());
 	}
 
 	public static Meta convert(io.cucumber.messages.types.Meta d) {
 		if (d == null)
 			return null;
-		return new Meta(d.getProtocolVersion(), convert(d.getImplementation()), convert(d.getRuntime()), convert(d.getOs()), convert(d.getCpu()),
-				convert(d.getCi().orElse(null)));
+		return new Meta(d.getProtocolVersion(), convert(d.getImplementation()), convert(d.getRuntime()),
+				convert(d.getOs()), convert(d.getCpu()), convert(d.getCi().orElse(null)));
 	}
 
 	public static Ci convert(io.cucumber.messages.types.Ci d) {
 		if (d == null)
 			return null;
-		return new Ci(d.getName(), d.getUrl().orElse(null), d.getBuildNumber().orElse(null), convert(d.getGit().orElse(null)));
+		return new Ci(d.getName(), d.getUrl().orElse(null), d.getBuildNumber().orElse(null),
+				convert(d.getGit().orElse(null)));
 	}
 
 	public static Git convert(io.cucumber.messages.types.Git d) {
@@ -299,13 +301,15 @@ public class MessageToDtoConverter {
 	public static Hook convert(io.cucumber.messages.types.Hook d) {
 		if (d == null)
 			return null;
-		return new Hook(d.getId(), d.getName().orElse(null), convert(d.getSourceReference()), d.getTagExpression().orElse(null));
+		return new Hook(d.getId(), d.getName().orElse(null), convert(d.getSourceReference()),
+				d.getTagExpression().orElse(null));
 	}
 
 	public static SourceReference convert(io.cucumber.messages.types.SourceReference d) {
 		if (d == null)
 			return null;
-		return new SourceReference(d.getUri().orElse(null), convert(d.getJavaMethod().orElse(null)), convert(d.getJavaStackTraceElement().orElse(null)), convert(d.getLocation().orElse(null)));
+		return new SourceReference(d.getUri().orElse(null), convert(d.getJavaMethod().orElse(null)),
+				convert(d.getJavaStackTraceElement().orElse(null)), convert(d.getLocation().orElse(null)));
 	}
 
 	public static JavaMethod convert(io.cucumber.messages.types.JavaMethod d) {
@@ -323,8 +327,15 @@ public class MessageToDtoConverter {
 	public static Attachment convert(io.cucumber.messages.types.Attachment d) {
 		if (d == null)
 			return null;
-		return new Attachment(d.getBody(), d.getContentEncoding().value(), d.getFileName().orElse(null), d.getMediaType(), convert(d.getSource().orElse(null)),
-				d.getTestCaseStartedId().orElse(null), d.getTestStepId().orElse(null), d.getUrl().orElse(null));
+		return new Attachment(d.getBody(), d.getContentEncoding().value(), d.getFileName().orElse(null),
+				d.getMediaType(), convert1(d.getSource().orElse(null)), d.getTestCaseStartedId().orElse(null),
+				d.getTestStepId().orElse(null), d.getUrl().orElse(null));
+	}
+
+	private static SourceReference convert1(io.cucumber.messages.types.Source d) {
+		if (d == null)
+			return null;
+		return new SourceReference(d.getUri(), null, null, null);
 	}
 
 	public static Comment convert(io.cucumber.messages.types.Comment d) {
@@ -336,8 +347,8 @@ public class MessageToDtoConverter {
 	public static Feature convert(io.cucumber.messages.types.Feature d) {
 		if (d == null)
 			return null;
-		return new Feature(convert(d.getLocation()),
-				convertList(d.getTags(), MessageToDtoConverter::convert), d.getLanguage(), d.getKeyword(), d.getName(), d.getDescription(),
+		return new Feature(convert(d.getLocation()), convertList(d.getTags(), MessageToDtoConverter::convert),
+				d.getLanguage(), d.getKeyword(), d.getName(), d.getDescription(),
 				convertList(d.getChildren(), MessageToDtoConverter::convert));
 	}
 
@@ -357,8 +368,8 @@ public class MessageToDtoConverter {
 	public static Scenario convert(io.cucumber.messages.types.Scenario d) {
 		if (d == null)
 			return null;
-		return new Scenario(convert(d.getLocation()),
-				convertList(d.getTags(), MessageToDtoConverter::convert), d.getKeyword(), d.getName(), d.getDescription(),
+		return new Scenario(convert(d.getLocation()), convertList(d.getTags(), MessageToDtoConverter::convert),
+				d.getKeyword(), d.getName(), d.getDescription(),
 				convertList(d.getSteps(), MessageToDtoConverter::convert),
 				convertList(d.getExamples(), MessageToDtoConverter::convert), d.getId());
 	}
@@ -366,16 +377,16 @@ public class MessageToDtoConverter {
 	public static Examples convert(io.cucumber.messages.types.Examples d) {
 		if (d == null)
 			return null;
-		return new Examples(convert(d.getLocation()),
-				convertList(d.getTags(), MessageToDtoConverter::convert), d.getKeyword(), d.getName(), d.getDescription(),
-				convert(d.getTableHeader().orElse(null)), convertList(d.getTableBody(), MessageToDtoConverter::convert), d.getId());
+		return new Examples(convert(d.getLocation()), convertList(d.getTags(), MessageToDtoConverter::convert),
+				d.getKeyword(), d.getName(), d.getDescription(), convert(d.getTableHeader().orElse(null)),
+				convertList(d.getTableBody(), MessageToDtoConverter::convert), d.getId());
 	}
 
 	public static Rule convert(io.cucumber.messages.types.Rule d) {
 		if (d == null)
 			return null;
-		return new Rule(convert(d.getLocation()),
-				convertList(d.getTags(), MessageToDtoConverter::convert), d.getKeyword(), d.getName(), d.getDescription(),
+		return new Rule(convert(d.getLocation()), convertList(d.getTags(), MessageToDtoConverter::convert),
+				d.getKeyword(), d.getName(), d.getDescription(),
 				convertList(d.getChildren(), MessageToDtoConverter::convert), d.getId());
 	}
 
@@ -396,8 +407,9 @@ public class MessageToDtoConverter {
 	public static Step convert(io.cucumber.messages.types.Step d) {
 		if (d == null)
 			return null;
-		return new Step(convert(d.getLocation()), d.getKeyword(),/*d.getKeywordType().map(t->t.value()).orElse(null)*/null, d.getText(), convert(d.getDocString().orElse(null)),
-				convert(d.getDataTable().orElse(null)), d.getId());
+		return new Step(convert(d.getLocation()), d.getKeyword(),
+				/* d.getKeywordType().map(t->t.value()).orElse(null) */null, d.getText(),
+				convert(d.getDocString().orElse(null)), convert(d.getDataTable().orElse(null)), d.getId());
 	}
 
 	public static DocString convert(io.cucumber.messages.types.DocString d) {
@@ -409,15 +421,14 @@ public class MessageToDtoConverter {
 	public static DataTable convert(io.cucumber.messages.types.DataTable d) {
 		if (d == null)
 			return null;
-		return new DataTable(convert(d.getLocation()),
-				convertList(d.getRows(), MessageToDtoConverter::convert));
+		return new DataTable(convert(d.getLocation()), convertList(d.getRows(), MessageToDtoConverter::convert));
 	}
 
 	public static TableRow convert(io.cucumber.messages.types.TableRow d) {
 		if (d == null)
 			return null;
-		return new TableRow(convert(d.getLocation()),
-				convertList(d.getCells(), MessageToDtoConverter::convert), d.getId());
+		return new TableRow(convert(d.getLocation()), convertList(d.getCells(), MessageToDtoConverter::convert),
+				d.getId());
 	}
 
 	public static TableCell convert(io.cucumber.messages.types.TableCell d) {

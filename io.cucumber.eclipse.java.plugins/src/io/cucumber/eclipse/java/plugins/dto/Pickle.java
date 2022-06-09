@@ -5,13 +5,13 @@ import java.util.List;
 
 public class Pickle implements Serializable{
 
-	public String id;
-    public String uri;
-    public String name;
-    public String language;
-    public java.util.List<PickleStep> steps;
-    public java.util.List<PickleTag> tags;
-    public java.util.List<String> astNodeIds;
+	public final String id;
+    public final String uri;
+    public final String name;
+    public final String language;
+    public final java.util.List<PickleStep> steps;
+    public final java.util.List<PickleTag> tags;
+    public final java.util.List<String> astNodeIds;
 
     
     public static class PickleStep implements Serializable{
@@ -30,8 +30,8 @@ public class Pickle implements Serializable{
     }
     
     public static class PickleStepArgument implements Serializable {
-        public PickleDocString docString;
-        public PickleTable dataTable;
+        public final PickleDocString docString;
+        public final PickleTable dataTable;
 		public PickleStepArgument(PickleDocString docString, PickleTable dataTable) {
 			this.docString = docString;
 			this.dataTable = dataTable;
@@ -39,8 +39,8 @@ public class Pickle implements Serializable{
     }
     
     public static class PickleDocString implements Serializable{
-        public String mediaType;
-        public String content;
+        public final String mediaType;
+        public final String content;
 		public PickleDocString(String mediaType, String content) {
 			this.mediaType = mediaType;
 			this.content = content;
@@ -48,7 +48,7 @@ public class Pickle implements Serializable{
     }
     
     public static class PickleTable implements Serializable{
-        public java.util.List<PickleTableRow> rows;
+        public final java.util.List<PickleTableRow> rows;
 
 		public PickleTable(List<PickleTableRow> rows) {
 			this.rows = rows;
@@ -56,7 +56,7 @@ public class Pickle implements Serializable{
     }
     
     public static class PickleTableRow implements Serializable {
-        public java.util.List<PickleTableCell> cells;
+        public final java.util.List<PickleTableCell> cells;
 
 		public PickleTableRow(List<PickleTableCell> cells) {
 			this.cells = cells;
@@ -64,7 +64,7 @@ public class Pickle implements Serializable{
     }
     
     public static class PickleTableCell implements Serializable{
-        public String value;
+        public final String value;
 
 		public PickleTableCell(String value) {
 			this.value = value;
@@ -72,8 +72,8 @@ public class Pickle implements Serializable{
     }
     
     public static class PickleTag implements Serializable{
-        public String name;
-        public String astNodeId;
+        public final String name;
+        public final String astNodeId;
 		public PickleTag(String name, String astNodeId) {
 			this.name = name;
 			this.astNodeId = astNodeId;

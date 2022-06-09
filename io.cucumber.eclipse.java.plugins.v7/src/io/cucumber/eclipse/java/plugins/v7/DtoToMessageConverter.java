@@ -41,6 +41,7 @@ import io.cucumber.messages.types.Rule;
 import io.cucumber.messages.types.RuleChild;
 import io.cucumber.messages.types.Scenario;
 import io.cucumber.messages.types.Source;
+import io.cucumber.messages.types.SourceMediaType;
 import io.cucumber.messages.types.SourceReference;
 import io.cucumber.messages.types.Step;
 import io.cucumber.messages.types.StepDefinition;
@@ -310,8 +311,13 @@ public class DtoToMessageConverter {
 			return null;
 		return new Attachment(d.body, 
 				AttachmentContentEncoding.fromValue(d.contentEncoding), 
-				d.fileName, d.mediaType, convert(d.source),
+				d.fileName, d.mediaType, convert1(d.source),
 				d.testCaseStartedId, d.testStepId, d.url);
+	}
+
+	private static Source convert1(io.cucumber.eclipse.java.plugins.dto.SourceReference d) {
+		// TODO Auto-generated method stub
+		return new Source(d.uri, d.javaMethod.methodName, null);
 	}
 
 	public static Comment convert(io.cucumber.eclipse.java.plugins.dto.GherkinDocument.Comment d) {

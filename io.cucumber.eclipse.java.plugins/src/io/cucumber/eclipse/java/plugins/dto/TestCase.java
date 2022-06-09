@@ -5,9 +5,9 @@ import java.util.List;
 
 public class TestCase  implements Serializable{
 
-    public String id;
-    public String pickleId;
-    public java.util.List<TestStep> testSteps;
+    public final String id;
+    public final String pickleId;
+    public final java.util.List<TestStep> testSteps;
     
     public static class TestStep  implements Serializable {
         public String hookId;

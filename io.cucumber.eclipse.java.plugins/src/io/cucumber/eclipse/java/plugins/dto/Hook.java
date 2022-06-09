@@ -3,10 +3,10 @@ package io.cucumber.eclipse.java.plugins.dto;
 import java.io.Serializable;
 
 public class Hook implements Serializable{
-	public String id;
-    public String name;
-    public SourceReference sourceReference;
-    public String tagExpression;
+	public final String id;
+    public final String name;
+    public final SourceReference sourceReference;
+    public final String tagExpression;
 	public Hook(String id, String name, SourceReference sourceReference, String tagExpression) {
 		this.id = id;
 		this.name = name;

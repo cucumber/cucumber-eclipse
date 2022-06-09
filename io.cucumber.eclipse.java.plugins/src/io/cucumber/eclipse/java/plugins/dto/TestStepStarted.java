@@ -4,9 +4,9 @@ import java.io.Serializable;
 
 public class TestStepStarted implements Serializable{
 
-	public String testCaseStartedId;
-	public String testStepId;
-	public Timestamp timestamp;
+	public final String testCaseStartedId;
+	public final String testStepId;
+	public final Timestamp timestamp;
 	public TestStepStarted(String testCaseStartedId, String testStepId, Timestamp timestamp) {
 		this.testCaseStartedId = testCaseStartedId;
 		this.testStepId = testStepId;

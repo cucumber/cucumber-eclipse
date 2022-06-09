@@ -3,18 +3,18 @@ package io.cucumber.eclipse.java.plugins.dto;
 import java.io.Serializable;
 
 public class Meta implements Serializable{
-	public String protocolVersion;
-	public Product implementation;
-	public Product runtime;
-	public Product os;
-	public Product cpu;
-	public Ci ci;
+	public final String protocolVersion;
+	public final Product implementation;
+	public final Product runtime;
+	public final Product os;
+	public final Product cpu;
+	public final Ci ci;
 
 	public static class Ci implements Serializable{
-		public String name;
-		public String url;
-		public String buildNumber;
-		public Git git;
+		public final String name;
+		public final String url;
+		public final String buildNumber;
+		public final Git git;
 		public Ci(String name, String url, String buildNumber, Git git) {
 			this.name = name;
 			this.url = url;
@@ -24,10 +24,10 @@ public class Meta implements Serializable{
 	}
 
 	public static class Git implements Serializable{
-		public String remote;
-		public String revision;
-		public String branch;
-		public String tag;
+		public final String remote;
+		public final String revision;
+		public final String branch;
+		public final String tag;
 		public Git(String remote, String revision, String branch, String tag) {
 			this.remote = remote;
 			this.revision = revision;
@@ -37,8 +37,8 @@ public class Meta implements Serializable{
 	}
 
 	public static class Product implements Serializable{
-		public String name;
-		public String version;
+		public final String name;
+		public final String version;
 		
 		public Product(String name, String version) {
 			this.name = name;

@@ -4,9 +4,9 @@ import java.io.Serializable;
 
 
 public class StepDefinition implements Serializable{
-	public String id;
-    public StepDefinitionPattern pattern;
-    public SourceReference sourceReference;
+	public final String id;
+    public final StepDefinitionPattern pattern;
+    public final SourceReference sourceReference;
     
     public static class StepDefinitionPattern implements Serializable{
         public String source;

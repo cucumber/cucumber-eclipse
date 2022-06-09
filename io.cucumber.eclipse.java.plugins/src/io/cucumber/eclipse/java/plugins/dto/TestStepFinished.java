@@ -5,15 +5,15 @@ import java.io.Serializable;
 
 public class TestStepFinished implements Serializable {
 
-	public String testCaseStartedId;
-    public String testStepId;
-    public TestStepResult testStepResult;
-    public Timestamp timestamp;
+	public final String testCaseStartedId;
+    public final String testStepId;
+    public final TestStepResult testStepResult;
+    public final Timestamp timestamp;
     
     public static class TestStepResult implements Serializable {
-        public Duration duration;
-        public String message;
-        public String status;
+        public final Duration duration;
+        public final String message;
+        public final String status;
 		public TestStepResult(Duration duration, String message, String status) {
 			this.duration = duration;
 			this.message = message;
