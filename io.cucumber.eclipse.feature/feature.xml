@@ -59,13 +59,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
          id="io.cucumber.gherkin"
          download-size="0"
          install-size="0"
-         version="16.0.0"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.messages"
          download-size="0"
          install-size="0"
-         version="13.2.1"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.eclipse.editor"
@@ -77,55 +77,55 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
          id="io.cucumber.cucumber-java"
          download-size="0"
          install-size="0"
-         version="6.9.1"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.cucumber-core"
          download-size="0"
          install-size="0"
-         version="6.9.1"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.cucumber-plugin"
          download-size="0"
          install-size="0"
-         version="6.9.1"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.cucumber-gherkin"
          download-size="0"
          install-size="0"
-         version="6.9.1"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.cucumber-gherkin-messages"
          download-size="0"
          install-size="0"
-         version="6.9.1"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.cucumber-expressions"
          download-size="0"
          install-size="0"
-         version="11.0.0"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.datatable"
          download-size="0"
          install-size="0"
-         version="3.5.0"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.docstring"
          download-size="0"
          install-size="0"
-         version="6.9.1"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.tag-expressions"
          download-size="0"
          install-size="0"
-         version="3.0.0"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.create-meta"
@@ -143,6 +143,27 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
    <plugin
          id="io.cucumber.eclipse.java.plugins"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="io.cucumber.eclipse.java.plugins.v6"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="io.cucumber.eclipse.java.plugins.v7"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="io.cucumber.messages.source"
          download-size="0"
          install-size="0"
          version="0.0.0"

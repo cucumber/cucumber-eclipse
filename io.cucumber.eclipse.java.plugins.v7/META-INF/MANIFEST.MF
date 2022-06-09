@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Cucumber Eclipse Plugins
+Bundle-SymbolicName: io.cucumber.eclipse.java.plugins.v7
+Bundle-Version: 2.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Automatic-Module-Name: io.cucumber.eclipse.java.plugins
+Require-Bundle: io.cucumber.cucumber-plugin;bundle-version="[7.0.0,8.0.0)",
+ io.cucumber.messages;bundle-version="[18.0.0,20.0.0)",
+ io.cucumber.eclipse.java.plugins;bundle-version="2.0.0"
+Export-Package: io.cucumber.eclipse.java.plugins.v7

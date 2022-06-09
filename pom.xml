@@ -20,6 +20,8 @@
 		<module>io.cucumber.eclipse.editor</module>
 		<module>io.cucumber.eclipse.java</module>
 		<module>io.cucumber.eclipse.java.plugins</module>
+		<module>io.cucumber.eclipse.java.plugins.v6</module>
+		<module>io.cucumber.eclipse.java.plugins.v7</module>
 		<module>io.cucumber.eclipse.feature</module>
 		<module>io.cucumber.eclipse.thirdparty.feature</module>
 		<module>io.cucumber.eclipse.product</module>
