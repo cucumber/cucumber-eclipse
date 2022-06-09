@@ -36,7 +36,7 @@ public  class CucumberV7EclipsePlugin extends BaseCucumberEclipsePlugin<Envelope
 
 	@Override
 	protected boolean isFinished(Envelope env) {
-		return env.getTestCaseFinished().isPresent() ;
+		return env.getTestRunFinished().isPresent() ;
 	}
 
 	@Override
