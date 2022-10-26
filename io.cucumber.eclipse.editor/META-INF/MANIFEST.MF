@@ -32,7 +32,7 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.5.0",
  org.eclipse.ui.console,
  net.mihai-nita.ansicon.plugin,
  org.eclipse.ui.workbench.texteditor,
- org.apache.commons.commons-text;bundle-version="1.9.0",
+ org.apache.commons.commons-text;bundle-version="1.10.0",
  org.apache.commons.io;bundle-version="2.6.0",
  io.cucumber.tag-expressions,
  org.eclipse.unittest.ui;bundle-version="1.0.0"
