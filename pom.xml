@@ -9,7 +9,7 @@
 
 	<properties>
 		<tycho-version>3.0.0</tycho-version>
-		<maven-scm-plugin-version>1.11.1</maven-scm-plugin-version>
+		<maven-scm-plugin-version>1.13.0</maven-scm-plugin-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>17</maven.compiler.source>
     	<maven.compiler.target>17</maven.compiler.target>
