@@ -79,7 +79,7 @@ Export-Package:        *;version="${version}";-noimport:=true]]></instructions>
 	<location includeDependencyScope="compile" includeSource="true" missingManifest="ignore" type="Maven">
 		<groupId>org.apache.commons</groupId>
 		<artifactId>commons-text</artifactId>
-		<version>1.10</version>
+		<version>1.10.0</version>
 		<type>jar</type>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
