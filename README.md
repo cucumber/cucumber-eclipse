@@ -1,7 +1,6 @@
 # Cucumber-Eclipse 2.0
 
-[![Build Status](https://travis-ci.com/cucumber/cucumber-eclipse.svg?branch=master)](https://travis-ci.com/cucumber/cucumber-eclipse)
-
+[![Build Status](https://github.com/cucumber/cucumber-eclipse/actions/workflows/maven.yml/badge.svg)](https://github.com/cucumber/cucumber-eclipse/actions/workflows/maven.yml)
 
 An Eclipse plugin for [Cucumber Version 6+](https://cucumber.io/). For the previous version 
 of this plugin take a look at the [1.x](https://github.com/cucumber/cucumber-eclipse/tree/1.x) branch.
