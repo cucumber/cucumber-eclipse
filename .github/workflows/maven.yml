@@ -46,6 +46,6 @@ jobs:
         git config user.name github-actions
         git config user.email github-actions@github.com
         git commit -m "Add latest update-site for version ${GITHUB_REF##*/}"
-        git push
+        git push gh-pages --force
       if: github.event_name != 'pull_request'
 
