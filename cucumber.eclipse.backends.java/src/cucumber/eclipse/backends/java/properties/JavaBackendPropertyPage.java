@@ -100,7 +100,7 @@ public class JavaBackendPropertyPage extends PropertyPage {
 		text.setLayoutData(gd);
 		text.setText(getGlueOption(getResource()));
 		text.setToolTipText(
-				"The Glue option defines wich packages are scanned for glue code, seperate multiple packages by comma");
+				"The Glue option defines which packages are scanned for glue code, separate multiple packages by comma");
 		return text;
 	}
 
@@ -111,7 +111,7 @@ public class JavaBackendPropertyPage extends PropertyPage {
 		gd.grabExcessHorizontalSpace = true;
 		gd.horizontalSpan = 2;
 		label.setText(
-				"Here you can configure the Options for the Java Backend, options relate closeley to thos used in the CLI");
+				"Here you can configure the Options for the Java Backend, options relate closely to those used in the CLI");
 		new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(gd);
 	}
 
