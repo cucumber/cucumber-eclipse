@@ -35,6 +35,7 @@
       <feature id="org.eclipse.platform" installMode="root"/>
       <feature id="org.eclipse.e4.rcp" installMode="root"/>
       <feature id="io.cucumber.eclipse.thirdparty.feature" installMode="root"/>
+      <feature id="org.eclipse.m2e.feature" installMode="root"/>
    </features>
 
 
