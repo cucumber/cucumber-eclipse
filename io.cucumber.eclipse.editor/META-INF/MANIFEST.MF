@@ -30,13 +30,12 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.5.0",
  io.cucumber.messages;bundle-version="13.2.1",
  org.eclipse.ui.trace,
  org.eclipse.ui.console,
- net.mihai-nita.ansicon.plugin,
  org.eclipse.ui.workbench.texteditor,
  org.apache.commons.commons-text;bundle-version="1.10.0",
  org.apache.commons.io;bundle-version="2.6.0",
  io.cucumber.tag-expressions,
  org.eclipse.unittest.ui;bundle-version="1.0.0"
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Automatic-Module-Name: io.cucumber.eclipse.editor
 Bundle-ActivationPolicy: lazy
 Export-Package: io.cucumber.eclipse.editor,

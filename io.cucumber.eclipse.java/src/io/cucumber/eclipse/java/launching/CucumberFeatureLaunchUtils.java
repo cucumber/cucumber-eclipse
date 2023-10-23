@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.console.ConsolePlugin;
 
 public class CucumberFeatureLaunchUtils {
 
@@ -28,6 +29,11 @@ public class CucumberFeatureLaunchUtils {
 			}
 		}
 		return null;
+	}
+
+	public static boolean isAnsiConsoleEnabled() {
+		ConsolePlugin.getDefault().getPreferenceStore().getBoolean("ANSI_support_enabled");
+		return false;
 	}
 
 	protected static String getFeaturePath() {

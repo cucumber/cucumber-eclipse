@@ -36,8 +36,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    </license>
 
    <requires>
-      <import feature="net.mihai-nita.ansicon" version="1.4.3.202012111715" match="greaterOrEqual"/>
-      <import feature="io.cucumber.eclipse.thirdparty.feature" version="1.0.0.qualifier"/>
       <import plugin="org.eclipse.unittest.ui"/>
    </requires>
 
