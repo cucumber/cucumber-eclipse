@@ -47,7 +47,6 @@ import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberEclipsePlugin;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;
 import io.cucumber.tagexpressions.Expression;
-import mnita.ansiconsole.preferences.AnsiConsolePreferenceUtils;
 
 public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends AbstractJavaLaunchConfigurationDelegate
 		implements ILaunchConfigurationDelegate2 {
@@ -151,7 +150,7 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 			args.add(formatter);
 			args.add("usage");
 		}
-		if (!AnsiConsolePreferenceUtils.isAnsiConsoleEnabled()) {
+		if (!CucumberFeatureLaunchUtils.isAnsiConsoleEnabled()) {
 			args.add("--monochrome");
 		}
 		if (!tags.isBlank()) {

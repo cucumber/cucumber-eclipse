@@ -48,7 +48,6 @@ import io.cucumber.messages.Messages.TestStepFinished;
 import io.cucumber.messages.Messages.TestStepStarted;
 import io.cucumber.messages.Messages.Timestamp;
 import io.cucumber.tagexpressions.Expression;
-import mnita.ansiconsole.preferences.AnsiConsolePreferenceUtils;
 
 /**
  * Launches documents using the {@link CucumberRuntime}
@@ -187,7 +186,7 @@ public class CucumberRuntimeLauncher implements ILauncher {
 			// TODO other options
 			options.addDefaultSummaryPrinterIfAbsent();
 			options.setThreads(java.lang.Runtime.getRuntime().availableProcessors());
-			options.setMonochrome(!AnsiConsolePreferenceUtils.isAnsiConsoleEnabled());
+			options.setMonochrome(!CucumberFeatureLaunchUtils.isAnsiConsoleEnabled());
 			cucumberRuntime.addPlugin(plugin);
 			try {
 				try (IOConsoleOutputStream stream = console.newOutputStream()) {
