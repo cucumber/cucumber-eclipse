@@ -1,4 +1,6 @@
 #language: en
+#This comment below enables the validation plugin
+#validation-plugin: cucumber.examples.datatable.AnimalValidator
 Feature: Connection between DataTable Key and a specific Step Value
 
 

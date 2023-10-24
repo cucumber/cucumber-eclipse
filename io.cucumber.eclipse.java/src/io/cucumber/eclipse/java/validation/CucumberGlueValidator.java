@@ -2,8 +2,12 @@ package io.cucumber.eclipse.java.validation;
 
 import static io.cucumber.eclipse.editor.Tracing.PERFORMANCE_STEPS;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -23,9 +27,11 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.osgi.service.debug.DebugTrace;
 
 import io.cucumber.core.gherkin.FeatureParserException;
@@ -40,6 +46,7 @@ import io.cucumber.eclipse.java.plugins.CucumberStepDefinition;
 import io.cucumber.eclipse.java.plugins.CucumberStepParserPlugin;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;
+import io.cucumber.plugin.Plugin;
 
 /**
  * Performs a dry-run on the document to verify step definition matching
@@ -252,9 +259,15 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 							rt.addPlugin(stepParserPlugin);
 							rt.addPlugin(matchedStepsPlugin);
 							rt.addPlugin(missingStepsPlugin);
+							Collection<Plugin> validationPlugins = addValidationPlugins(editorDocument, rt);
 							try {
 								rt.run(monitor);
+								Map<Integer, String> validationErrors = new HashMap<>();
+								for (Plugin plugin : validationPlugins) {
+									addErrors(plugin, validationErrors);
+								}
 								Map<Integer, Collection<String>> snippets = missingStepsPlugin.getSnippets();
+								MarkerFactory.validationErrorOnStepDefinition(resource, validationErrors, persistent);
 								MarkerFactory.missingSteps(resource, snippets, Activator.PLUGIN_ID, persistent);
 								Collection<CucumberStepDefinition> steps = stepParserPlugin.getStepList();
 								matchedSteps = Collections.unmodifiableCollection(matchedStepsPlugin.getMatchedSteps());
@@ -293,6 +306,46 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 //			jobMap.remove(document, this);
 			// FIXME notify document reconsilers??
 			return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
+		}
+
+		private Collection<Plugin> addValidationPlugins(GherkinEditorDocument editorDocument, CucumberRuntime rt) {
+			List<Plugin> validationPlugins = new ArrayList<>();
+			IDocument doc = editorDocument.getDocument();
+			int lines = doc.getNumberOfLines();
+			for (int i = 0; i < lines; i++) {
+				try {
+					IRegion firstLine = document.getLineInformation(i);
+					String line = document.get(firstLine.getOffset(), firstLine.getLength()).trim();
+					if (line.startsWith("#")) {
+						String[] split = line.split("validation-plugin:", 2);
+						if (split.length == 2) {
+							String validationPlugin = split[1].trim();
+							Plugin classpathPlugin = rt.addPluginFromClasspath(validationPlugin);
+							if (classpathPlugin != null) {
+								validationPlugins.add(classpathPlugin);
+							}
+						}
+					}
+				} catch (BadLocationException e) {
+				}
+			}
+			return validationPlugins;
+		}
+
+	}
+
+	@SuppressWarnings("unchecked")
+	private static void addErrors(Plugin plugin, Map<Integer, String> validationErrors) {
+		try {
+			Method method = plugin.getClass().getMethod("getValidationErrors");
+			Object invoke = method.invoke(plugin);
+			if (invoke instanceof Map) {
+				@SuppressWarnings("rawtypes")
+				Map map = (Map) invoke;
+				validationErrors.putAll(map);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
 	}

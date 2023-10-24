@@ -36,6 +36,8 @@ public class MarkerFactory {
 
 	public static final String CUCUMBER_MARKER = "cucumber.eclipse.marker";
 	public static final String STEPDEF_SYNTAX_ERROR = CUCUMBER_MARKER + ".stepdef.syntaxerror";
+	public static final String STEPDEF_VALIDATION_ERROR = CUCUMBER_MARKER + ".gherkin.validation_error";
+
 	public static final String GHERKIN_SYNTAX_ERROR = CUCUMBER_MARKER + ".gherkin.syntaxerror";
 
 	public static final String STEP_DEFINTION_MATCH = CUCUMBER_MARKER + ".stepdef.matches";
@@ -61,6 +63,31 @@ public class MarkerFactory {
 	public static final String CUCUMBER_NATURE_MISSING_MARKER = CUCUMBER_MARKER + ".project.cucumber_nature_missing";
 
 	private MarkerFactory() {
+	}
+
+	public static void validationErrorOnStepDefinition(final IResource resource,
+			Map<Integer, String> errors, boolean persistent) {
+		if (errors == null || errors.isEmpty()) {
+			return;
+		}
+
+		mark(resource, new IMarkerBuilder() {
+			@Override
+			public void build() throws CoreException {
+				IMarker[] markers = resource.findMarkers(STEPDEF_VALIDATION_ERROR, true, IResource.DEPTH_INFINITE);
+				for (IMarker marker : markers) {
+					marker.delete();
+				}
+				for (Entry<Integer, String> entry : errors.entrySet()) {
+					IMarker marker = resource.createMarker(STEPDEF_VALIDATION_ERROR);
+					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+					marker.setAttribute(IMarker.MESSAGE, entry.getValue());
+					marker.setAttribute(IMarker.LINE_NUMBER, entry.getKey());
+					marker.setAttribute(IMarker.TRANSIENT, persistent);
+				}
+			}
+		});
+
 	}
 
 	public void syntaxErrorOnStepDefinition(IResource stepDefinitionResource, Exception e) {
