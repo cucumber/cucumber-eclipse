@@ -150,6 +150,23 @@ public final class CucumberRuntime implements AutoCloseable {
 		plugins.add(plugin);
 	}
 
+	public Plugin addPluginFromClasspath(String clazz) {
+		try {
+			Class<?> c = classLoader.loadClass(clazz);
+			Object instance = c.getConstructor().newInstance();
+			if (instance instanceof Plugin) {
+				Plugin plugin = (Plugin) instance;
+				addPlugin(plugin);
+				return plugin;
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+//		plugins.add(plugin);
+	}
+
 	public void addFeature(GherkinEditorDocument document) {
 		IResource resource = document.getResource();
 		URI uri = Objects.requireNonNullElseGet(resource.getLocationURI(), () -> resource.getRawLocationURI());
