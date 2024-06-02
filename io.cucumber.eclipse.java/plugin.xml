@@ -77,4 +77,13 @@
           name="Java">
     </page>
  </extension>
+    <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            category="cucumber.eclipse.editor.properties.main"
+            class="io.cucumber.eclipse.java.properties.JavaBackendPropertyPage"
+            id="cucumber.eclipse.backends.java.properties.samplePropertyPage"
+            name="Java Backend">
+      </page>
+   </extension>
 </plugin>
