@@ -3,18 +3,17 @@
 <target name="targetdefinition" sequenceNumber="10">
 <locations>
 <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-	<repository location="http://download.eclipse.org/releases/2023-09"/>
+	<repository location="http://download.eclipse.org/releases/2024-03"/>
 	<unit id="org.eclipse.sdk.ide" version="0.0.0"/>
 	<unit id="org.eclipse.equinox.sdk.feature.group" version="0.0.0"/>
 </location>
-	<location path="${eclipse_home}" type="Profile"/>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<repository location="https://download.eclipse.org/eclipse/updates/4.18/R-4.18-202012021800/"/>
 		<unit id="org.eclipse.unittest.ui" version="1.0.0.v20201121-0633"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<repository location="https://download.eclipse.org/technology/m2e/releases/latest/"/>
-		<unit id="org.eclipse.m2e.sdk.feature.feature.group" version="2.4.0.20230827-1557"/>
+		<unit id="org.eclipse.m2e.sdk.feature.feature.group" version="0.0.0"/>
 	</location>
 	<location includeDependencyDepth="infinite" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
 		<dependencies>
@@ -88,8 +87,14 @@ Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io
 Export-Package:        *;version="${version}";-noimport:=true
 ]]></instructions>
 	</location>
-	<location includeDependencyDepth="infinite" includeDependencyScopes="compile" includeSource="true" missingManifest="ignore" type="Maven">
+	<location includeDependencyDepth="infinite" includeDependencyScopes="compile" includeSource="true" label="Apache Commons" missingManifest="ignore" type="Maven">
 		<dependencies>
+			<dependency>
+				<groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+				<version>2.16.1</version>
+				<type>jar</type>
+			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-text</artifactId>
