@@ -68,16 +68,23 @@ public class MarkerFactory {
 	public static void validationErrorOnStepDefinition(final IResource resource,
 			Map<Integer, String> errors, boolean persistent) {
 		if (errors == null || errors.isEmpty()) {
+			mark(resource, new IMarkerBuilder() {
+
+				@Override
+				public void build() throws CoreException {
+					deleteStepValidationErrors(resource);
+				}
+
+
+
+			});
 			return;
 		}
 
 		mark(resource, new IMarkerBuilder() {
 			@Override
 			public void build() throws CoreException {
-				IMarker[] markers = resource.findMarkers(STEPDEF_VALIDATION_ERROR, true, IResource.DEPTH_INFINITE);
-				for (IMarker marker : markers) {
-					marker.delete();
-				}
+				deleteStepValidationErrors(resource);
 				for (Entry<Integer, String> entry : errors.entrySet()) {
 					IMarker marker = resource.createMarker(STEPDEF_VALIDATION_ERROR);
 					marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
@@ -92,6 +99,13 @@ public class MarkerFactory {
 
 	public void syntaxErrorOnStepDefinition(IResource stepDefinitionResource, Exception e) {
 		syntaxErrorOnStepDefinition(stepDefinitionResource, e, 0);
+	}
+
+	private static void deleteStepValidationErrors(final IResource resource) throws CoreException {
+		IMarker[] markers = resource.findMarkers(STEPDEF_VALIDATION_ERROR, true, IResource.DEPTH_INFINITE);
+		for (IMarker marker : markers) {
+			marker.delete();
+		}
 	}
 
 //	public void unmatchedStep(final IDocument gherkinDocument, final GherkinStepWrapper gherkinStepWrapper) {
