@@ -7,8 +7,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -26,6 +28,9 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
@@ -45,6 +50,7 @@ import io.cucumber.eclipse.java.plugins.CucumberMissingStepsPlugin;
 import io.cucumber.eclipse.java.plugins.CucumberStepDefinition;
 import io.cucumber.eclipse.java.plugins.CucumberStepParserPlugin;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
+import io.cucumber.eclipse.java.properties.JavaBackendPropertyPage;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;
 import io.cucumber.plugin.Plugin;
 
@@ -97,7 +103,11 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 			public void bufferDisposed(IFileBuffer buffer) {
 				if (buffer instanceof ITextFileBuffer) {
 					IDocument document = ((ITextFileBuffer) buffer).getDocument();
-					jobMap.remove(document);
+					GlueJob remove = jobMap.remove(document);
+					if (remove != null) {
+						remove.cancel();
+						remove.disposeListener();
+					}
 				}
 
 			}
@@ -120,7 +130,7 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 	}
 
 	public static void revalidate(IDocument document) {
-		validate(document, 0, false);
+		validate(document, 0);
 	}
 
 	@Override
@@ -130,7 +140,7 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 			@Override
 			public void documentChanged(DocumentEvent event) {
 				// TODO configurable
-				validate(document, 1000, false);
+				validate(document, 1000);
 			}
 
 			@Override
@@ -138,15 +148,16 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 
 			}
 		});
-		validate(document, 0, false);
+		validate(document, 0);
 	}
 
-	private static void validate(IDocument document, int delay, boolean persistent) {
+	private static void validate(IDocument document, int delay) {
 		jobMap.compute(document, (key, oldJob) -> {
-			if (oldJob != null && !oldJob.persistent) {
+			if (oldJob != null) {
 				oldJob.cancel();
+				oldJob.disposeListener();
 			}
-			GlueJob verificationJob = new GlueJob(oldJob, document, persistent);
+			GlueJob verificationJob = new GlueJob(oldJob, document);
 			verificationJob.setUser(false);
 			verificationJob.setPriority(Job.DECORATE);
 			if (delay > 0) {
@@ -206,17 +217,16 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 	private static final class GlueJob extends Job {
 
 		private GlueJob oldJob;
-		private IDocument document;
-		private boolean persistent;
+		private final IDocument document;
+		private Runnable listenerRegistration;
 
-		transient Collection<MatchedStep<?>> matchedSteps;
-		transient Collection<CucumberStepDefinition> parsedSteps;
+		volatile Collection<MatchedStep<?>> matchedSteps;
+		volatile Collection<CucumberStepDefinition> parsedSteps;
 
-		public GlueJob(GlueJob oldJob, IDocument document, boolean persistent) {
+		public GlueJob(GlueJob oldJob, IDocument document) {
 			super("Verify Cucumber Glue Code");
 			this.oldJob = oldJob;
 			this.document = document;
-			this.persistent = persistent;
 			if (oldJob != null) {
 				this.matchedSteps = oldJob.matchedSteps;
 				this.parsedSteps = oldJob.parsedSteps;
@@ -227,10 +237,27 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 		}
 
 		@Override
+		protected void canceling() {
+			disposeListener();
+		}
+
+		protected void disposeListener() {
+			synchronized (this) {
+				if (listenerRegistration != null) {
+					listenerRegistration.run();
+					listenerRegistration = () -> {
+						// dummy to prevent further registration...
+					};
+				}
+			}
+		}
+
+		@Override
 		protected IStatus run(IProgressMonitor monitor) {
 			if (oldJob != null) {
 				try {
 					oldJob.join();
+					oldJob = null;
 				} catch (InterruptedException e) {
 					Thread.currentThread().interrupt();
 					return Status.CANCEL_STATUS;
@@ -267,8 +294,8 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 									addErrors(plugin, validationErrors);
 								}
 								Map<Integer, Collection<String>> snippets = missingStepsPlugin.getSnippets();
-								MarkerFactory.validationErrorOnStepDefinition(resource, validationErrors, persistent);
-								MarkerFactory.missingSteps(resource, snippets, Activator.PLUGIN_ID, persistent);
+								MarkerFactory.validationErrorOnStepDefinition(resource, validationErrors, false);
+								MarkerFactory.missingSteps(resource, snippets, Activator.PLUGIN_ID, false);
 								Collection<CucumberStepDefinition> steps = stepParserPlugin.getStepList();
 								matchedSteps = Collections.unmodifiableCollection(matchedStepsPlugin.getMatchedSteps());
 								parsedSteps = Collections.unmodifiableCollection(stepParserPlugin.getStepList());
@@ -312,6 +339,7 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 			List<Plugin> validationPlugins = new ArrayList<>();
 			IDocument doc = editorDocument.getDocument();
 			int lines = doc.getNumberOfLines();
+			Set<String> plugins = new LinkedHashSet<>();
 			for (int i = 0; i < lines; i++) {
 				try {
 					IRegion firstLine = document.getLineInformation(i);
@@ -319,14 +347,34 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 					if (line.startsWith("#")) {
 						String[] split = line.split("validation-plugin:", 2);
 						if (split.length == 2) {
-							String validationPlugin = split[1].trim();
-							Plugin classpathPlugin = rt.addPluginFromClasspath(validationPlugin);
-							if (classpathPlugin != null) {
-								validationPlugins.add(classpathPlugin);
-							}
+							plugins.add(split[1].trim());
 						}
 					}
 				} catch (BadLocationException e) {
+				}
+			}
+			JavaBackendPropertyPage.getValidationPluginsOption(editorDocument.getResource()).forEach(plugins::add);
+			for (String plugin : plugins) {
+				Plugin classpathPlugin = rt.addPluginFromClasspath(plugin);
+				if (classpathPlugin != null) {
+					validationPlugins.add(classpathPlugin);
+				}
+			}
+			IResource resource = editorDocument.getResource();
+			if (resource != null) {
+				synchronized (this) {
+					if (listenerRegistration == null) {
+						IEclipsePreferences node = JavaBackendPropertyPage.getNode(resource);
+						IPreferenceChangeListener listener = new IPreferenceChangeListener() {
+
+							@Override
+							public void preferenceChange(PreferenceChangeEvent event) {
+								schedule();
+							}
+						};
+						node.addPreferenceChangeListener(listener);
+						listenerRegistration = () -> node.removePreferenceChangeListener(listener);
+					}
 				}
 			}
 			return validationPlugins;

@@ -23,13 +23,13 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.launching.JavaRuntime;
 
 import cucumber.api.TypeRegistryConfigurer;
-import cucumber.eclipse.backends.java.properties.JavaBackendPropertyPage;
 import cucumber.eclipse.steps.integration.KeyWordProvider;
 import cucumber.runtime.DefaultTypeRegistryConfiguration;
 import cucumber.runtime.Reflections;
 import cucumber.runtime.io.MultiLoader;
 import cucumber.runtime.io.ResourceLoaderClassFinder;
 import io.cucumber.cucumberexpressions.ExpressionFactory;
+import io.cucumber.eclipse.java.properties.JavaBackendPropertyPage;
 import io.cucumber.stepexpression.TypeRegistry;
 
 public class JavaBackendAdapterFactory implements IAdapterFactory, IResourceChangeListener {

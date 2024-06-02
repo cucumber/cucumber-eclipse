@@ -323,6 +323,14 @@
 	       </action>
 	   </viewerContribution>
 	 </extension>
-	 
+	 <extension
+      point="org.eclipse.ui.propertyPages">
+   <page
+         class="io.cucumber.eclipse.editor.properties.CucumberPropertiesPage"
+         icon="icons/cukes.gif"
+         id="cucumber.eclipse.editor.properties.main"
+         name="Cucumber">
+   </page>
+</extension>
 	 
 </plugin>
