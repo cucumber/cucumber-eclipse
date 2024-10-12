@@ -20,7 +20,7 @@
 		<module>io.cucumber.eclipse.java</module>
 		<module>io.cucumber.eclipse.java.plugins</module>
 		<module>io.cucumber.eclipse.feature</module>
-		<module>io.cucumber.eclipse.product</module>
+<!--		<module>io.cucumber.eclipse.product</module>-->
 		<module>io.cucumber.eclipse.updatesite</module>
 	</modules>
 
@@ -73,6 +73,12 @@
 				<version>${tycho-version}</version>
 				<configuration>
 					<finalName>cucumber-eclipse-plugin-${project.version}</finalName>
+					<includeAllDependencies>true</includeAllDependencies>
+					<skipArchive>true</skipArchive>
+					<includeAllSources>true</includeAllSources>
+					<addIUTargetRepositoryReferences>true</addIUTargetRepositoryReferences>
+					<addPomRepositoryReferences>true</addPomRepositoryReferences>
+					<filterProvided>true</filterProvided>
 				</configuration>
 			</plugin>
 			<plugin>

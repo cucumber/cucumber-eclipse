@@ -75,55 +75,55 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
          id="io.cucumber.cucumber-java"
          download-size="0"
          install-size="0"
-         version="6.9.1"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.cucumber-core"
          download-size="0"
          install-size="0"
-         version="6.9.1"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.cucumber-plugin"
          download-size="0"
          install-size="0"
-         version="6.9.1"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.cucumber-gherkin"
          download-size="0"
          install-size="0"
-         version="6.9.1"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.cucumber-gherkin-messages"
          download-size="0"
          install-size="0"
-         version="6.9.1"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.cucumber-expressions"
          download-size="0"
          install-size="0"
-         version="11.0.0"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.datatable"
          download-size="0"
          install-size="0"
-         version="3.5.0"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.docstring"
          download-size="0"
          install-size="0"
-         version="6.9.1"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.tag-expressions"
          download-size="0"
          install-size="0"
-         version="3.0.0"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.create-meta"
