@@ -23,7 +23,7 @@ import io.cucumber.eclipse.editor.steps.StepParameter;
  *
  */
 //TODO see bug Bug 570519  currently we must always supply the full text as the default value
-//TODO use public API (if available) for Cucumberparser + GroupPrser
+//TODO the AST is package protected API because of this we need to embedd the jar instead of consume it directly see https://github.com/cucumber/cucumber-expressions/issues/51
 public class CucumberExpressionParserSupport {
 
 	private static final Pattern BEGIN_ANCHOR = Pattern.compile("^\\^.*");
