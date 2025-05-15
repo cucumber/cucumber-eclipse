@@ -9,7 +9,8 @@ import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-import io.cucumber.messages.Messages.Envelope;
+import io.cucumber.messages.MessageToNdjsonWriter;
+import io.cucumber.messages.types.Envelope;
 import io.cucumber.plugin.ConcurrentEventListener;
 import io.cucumber.plugin.event.EventPublisher;
 
@@ -83,13 +84,15 @@ public class CucumberEclipsePlugin implements ConcurrentEventListener {
 				}
 				try {
 					buffer.reset();
-					env.writeTo(buffer);
+					try (MessageToNdjsonWriter writer = new MessageToNdjsonWriter(buffer, new Jackson())) {
+						writer.write(env);
+					}
 					output.writeInt(buffer.size());
 					buffer.writeTo(output);
 					output.flush();
 					int read = input.read() & 0xFF;
 					written.incrementAndGet();
-					if (env.hasTestRunFinished() || read == GOOD_BY_MESSAGE) {
+					if (env.getTestRunFinished().isPresent() || read == GOOD_BY_MESSAGE) {
 						finish();
 					}
 				} catch (IOException e) {
