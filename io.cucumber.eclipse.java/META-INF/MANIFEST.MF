@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Java
 Bundle-SymbolicName: io.cucumber.eclipse.java;singleton:=true
-Bundle-Version: 2.0.0.qualifier
+Bundle-Version: 3.0.0.qualifier
 Bundle-Activator: io.cucumber.eclipse.java.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
@@ -26,7 +26,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jdt.debug.ui,
  org.eclipse.core.variables,
  io.cucumber.eclipse.java.plugins
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: io.cucumber.eclipse.java
 Bundle-ActivationPolicy: lazy
 Import-Package: org.eclipse.unittest.ui,

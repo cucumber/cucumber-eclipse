@@ -2,7 +2,7 @@
 <feature
       id="cucumber.eclipse.feature"
       label="Cucumber Eclipse"
-      version="2.0.0.qualifier">
+      version="3.0.0.qualifier">
 
    <description>
       Eclipse plugin for Cucumber
@@ -41,109 +41,70 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
    <plugin
          id="io.cucumber.eclipse.editor"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.eclipse.java"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.gherkin"
-         download-size="0"
-         install-size="0"
          version="16.0.0"/>
 
    <plugin
          id="io.cucumber.messages"
-         download-size="0"
-         install-size="0"
          version="13.2.1"/>
 
    <plugin
          id="io.cucumber.eclipse.editor"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="io.cucumber.cucumber-java"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="io.cucumber.cucumber-core"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="io.cucumber.cucumber-plugin"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="io.cucumber.cucumber-gherkin"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="io.cucumber.cucumber-gherkin-messages"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="io.cucumber.cucumber-expressions"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="io.cucumber.datatable"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="io.cucumber.docstring"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="io.cucumber.tag-expressions"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="io.cucumber.create-meta"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.html-formatter"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
    <plugin
          id="io.cucumber.eclipse.java.plugins"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
 </feature>
