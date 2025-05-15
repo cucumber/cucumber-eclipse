@@ -40,67 +40,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    </requires>
 
    <plugin
-         id="io.cucumber.eclipse.editor"
-         version="0.0.0"/>
-
-   <plugin
          id="io.cucumber.eclipse.java"
          version="0.0.0"/>
 
    <plugin
-         id="io.cucumber.gherkin"
-         version="16.0.0"/>
-
-   <plugin
-         id="io.cucumber.messages"
-         version="13.2.1"/>
-
-   <plugin
          id="io.cucumber.eclipse.editor"
-         version="0.0.0"/>
-
-   <plugin
-         id="io.cucumber.cucumber-java"
-         version="0.0.0"/>
-
-   <plugin
-         id="io.cucumber.cucumber-core"
-         version="0.0.0"/>
-
-   <plugin
-         id="io.cucumber.cucumber-plugin"
-         version="0.0.0"/>
-
-   <plugin
-         id="io.cucumber.cucumber-gherkin"
-         version="0.0.0"/>
-
-   <plugin
-         id="io.cucumber.cucumber-gherkin-messages"
-         version="0.0.0"/>
-
-   <plugin
-         id="io.cucumber.cucumber-expressions"
-         version="0.0.0"/>
-
-   <plugin
-         id="io.cucumber.datatable"
-         version="0.0.0"/>
-
-   <plugin
-         id="io.cucumber.docstring"
-         version="0.0.0"/>
-
-   <plugin
-         id="io.cucumber.tag-expressions"
-         version="0.0.0"/>
-
-   <plugin
-         id="io.cucumber.create-meta"
-         version="0.0.0"/>
-
-   <plugin
-         id="io.cucumber.html-formatter"
          version="0.0.0"/>
 
    <plugin
