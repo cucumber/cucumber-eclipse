@@ -1,36 +1,18 @@
-# Cucumber-Eclipse 2.0
+# Cucumber-Eclipse 3.0
 
 [![Build Status](https://github.com/cucumber/cucumber-eclipse/actions/workflows/maven.yml/badge.svg)](https://github.com/cucumber/cucumber-eclipse/actions/workflows/maven.yml)
 
-An Eclipse plugin for [Cucumber Version 6+](https://cucumber.io/). For the previous version 
-of this plugin take a look at the [1.x](https://github.com/cucumber/cucumber-eclipse/tree/1.x) branch.
+An Eclipse plugin for [Cucumber Version 7](https://cucumber.io/).
 
-CAUTION: **This is currently work-inprogress!**
+## Install the Plugin
 
-## Highlighted Features :
+You can install the latest release using the follwoing update site in Eclipse:
 
--
--
--
+https://cucumber.github.io/cucumber-eclipse/update-site
 
-## Screenshots and Features of the plugin
--
+For users who wants to keep up-to-date with the latest development version please use 
 
-
-## Eclipse-Marketplace Details
--
-
-## Download the plugin
- - Releases and snapshots versions can be [downloaded](https://github.com/cucumber/cucumber-eclipse/releases) as zip format.
- - Please refer our [Plugin-Download/Installation-Wiki](https://github.com/cucumber/cucumber-eclipse/wiki/Download-and-Offline-Installation-Of-The-Plugin-From-Zip) for detail information
-
-## Follow the latest snapshot
-
-For users who wants to keep up-to-date with the latest development version, there is a dedicated [eclipse update site for the cucumber eclipse plugin](https://cucumber.github.io/cucumber-eclipse/update-site/main/). 
-
-With this one, you will be notified on each new snapshot.
-
-CAUTION: **The latest snapshot can be unstable. This is a preview version.**
+https://cucumber.github.io/cucumber-eclipse/update-site/main
 
 You are welcome to [report any issue](https://github.com/cucumber/cucumber-eclipse/issues).
 
