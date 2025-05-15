@@ -22,6 +22,7 @@ import org.eclipse.core.filebuffers.IFileBufferListener;
 import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -322,7 +323,7 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 
 							} catch (Throwable e) {
 								// TODO
-								System.out.println(e);
+								ILog.get().error("Validate Glue-Code failed", e);
 							}
 						}
 					}
