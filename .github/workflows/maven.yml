@@ -2,9 +2,9 @@ name: cucumber-eclipse plugin (latest)
 
 on:
   push:
-    branches: [ main ]
+    branches: [ v2.x ]
   pull_request:
-    branches: [ main ]
+    branches: [ v2.x ]
 
 jobs:
   build:
