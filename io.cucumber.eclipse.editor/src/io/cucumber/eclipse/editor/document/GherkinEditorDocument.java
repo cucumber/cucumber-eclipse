@@ -32,13 +32,12 @@ import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Position;
 
-import io.cucumber.gherkin.Gherkin;
 import io.cucumber.gherkin.GherkinDialect;
 import io.cucumber.gherkin.GherkinDialectProvider;
-import io.cucumber.gherkin.Location;
-import io.cucumber.gherkin.ParserException.NoSuchLanguageException;
-import io.cucumber.messages.IdGenerator;
-import io.cucumber.messages.Messages.Envelope;
+import io.cucumber.gherkin.GherkinParser;
+import io.cucumber.messages.types.Envelope;
+import io.cucumber.messages.types.Source;
+import io.cucumber.messages.types.SourceMediaType;
 
 /**
  * 
@@ -70,8 +69,8 @@ public final class GherkinEditorDocument extends GherkinStream {
 	private Supplier<IResource> resourceSupplier;
 
 	private GherkinEditorDocument(IDocument document, Supplier<IResource> resourceSupplier) {
-		super(Gherkin.fromSources(Collections.singletonList(Gherkin.makeSourceEnvelope(document.get(), "")), true, true,
-				false, new IdGenerator.Incrementing()).toArray(Envelope[]::new));
+
+		super(getEnvelopes(document, resourceSupplier));
 		this.resourceSupplier = resourceSupplier;
 		document.addDocumentListener(new IDocumentListener() {
 
@@ -87,26 +86,42 @@ public final class GherkinEditorDocument extends GherkinStream {
 			}
 		});
 		this.document = document;
-		dialect = getFeature().map(f -> f.getLanguage()).filter(Objects::nonNull).filter(Predicate.not(String::isBlank))
-				.map(lang -> provider.getDialect(lang, new Location(-1, -1))).orElseGet(() -> {
-					try {
-						IRegion firstLine = document.getLineInformation(0);
-						String line = document.get(firstLine.getOffset(), firstLine.getLength()).trim();
-						if (line.startsWith("#")) {
-							String[] split = line.split("language:", 2);
-							if (split.length == 2) {
-								try {
-									return provider.getDialect(split[1].trim(), new Location(-1, -1));
-								} catch (NoSuchLanguageException e) {
-								}
-							}
+
+		Optional<String> langOpt = getFeature().map(f -> f.getLanguage()).filter(Objects::nonNull)
+				.filter(Predicate.not(String::isBlank));
+
+		dialect = langOpt.flatMap(lang -> provider.getDialect(lang)).or(() -> {
+			try {
+				IRegion firstLine = document.getLineInformation(0);
+				String line = document.get(firstLine.getOffset(), firstLine.getLength()).trim();
+				if (line.startsWith("#")) {
+					String[] split = line.split("language:", 2);
+					if (split.length == 2) {
+						try {
+							return provider.getDialect(split[1].trim());
+						} catch (Exception e) {
 						}
-					} catch (BadLocationException e) {
 					}
-					return provider.getDefaultDialect();
-				});
+
+				}
+			} catch (BadLocationException e) {
+			}
+			return Optional.of(provider.getDefaultDialect());
+		}).get();
+
 		locale = Locale.forLanguageTag(dialect.getLanguage());
 
+	}
+
+	private static Envelope[] getEnvelopes(IDocument document, Supplier<IResource> resourceSupplier) {
+		GherkinParser parser = GherkinParser.builder()
+				.includeSource(true)
+				.includeGherkinDocument(true)
+				.includePickles(false)
+				.build();
+		Source source = new Source("", document.get(), SourceMediaType.TEXT_X_CUCUMBER_GHERKIN_PLAIN);
+		Envelope envelope = Envelope.of(source);
+		return parser.parse(envelope).toArray(Envelope[]::new);
 	}
 
 	/**
@@ -127,19 +142,19 @@ public final class GherkinEditorDocument extends GherkinStream {
 		return document;
 	}
 
-	public Position getPosition(io.cucumber.messages.Messages.Location location) throws BadLocationException {
+	public Position getPosition(io.cucumber.messages.types.Location location) throws BadLocationException {
 		return getPosition(location, 0);
 	}
 
-	public Position getPosition(io.cucumber.messages.Messages.Location location, int lineOffset)
+	public Position getPosition(io.cucumber.messages.types.Location location, int lineOffset)
 			throws BadLocationException {
-		int line = location.getLine();
+		int line =  location.getLine().intValue();
 		int offset = document.getLineOffset(line - 1 - lineOffset);
-		return new Position(offset + location.getColumn() - 1, 1);
+		return new Position(offset + location.getColumn().orElse(0l).intValue() - 1, 1);
 	}
 
-	public Position getEolPosition(io.cucumber.messages.Messages.Location location) throws BadLocationException {
-		int line = location.getLine();
+	public Position getEolPosition(io.cucumber.messages.types.Location location) throws BadLocationException {
+		int line = location.getLine().intValue();
 		int offset = document.getLineOffset(line - 1);
 		int lineLength = document.getLineLength(line - 1);
 		// Workaround for Bug 570740

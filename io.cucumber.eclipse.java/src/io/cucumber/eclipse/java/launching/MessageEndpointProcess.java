@@ -18,7 +18,7 @@ import io.cucumber.eclipse.editor.launching.EnvelopeListener;
 import io.cucumber.eclipse.editor.launching.EnvelopeProvider;
 import io.cucumber.eclipse.java.Activator;
 import io.cucumber.eclipse.java.plugins.MessageEndpoint;
-import io.cucumber.messages.Messages.Envelope;
+import io.cucumber.messages.types.Envelope;
 
 /**
  * Integrates a {@link MessageEndpoint} with the eclipse launcher framework

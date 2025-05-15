@@ -32,7 +32,7 @@ import io.cucumber.eclipse.java.plugins.CucumberCodeLocation;
 import io.cucumber.eclipse.java.plugins.MatchedPickleStep;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
 import io.cucumber.eclipse.java.validation.CucumberGlueValidator;
-import io.cucumber.messages.Messages.GherkinDocument.Feature.Step;
+import io.cucumber.messages.types.Step;
 
 @Component(service = IStepDefinitionOpener.class)
 public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
