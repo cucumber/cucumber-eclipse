@@ -16,7 +16,15 @@ https://cucumber.github.io/cucumber-eclipse/update-site/main
 
 You are welcome to [report any issue](https://github.com/cucumber/cucumber-eclipse/issues).
 
-## Installation and further information
+### Install Offline
+
+You can also download the whole site as a Zip for Offline install here:
+
+https://github.com/cucumber/cucumber-eclipse/archive/refs/heads/gh-pages.zip
+
+then you need to point Eclipse to the folder of version your are interested in.
+
+## First Steps
 
 - After you install the Cucumber-Eclipse plugin, you can use it to run Cucumber-JVM.
 - Create a new feature file from Eclipse by selecting New => File from the menu and naming it with a ".feature" suffix to bring up the Feature Editor. After typing in the Gherkin code for a test, select Run => Run to invoke Cucumber-JVM on that feature. This will also create a run configuration, which you can modify and rename by selecting Run => Run Configurarations.... Tags are not available in Cucumber-Eclipse, but you can organize your features into directories and select the Feature Path that you want the run configuration to use. You can execute run configurations from the Run => Run History menu.
