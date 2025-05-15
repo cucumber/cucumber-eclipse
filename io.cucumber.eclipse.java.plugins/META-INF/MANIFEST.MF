@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Cucumber Eclipse Plugins
 Bundle-SymbolicName: io.cucumber.eclipse.java.plugins
-Bundle-Version: 2.0.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-Version: 3.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: io.cucumber.eclipse.java.plugins
 Require-Bundle: io.cucumber.cucumber-plugin,
  io.cucumber.messages

@@ -24,14 +24,14 @@ jobs:
     - name: Set up JDK
       uses: actions/setup-java@v4
       with:
-        java-version: '17'
+        java-version: '21'
         distribution: 'adopt'
         architecture: 'x64'
         cache: maven
     - name: Set up Maven
       uses: stCarolas/setup-maven@07fbbe97d97ef44336b7382563d66743297e442f # v4.5
       with:
-        maven-version: 3.9.5
+        maven-version: 3.9.9
     - name: Build with Maven
       working-directory: code
       run: mvn -B package --file pom.xml
