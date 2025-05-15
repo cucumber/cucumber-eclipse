@@ -7,17 +7,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import io.cucumber.eclipse.editor.launching.EnvelopeListener;
-import io.cucumber.messages.Messages.Envelope;
-import io.cucumber.messages.Messages.GherkinDocument.Feature;
-import io.cucumber.messages.Messages.GherkinDocument.Feature.Scenario;
-import io.cucumber.messages.Messages.GherkinDocument.Feature.Step;
-import io.cucumber.messages.Messages.Pickle;
-import io.cucumber.messages.Messages.Pickle.PickleStep;
-import io.cucumber.messages.Messages.StepDefinition;
-import io.cucumber.messages.Messages.TestCase;
-import io.cucumber.messages.Messages.TestCase.TestStep;
-import io.cucumber.messages.Messages.TestStepFinished;
-import io.cucumber.messages.Messages.TestStepStarted;
+import io.cucumber.messages.types.Envelope;
+import io.cucumber.messages.types.Feature;
+import io.cucumber.messages.types.Pickle;
+import io.cucumber.messages.types.PickleStep;
+import io.cucumber.messages.types.Scenario;
+import io.cucumber.messages.types.Step;
+import io.cucumber.messages.types.StepDefinition;
+import io.cucumber.messages.types.TestCase;
+import io.cucumber.messages.types.TestStep;
+import io.cucumber.messages.types.TestStepFinished;
+import io.cucumber.messages.types.TestStepStarted;
 
 /**
  * Handler that links the individual message parts together
@@ -35,38 +35,38 @@ public abstract class GherkinMessageHandler implements EnvelopeListener {
 
 	@Override
 	public void handleEnvelope(Envelope env) {
-		if (env.hasTestCase()) {
-			TestCase testCase = env.getTestCase();
-			for (TestStep step : testCase.getTestStepsList()) {
-				testStepMap.put(step.getId(), new TestStepLink(testCase, step));
+		if (env.getTestCase().isPresent()) {
+			TestCase testCase = env.getTestCase().get();
+			for (TestStep step : testCase.getTestSteps()) {
+				testStepMap.put(step.getId(), new TestStepLink(step));
 			}
 			return;
 		}
-		if (env.hasPickle()) {
-			Pickle pickle = env.getPickle();
-			for (PickleStep step : pickle.getStepsList()) {
-				pickleStepMap.put(step.getId(), new PickleStepLink(pickle, step));
+		if (env.getPickle().isPresent()) {
+			Pickle pickle = env.getPickle().get();
+			for (PickleStep step : pickle.getSteps()) {
+				pickleStepMap.put(step.getId(), new PickleStepLink(step));
 			}
 			return;
 		}
-		if (env.hasGherkinDocument()) {
+		if (env.getGherkinDocument().isPresent()) {
 			stream = new GherkinStream(env);
 			return;
 		}
-		if (env.hasStepDefinition()) {
-			StepDefinition stepDefinition = env.getStepDefinition();
+		if (env.getStepDefinition().isPresent()) {
+			StepDefinition stepDefinition = env.getStepDefinition().get();
 			stepDefinitionMap.put(stepDefinition.getId(), stepDefinition);
 			return;
 		}
-		boolean testStepStarted = env.hasTestStepStarted();
-		boolean testStepFinished = env.hasTestStepFinished();
+		boolean testStepStarted = env.getTestStepStarted().isPresent();
+		boolean testStepFinished = env.getTestStepFinished().isPresent();
 		if (testStepStarted || testStepFinished) {
 			TestStepLink stepLink;
 			if (testStepStarted) {
-				TestStepStarted stepStarted = env.getTestStepStarted();
+				TestStepStarted stepStarted = env.getTestStepStarted().get();
 				stepLink = testStepMap.get(stepStarted.getTestStepId());
 			} else if (testStepFinished) {
-				TestStepFinished stepFinished = env.getTestStepFinished();
+				TestStepFinished stepFinished = env.getTestStepFinished().get();
 				stepLink = testStepMap.get(stepFinished.getTestStepId());
 			} else {
 				stepLink = null;
@@ -97,37 +97,33 @@ public abstract class GherkinMessageHandler implements EnvelopeListener {
 
 	private final class TestStepLink {
 
-		private TestCase testCase;
 		private TestStep testStep;
 
-		public TestStepLink(TestCase testCase, TestStep step) {
-			this.testCase = testCase;
+		public TestStepLink(TestStep step) {
 			this.testStep = step;
 		}
 
 		Optional<PickleStepLink> link() {
-			return Optional.ofNullable(pickleStepMap.get(testStep.getPickleStepId()));
+			return testStep.getPickleStepId().flatMap(id-> Optional.ofNullable(pickleStepMap.get(id)));
 		}
 
 		Stream<StepDefinition> stepDefinitions() {
-			return testStep.getStepDefinitionIdsList().stream().map(stepDefinitionMap::get).filter(Objects::nonNull);
+			return testStep.getStepDefinitionIds().map(l->l.stream().map(stepDefinitionMap::get).filter(Objects::nonNull)).orElse(Stream.of());
 		}
 	}
 
 	private final class PickleStepLink {
 
-		private Pickle pickle;
 		private PickleStep step;
 
-		public PickleStepLink(Pickle pickle, PickleStep step) {
-			this.pickle = pickle;
+		public PickleStepLink(PickleStep step) {
 			this.step = step;
 		}
 
 		Optional<Backtrace> backtrace() {
 
 			if (stream != null) {
-				return step.getAstNodeIdsList().stream().flatMap(astId -> {
+				return step.getAstNodeIds().stream().flatMap(astId -> {
 					return findByAst(astId);
 				}).findAny();
 			}

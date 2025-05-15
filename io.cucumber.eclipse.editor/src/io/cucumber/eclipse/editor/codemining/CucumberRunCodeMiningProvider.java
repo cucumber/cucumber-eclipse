@@ -28,10 +28,10 @@ import io.cucumber.eclipse.editor.CucumberServiceRegistry;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.launching.ILauncher;
 import io.cucumber.eclipse.editor.launching.ILauncher.Mode;
-import io.cucumber.messages.Messages.GherkinDocument.Feature;
-import io.cucumber.messages.Messages.GherkinDocument.Feature.Scenario;
-import io.cucumber.messages.Messages.GherkinDocument.Feature.Tag;
-import io.cucumber.messages.Messages.Location;
+import io.cucumber.messages.types.Feature;
+import io.cucumber.messages.types.Location;
+import io.cucumber.messages.types.Scenario;
+import io.cucumber.messages.types.Tag;
 import io.cucumber.tagexpressions.TagExpressionParser;
 
 /**
