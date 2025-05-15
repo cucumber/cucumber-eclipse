@@ -177,15 +177,16 @@ public class MarkerFactory {
 				Map<Object, IMarker> existingMarker = getExistingMarker(resource, GHERKIN_SYNTAX_ERROR);
 				for (ParseError error : errors) {
 					String sourceId;
-					Long line;
-					long column;
+					Integer line;
+					int column;
 					if (error.getSource().getLocation().isPresent()) {
 						SourceReference source = error.getSource();
 						Location location = source.getLocation().get();
-						line = location.getLine();
-						column = location.getColumn().orElse(-1l);
+						Long l = location.getLine();
+						line = l == null ? null : l.intValue();
+						column = location.getColumn().orElse(-1l).intValue();
 					} else {
-						line = -1l;
+						line = -1;
 						column = -1;
 					}
 					if (line > 0) {
