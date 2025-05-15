@@ -7,8 +7,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Collection;
 
-import io.cucumber.messages.Messages.Envelope;
-import io.cucumber.messages.internal.com.google.protobuf.Parser;
+import io.cucumber.messages.types.Envelope;
 
 /**
  * open an server endpoint to communicate with a remote cucumber instance
@@ -44,13 +43,13 @@ public abstract class MessageEndpoint {
 							OutputStream outputStream = socket.getOutputStream()) {
 						int framelength;
 						byte[] buffer = new byte[1024 * 1024 * 10];
-						Parser<Envelope> parser = Envelope.parser();
 						while ((framelength = inputStream.readInt()) > 0) {
 							if (buffer.length < framelength) {
 								buffer = new byte[framelength];
 							}
 							inputStream.readFully(buffer, 0, framelength);
-							Envelope envelope = parser.parseFrom(buffer, 0, framelength);
+							Envelope envelope = Jackson.OBJECT_MAPPER.readerFor(Envelope.class).readValue(buffer, 0,
+									framelength);
 							try {
 								handleMessage(envelope);
 							} catch (InterruptedException e) {
@@ -58,7 +57,7 @@ public abstract class MessageEndpoint {
 							}
 							outputStream.write(CucumberEclipsePlugin.HANDLED_MESSAGE);
 							outputStream.flush();
-							if (envelope.hasTestRunFinished()) {
+							if (envelope.getTestRunFinished().isPresent()) {
 								break;
 							}
 						}
