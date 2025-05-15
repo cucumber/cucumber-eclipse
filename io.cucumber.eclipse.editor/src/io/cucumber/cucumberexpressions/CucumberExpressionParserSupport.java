@@ -84,7 +84,7 @@ public class CucumberExpressionParserSupport {
 		if (template instanceof RegularExpressionTemplate) {
 			RegularExpressionTemplate expressionTemplate = (RegularExpressionTemplate) template;
 			List<TemplateVariable> variables = new ArrayList<>();
-			for (GroupBuilder_ builder : expressionTemplate.groups) {
+			for (GroupBuilder builder : expressionTemplate.groups) {
 				int startIndex = builder.getStartIndex() - expressionTemplate.offset;
 				TemplateVariable variable = new TemplateVariable("REG_EXP",
 						pattern.substring(startIndex, builder.getEndIndex() - expressionTemplate.offset + 1),
@@ -114,10 +114,10 @@ public class CucumberExpressionParserSupport {
 	public static String replaceVariables(String pattern, VariableReplacement replacement) {
 		StringBuilder sb = new StringBuilder();
 		if (isRegularExpression(pattern)) {
-			TreeRegexp_ treeRegexp = new TreeRegexp_(pattern);
-			List<GroupBuilder_> groups = treeRegexp.getGroupBuilder().getChildren();
+			TreeRegexp treeRegexp = new TreeRegexp(pattern);
+			List<GroupBuilder> groups = treeRegexp.getGroupBuilder().getChildren();
 			int start = 0;
-			for (GroupBuilder_ groupBuilder_ : groups) {
+			for (GroupBuilder groupBuilder_ : groups) {
 				sb.append(pattern.substring(start, groupBuilder_.getEndIndex()));
 				if (replacement != VariableReplacement.DELETE) {
 					sb.append(replacement.getRegularExpressionReplacement());
@@ -262,7 +262,7 @@ public class CucumberExpressionParserSupport {
 	}
 
 	private static final class RegularExpressionTemplate extends Template {
-		private final List<GroupBuilder_> groups;
+		private final List<GroupBuilder> groups;
 		private final int offset;
 		private final StepDefinition definition;
 
@@ -271,7 +271,7 @@ public class CucumberExpressionParserSupport {
 			super(definition.getExpression().getText(), definition.getLabel(), contextId,
 					definition.getExpression().getText(), true);
 			this.definition = definition;
-			TreeRegexp_ treeRegexp = new TreeRegexp_(definition.getExpression().getText());
+			TreeRegexp treeRegexp = new TreeRegexp(definition.getExpression().getText());
 			groups = treeRegexp.getGroupBuilder().getChildren();
 			String pattern = definition.getExpression().getText();
 			boolean startMarker = pattern.startsWith("^");
