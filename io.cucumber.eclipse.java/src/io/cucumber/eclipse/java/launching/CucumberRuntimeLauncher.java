@@ -37,6 +37,7 @@ import io.cucumber.core.options.RuntimeOptionsBuilder;
 import io.cucumber.eclipse.editor.console.CucumberConsole;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.launching.ILauncher;
+import io.cucumber.eclipse.editor.launching.Mode;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberEclipsePlugin;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;

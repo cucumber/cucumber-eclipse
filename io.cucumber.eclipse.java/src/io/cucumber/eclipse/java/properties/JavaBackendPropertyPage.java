@@ -1,13 +1,10 @@
 package io.cucumber.eclipse.java.properties;
 
-import java.util.Arrays;
-import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
@@ -32,11 +29,16 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.osgi.service.prefs.BackingStoreException;
 
+import io.cucumber.eclipse.java.preferences.CucumberJavaPreferencesPage;
+import io.cucumber.eclipse.java.preferences.GlueCodePackageTable;
+import io.cucumber.eclipse.java.preferences.GlueCodePackageTable.FilterStrings;
+
 public class JavaBackendPropertyPage extends PropertyPage {
 
-	private static final String KEY_VALIDATION_PLUGINS = "validationPlugins";
-	private static final String NAMESPACE = "cucumber.backend.java";
 	private Text validationPlugins;
+	private Button enableProjectSpecific;
+	private GlueCodePackageTable glueCodePackageTable;
+	private Button hookButton;
 
 	public JavaBackendPropertyPage() {
 		setTitle("Cucumber Java Options");
@@ -58,6 +60,8 @@ public class JavaBackendPropertyPage extends PropertyPage {
 
 	@SuppressWarnings("restriction")
 	private void addValidationOption(Composite parent) {
+		IResource resource = getResource();
+		IEclipsePreferences node = CucumberJavaBackendProperties.getNode(resource);
 		Label label = new Label(parent, SWT.NONE);
 		label.setText("Validation Plugins ");
 		label.setToolTipText(
@@ -68,7 +72,7 @@ public class JavaBackendPropertyPage extends PropertyPage {
 		validationPlugins.setLayoutData(new BorderData(SWT.CENTER));
 		GridData data = new GridData(GridData.FILL_HORIZONTAL);
 		composite.setLayoutData(data);
-		validationPlugins.setText(getValidationPluginsOption(getResource()).collect(joinPlugins()));
+		validationPlugins.setText(node.get(CucumberJavaBackendProperties.KEY_VALIDATION_PLUGINS, ""));
 		Button button = new Button(composite, SWT.PUSH);
 		button.setText("Add");
 		button.setLayoutData(new BorderData(SWT.RIGHT));
@@ -90,7 +94,7 @@ public class JavaBackendPropertyPage extends PropertyPage {
 				if (types != null && types.length > 0) {
 					validationPlugins
 							.setText(Stream
-									.concat(parsePlugins(validationPlugins.getText()),
+									.concat(CucumberJavaBackendProperties.parseList(validationPlugins.getText()),
 											Stream.of(types).filter(IType.class::isInstance).map(IType.class::cast)
 													.map(IType::getFullyQualifiedName))
 									.collect(joinPlugins()));
@@ -105,6 +109,49 @@ public class JavaBackendPropertyPage extends PropertyPage {
 			}
 		});
 
+		GridData labelData = new GridData(GridData.FILL_HORIZONTAL);
+		labelData.horizontalSpan = 2;
+		enableProjectSpecific = new Button(parent, SWT.CHECK);
+		enableProjectSpecific.setText("Enable project specific settings");
+		enableProjectSpecific.setSelection(node.getBoolean(CucumberJavaBackendProperties.KEY_ENABLE_PROJECT_SPECIFIC_SETTINGS, false));
+		enableProjectSpecific.addSelectionListener(new SelectionListener() {
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				updateUI();
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+
+			}
+		});
+		enableProjectSpecific.setLayoutData(labelData);
+		new Label(parent, SWT.SEPARATOR).setLayoutData(labelData);
+		glueCodePackageTable = new GlueCodePackageTable(parent) {
+
+			@Override
+			protected String getFilter(boolean active, boolean defaults) {
+				if (defaults) {
+					return "";
+				}
+					if (active) {
+						return node.get(CucumberJavaBackendProperties.KEY_ACTIVE_FILTER, "");
+				} else {
+					return node.get(CucumberJavaBackendProperties.KEY_INACTIVE_FILTER, "");
+					}
+			}
+		};
+		hookButton = CucumberJavaPreferencesPage.createHookButton(parent,
+				node.getBoolean(CucumberJavaBackendProperties.KEY_SHOW_HOOK, false));
+		((GridData) glueCodePackageTable.getControl().getLayoutData()).horizontalSpan = 2;
+		updateUI();
+	}
+
+	private void updateUI() {
+		boolean enable = enableProjectSpecific.getSelection();
+		glueCodePackageTable.setEnabled(enable);
+		hookButton.setEnabled(enable);
 	}
 
 	private IResource getResource() {
@@ -115,40 +162,30 @@ public class JavaBackendPropertyPage extends PropertyPage {
 		return Collectors.joining(", ");
 	}
 
-	public static Stream<String> getValidationPluginsOption(IResource resource) {
-		if (resource == null) {
-			return Stream.empty();
-		}
-		IEclipsePreferences node = getNode(resource);
-		String string = node.get(KEY_VALIDATION_PLUGINS, "");
-		return parsePlugins(string);
-	}
-
-	private static Stream<String> parsePlugins(String string) {
-		return Arrays.stream(string.split(",")).map(String::trim).filter(Predicate.not(String::isBlank));
-	}
-
-	public static IEclipsePreferences getNode(IResource resource) {
-		ProjectScope scope = new ProjectScope(resource.getProject());
-		IEclipsePreferences node = scope.getNode(NAMESPACE);
-		return node;
-	}
-
 	@Override
 	protected void performDefaults() {
 		super.performDefaults();
 		validationPlugins.setText("");
+		glueCodePackageTable.performDefaults();
+		hookButton.setSelection(false);
 	}
 
 	@Override
 	public boolean performOk() {
-		IEclipsePreferences node = getNode(getResource());
-		node.put(KEY_VALIDATION_PLUGINS, validationPlugins.getText());
+		IEclipsePreferences node = CucumberJavaBackendProperties.getNode(getResource());
+		node.put(CucumberJavaBackendProperties.KEY_VALIDATION_PLUGINS, validationPlugins.getText());
+		node.putBoolean(CucumberJavaBackendProperties.KEY_ENABLE_PROJECT_SPECIFIC_SETTINGS, enableProjectSpecific.getSelection());
+		FilterStrings filters = glueCodePackageTable.getFilters();
+		node.put(CucumberJavaBackendProperties.KEY_ACTIVE_FILTER, filters.active());
+		node.put(CucumberJavaBackendProperties.KEY_INACTIVE_FILTER, filters.inactive());
+		node.putBoolean(CucumberJavaBackendProperties.KEY_SHOW_HOOK, hookButton.getSelection());
 		try {
 			node.flush();
 		} catch (BackingStoreException e) {
 		}
 		return true;
 	}
+
+
 
 }

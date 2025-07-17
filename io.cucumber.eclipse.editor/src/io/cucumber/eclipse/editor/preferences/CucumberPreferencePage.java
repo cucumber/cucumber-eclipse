@@ -12,7 +12,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import io.cucumber.eclipse.editor.Activator;
-import io.cucumber.eclipse.editor.launching.ILauncher.Mode;
+import io.cucumber.eclipse.editor.launching.Mode;
 
 public class CucumberPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
@@ -29,7 +29,7 @@ public class CucumberPreferencePage extends FieldEditorPreferencePage implements
 		for (Mode mode : Mode.values()) {
 			addField(new BooleanFieldEditor(
 					ICucumberPreferenceConstants.PREF_SHOW_RUN_SHORTCUT_PREFIX + mode.name(),
-					getString("Show " + mode + " shortcut in feature files"), parent));
+					getLabelForMode(mode), parent));
 
 		}
 
@@ -69,6 +69,10 @@ public class CucumberPreferencePage extends FieldEditorPreferencePage implements
 //		addField(new ComboFieldEditor(ICucumberPreferenceConstants.PREF_INDENTATION_STYLE, 
 //			getString("&Indentation Style:"), CucumberIndentationStyle.getLabelsAndValues(), 
 //			getFieldEditorParent()));
+	}
+
+	public static String getLabelForMode(Mode mode) {
+		return getString(String.format("Show %s shortcut in feature files", mode));
 	}
 
 	public static Image getImage(String imagePath) {

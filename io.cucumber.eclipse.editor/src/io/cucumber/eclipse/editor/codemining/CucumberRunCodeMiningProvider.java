@@ -27,7 +27,7 @@ import org.eclipse.swt.events.MouseEvent;
 import io.cucumber.eclipse.editor.CucumberServiceRegistry;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.launching.ILauncher;
-import io.cucumber.eclipse.editor.launching.ILauncher.Mode;
+import io.cucumber.eclipse.editor.launching.Mode;
 import io.cucumber.messages.types.Feature;
 import io.cucumber.messages.types.Location;
 import io.cucumber.messages.types.Scenario;
@@ -40,7 +40,6 @@ import io.cucumber.tagexpressions.TagExpressionParser;
  * @author christoph
  *
  */
-//TODO make configurable....
 public class CucumberRunCodeMiningProvider implements ICodeMiningProvider {
 
 	@Override
@@ -54,8 +53,8 @@ public class CucumberRunCodeMiningProvider implements ICodeMiningProvider {
 				return Collections.emptyList();
 			}
 			List<ICodeMining> list = new ArrayList<>();
-			for (Mode mode : ILauncher.Mode.values()) {
-				if (!mode.showShortcut()) {
+			for (Mode mode : Mode.values()) {
+				if (!mode.showShortcut(editorDocument.getResource())) {
 					continue;
 				}
 				for (ILauncher launcher : CucumberServiceRegistry.getLauncher()) {

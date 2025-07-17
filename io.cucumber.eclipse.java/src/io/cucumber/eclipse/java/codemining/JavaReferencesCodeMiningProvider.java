@@ -58,11 +58,13 @@ public class JavaReferencesCodeMiningProvider implements ICodeMiningProvider {
 	public CompletableFuture<List<? extends ICodeMining>> provideCodeMinings(ITextViewer viewer,
 			IProgressMonitor monitor) {
 		return CompletableFuture.supplyAsync(() -> {
-			if (CucumberJavaPreferences.showHooks()) {
-				try {
-					IDocument document = viewer.getDocument();
-					IJavaProject javaProject = JDTUtil.getJavaProject(document);
-					if (javaProject != null) {
+			try {
+				IDocument document = viewer.getDocument();
+				IJavaProject javaProject = JDTUtil.getJavaProject(document);
+
+				if (javaProject != null) {
+					CucumberJavaPreferences preferences = CucumberJavaPreferences.of(javaProject.getProject());
+					if (preferences.showHooks()) {
 						Collection<MatchedStep<?>> steps = CucumberGlueValidator.getMatchedSteps(document, monitor);
 						List<ICodeMining> list = new ArrayList<>();
 
@@ -86,12 +88,12 @@ public class JavaReferencesCodeMiningProvider implements ICodeMiningProvider {
 						}
 						return list;
 					}
-				} catch (OperationCanceledException e) {
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-				} catch (CoreException e) {
-					e.printStackTrace();
 				}
+			} catch (OperationCanceledException e) {
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			} catch (CoreException e) {
+				e.printStackTrace();
 			}
 			return Collections.emptyList();
 		});

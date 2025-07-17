@@ -2,22 +2,6 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         id="io.cucumber.eclipse.java.steps.source"
-         name="Java Source"
-         point="io.cucumber.eclipse.editor.steps.integration">
-      <stepDefinitionIntegration
-            class="io.cucumber.eclipse.java.steps.JavaSourceStepDefinitionProvider">
-      </stepDefinitionIntegration>
-   </extension>
-   <extension
-         id="io.cucumber.eclipse.java.steps.classpath"
-         name="Java Classpath"
-         point="io.cucumber.eclipse.editor.steps.integration">
-      <stepDefinitionIntegration
-            class="io.cucumber.eclipse.java.steps.JavaClasspathStepDefinitionProvider">
-      </stepDefinitionIntegration>
-   </extension>
-   <extension
          id="io.cucumber.eclipse.java.steps.cucumber"
          name="Cucumber Runtime"
          point="io.cucumber.eclipse.editor.steps.integration">

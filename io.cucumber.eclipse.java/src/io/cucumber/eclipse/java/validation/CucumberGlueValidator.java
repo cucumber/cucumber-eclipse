@@ -51,7 +51,7 @@ import io.cucumber.eclipse.java.plugins.CucumberMissingStepsPlugin;
 import io.cucumber.eclipse.java.plugins.CucumberStepDefinition;
 import io.cucumber.eclipse.java.plugins.CucumberStepParserPlugin;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
-import io.cucumber.eclipse.java.properties.JavaBackendPropertyPage;
+import io.cucumber.eclipse.java.properties.CucumberJavaBackendProperties;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;
 import io.cucumber.plugin.Plugin;
 
@@ -354,7 +354,8 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 				} catch (BadLocationException e) {
 				}
 			}
-			JavaBackendPropertyPage.getValidationPluginsOption(editorDocument.getResource()).forEach(plugins::add);
+			CucumberJavaBackendProperties projectProperties = CucumberJavaBackendProperties.of(editorDocument.getResource());
+			projectProperties.getPlugins().forEach(plugins::add);
 			for (String plugin : plugins) {
 				Plugin classpathPlugin = rt.addPluginFromClasspath(plugin);
 				if (classpathPlugin != null) {
@@ -365,16 +366,18 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 			if (resource != null) {
 				synchronized (this) {
 					if (listenerRegistration == null) {
-						IEclipsePreferences node = JavaBackendPropertyPage.getNode(resource);
-						IPreferenceChangeListener listener = new IPreferenceChangeListener() {
+						IEclipsePreferences node = projectProperties.node();
+						if (node != null) {
+							IPreferenceChangeListener listener = new IPreferenceChangeListener() {
 
-							@Override
-							public void preferenceChange(PreferenceChangeEvent event) {
-								schedule();
-							}
-						};
-						node.addPreferenceChangeListener(listener);
-						listenerRegistration = () -> node.removePreferenceChangeListener(listener);
+								@Override
+								public void preferenceChange(PreferenceChangeEvent event) {
+									schedule();
+								}
+							};
+							node.addPreferenceChangeListener(listener);
+							listenerRegistration = () -> node.removePreferenceChangeListener(listener);
+						}
 					}
 				}
 			}

@@ -42,7 +42,7 @@ import io.cucumber.eclipse.editor.debug.GherkingStepStackFrame;
 import io.cucumber.eclipse.editor.debug.GherkingThread;
 import io.cucumber.eclipse.editor.document.GherkinMessageHandler;
 import io.cucumber.eclipse.editor.document.TestStepEvent;
-import io.cucumber.eclipse.editor.launching.ILauncher.Mode;
+import io.cucumber.eclipse.editor.launching.Mode;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberEclipsePlugin;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;
