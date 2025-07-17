@@ -4,7 +4,7 @@ import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import io.cucumber.eclipse.editor.Activator;
-import io.cucumber.eclipse.editor.launching.ILauncher.Mode;
+import io.cucumber.eclipse.editor.launching.Mode;
 import io.cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants.CucumberIndentationStyle;
 
 public class CucumberPreferenceInitializer extends

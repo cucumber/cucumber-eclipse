@@ -8,12 +8,16 @@
 	<unit id="org.eclipse.equinox.sdk.feature.group" version="0.0.0"/>
 	<unit id="org.eclipse.unittest.ui" version="0.0.0"/>
 </location>
+	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+		<repository location="https://download.eclipse.org/technology/m2e/releases/latest/"/>
+		<unit id="org.eclipse.m2e.sdk.feature.feature.group" version="0.0.0"/>
+	</location>
 	<location includeDependencyDepth="infinite" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
 		<dependencies>
 			<dependency>
 				<groupId>io.cucumber</groupId>
 				<artifactId>gherkin</artifactId>
-				<version>32.1.1</version>
+				<version>33.0.0</version>
 				<type>jar</type>
 			</dependency>
 		</dependencies>
@@ -31,7 +35,7 @@ Export-Package:        *;version="${version}";-noimport:=true
 			<dependency>
 				<groupId>io.cucumber</groupId>
 				<artifactId>cucumber-java</artifactId>
-				<version>7.22.2</version>
+				<version>7.26.0</version>
 				<type>jar</type>
 			</dependency>
 		</dependencies>
@@ -49,7 +53,7 @@ Export-Package:        *;version="${version}";-noimport:=true
 			<dependency>
 				<groupId>io.cucumber</groupId>
 				<artifactId>cucumber-core</artifactId>
-				<version>7.22.2</version>
+				<version>7.26.0</version>
 				<type>jar</type>
 			</dependency>
 		</dependencies>

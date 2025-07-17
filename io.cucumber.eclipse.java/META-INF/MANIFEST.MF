@@ -33,6 +33,4 @@ Import-Package: org.eclipse.unittest.ui,
  org.osgi.service.component.annotations;version="1.3.0"
 Service-Component: OSGI-INF/io.cucumber.eclipse.java.launching.CucumberRuntimeLauncher.xml,
  OSGI-INF/io.cucumber.eclipse.java.steps.CucumberStepDefinitionProvider.xml,
- OSGI-INF/io.cucumber.eclipse.java.steps.JavaClasspathStepDefinitionProvider.xml,
- OSGI-INF/io.cucumber.eclipse.java.steps.JavaSourceStepDefinitionProvider.xml,
  OSGI-INF/io.cucumber.eclipse.java.steps.JavaStepDefinitionOpener.xml

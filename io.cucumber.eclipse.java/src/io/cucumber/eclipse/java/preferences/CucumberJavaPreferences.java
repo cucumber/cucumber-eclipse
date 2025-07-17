@@ -4,46 +4,57 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.jface.preference.IPreferenceStore;
 
 import io.cucumber.eclipse.java.Activator;
+import io.cucumber.eclipse.java.properties.CucumberJavaBackendProperties;
 
-public abstract class CucumberJavaPreferences {
+public final record CucumberJavaPreferences(IPreferenceStore store, boolean showHooks, List<String> glueFilter) {
 
-	public static final String PREF_USE_STEP_DEFINITIONS_FILTERS = Activator.PLUGIN_ID + ".use_step_definitions_filters";
-	public static final String PREF_ACTIVE_FILTERS_LIST = Activator.PLUGIN_ID + ".active_filters";
-	public static final String PREF_INACTIVE_FILTERS_LIST = Activator.PLUGIN_ID + ".inactive_filters";
-	public static final String PREF_SHOW_HOOK_ANNOTATIONS = Activator.PLUGIN_ID + ".show_hooks";
+	static final String PREF_USE_STEP_DEFINITIONS_FILTERS = Activator.PLUGIN_ID + ".use_step_definitions_filters";
+	static final String PREF_ACTIVE_FILTERS_LIST = Activator.PLUGIN_ID + ".active_filters";
+	static final String PREF_INACTIVE_FILTERS_LIST = Activator.PLUGIN_ID + ".inactive_filters";
+	static final String PREF_SHOW_HOOK_ANNOTATIONS = Activator.PLUGIN_ID + ".show_hooks";
 
-	public static boolean isUseStepDefinitionsFilters() {
-
-		return getStepDefinitionsFilters().length > 0;
+	public static CucumberJavaPreferences of() {
+		return of(null);
 	}
 
-	public static boolean showHooks() {
-
-		return Activator.getDefault().getPreferenceStore().getBoolean(PREF_SHOW_HOOK_ANNOTATIONS);
-	}
-
-	public static String[] getStepDefinitionsFilters() {
-		return parseList(Platform.getPreferencesService().getString(Activator.PLUGIN_ID, PREF_ACTIVE_FILTERS_LIST, "", null));
+	public static CucumberJavaPreferences of(IResource resource) {
+		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+		if (resource != null) {
+			CucumberJavaBackendProperties properties = CucumberJavaBackendProperties.of(resource);
+			if (properties.isEnabled()) {
+				// project settings overwrite preferences...
+				return new CucumberJavaPreferences(store, properties.isShowHooks(),
+						properties.getGlueFilter().toList());
+			}
+		}
+		boolean showHooks = store.getBoolean(PREF_SHOW_HOOK_ANNOTATIONS);
+		String string = store.getString(CucumberJavaPreferences.PREF_ACTIVE_FILTERS_LIST);
+		return new CucumberJavaPreferences(store, showHooks, parseList(string));
 	}
 
 	/**
 	 * Parses the comma separated string into an array of strings
 	 *
-	 * @param listString a string representation of a list of elements separated by commas 
+	 * @param listString a string representation of a list of elements separated by
+	 *                   commas
 	 * 
 	 * @return an array of string
 	 */
-	public static String[] parseList(String listString) {
+	static List<String> parseList(String listString) {
+		if (listString == null || listString.isBlank()) {
+			return List.of();
+		}
 		List<String> list = new ArrayList<String>(10);
 		StringTokenizer tokenizer = new StringTokenizer(listString, ","); //$NON-NLS-1$
 		while (tokenizer.hasMoreTokens()) {
 			String token = tokenizer.nextToken();
 			list.add(token);
 		}
-		return list.toArray(new String[list.size()]);
+		return list;
 	}
 
 	/**
@@ -52,7 +63,7 @@ public abstract class CucumberJavaPreferences {
 	 * @param list array of strings
 	 * @return a single string composed of the given list
 	 */
-	public static String serializeList(String[] list) {
+	static String serializeList(String[] list) {
 		if (list == null) {
 			return ""; //$NON-NLS-1$
 		}
@@ -66,4 +77,13 @@ public abstract class CucumberJavaPreferences {
 		return buffer.toString();
 	}
 
+	public static void setShowHooks(boolean showhooks) {
+		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+		setShowHooks(store, showhooks);
+	}
+
+
+	protected static void setShowHooks(IPreferenceStore store, boolean showhooks) {
+		store.setValue(CucumberJavaPreferences.PREF_SHOW_HOOK_ANNOTATIONS, showhooks);
+	}
 }
