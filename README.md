@@ -25,6 +25,13 @@ _Where sleek plugin meets seamless BDD workflow_
 
 🎉 Elevate Testing. Empower Teams. Embrace Cucumber.
 
+## Eclipse-Marketplace
+
+![Eclipse-Marketplace](https://github.com/cucumber/cucumber-eclipse/blob/gh-pages/images/EclipseMarketPPlace.png)
+
+- Available in [Eclipse-Marketplace](https://marketplace.eclipse.org/content/cucumber-eclipse-plugin).
+- Please refer our [Eclipse-Marketplace-Wiki](https://github.com/cucumber/cucumber-eclipse/wiki/Eclipse-Market-Place-For-Cucumber-Eclipse-Plugin) page for detail information.
+
 ## Install the Plugin
 
 You can install the latest release using the follwoing update site in Eclipse:
@@ -37,14 +44,7 @@ https://cucumber.github.io/cucumber-eclipse/update-site/main
 
 You are welcome to [report any issue](https://github.com/cucumber/cucumber-eclipse/issues).
 
-## Eclipse-Marketplace Details
-
-![Eclipse-Marketplace](https://github.com/cucumber/cucumber-eclipse/blob/gh-pages/images/EclipseMarketPPlace.png)
-
-- Available in [Eclipse-Marketplace](https://marketplace.eclipse.org/content/cucumber-eclipse-plugin).
-- Please refer our [Eclipse-Marketplace-Wiki](https://github.com/cucumber/cucumber-eclipse/wiki/Eclipse-Market-Place-For-Cucumber-Eclipse-Plugin) page for detail information.
-
-### Install Offline
+### Install the plugin Offline
 
 You can also download the whole site as a Zip for Offline install here:
 
