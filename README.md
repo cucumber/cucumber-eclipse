@@ -5,7 +5,7 @@
 An Eclipse plugin for [Cucumber Version 7](https://cucumber.io/).
 
 
-**🚀Turbocharge Your Testing: Eclipse + Cucumber = Sweet Automation!💻**
+**🚀Turbocharge Your Testing with Cucumber Eclipse Plugin!💻**
 
 _Where sleek plugin meets seamless BDD workflow_
 
