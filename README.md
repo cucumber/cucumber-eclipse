@@ -9,13 +9,15 @@ An Eclipse plugin for [Cucumber Version 7](https://cucumber.io/).
 
 _Where sleek plugin meets seamless BDD workflow_
 
-**🎯 Key Features That Make Devs Fall in Love:**
+**🎯 Key Features That Make Devs Fall in Love:** [Pligin-wiki](https://github.com/cucumber/cucumber-eclipse/wiki)
 - ⚡️ One-Click Gherkin Execution: Run feature files instantly—no more command-line gymnastics.
 - 🧠 Smart Step Matching: Auto-link steps to definitions like magic. Zero guesswork, full precision.
 - 🚀 Auto-suggestions: Context-Aware Autocomplete - Speeds up typing, cuts down typos, feels like IDE sorcery.
 - 🗂️ Step definition navigation: Jump between features and step definitions like a time traveler.
 - 🎨 I18n Syntax Highlighting: Make your tests shine with vibrant visual feedback.
 - 🛠️ Cucumber Console Output Panel: See clear results and trace bugs in a heartbeat.
+
+
 
 🧠 Whether you're a QA rockstar or a developer who loves clean code, this plugin brings clarity, speed, and cucumber-fresh productivity to your workflow.
 
