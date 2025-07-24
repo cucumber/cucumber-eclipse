@@ -9,7 +9,7 @@ An Eclipse plugin for [Cucumber Version 7](https://cucumber.io/).
 
 _Where sleek plugin meets seamless BDD workflow_
 
-**🎯 Key Features That Make Devs Fall in Love:** [Plugin-wiki](https://github.com/cucumber/cucumber-eclipse/wiki)
+**🎯 Key Features That Make You Fall in Love:** [Plugin-wiki](https://github.com/cucumber/cucumber-eclipse/wiki)
 - ⚡️ One-Click Gherkin Execution: Run feature files instantly—no more command-line gymnastics.
 - 🧠 Smart Step Matching: Auto-link steps to definitions like magic. Zero guesswork, full precision.
 - 🚀 Auto-suggestions: Context-Aware Autocomplete - Speeds up typing, cuts down typos, feels like IDE sorcery.
