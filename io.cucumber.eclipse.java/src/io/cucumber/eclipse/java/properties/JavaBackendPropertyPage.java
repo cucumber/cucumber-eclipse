@@ -32,11 +32,19 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.osgi.service.prefs.BackingStoreException;
 
+import io.cucumber.eclipse.java.preferences.GlueCodePackageTable;
+import io.cucumber.eclipse.java.preferences.GlueCodePackageTable.FilterStrings;
+
 public class JavaBackendPropertyPage extends PropertyPage {
 
+	private static final String KEY_ENABLE_PROJECT_SPECIFIC_SETTINGS = "enableProjectSpecific";
 	private static final String KEY_VALIDATION_PLUGINS = "validationPlugins";
+	private static final String KEY_ACTIVE_FILTER = "activeFilters";
+	private static final String KEY_INACTIVE_FILTER = "inactiveFilters";
 	private static final String NAMESPACE = "cucumber.backend.java";
 	private Text validationPlugins;
+	private Button enableProjectSpecific;
+	private GlueCodePackageTable glueCodePackageTable;
 
 	public JavaBackendPropertyPage() {
 		setTitle("Cucumber Java Options");
@@ -68,7 +76,8 @@ public class JavaBackendPropertyPage extends PropertyPage {
 		validationPlugins.setLayoutData(new BorderData(SWT.CENTER));
 		GridData data = new GridData(GridData.FILL_HORIZONTAL);
 		composite.setLayoutData(data);
-		validationPlugins.setText(getValidationPluginsOption(getResource()).collect(joinPlugins()));
+		IResource resource = getResource();
+		validationPlugins.setText(getValidationPluginsOption(resource).collect(joinPlugins()));
 		Button button = new Button(composite, SWT.PUSH);
 		button.setText("Add");
 		button.setLayoutData(new BorderData(SWT.RIGHT));
@@ -104,7 +113,47 @@ public class JavaBackendPropertyPage extends PropertyPage {
 
 			}
 		});
+		IEclipsePreferences node = getNode(resource);
+		GridData labelData = new GridData(GridData.FILL_HORIZONTAL);
+		labelData.horizontalSpan = 2;
+		enableProjectSpecific = new Button(parent, SWT.CHECK);
+		enableProjectSpecific.setText("Enable project specific settings");
+		enableProjectSpecific.setSelection(node.getBoolean(KEY_ENABLE_PROJECT_SPECIFIC_SETTINGS, false));
+		enableProjectSpecific.addSelectionListener(new SelectionListener() {
 
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				updateUI();
+			}
+
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {
+
+			}
+		});
+		enableProjectSpecific.setLayoutData(labelData);
+		new Label(parent, SWT.SEPARATOR).setLayoutData(labelData);
+		glueCodePackageTable = new GlueCodePackageTable(parent) {
+
+			@Override
+			protected String getFilter(boolean active, boolean defaults) {
+				if (defaults) {
+					return "";
+				}
+					if (active) {
+						return node.get(KEY_ACTIVE_FILTER, "");
+				} else {
+					return node.get(KEY_INACTIVE_FILTER, "");
+					}
+			}
+		};
+		((GridData) glueCodePackageTable.getControl().getLayoutData()).horizontalSpan = 2;
+		updateUI();
+	}
+
+	private void updateUI() {
+		boolean enable = enableProjectSpecific.getSelection();
+		glueCodePackageTable.setEnabled(enable);
 	}
 
 	private IResource getResource() {
@@ -138,12 +187,17 @@ public class JavaBackendPropertyPage extends PropertyPage {
 	protected void performDefaults() {
 		super.performDefaults();
 		validationPlugins.setText("");
+		glueCodePackageTable.performDefaults();
 	}
 
 	@Override
 	public boolean performOk() {
 		IEclipsePreferences node = getNode(getResource());
 		node.put(KEY_VALIDATION_PLUGINS, validationPlugins.getText());
+		node.putBoolean(KEY_ENABLE_PROJECT_SPECIFIC_SETTINGS, enableProjectSpecific.getSelection());
+		FilterStrings filters = glueCodePackageTable.getFilters();
+		node.put(KEY_ACTIVE_FILTER, filters.active());
+		node.put(KEY_INACTIVE_FILTER, filters.inactive());
 		try {
 			node.flush();
 		} catch (BackingStoreException e) {
