@@ -25,12 +25,17 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.osgi.service.debug.DebugTrace;
 
+import io.cucumber.core.feature.GluePath;
 import io.cucumber.core.gherkin.FeatureParserException;
+import io.cucumber.core.options.RuntimeOptionsBuilder;
 import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.marker.MarkerFactory;
@@ -41,7 +46,7 @@ import io.cucumber.eclipse.java.plugins.CucumberMissingStepsPlugin;
 import io.cucumber.eclipse.java.plugins.CucumberStepDefinition;
 import io.cucumber.eclipse.java.plugins.CucumberStepParserPlugin;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
-import io.cucumber.eclipse.java.properties.CucumberJavaBackendProperties;
+import io.cucumber.eclipse.java.preferences.CucumberJavaPreferences;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;
 import io.cucumber.plugin.Plugin;
 
@@ -103,21 +108,25 @@ final class GlueJob extends Job {
 					long start = System.currentTimeMillis();
 					DebugTrace debug = Tracing.get();
 					debug.traceEntry(PERFORMANCE_STEPS, resource);
+					CucumberJavaPreferences projectProperties = getProperties(editorDocument);
 					try (CucumberRuntime rt = CucumberRuntime.create(javaProject)) {
-						rt.getRuntimeOptions().setDryRun();
+						RuntimeOptionsBuilder runtimeOptions = rt.getRuntimeOptions();
+						runtimeOptions.setDryRun();
 						try {
 							rt.addFeature(editorDocument);
 						} catch (FeatureParserException e) {
 							// the feature has syntax errors, we can't check the glue then...
 							return Status.CANCEL_STATUS;
 						}
+						addGlueOptions(runtimeOptions, projectProperties);
 						CucumberMissingStepsPlugin missingStepsPlugin = new CucumberMissingStepsPlugin();
 						CucumberStepParserPlugin stepParserPlugin = new CucumberStepParserPlugin();
 						CucumberMatchedStepsPlugin matchedStepsPlugin = new CucumberMatchedStepsPlugin();
 						rt.addPlugin(stepParserPlugin);
 						rt.addPlugin(matchedStepsPlugin);
 						rt.addPlugin(missingStepsPlugin);
-						Collection<Plugin> validationPlugins = addValidationPlugins(editorDocument, rt);
+						Collection<Plugin> validationPlugins = addValidationPlugins(editorDocument, rt,
+								projectProperties);
 						try {
 							rt.run(monitor);
 							Map<Integer, String> validationErrors = new HashMap<>();
@@ -166,15 +175,16 @@ final class GlueJob extends Job {
 		return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
 	}
 
-	private Collection<Plugin> addValidationPlugins(GherkinEditorDocument editorDocument, CucumberRuntime rt) {
+	private static Collection<Plugin> addValidationPlugins(GherkinEditorDocument editorDocument, CucumberRuntime rt,
+			CucumberJavaPreferences projectProperties) {
 		List<Plugin> validationPlugins = new ArrayList<>();
 		IDocument doc = editorDocument.getDocument();
 		int lines = doc.getNumberOfLines();
 		Set<String> plugins = new LinkedHashSet<>();
 		for (int i = 0; i < lines; i++) {
 			try {
-				IRegion firstLine = document.getLineInformation(i);
-				String line = document.get(firstLine.getOffset(), firstLine.getLength()).trim();
+				IRegion firstLine = doc.getLineInformation(i);
+				String line = doc.get(firstLine.getOffset(), firstLine.getLength()).trim();
 				if (line.startsWith("#")) {
 					String[] split = line.split("validation-plugin:", 2);
 					if (split.length == 2) {
@@ -184,39 +194,18 @@ final class GlueJob extends Job {
 			} catch (BadLocationException e) {
 			}
 		}
-		CucumberJavaBackendProperties projectProperties = CucumberJavaBackendProperties
-				.of(editorDocument.getResource());
-		projectProperties.getPlugins().forEach(plugins::add);
+		projectProperties.plugins().forEach(plugins::add);
 		for (String plugin : plugins) {
 			Plugin classpathPlugin = rt.addPluginFromClasspath(plugin);
 			if (classpathPlugin != null) {
 				validationPlugins.add(classpathPlugin);
 			}
 		}
-		IResource resource = editorDocument.getResource();
-		if (resource != null) {
-			synchronized (this) {
-				if (listenerRegistration == null) {
-					IEclipsePreferences node = projectProperties.node();
-					if (node != null) {
-						IPreferenceChangeListener listener = new IPreferenceChangeListener() {
-
-							@Override
-							public void preferenceChange(PreferenceChangeEvent event) {
-								schedule();
-							}
-						};
-						node.addPreferenceChangeListener(listener);
-						listenerRegistration = () -> node.removePreferenceChangeListener(listener);
-					}
-				}
-			}
-		}
 		return validationPlugins;
 	}
 
 	@SuppressWarnings("unchecked")
-	static void addErrors(Plugin plugin, Map<Integer, String> validationErrors) {
+	private static void addErrors(Plugin plugin, Map<Integer, String> validationErrors) {
 		try {
 			Method method = plugin.getClass().getMethod("getValidationErrors");
 			Object invoke = method.invoke(plugin);
@@ -229,5 +218,63 @@ final class GlueJob extends Job {
 			e.printStackTrace();
 		}
 
+	}
+
+	private CucumberJavaPreferences getProperties(GherkinEditorDocument editorDocument) {
+		IResource resource = editorDocument.getResource();
+		CucumberJavaPreferences projectProperties = CucumberJavaPreferences.of(resource);
+		if (resource != null) {
+			synchronized (this) {
+				if (listenerRegistration == null) {
+					IEclipsePreferences node = projectProperties.node();
+					List<Runnable> list = new ArrayList<>();
+					if (node != null) {
+						IPreferenceChangeListener listener = new IPreferenceChangeListener() {
+
+							@Override
+							public void preferenceChange(PreferenceChangeEvent event) {
+								schedule();
+							}
+						};
+						node.addPreferenceChangeListener(listener);
+						list.add(() -> node.removePreferenceChangeListener(listener));
+					}
+					IPreferenceStore store = projectProperties.store();
+					if (store != null) {
+						IPropertyChangeListener propertyChangeListener = new IPropertyChangeListener() {
+
+							@Override
+							public void propertyChange(PropertyChangeEvent event) {
+								schedule();
+							}
+						};
+						store.addPropertyChangeListener(propertyChangeListener);
+					}
+					listenerRegistration = () -> list.forEach(Runnable::run);
+				}
+			}
+		}
+		return projectProperties;
+	}
+
+	private static void addGlueOptions(RuntimeOptionsBuilder runtimeOptions,
+			CucumberJavaPreferences projectProperties) {
+		projectProperties.glueFilter().forEach(gluePath -> {
+			gluePath = gluePath.trim();
+			if (gluePath.endsWith("*")) {
+				gluePath = gluePath.substring(0, gluePath.length() - 1);
+			}
+			if (gluePath.endsWith("/")) {
+				gluePath = gluePath.substring(0, gluePath.length() - 1);
+			}
+			if (gluePath.endsWith(".")) {
+				gluePath = gluePath.substring(0, gluePath.length() - 1);
+			}
+			try {
+				runtimeOptions.addGlue(GluePath.parse(gluePath));
+			} catch (RuntimeException e) {
+				e.printStackTrace();
+			}
+		});
 	}
 }
