@@ -5,12 +5,15 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import io.cucumber.eclipse.java.Activator;
 import io.cucumber.eclipse.java.properties.CucumberJavaBackendProperties;
 
-public final record CucumberJavaPreferences(IPreferenceStore store, boolean showHooks, List<String> glueFilter) {
+public final record CucumberJavaPreferences(IPreferenceStore store, IEclipsePreferences node, boolean showHooks,
+		List<String> glueFilter,
+		List<String> plugins) {
 
 	static final String PREF_USE_STEP_DEFINITIONS_FILTERS = Activator.PLUGIN_ID + ".use_step_definitions_filters";
 	static final String PREF_ACTIVE_FILTERS_LIST = Activator.PLUGIN_ID + ".active_filters";
@@ -27,13 +30,13 @@ public final record CucumberJavaPreferences(IPreferenceStore store, boolean show
 			CucumberJavaBackendProperties properties = CucumberJavaBackendProperties.of(resource);
 			if (properties.isEnabled()) {
 				// project settings overwrite preferences...
-				return new CucumberJavaPreferences(store, properties.isShowHooks(),
-						properties.getGlueFilter().toList());
+				return new CucumberJavaPreferences(store, properties.node(), properties.isShowHooks(),
+						properties.getGlueFilter().toList(), properties.getPlugins().toList());
 			}
 		}
 		boolean showHooks = store.getBoolean(PREF_SHOW_HOOK_ANNOTATIONS);
 		String string = store.getString(CucumberJavaPreferences.PREF_ACTIVE_FILTERS_LIST);
-		return new CucumberJavaPreferences(store, showHooks, parseList(string));
+		return new CucumberJavaPreferences(store, null, showHooks, parseList(string), List.of());
 	}
 
 	/**
