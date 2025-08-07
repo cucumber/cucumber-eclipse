@@ -9,40 +9,33 @@ import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaProject;
 
-import io.cucumber.core.backend.Backend;
-import io.cucumber.core.backend.ObjectFactory;
-import io.cucumber.core.eventbus.IncrementingUuidGenerator;
+import io.cucumber.core.eventbus.UuidGenerator;
 import io.cucumber.core.feature.FeatureParser;
 import io.cucumber.core.gherkin.Feature;
 import io.cucumber.core.gherkin.messages.GherkinMessagesFeatureParser;
 import io.cucumber.core.options.RuntimeOptions;
 import io.cucumber.core.options.RuntimeOptionsBuilder;
 import io.cucumber.core.resource.Resource;
-import io.cucumber.core.runtime.BackendSupplier;
-import io.cucumber.core.runtime.ObjectFactoryServiceLoader;
 import io.cucumber.core.runtime.Runtime;
-import io.cucumber.core.runtime.ThreadLocalObjectFactorySupplier;
 import io.cucumber.core.runtime.TimeServiceEventBus;
 import io.cucumber.core.snippets.SnippetType;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.java.Activator;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.launching.FileResource;
-import io.cucumber.java.JavaBackendProviderService;
 import io.cucumber.plugin.Plugin;
 
 /**
@@ -55,8 +48,6 @@ public final class CucumberRuntime implements AutoCloseable {
 
 	private static final FeatureParser FEATURE_PARSER = new FeatureParser(UUID::randomUUID);
 
-	private static final JavaBackendProviderService BACKEND_PROVIDER_SERVICE = new JavaBackendProviderService();
-
 	private List<Feature> features = new ArrayList<>();
 
 	private List<Plugin> plugins = new ArrayList<>();
@@ -66,6 +57,8 @@ public final class CucumberRuntime implements AutoCloseable {
 	private URLClassLoader classLoader;
 
 	private RuntimeOptionsBuilder runtimeOptions;
+
+	private UuidGenerator uuidGenerator;
 
 	private CucumberRuntime(IJavaProject javaProject) throws CoreException {
 		this.javaProject = javaProject;
@@ -120,20 +113,9 @@ public final class CucumberRuntime implements AutoCloseable {
 					.withFeatureSupplier(() -> Collections.unmodifiableList(features))//
 					.withAdditionalPlugins(plugins.toArray(Plugin[]::new))//
 					// Workaround for https://github.com/cucumber/cucumber-jvm/issues/3037
-					.withEventBus(new TimeServiceEventBus(Clock.systemUTC(), new IncrementingUuidGenerator()))
-					.withBackendSupplier(new BackendSupplier() {
-
-						@Override
-						public Collection<? extends Backend> get() {
-							// TODO https://github.com/cucumber/cucumber-jvm/issues/2217
-							ThreadLocalObjectFactorySupplier supplier = new ThreadLocalObjectFactorySupplier(
-									new ObjectFactoryServiceLoader(() -> classLoader, options));
-							ObjectFactory objectFactory = supplier.get();
-							Set<Backend> backends = Collections.singleton(
-									BACKEND_PROVIDER_SERVICE.create(objectFactory, objectFactory, () -> classLoader));
-							return backends;
-						}
-					}).build();
+					.withEventBus(
+							uuidGenerator == null ? null : new TimeServiceEventBus(Clock.systemUTC(), uuidGenerator))
+					.build();
 			// FIXME workaround for https://github.com/cucumber/cucumber-jvm/issues/2216
 			runtime.run();
 		} finally {
@@ -165,11 +147,9 @@ public final class CucumberRuntime implements AutoCloseable {
 				return plugin;
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			ILog.get().error("Can't load plugin '" + clazz + "' from classpath", e);
 		}
 		return null;
-//		plugins.add(plugin);
 	}
 
 	public void addFeature(GherkinEditorDocument document) {
@@ -196,6 +176,10 @@ public final class CucumberRuntime implements AutoCloseable {
 		// TODO can we cache the classlaoder here to optimize performance? As long as
 		// the classpath do not change there won't be any new classes be loaded...
 		return new CucumberRuntime(javaProject);
+	}
+
+	public void setGenerator(UuidGenerator uuidGenerator) {
+		this.uuidGenerator = uuidGenerator;
 	}
 
 }

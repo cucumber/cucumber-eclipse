@@ -33,6 +33,7 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.osgi.service.debug.DebugTrace;
 
+import io.cucumber.core.eventbus.IncrementingUuidGenerator;
 import io.cucumber.core.feature.GluePath;
 import io.cucumber.core.gherkin.FeatureParserException;
 import io.cucumber.core.options.RuntimeOptionsBuilder;
@@ -110,6 +111,7 @@ final class GlueJob extends Job {
 					debug.traceEntry(PERFORMANCE_STEPS, resource);
 					CucumberJavaPreferences projectProperties = getProperties(editorDocument);
 					try (CucumberRuntime rt = CucumberRuntime.create(javaProject)) {
+						rt.setGenerator(new IncrementingUuidGenerator());
 						RuntimeOptionsBuilder runtimeOptions = rt.getRuntimeOptions();
 						runtimeOptions.setDryRun();
 						try {
