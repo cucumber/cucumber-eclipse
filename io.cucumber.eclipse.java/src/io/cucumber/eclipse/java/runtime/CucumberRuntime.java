@@ -7,6 +7,7 @@ import java.io.PrintStream;
 import java.net.URI;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,6 +25,7 @@ import org.eclipse.jdt.core.IJavaProject;
 
 import io.cucumber.core.backend.Backend;
 import io.cucumber.core.backend.ObjectFactory;
+import io.cucumber.core.eventbus.IncrementingUuidGenerator;
 import io.cucumber.core.feature.FeatureParser;
 import io.cucumber.core.gherkin.Feature;
 import io.cucumber.core.gherkin.messages.GherkinMessagesFeatureParser;
@@ -34,6 +36,7 @@ import io.cucumber.core.runtime.BackendSupplier;
 import io.cucumber.core.runtime.ObjectFactoryServiceLoader;
 import io.cucumber.core.runtime.Runtime;
 import io.cucumber.core.runtime.ThreadLocalObjectFactorySupplier;
+import io.cucumber.core.runtime.TimeServiceEventBus;
 import io.cucumber.core.snippets.SnippetType;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.java.Activator;
@@ -116,6 +119,8 @@ public final class CucumberRuntime implements AutoCloseable {
 					.withClassLoader(() -> classLoader)//
 					.withFeatureSupplier(() -> Collections.unmodifiableList(features))//
 					.withAdditionalPlugins(plugins.toArray(Plugin[]::new))//
+					// Workaround for https://github.com/cucumber/cucumber-jvm/issues/3037
+					.withEventBus(new TimeServiceEventBus(Clock.systemUTC(), new IncrementingUuidGenerator()))
 					.withBackendSupplier(new BackendSupplier() {
 
 						@Override
