@@ -39,7 +39,7 @@ public final record CucumberJavaBackendProperties(IEclipsePreferences node) {
 		if (node == null) {
 			return;
 		}
-		node.getBoolean(KEY_ENABLE_PROJECT_SPECIFIC_SETTINGS, false);
+		node.putBoolean(KEY_ENABLE_PROJECT_SPECIFIC_SETTINGS, enabled);
 	}
 
 	public void flush() {
