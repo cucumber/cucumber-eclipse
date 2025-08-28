@@ -11,9 +11,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
-import org.eclipse.core.filebuffers.FileBuffers;
-import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ILog;
@@ -54,16 +53,16 @@ import io.cucumber.plugin.Plugin;
 final class GlueJob extends Job {
 
 	private GlueJob oldJob;
-	private final IDocument document;
 	private Runnable listenerRegistration;
 
 	volatile Collection<MatchedStep<?>> matchedSteps;
 	volatile Collection<CucumberStepDefinition> parsedSteps;
+	private Supplier<GherkinEditorDocument> documentSupplier;
 
-	public GlueJob(GlueJob oldJob, IDocument document) {
+	GlueJob(GlueJob oldJob, Supplier<GherkinEditorDocument> documentSupplier) {
 		super("Verify Cucumber Glue Code");
 		this.oldJob = oldJob;
-		this.document = document;
+		this.documentSupplier = documentSupplier;
 		if (oldJob != null) {
 			this.matchedSteps = oldJob.matchedSteps;
 			this.parsedSteps = oldJob.parsedSteps;
@@ -100,7 +99,7 @@ final class GlueJob extends Job {
 				return Status.CANCEL_STATUS;
 			}
 		}
-		GherkinEditorDocument editorDocument = GherkinEditorDocument.get(document);
+		GherkinEditorDocument editorDocument = documentSupplier.get();
 		if (editorDocument != null) {
 			try {
 				IResource resource = editorDocument.getResource();
@@ -145,25 +144,7 @@ final class GlueJob extends Job {
 									matchedSteps.size() + " step(s) /  " + steps.size() + " step(s)  matched, "
 											+ snippets.size() + " snippet(s) where suggested || total run time "
 											+ (System.currentTimeMillis() - start) + "ms)");
-							if (!monitor.isCanceled()) {
-								ITextFileBuffer buffer = FileBuffers.getTextFileBufferManager()
-										.getTextFileBuffer(document);
-								if (buffer != null) {
-//										IEditorPart editorPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-//												.getActivePage().getActiveEditor();
-//										if (editorPart instanceof ITextEditor) {
-//											ITextEditor textEditor = (ITextEditor) editorPart;
-//											if (textEditor.getDocumentProvider()
-//													.getDocument(textEditor.getEditorInput()) == document) {
-//												// FIXME how to get the Textbuffer?
-//											}
-//										}
-
-								}
-							}
-
 						} catch (Throwable e) {
-							// TODO
 							ILog.get().error("Validate Glue-Code failed", e);
 						}
 					}
@@ -172,8 +153,6 @@ final class GlueJob extends Job {
 				return e.getStatus();
 			}
 		}
-//			jobMap.remove(document, this);
-		// FIXME notify document reconsilers??
 		return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
 	}
 
