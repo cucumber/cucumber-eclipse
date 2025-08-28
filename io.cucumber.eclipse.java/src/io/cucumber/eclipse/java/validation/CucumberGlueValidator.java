@@ -14,11 +14,14 @@ import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
 
+import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.java.plugins.CucumberStepDefinition;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
 
@@ -63,8 +66,6 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 
 			@Override
 			public void dirtyStateChanged(IFileBuffer buffer, boolean isDirty) {
-				System.out.println("dirtyStateChanged: " + buffer.getLocation() + " dirty = " + isDirty);
-
 			}
 
 			@Override
@@ -119,13 +120,14 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 		validate(document, 0);
 	}
 
+
 	private static void validate(IDocument document, int delay) {
 		jobMap.compute(document, (key, oldJob) -> {
 			if (oldJob != null) {
 				oldJob.cancel();
 				oldJob.disposeListener();
 			}
-			GlueJob verificationJob = new GlueJob(oldJob, document);
+			GlueJob verificationJob = new GlueJob(oldJob, () -> GherkinEditorDocument.get(document));
 			verificationJob.setUser(false);
 			verificationJob.setPriority(Job.DECORATE);
 			if (delay > 0) {
@@ -135,7 +137,66 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 			}
 			return verificationJob;
 		});
+	}
 
+	/**
+	 * Allows to trigger a validation of the document and matching glue codes. This
+	 * can be used by other plugins to enforce a validation of a document while
+	 * cucumber-eclipse only triggers an update if the user opens an editor.
+	 * 
+	 * @param editorDocument the document to validate
+	 * @return the job triggered for the computation, can be used to wait for the
+	 *         computation to be finished or cancel it
+	 */
+	public static Job validate(GherkinEditorDocument editorDocument) {
+		return jobMap.compute(editorDocument.getDocument(), (key, oldJob) -> {
+			if (oldJob != null) {
+				oldJob.cancel();
+				oldJob.disposeListener();
+			}
+			GlueJob verificationJob = new GlueJob(oldJob, () -> editorDocument);
+			verificationJob.addJobChangeListener(new IJobChangeListener() {
+
+				@Override
+				public void sleeping(IJobChangeEvent event) {
+				}
+
+				@Override
+				public void scheduled(IJobChangeEvent event) {
+				}
+
+				@Override
+				public void running(IJobChangeEvent event) {
+				}
+
+				@Override
+				public void done(IJobChangeEvent event) {
+					jobMap.compute(editorDocument.getDocument(), (key, currentJob) -> {
+						if (currentJob == verificationJob
+								&& GherkinEditorDocument.get(editorDocument.getDocument()) == null) {
+							// this was a temporary job and there is no editor for it so we need to remove
+							// the job from the map as we won'T get notifications from the text-buffer!
+							return null;
+						}
+						return currentJob;
+					});
+				}
+
+				@Override
+				public void awake(IJobChangeEvent event) {
+
+				}
+
+				@Override
+				public void aboutToRun(IJobChangeEvent event) {
+
+				}
+			});
+			verificationJob.setUser(false);
+			verificationJob.setPriority(Job.DECORATE);
+			verificationJob.schedule();
+			return verificationJob;
+		});
 	}
 
 	/**
@@ -160,7 +221,6 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 
 	public static Collection<MatchedStep<?>> getMatchedSteps(IDocument document, IProgressMonitor monitor)
 			throws OperationCanceledException, InterruptedException {
-//TODO		Objects.requireNonNull(document);
 		if (document != null) {
 			GlueJob job = sync(document, monitor);
 			if (job != null) {
@@ -172,7 +232,6 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 
 	public static Collection<CucumberStepDefinition> getAvaiableSteps(IDocument document, IProgressMonitor monitor)
 			throws OperationCanceledException, InterruptedException {
-		// TODO Objects.requireNonNull(document);
 		if (document != null) {
 			GlueJob job = sync(document, monitor);
 			if (job != null) {
