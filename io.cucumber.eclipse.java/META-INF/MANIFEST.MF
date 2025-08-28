@@ -3,6 +3,16 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Java
 Bundle-SymbolicName: io.cucumber.eclipse.java;singleton:=true
 Bundle-Version: 3.0.0.qualifier
+Export-Package: io.cucumber.eclipse.java;x-internal:=true,
+ io.cucumber.eclipse.java.codemining;x-internal:=true,
+ io.cucumber.eclipse.java.launching;x-internal:=true,
+ io.cucumber.eclipse.java.plugins;x-internal:=true,
+ io.cucumber.eclipse.java.preferences;x-internal:=true,
+ io.cucumber.eclipse.java.properties;x-internal:=true,
+ io.cucumber.eclipse.java.quickfix;x-internal:=true,
+ io.cucumber.eclipse.java.runtime;x-internal:=true,
+ io.cucumber.eclipse.java.steps;x-internal:=true,
+ io.cucumber.eclipse.java.validation;x-internal:=true
 Bundle-Activator: io.cucumber.eclipse.java.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
