@@ -8,6 +8,64 @@
             editorId="org.eclipse.ui.genericeditor.GenericEditor">
       </editorContentTypeBinding>
    	</extension>
+   	
+   	<extension point="org.eclipse.ui.bindings">
+      <key sequence="M1+M2+F"
+            commandId="io.cucumber.eclipse.editor.format"
+            contextId="org.eclipse.ui.textEditorScope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" />
+    </extension>
+     <extension point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="true"
+            locationURI="popup:org.eclipse.ui.genericeditor.source.menu?after=additions">
+         <command commandId="io.cucumber.eclipse.editor.format">
+            <visibleWhen>
+                <with variable="activeEditorInput">
+                  <adapt type="org.eclipse.core.resources.IResource">
+                     <test
+                           property="org.eclipse.core.resources.contentTypeId"
+                           value="io.cucumber.eclipse.editor.content-type.feature">
+                     </test>
+                  </adapt>
+               </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+      </extension>
+    
+    <extension point="org.eclipse.ui.commands">
+      <command
+            categoryId="io.cucumber.eclipse.editor.category"
+            id="io.cucumber.eclipse.editor.format"
+            name="Format Feature File" />
+   </extension>
+
+   
+   <extension point="org.eclipse.ui.handlers">
+      <handler
+            class="io.cucumber.eclipse.editor.format.GherkingFormatHandler"
+            commandId="io.cucumber.eclipse.editor.format">
+         <activeWhen>
+			 <with variable="activePart">
+             <test property="io.cucumber.eclipse.editor.format.isGherkingDocument" value="true">
+               </test>
+            </with>
+         </activeWhen>
+      </handler>
+   	</extension>
+   	
+     <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="io.cucumber.eclipse.editor.format.EditorInputPropertyTester"
+            id="io.cucumber.eclipse.editor.format.editorInputPropertyTester"
+            namespace="io.cucumber.eclipse.editor.format"
+            properties="isGherkingDocument"
+            type="org.eclipse.ui.IWorkbenchPart">
+      </propertyTester>
+   </extension>
+   	
 	 <extension
 	       point="org.eclipse.core.contenttype.contentTypes">
 	    <content-type
