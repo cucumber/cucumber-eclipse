@@ -123,6 +123,28 @@
 				</executions>
 			</plugin>
 		</plugins>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.eclipse.tycho.extras</groupId>
+					<artifactId>tycho-version-bump-plugin</artifactId>
+					<version>${tycho-version}</version>
+					<executions>
+						<execution>
+							<id>update-target</id>
+							<configuration>
+								<updateEmptyVersion>false</updateEmptyVersion>
+								<allowMajorUpdates>false</allowMajorUpdates>
+<!--								<mavenRulesUri>${project.basedir}/update-rules.xml</mavenRulesUri>-->
+								<updateSiteDiscovery>
+									<strategy>datePattern</strategy>
+								</updateSiteDiscovery>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 	<profiles>
 		<profile>

@@ -1,0 +1,25 @@
+name: Target Platform Updates
+
+concurrency: 
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron:  '0 0 * * *'
+  push:
+    branches:
+      - main
+    paths:
+      - '**.target'
+
+
+jobs:
+  update:
+    uses: eclipse-platform/eclipse.platform.releng.aggregator/.github/workflows/updateTarget.yml@master
+    with:
+      author: cukebot <cukebot@cucumber.io>
+      path: 'io.cucumber.eclipse.targetdefinition'
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}
