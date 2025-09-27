@@ -34,7 +34,9 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.5.0",
  org.eclipse.ui.console,
  org.eclipse.ui.workbench.texteditor,
  io.cucumber.tag-expressions,
- org.eclipse.unittest.ui;bundle-version="1.0.0"
+ org.eclipse.unittest.ui;bundle-version="1.0.0",
+ io.cucumber.gherkin-utils;bundle-version="9.0.0",
+ org.eclipse.core.expressions;bundle-version="3.9.500"
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: io.cucumber.eclipse.editor
 Bundle-ActivationPolicy: lazy
