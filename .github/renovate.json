@@ -1,7 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "github>cucumber/renovate-config"
+    "config:recommended",
+    ":rebaseStalePrs"
   ],
   "customManagers": [
     {
