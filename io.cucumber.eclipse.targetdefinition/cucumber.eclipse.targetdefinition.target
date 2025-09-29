@@ -105,7 +105,7 @@ Export-Package:        *;version="${version}";-noimport:=true
 			<dependency>
 				<groupId>io.cucumber</groupId>
 				<artifactId>gherkin-utils</artifactId>
-				<version>9.0.0</version>
+				<version>10.0.0</version>
 				<type>jar</type>
 			</dependency>
 		</dependencies>
