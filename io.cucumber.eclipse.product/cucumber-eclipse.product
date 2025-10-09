@@ -20,6 +20,7 @@
       <feature id="org.eclipse.pde" installMode="root"/>
       <feature id="org.eclipse.jdt" installMode="root"/>
       <feature id="org.eclipse.m2e.feature" installMode="root"/>
+      <feature id="org.python.pydev.feature" installMode="root"/>
    </features>
 
 
