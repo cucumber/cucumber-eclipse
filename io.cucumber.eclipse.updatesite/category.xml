@@ -3,6 +3,12 @@
    <feature id="cucumber.eclipse.feature">
       <category name="cucumber_eclipse_category_id"/>
    </feature>
+   <feature id="io.cucumber.eclipse.python.feature">
+      <category name="cucumber_eclipse_category_id"/>
+   </feature>
+   <feature id="io.cucumber.eclipse.java.feature">
+      <category name="cucumber_eclipse_category_id"/>
+   </feature>
    <category-def name="cucumber_eclipse_category_id" label="Cucumber Eclipse Plugin">
       <description>
          Offical Eclipse Plugin for Cucumber

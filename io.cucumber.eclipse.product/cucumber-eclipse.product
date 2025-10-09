@@ -20,7 +20,19 @@
       <feature id="org.eclipse.pde" installMode="root"/>
       <feature id="org.eclipse.jdt" installMode="root"/>
       <feature id="org.eclipse.m2e.feature" installMode="root"/>
+      <feature id="org.python.pydev.feature" installMode="root"/>
+      <feature id="io.cucumber.eclipse.python.feature" installMode="root"/>
+      <feature id="io.cucumber.eclipse.java.feature" installMode="root"/>
    </features>
 
+   <configurations>
+      <plugin id="io.cucumber.cucumber-java" autoStart="true" startLevel="0" />
+      <plugin id="io.cucumber.eclipse.python" autoStart="true" startLevel="0" />
+      <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
+      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
+   </configurations>
 
 </product>
