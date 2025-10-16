@@ -14,7 +14,7 @@ import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 public class GherkinPresentationReconciler extends PresentationReconciler implements IPresentationReconciler {
 
 	public GherkinPresentationReconciler() {
-		DefaultDamagerRepairer dr = new GherkinDamagerRepairer(new GherkinKeywordScanner(new ColorManager()));
+		DefaultDamagerRepairer dr = new GherkinDamagerRepairer(new GherkinKeywordScanner());
 		this.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
 		this.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
 	}
