@@ -118,6 +118,10 @@ Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io
 Export-Package:        *;version="${version}";-noimport:=true
 ]]></instructions>
 	</location>
+	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+		<repository location="http://www.pydev.org/updates"/>
+		<unit id="org.python.pydev.feature.feature.group" version="13.1.0.202509210817"/>
+	</location>
 </locations>
 	<targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-21"/>
 </target>
