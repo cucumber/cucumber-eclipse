@@ -18,21 +18,18 @@ import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 
 public class GherkinKeywordScanner extends RuleBasedScanner {
 		
-    private ColorManager manager;
-	
-	public GherkinKeywordScanner(ColorManager manager) {
-		this.manager = manager;
+	public GherkinKeywordScanner() {
 	}
 
 	public void configureRules(GherkinEditorDocument document) {
-		IToken keyword= new Token(new TextAttribute(manager.getColor(GherkinColors.KEYWORD)));
-		IToken step= new Token(new TextAttribute(manager.getColor(GherkinColors.STEP)));
-		IToken tag= new Token(new TextAttribute(manager.getColor(GherkinColors.TAG)));
-		IToken string= new Token(new TextAttribute(manager.getColor(GherkinColors.STRING)));
-		IToken comment= new Token(new TextAttribute(manager.getColor(GherkinColors.COMMENT)));
-		IToken other= new Token(new TextAttribute(manager.getColor(GherkinColors.DEFAULT)));
-		IToken numeric= new Token(new TextAttribute(manager.getColor(GherkinColors.NUMERIC)));
-		IToken placeholder= new Token(new TextAttribute(manager.getColor(GherkinColors.PLACEHOLDER)));
+		IToken keyword = new Token(new TextAttribute(GherkinColors.KEYWORD.getColor()));
+		IToken step = new Token(new TextAttribute(GherkinColors.STEP.getColor()));
+		IToken tag = new Token(new TextAttribute(GherkinColors.TAG.getColor()));
+		IToken string = new Token(new TextAttribute(GherkinColors.STRING.getColor()));
+		IToken comment = new Token(new TextAttribute(GherkinColors.COMMENT.getColor()));
+		IToken other = new Token(new TextAttribute(GherkinColors.DEFAULT.getColor()));
+		IToken numeric = new Token(new TextAttribute(GherkinColors.NUMERIC.getColor()));
+		IToken placeholder = new Token(new TextAttribute(GherkinColors.PLACEHOLDER.getColor()));
 		
 
 		List<IRule> rules= new ArrayList<IRule>();
