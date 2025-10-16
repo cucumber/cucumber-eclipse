@@ -80,6 +80,20 @@ then you need to point Eclipse to the folder of version your are interested in.
 
 The full option list can be found at [Cucumber-Options](https://github.com/cucumber/cucumber-jvm/blob/master/core/src/main/java/cucumber/api/CucumberOptions.java)
 
+## Customizing Cucumber Features with Activity Groups
+
+Cucumber Eclipse supports Eclipse Activity Groups, which allow you to selectively enable or disable certain plugin features to reduce UI clutter. You can control the visibility of:
+
+- Preference pages
+- Property pages
+- Launch configurations
+- Console factory
+
+To manage these features:
+1. Go to **Window → Preferences → General → Capabilities**
+2. Find the "Cucumber" category
+3. Check or uncheck the activities you want to enable or disable
+
 ## Build and install from source
 
 To use the latest features, you can choose to build and install from source.
