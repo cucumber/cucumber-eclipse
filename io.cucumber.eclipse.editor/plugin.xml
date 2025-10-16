@@ -391,4 +391,85 @@
    </page>
 </extension>
 	 
+	 <!-- Eclipse Activity Support -->
+	 <extension
+         point="org.eclipse.ui.activities">
+      <category
+            id="cucumber.eclipse.category"
+            name="Cucumber"
+            description="Cucumber features for Eclipse">
+      </category>
+      <activity
+            id="cucumber.eclipse.preferences"
+            name="Cucumber Preferences"
+            description="Show/hide Cucumber preference pages">
+      </activity>
+      <activity
+            id="cucumber.eclipse.properties"
+            name="Cucumber Properties"
+            description="Show/hide Cucumber property pages">
+      </activity>
+      <activity
+            id="cucumber.eclipse.launching"
+            name="Cucumber Launching"
+            description="Show/hide Cucumber launch shortcuts and configurations">
+      </activity>
+      <activity
+            id="cucumber.eclipse.console"
+            name="Cucumber Console"
+            description="Show/hide Cucumber console factory">
+      </activity>
+      <categoryActivityBinding
+            activityId="cucumber.eclipse.preferences"
+            categoryId="cucumber.eclipse.category">
+      </categoryActivityBinding>
+      <categoryActivityBinding
+            activityId="cucumber.eclipse.properties"
+            categoryId="cucumber.eclipse.category">
+      </categoryActivityBinding>
+      <categoryActivityBinding
+            activityId="cucumber.eclipse.launching"
+            categoryId="cucumber.eclipse.category">
+      </categoryActivityBinding>
+      <categoryActivityBinding
+            activityId="cucumber.eclipse.console"
+            categoryId="cucumber.eclipse.category">
+      </categoryActivityBinding>
+      <!-- Preference Pages -->
+      <activityPatternBinding
+            activityId="cucumber.eclipse.preferences"
+            pattern="cucumber\.eclipse\.editor\.preferences\.main">
+      </activityPatternBinding>
+      <activityPatternBinding
+            activityId="cucumber.eclipse.preferences"
+            pattern="io\.cucumber\.eclipse\.java\.page1">
+      </activityPatternBinding>
+      <!-- Property Pages -->
+      <activityPatternBinding
+            activityId="cucumber.eclipse.properties"
+            pattern="cucumber\.eclipse\.editor\.properties\.main">
+      </activityPatternBinding>
+      <activityPatternBinding
+            activityId="cucumber.eclipse.properties"
+            pattern="cucumber\.eclipse\.backends\.java\.properties\.samplePropertyPage">
+      </activityPatternBinding>
+      <!-- Launch Shortcuts -->
+      <activityPatternBinding
+            activityId="cucumber.eclipse.launching"
+            pattern="io\.cucumber\.eclipse\.editor\.shortcut1">
+      </activityPatternBinding>
+      <activityPatternBinding
+            activityId="cucumber.eclipse.launching"
+            pattern="cucumber\.eclipse\.launching\.localCucumberFeature">
+      </activityPatternBinding>
+      <activityPatternBinding
+            activityId="cucumber.eclipse.launching"
+            pattern="cucumber\.eclipse\.java\.launching\.localCucumberFeature">
+      </activityPatternBinding>
+      <!-- Console -->
+      <activityPatternBinding
+            activityId="cucumber.eclipse.console"
+            pattern="io\.cucumber\.eclipse\.editor\.console\.CucumberConsoleFactory">
+      </activityPatternBinding>
+   </extension>
 </plugin>
