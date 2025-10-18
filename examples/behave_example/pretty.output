@@ -1,0 +1,7 @@
+Feature: Basic arithmetic operations # features/example.feature:1
+  A simple example that verifies incrementing a number.
+  Scenario: Increment a number       # features/example.feature:4
+    Given a number 1                 # features/steps/example_steps.py:4
+    When I increment the number by 1 # features/steps/example_steps.py:10
+    Then the result should be 2      # features/steps/example_steps.py:16
+
