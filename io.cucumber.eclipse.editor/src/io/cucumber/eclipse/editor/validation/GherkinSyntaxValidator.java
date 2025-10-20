@@ -143,23 +143,36 @@ public class GherkinSyntaxValidator implements IDocumentSetupParticipant {
 					}
 				}
 			} catch (CoreException e) {
-				Activator.getDefault().getLog().log(new Status(IStatus.WARNING, Activator.PLUGIN_ID,
-						"Failed to check language support", e));
+				Activator activator = Activator.getDefault();
+				if (activator != null) {
+					activator.getLog().log(new Status(IStatus.WARNING, Activator.PLUGIN_ID,
+							"Failed to check language support", e));
+				}
 			}
 		}
 
 		private boolean isBundleInstalled(String bundleSymbolicName) {
-			BundleContext context = Activator.getDefault().getBundle().getBundleContext();
-			if (context == null) {
-				return false;
-			}
-			
-			for (Bundle bundle : context.getBundles()) {
-				if (bundleSymbolicName.equals(bundle.getSymbolicName())) {
-					int state = bundle.getState();
-					return state == Bundle.ACTIVE || state == Bundle.STARTING || 
-					       state == Bundle.RESOLVED || state == Bundle.STOPPING;
+			try {
+				Activator activator = Activator.getDefault();
+				if (activator == null) {
+					return false;
 				}
+				
+				BundleContext context = activator.getBundle().getBundleContext();
+				if (context == null) {
+					return false;
+				}
+				
+				for (Bundle bundle : context.getBundles()) {
+					if (bundleSymbolicName.equals(bundle.getSymbolicName())) {
+						int state = bundle.getState();
+						return state == Bundle.ACTIVE || state == Bundle.STARTING || 
+						       state == Bundle.RESOLVED || state == Bundle.STOPPING;
+					}
+				}
+			} catch (Exception e) {
+				// If we can't check, assume it's not installed
+				return false;
 			}
 			return false;
 		}
