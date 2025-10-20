@@ -24,4 +24,31 @@
          id="cucumber.eclipse.python.launching.launchConfigurationTabGroup.localCucumberBehave">
       </launchConfigurationTabGroup>
    </extension>
+   <extension point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+         class="io.cucumber.eclipse.python.launching.CucumberBehaveLaunchShortcut"
+         description="Run this feature with Behave"
+         icon="icons/cukes.gif"
+         id="io.cucumber.eclipse.python.launchShortcut"
+         label="Cucumber-Behave"
+         modes="run,debug">
+         <configurationType
+            id="cucumber.eclipse.python.launching.localCucumberBehave">
+         </configurationType>
+         <contextualLaunch>
+            <contextLabel mode="run" label="Cucumber-Behave Feature" />
+            <contextLabel mode="debug" label="Cucumber-Behave Feature" />
+            <enablement>
+               <with variable="selection">
+                  <count value="1"/>
+                  <iterate>
+                     <adapt type="org.eclipse.core.resources.IResource">
+                        <test property="org.eclipse.core.resources.extension" value="feature"/>
+                     </adapt>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+      </shortcut>
+   </extension>
 </plugin>
