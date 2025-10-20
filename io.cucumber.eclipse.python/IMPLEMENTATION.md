@@ -64,15 +64,17 @@ The bundle provides a complete Eclipse launch configuration for running Cucumber
   - Behave Options checkboxes (Verbose, No Capture, Dry Run)
 - Validates required fields (feature path, working directory)
 
-#### CucumberBehaveLaunchShortcut
-- Implements `ILaunchShortcut` for context menu integration
-- Enables "Run As > Cucumber-Behave" option
-- Automatically creates/finds launch configurations
-- Works from both editor and project explorer contexts
+#### CucumberBehaveLauncher
+- Implements `ILauncher` interface for integration with editor's launch framework
+- Registered as OSGi service component
+- Automatically discovered by `CucumberFeatureLaunchShortcut` in editor bundle
+- Supports running feature files and specific scenarios
+- Handles tag filtering and temporary launch configurations
 
 ### 3. Bundle Infrastructure
 
 - **Activator.java**: OSGi bundle activator
+- **OSGI-INF/CucumberBehaveLauncher.xml**: OSGi Declarative Services descriptor for ILauncher registration
 - **.project**: Eclipse project configuration (PDE plugin nature)
 - **.classpath**: Java classpath configuration (JavaSE-21)
 - **.settings/**: Eclipse project settings (JDT, PDE)
@@ -101,18 +103,24 @@ Created `examples/python-calculator/` demonstrating usage:
    - Easier to maintain and update independently
    - Follows Eclipse plugin architecture best practices
 
-2. **Optional PyDev Dependencies**: Marked as optional in MANIFEST.MF
+2. **ILauncher Implementation**: Implements the `ILauncher` interface from editor bundle
+   - Integrates with existing `CucumberFeatureLaunchShortcut` in editor
+   - Registered as OSGi service component for automatic discovery
+   - Supports running from editor or project explorer context menus
+   - No need for custom launch shortcut implementation
+
+3. **Optional PyDev Dependencies**: Marked as optional in MANIFEST.MF
    - Allows bundle to work without PyDev installed
    - Provides better integration when PyDev is available
    - Future enhancement: Could use PyDev for Python interpreter selection
 
-3. **Simple Launch Delegate**: Uses standard ProcessBuilder
+4. **Simple Launch Delegate**: Uses standard ProcessBuilder
    - Direct execution of behave command
    - No dependency on PyDev launch infrastructure
    - Easy to understand and maintain
    - Future enhancement: Could integrate with PyDev's Python runner
 
-4. **Behave-specific Options**: Focused on common Behave options
+5. **Behave-specific Options**: Focused on common Behave options
    - Verbose, no-capture, and dry-run flags
    - Tag filtering support
    - Future enhancement: Could add more Behave-specific options (format, color, etc.)
@@ -163,4 +171,5 @@ The implementation has been designed to follow the same patterns as the Java bun
 ✅ Defines `org.eclipse.debug.core.launchConfigurationTypes` as "Cucumber-Behave"
 ✅ Follows the Java implementation (`io.cucumber.eclipse.java`) as a blueprint
 ✅ Launch configuration UI with tabs for configuration
-✅ Launch shortcut for easy access from context menu
+✅ Implements `ILauncher` interface for integration with editor's launch framework
+✅ Registered as OSGi service component for automatic discovery

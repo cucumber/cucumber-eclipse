@@ -22,8 +22,9 @@ This bundle provides support for launching Cucumber feature files using Python's
 ## Usage
 
 1. Right-click on a `.feature` file in your project
-2. Select "Run As" > "Cucumber-Behave"
-3. Configure the launch configuration:
+2. Select "Run As" > "Cucumber" (or "Cucumber Feature")
+3. The Python/Behave launcher will automatically be used for Python projects
+4. Configure the launch configuration:
    - **Feature Path**: Path to the feature file to run
    - **Working Directory**: Directory where behave will be executed
    - **Python Interpreter**: Path to Python executable (defaults to `python`)
