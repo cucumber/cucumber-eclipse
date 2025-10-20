@@ -62,6 +62,10 @@ public class MarkerFactory {
 
 	public static final String CUCUMBER_NATURE_MISSING_MARKER = CUCUMBER_MARKER + ".project.cucumber_nature_missing";
 
+	public static final String LANGUAGE_SUPPORT_AVAILABLE = CUCUMBER_MARKER + ".language.support_available";
+	public static final String LANGUAGE_SUPPORT_BUNDLE_ID_ATTRIBUTE = LANGUAGE_SUPPORT_AVAILABLE + ".bundle_id";
+	public static final String LANGUAGE_SUPPORT_LANGUAGE_ATTRIBUTE = LANGUAGE_SUPPORT_AVAILABLE + ".language";
+
 	private MarkerFactory() {
 	}
 
@@ -406,6 +410,37 @@ public class MarkerFactory {
 				.filter(marker -> marker.getAttribute(IMarker.LINE_NUMBER, -1) == lineNumber)
 				.findAny().isPresent();
 
+	}
+
+	public static void languageSupportAvailable(final IResource resource, final String language, 
+			final String bundleId, boolean persistent) {
+		mark(resource, new IMarkerBuilder() {
+			@Override
+			public void build() throws CoreException {
+				// Check if marker already exists for this language
+				String sourceId = language + "_" + bundleId;
+				Map<Object, IMarker> existingMarker = getExistingMarker(resource, LANGUAGE_SUPPORT_AVAILABLE);
+				IMarker marker = existingMarker.remove(sourceId);
+				if (marker == null) {
+					marker = resource.createMarker(LANGUAGE_SUPPORT_AVAILABLE);
+					marker.setAttribute(IMarker.SOURCE_ID, sourceId);
+				}
+				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
+				marker.setAttribute(IMarker.MESSAGE, 
+					String.format("Enhanced %s support is available and can be installed", language));
+				marker.setAttribute(IMarker.LINE_NUMBER, 1);
+				marker.setAttribute(IMarker.TRANSIENT, persistent);
+				marker.setAttribute(LANGUAGE_SUPPORT_BUNDLE_ID_ATTRIBUTE, bundleId);
+				marker.setAttribute(LANGUAGE_SUPPORT_LANGUAGE_ATTRIBUTE, language);
+			}
+		});
+	}
+
+	public static void deleteLanguageSupportMarkers(final IResource resource) throws CoreException {
+		IMarker[] markers = resource.findMarkers(LANGUAGE_SUPPORT_AVAILABLE, true, IResource.DEPTH_ZERO);
+		for (IMarker marker : markers) {
+			marker.delete();
+		}
 	}
 
 }

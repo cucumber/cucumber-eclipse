@@ -6,7 +6,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.filebuffers.IDocumentSetupParticipant;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -14,7 +16,10 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 
+import io.cucumber.eclipse.editor.Activator;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.marker.MarkerFactory;
 import io.cucumber.messages.types.ParseError;
@@ -103,10 +108,60 @@ public class GherkinSyntaxValidator implements IDocumentSetupParticipant {
 						return Status.CANCEL_STATUS;
 					}
 					MarkerFactory.syntaxErrorOnGherkin(resource, list, peristent);
+					
+					// Check for language-specific support
+					checkLanguageSupport(resource);
 				}
 			}
 			jobMap.remove(document, this);
 			return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
+		}
+
+		private void checkLanguageSupport(IResource resource) {
+			try {
+				IProject project = resource.getProject();
+				if (project == null || !project.isAccessible()) {
+					return;
+				}
+				
+				// Clear existing language support markers
+				MarkerFactory.deleteLanguageSupportMarkers(resource);
+				
+				// Check for Java nature
+				if (project.hasNature("org.eclipse.jdt.core.javanature")) {
+					if (!isBundleInstalled("io.cucumber.eclipse.java")) {
+						MarkerFactory.languageSupportAvailable(resource, "Java", 
+							"io.cucumber.eclipse.java", false);
+					}
+				}
+				
+				// Check for Python nature
+				if (project.hasNature("org.python.pydev.pythonNature")) {
+					if (!isBundleInstalled("io.cucumber.eclipse.python")) {
+						MarkerFactory.languageSupportAvailable(resource, "Python", 
+							"io.cucumber.eclipse.python", false);
+					}
+				}
+			} catch (CoreException e) {
+				Activator.getDefault().getLog().log(new Status(IStatus.WARNING, Activator.PLUGIN_ID,
+						"Failed to check language support", e));
+			}
+		}
+
+		private boolean isBundleInstalled(String bundleSymbolicName) {
+			BundleContext context = Activator.getDefault().getBundle().getBundleContext();
+			if (context == null) {
+				return false;
+			}
+			
+			for (Bundle bundle : context.getBundles()) {
+				if (bundleSymbolicName.equals(bundle.getSymbolicName())) {
+					int state = bundle.getState();
+					return state == Bundle.ACTIVE || state == Bundle.STARTING || 
+					       state == Bundle.RESOLVED || state == Bundle.STOPPING;
+				}
+			}
+			return false;
 		}
 
 	}
