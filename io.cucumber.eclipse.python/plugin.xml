@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+         delegate="io.cucumber.eclipse.python.launching.CucumberBehaveLaunchConfigurationDelegate"
+         id="cucumber.eclipse.python.launching.localCucumberBehave"
+         modes="run,debug"
+         name="Cucumber-Behave"
+         public="true">
+      </launchConfigurationType>
+   </extension>
+   <extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+         icon="icons/cukes.gif"
+         configTypeID="cucumber.eclipse.python.launching.localCucumberBehave"
+         id="cucumber.eclipse.python.launching.launchConfigurationTypeImage.localCucumberBehave">
+      </launchConfigurationTypeImage>
+   </extension>
+   <extension point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+         type="cucumber.eclipse.python.launching.localCucumberBehave"
+         class="io.cucumber.eclipse.python.launching.CucumberBehaveTabGroup"
+         id="cucumber.eclipse.python.launching.launchConfigurationTabGroup.localCucumberBehave">
+      </launchConfigurationTabGroup>
+   </extension>
+</plugin>
