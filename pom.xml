@@ -19,6 +19,7 @@
 		<module>io.cucumber.eclipse.editor</module>
 		<module>io.cucumber.eclipse.java</module>
 		<module>io.cucumber.eclipse.java.plugins</module>
+		<module>io.cucumber.eclipse.python</module>
 		<module>io.cucumber.eclipse.feature</module>
 <!--		<module>io.cucumber.eclipse.product</module>-->
 		<module>io.cucumber.eclipse.updatesite</module>
