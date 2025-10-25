@@ -24,4 +24,10 @@
          id="cucumber.eclipse.python.launching.launchConfigurationTabGroup.localCucumberBehave">
       </launchConfigurationTabGroup>
    </extension>
+   <extension point="org.eclipse.core.filebuffers.documentSetup">
+      <participant
+            class="io.cucumber.eclipse.python.validation.BehaveGlueValidator"
+            contentTypeId="io.cucumber.eclipse.editor.content-type.feature">
+      </participant>
+   </extension>
 </plugin>
