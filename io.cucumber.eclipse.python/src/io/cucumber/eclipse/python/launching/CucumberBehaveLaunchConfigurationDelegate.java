@@ -40,8 +40,9 @@ public class CucumberBehaveLaunchConfigurationDelegate extends LaunchConfigurati
 
 		// Build behave command
 		List<String> commandList = new ArrayList<>();
-		commandList.add(pythonInterpreter);
-		commandList.add("-m");
+//		commandList.add(pythonInterpreter);
+//		commandList.add(pythonInterpreter)
+//		commandList.add("-m");
 		commandList.add("behave");
 
 		// Add feature path (with line number if specified)
