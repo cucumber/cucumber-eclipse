@@ -309,7 +309,131 @@ public class <Language>StepDefinitionOpener implements IStepDefinitionOpener {
 - Use Eclipse's IDE.openEditor() and text editor APIs
 - Handle file path resolution (relative vs. absolute)
 
-#### 2.8 Preferences
+#### 2.8 Remote Test Execution (Message Endpoint)
+
+Implement message endpoint for real-time test execution monitoring:
+
+##### Message Endpoint Process
+
+Create a process that receives Cucumber messages from the test framework:
+
+```java
+public class <Framework>MessageEndpointProcess implements IProcess, EnvelopeProvider, 
+                                                           ISuspendResume, IDisconnect {
+    
+    private static final int HANDLED_MESSAGE = 0x01;
+    private static final int GOOD_BY_MESSAGE = 0x00;
+    
+    private ServerSocket serverSocket;
+    private ILaunch launch;
+    private List<Envelope> envelopes = new ArrayList<>();
+    private List<EnvelopeListener> consumers = new ArrayList<>();
+    
+    public <Framework>MessageEndpointProcess(ILaunch launch) throws IOException {
+        this.serverSocket = new ServerSocket(0);
+        this.launch = launch;
+        launch.addProcess(this);
+    }
+    
+    public void start() {
+        // Create daemon thread to listen for incoming connections
+        // Accept connection and read messages in loop
+        // Deserialize using Jackson.OBJECT_MAPPER
+        // Notify all registered EnvelopeListeners
+        // Send acknowledgment byte after each message
+    }
+    
+    public void addBehaveArguments(List<String> args) {
+        // Add framework-specific arguments to inject formatter
+        // Include port number for socket connection
+    }
+}
+```
+
+##### Language-Specific Formatter/Plugin
+
+Create a formatter in the target language that sends messages to Eclipse:
+
+**For Python/Behave:**
+
+```python
+class CucumberEclipseFormatter(Formatter):
+    def __init__(self, stream_opener, config):
+        # Read port from environment variable or config
+        # Connect to Eclipse socket
+        
+    def _send_message(self, envelope):
+        # Serialize to JSON
+        # Send 4-byte big-endian length
+        # Send JSON bytes
+        # Wait for acknowledgment (0x01)
+        
+    def step(self, step):
+        # Create TestStepFinished envelope
+        # Send to Eclipse
+        
+    def eof(self):
+        # Send TestRunFinished
+        # Send 0 length
+        # Close connection
+```
+
+**Protocol Requirements:**
+
+1. Connect to Eclipse on specified port
+2. For each message:
+   - Send message length as 4-byte big-endian integer
+   - Send JSON-encoded Cucumber Message
+   - Wait for acknowledgment byte (0x01)
+   - If received goodbye (0x00), close connection
+3. After test run:
+   - Send TestRunFinished message
+   - Send 0 length to signal end
+   - Wait for acknowledgment
+   - Close socket
+
+**Key Points:**
+- Use standard Cucumber Messages format (JSON)
+- Reuse Jackson ObjectMapper for deserialization (from java.plugins bundle)
+- Package formatter/plugin with bundle (e.g., in `<language>-plugins/` directory)
+- Update `build.properties` to include plugin directory
+- Add formatter to language runtime's plugin path (e.g., PYTHONPATH)
+- Pass port via environment variable or command-line argument
+- No code changes required in user's test files
+
+##### Update Launch Delegate
+
+Integrate message endpoint with launch configuration:
+
+```java
+@Override
+public void launch(ILaunchConfiguration config, String mode, 
+                  ILaunch launch, IProgressMonitor monitor) throws CoreException {
+    
+    // Create message endpoint
+    <Framework>MessageEndpointProcess endpoint = 
+        new <Framework>MessageEndpointProcess(launch);
+    
+    // Build launcher arguments
+    List<String> args = new ArrayList<>();
+    endpoint.addArguments(args);  // Adds formatter and port
+    
+    // Start endpoint listener
+    endpoint.start();
+    launch.addProcess(endpoint);
+    
+    try {
+        // Launch test process with injected arguments
+        Process process = launcher.launch(pluginPath);
+        IProcess iProcess = DebugPlugin.newProcess(launch, process, "...");
+    } catch (Exception e) {
+        endpoint.terminate();
+        throw e;
+    }
+}
+```
+
+#### 2.9 Preferences
 
 Provide user-configurable preferences:
 
