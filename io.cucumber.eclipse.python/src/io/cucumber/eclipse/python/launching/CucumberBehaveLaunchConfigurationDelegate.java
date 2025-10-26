@@ -2,9 +2,8 @@ package io.cucumber.eclipse.python.launching;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
@@ -78,19 +77,15 @@ public class CucumberBehaveLaunchConfigurationDelegate extends LaunchConfigurati
 				.withTags(tags)
 				.withVerbose(isVerbose)
 				.withNoCapture(isNoCapture)
-				.withDryRun(isDryRun);
-			
-			// Add message endpoint arguments to inject the formatter
-			List<String> additionalArgs = new ArrayList<>();
-			endpoint.addBehaveArguments(additionalArgs);
-			launcher.withArguments(additionalArgs);
+				.withDryRun(isDryRun)
+				.withRemoteConnection(endpoint.getPort(), pythonPluginPath);
 			
 			// Start the endpoint listener
 			endpoint.start();
 			launch.addProcess(endpoint);
 
-			// Launch the behave process with Python plugin path
-			Process process = launcher.launch(pythonPluginPath);
+			// Launch the behave process
+			Process process = launcher.launch();
 			IProcess iProcess = DebugPlugin.newProcess(launch, process, "Cucumber Behave");
 			iProcess.setAttribute(IProcess.ATTR_PROCESS_TYPE, "cucumber.behave");
 		} catch (IOException e) {
@@ -123,8 +118,8 @@ public class CucumberBehaveLaunchConfigurationDelegate extends LaunchConfigurati
 			Bundle bundle = Activator.getDefault().getBundle();
 			URL pluginURL = FileLocator.find(bundle, new Path("python-plugins"), null);
 			if (pluginURL != null) {
-				URL resolvedURL = FileLocator.resolve(pluginURL);
-				File pluginDir = new File(resolvedURL.getPath());
+				URL fileURL = FileLocator.toFileURL(pluginURL);
+				File pluginDir = new File(fileURL.toURI());
 				if (pluginDir.exists()) {
 					return pluginDir.getAbsolutePath();
 				}
@@ -137,7 +132,7 @@ public class CucumberBehaveLaunchConfigurationDelegate extends LaunchConfigurati
 					return pluginDir.getAbsolutePath();
 				}
 			}
-		} catch (IOException e) {
+		} catch (IOException | URISyntaxException e) {
 			throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, 
 				"Failed to locate Python plugin directory", e));
 		}
