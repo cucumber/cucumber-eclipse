@@ -66,10 +66,10 @@ public class PythonStepDefinitionOpener implements IStepDefinitionOpener {
 
 			if (file.exists()) {
 				IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+				// Use the default editor for .py files instead of hardcoding PyDev editor
 				IEditorPart editorPart = IDE.openEditor(page,
 						project.getWorkspace().getRoot()
-								.getFileForLocation(new Path(file.getAbsolutePath())),
-						"org.python.pydev.editor.PythonEditor", true);
+								.getFileForLocation(new Path(file.getAbsolutePath())));
 
 				// Navigate to the line
 				if (editorPart instanceof ITextEditor) {
