@@ -24,6 +24,8 @@ import org.eclipse.core.runtime.jobs.Job;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.marker.MarkerFactory;
 import io.cucumber.eclipse.python.Activator;
+import io.cucumber.eclipse.python.launching.BehaveProcessLauncher;
+import io.cucumber.eclipse.python.preferences.BehavePreferences;
 
 /**
  * Background job that runs behave --dry-run to validate step definitions
@@ -66,16 +68,23 @@ final class BehaveGlueJob extends Job {
 		}
 
 		try {
+			// Get behave command from preferences
+			BehavePreferences preferences = BehavePreferences.of(resource);
+			String behaveCommand = preferences.behaveCommand();
+			
 			// Run behave --dry-run --format steps.usage --no-summary
 			String workingDir = project.getLocation().toOSString();
 			String featurePath = resource.getLocation().toOSString();
 
-			ProcessBuilder processBuilder = new ProcessBuilder("python", "-m", "behave", "--dry-run", "--format",
-					"steps.usage", "--no-summary", featurePath);
-			processBuilder.directory(new java.io.File(workingDir));
-			processBuilder.redirectErrorStream(true);
+			BehaveProcessLauncher launcher = new BehaveProcessLauncher()
+				.withCommand(behaveCommand)
+				.withFeaturePath(featurePath)
+				.withWorkingDirectory(workingDir)
+				.withDryRun(true)
+				.withFormat("steps.usage")
+				.withNoSummary(true);
 
-			Process process = processBuilder.start();
+			Process process = launcher.launch();
 
 			// Parse the output
 			Map<Integer, StepMatch> stepMatchMap = new HashMap<>();

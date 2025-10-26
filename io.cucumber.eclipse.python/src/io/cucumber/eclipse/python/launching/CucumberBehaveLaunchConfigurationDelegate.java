@@ -1,8 +1,7 @@
 package io.cucumber.eclipse.python.launching;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -16,6 +15,7 @@ import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 
 import io.cucumber.eclipse.python.Activator;
+import io.cucumber.eclipse.python.preferences.BehavePreferences;
 
 public class CucumberBehaveLaunchConfigurationDelegate extends LaunchConfigurationDelegate {
 
@@ -28,7 +28,6 @@ public class CucumberBehaveLaunchConfigurationDelegate extends LaunchConfigurati
 		String withLine = configuration.getAttribute(CucumberBehaveLaunchConstants.ATTR_FEATURE_WITH_LINE, "");
 		String tags = configuration.getAttribute(CucumberBehaveLaunchConstants.ATTR_TAGS, "");
 		String workingDirectory = substituteVar(configuration.getAttribute(CucumberBehaveLaunchConstants.ATTR_WORKING_DIRECTORY, ""));
-		String pythonInterpreter = configuration.getAttribute(CucumberBehaveLaunchConstants.ATTR_PYTHON_INTERPRETER, "python");
 		boolean isVerbose = configuration.getAttribute(CucumberBehaveLaunchConstants.ATTR_IS_VERBOSE, false);
 		boolean isNoCapture = configuration.getAttribute(CucumberBehaveLaunchConstants.ATTR_IS_NO_CAPTURE, false);
 		boolean isDryRun = configuration.getAttribute(CucumberBehaveLaunchConstants.ATTR_IS_DRY_RUN, false);
@@ -38,46 +37,56 @@ public class CucumberBehaveLaunchConfigurationDelegate extends LaunchConfigurati
 			throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Feature path is not specified"));
 		}
 
-		// Build behave command
-		List<String> commandList = new ArrayList<>();
-		commandList.add(pythonInterpreter);
-		commandList.add("-m");
-		commandList.add("behave");
-
-		// Add feature path (with line number if specified)
-		if (withLine != null && !withLine.isEmpty()) {
-			commandList.add(withLine);
-		} else {
-			commandList.add(featurePath);
-		}
-
-		// Add tags if specified
-		if (tags != null && !tags.isEmpty()) {
-			commandList.add("--tags");
-			commandList.add(tags);
-		}
-
-		// Add verbose flag
-		if (isVerbose) {
-			commandList.add("--verbose");
-		}
-
-		// Add no-capture flag
-		if (isNoCapture) {
-			commandList.add("--no-capture");
-		}
-
-		// Add dry-run flag
-		if (isDryRun) {
-			commandList.add("--dry-run");
-		}
-
-		// Set working directory
+		// Validate working directory
 		File workingDir = null;
 		if (workingDirectory != null && !workingDirectory.isEmpty()) {
 			workingDir = new File(workingDirectory);
 			if (!workingDir.exists() || !workingDir.isDirectory()) {
 				throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, 
+					"Working directory does not exist: " + workingDirectory));
+			}
+		}
+
+		// Get behave command from preferences
+		BehavePreferences preferences = BehavePreferences.of();
+		String behaveCommand = preferences.behaveCommand();
+
+		// Build and launch the behave process
+		try {
+			BehaveProcessLauncher launcher = new BehaveProcessLauncher()
+				.withCommand(behaveCommand)
+				.withFeaturePath(withLine != null && !withLine.isEmpty() ? withLine : featurePath)
+				.withWorkingDirectory(workingDirectory)
+				.withTags(tags)
+				.withVerbose(isVerbose)
+				.withNoCapture(isNoCapture)
+				.withDryRun(isDryRun);
+
+			Process process = launcher.launch();
+			IProcess iProcess = DebugPlugin.newProcess(launch, process, "Cucumber Behave");
+			iProcess.setAttribute(IProcess.ATTR_PROCESS_TYPE, "cucumber.behave");
+		} catch (IOException e) {
+			throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, 
+				"Failed to launch behave process", e));
+		}
+	}
+
+	/**
+	 * Substitute any variable
+	 */
+	private static String substituteVar(String s) {
+		if (s == null) {
+			return s;
+		}
+		try {
+			return VariablesPlugin.getDefault().getStringVariableManager().performStringSubstitution(s);
+		} catch (CoreException e) {
+			System.out.println("Could not substitute variable " + s);
+			return null;
+		}
+	}
+
+} 
 					"Working directory does not exist: " + workingDirectory));
 			}
 		}

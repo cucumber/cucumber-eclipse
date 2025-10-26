@@ -30,4 +30,12 @@
             contentTypeId="io.cucumber.eclipse.editor.content-type.feature">
       </participant>
    </extension>
+   <extension point="org.eclipse.ui.preferencePages">
+      <page
+            category="cucumber.eclipse.editor.preferences.main"
+            class="io.cucumber.eclipse.python.preferences.BehavePreferencePage"
+            id="io.cucumber.eclipse.python.preferences.BehavePreferencePage"
+            name="Behave Backend">
+      </page>
+   </extension>
 </plugin>

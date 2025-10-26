@@ -5,6 +5,7 @@ Bundle-SymbolicName: io.cucumber.eclipse.python;singleton:=true
 Bundle-Version: 3.0.0.qualifier
 Export-Package: io.cucumber.eclipse.python;x-internal:=true,
  io.cucumber.eclipse.python.launching;x-internal:=true,
+ io.cucumber.eclipse.python.preferences;x-internal:=true,
  io.cucumber.eclipse.python.steps;x-internal:=true,
  io.cucumber.eclipse.python.validation;x-internal:=true
 Bundle-Activator: io.cucumber.eclipse.python.Activator

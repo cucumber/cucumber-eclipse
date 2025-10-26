@@ -128,28 +128,7 @@ public class CucumberBehaveLauncher implements ILauncher {
 
 	@Override
 	public boolean supports(IResource resource) {
-		// Check if this is a Python project by looking for common Python indicators
-		IProject project = resource.getProject();
-		if (project == null) {
-			return false;
-		}
-		
-		// Check for PyDev nature or Python-related files
-		try {
-			// Check for PyDev nature
-			if (project.hasNature("org.python.pydev.pythonNature")) {
-				return true;
-			}
-		} catch (CoreException e) {
-			// Ignore and try other checks
-		}
-		
-		// Check for Python-related files/folders as fallback
-		return project.getFile("requirements.txt").exists() ||
-		       project.getFile("setup.py").exists() ||
-		       project.getFile("pyproject.toml").exists() ||
-		       project.getFolder("venv").exists() ||
-		       project.getFolder(".venv").exists();
+		return BehaveProcessLauncher.isBehaveProject(resource);
 	}
 
 	@Override

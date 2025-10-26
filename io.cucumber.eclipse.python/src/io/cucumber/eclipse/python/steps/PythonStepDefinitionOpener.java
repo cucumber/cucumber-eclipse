@@ -19,6 +19,7 @@ import org.osgi.service.component.annotations.Component;
 
 import io.cucumber.eclipse.editor.hyperlinks.IStepDefinitionOpener;
 import io.cucumber.eclipse.python.Activator;
+import io.cucumber.eclipse.python.launching.BehaveProcessLauncher;
 import io.cucumber.eclipse.python.validation.BehaveGlueValidator;
 import io.cucumber.eclipse.python.validation.StepMatch;
 import io.cucumber.messages.types.Step;
@@ -31,27 +32,7 @@ public class PythonStepDefinitionOpener implements IStepDefinitionOpener {
 
 	@Override
 	public boolean canOpen(IResource resource) throws CoreException {
-		if (resource == null) {
-			return false;
-		}
-		IProject project = resource.getProject();
-		if (project == null) {
-			return false;
-		}
-
-		// Check for Python project indicators
-		try {
-			if (project.hasNature("org.python.pydev.pythonNature")) {
-				return true;
-			}
-		} catch (CoreException e) {
-			// Ignore and try other checks
-		}
-
-		// Check for Python-related files as fallback
-		return project.getFile("requirements.txt").exists() || project.getFile("setup.py").exists()
-				|| project.getFile("pyproject.toml").exists() || project.getFolder("venv").exists()
-				|| project.getFolder(".venv").exists();
+		return BehaveProcessLauncher.isBehaveProject(resource);
 	}
 
 	@Override
