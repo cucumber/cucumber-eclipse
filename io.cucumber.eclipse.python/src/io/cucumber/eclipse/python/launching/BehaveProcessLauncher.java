@@ -160,6 +160,26 @@ public class BehaveProcessLauncher {
 			return false;
 		}
 		
+		// Check for Behave convention: .feature file with steps/ directory containing .py files
+		if (resource.getType() == IResource.FILE && resource.getName().endsWith(".feature")) {
+			// Look for a 'steps' subdirectory relative to the feature file
+			org.eclipse.core.runtime.IPath featureParent = resource.getParent().getLocation();
+			if (featureParent != null) {
+				java.io.File stepsDir = new java.io.File(featureParent.toFile(), "steps");
+				if (stepsDir.exists() && stepsDir.isDirectory()) {
+					// Check if steps directory contains at least one .py file
+					java.io.File[] files = stepsDir.listFiles();
+					if (files != null) {
+						for (java.io.File file : files) {
+							if (file.isFile() && file.getName().endsWith(".py")) {
+								return true;
+							}
+						}
+					}
+				}
+			}
+		}
+		
 		IProject project = resource.getProject();
 		if (project == null) {
 			return false;
