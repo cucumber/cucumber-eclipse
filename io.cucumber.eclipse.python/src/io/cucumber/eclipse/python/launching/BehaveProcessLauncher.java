@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -129,6 +130,17 @@ public class BehaveProcessLauncher {
 	 * @throws IOException if process creation fails
 	 */
 	public Process launch() throws IOException {
+		return launch(null);
+	}
+	
+	/**
+	 * Launches the behave process with the configured parameters and optional PYTHONPATH addition
+	 * 
+	 * @param pythonPluginPath Optional path to add to PYTHONPATH for Python plugins
+	 * @return the started Process
+	 * @throws IOException if process creation fails
+	 */
+	public Process launch(String pythonPluginPath) throws IOException {
 		List<String> commandList = new ArrayList<>();
 		commandList.add(command);
 		
@@ -144,10 +156,22 @@ public class BehaveProcessLauncher {
 			processBuilder.directory(new File(workingDirectory));
 		}
 		
+		// Add Python plugin path to PYTHONPATH if provided
+		if (pythonPluginPath != null && !pythonPluginPath.isEmpty()) {
+			Map<String, String> env = processBuilder.environment();
+			String existingPythonPath = env.get("PYTHONPATH");
+			if (existingPythonPath != null && !existingPythonPath.isEmpty()) {
+				env.put("PYTHONPATH", pythonPluginPath + File.pathSeparator + existingPythonPath);
+			} else {
+				env.put("PYTHONPATH", pythonPluginPath);
+			}
+		}
+		
 		processBuilder.redirectErrorStream(true);
 		
 		return processBuilder.start();
 	}
+
 	
 	/**
 	 * Checks if a resource belongs to a Behave/Python project
