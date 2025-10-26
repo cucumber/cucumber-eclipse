@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
-import io.cucumber.eclipse.editor.marker.MarkerFactory;
 import io.cucumber.eclipse.python.Activator;
 import io.cucumber.eclipse.python.launching.BehaveProcessLauncher;
 import io.cucumber.eclipse.python.preferences.BehavePreferences;
@@ -88,7 +87,6 @@ final class BehaveGlueJob extends Job {
 
 			// Parse the output
 			Map<Integer, StepMatch> stepMatchMap = new HashMap<>();
-			Map<Integer, String> unmatchedSteps = new HashMap<>();
 			String currentStepPattern = null;
 			String currentStepFile = null;
 			int currentStepLine = -1;
@@ -130,25 +128,36 @@ final class BehaveGlueJob extends Job {
 			// Wait for process to complete
 			int exitCode = process.waitFor();
 
-			// Find all steps in the feature and determine which ones are unmatched
-			// For now, we'll just use the steps we found
+			// Store matched steps
 			matchedSteps = new ArrayList<>(stepMatchMap.values());
 
-			// Create markers for unmatched steps
-			// Collect snippets for steps that don't have matches
-			Map<Integer, Collection<String>> snippets = new HashMap<>();
-
-			// For demonstration, we'll assume all steps in the feature that aren't in stepMatchMap are unmatched
-			// In a real implementation, we'd parse the feature document to find all steps
+			// Collect all steps from the feature document to find unmatched ones
+			List<Integer> unmatchedLineNumbers = new ArrayList<>();
+			editorDocument.getSteps().forEach(step -> {
+				int lineNumber = step.getLocation().getLine().intValue();
+				if (!stepMatchMap.containsKey(lineNumber)) {
+					unmatchedLineNumbers.add(lineNumber);
+				}
+			});
 			
-			// Update markers
-			MarkerFactory.missingSteps(resource, snippets, Activator.PLUGIN_ID, false);
+			// Create markers for unmatched steps
+			BehaveMarkerFactory.unmatchedSteps(resource, unmatchedLineNumbers, Activator.PLUGIN_ID, false);
 
 			return Status.OK_STATUS;
 
-		} catch (IOException | InterruptedException e) {
-			ILog.get().error("Behave validation failed", e);
-			return new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Behave validation failed", e);
+		} catch (InterruptedException e) {
+			// Return cancel status for interrupted exception
+			return Status.CANCEL_STATUS;
+		} catch (IOException e) {
+			// Log the error but don't show error popup - create marker instead
+			ILog.get().error("Behave validation failed - check that behave is installed and accessible", e);
+			try {
+				BehaveMarkerFactory.behaveExecutionError(resource, 
+					"Failed to run behave for validation. Check that behave is installed and the behave command is configured correctly in preferences. See error log for details.");
+			} catch (CoreException ce) {
+				// Ignore marker creation failure
+			}
+			return Status.OK_STATUS;
 		} catch (CoreException e) {
 			return e.getStatus();
 		}
