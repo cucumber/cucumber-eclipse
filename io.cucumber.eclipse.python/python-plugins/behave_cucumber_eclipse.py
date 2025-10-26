@@ -4,6 +4,10 @@ Behave formatter plugin that sends Cucumber messages to Eclipse IDE.
 
 This formatter connects to Eclipse via a socket connection and sends
 test execution messages using the Cucumber Messages protocol.
+
+The formatter uses plain JSON for message serialization to avoid requiring
+additional dependencies. For full Cucumber Messages support, consider using
+the cucumber-messages Python library.
 """
 
 import os
@@ -11,7 +15,6 @@ import sys
 import socket
 import struct
 import json
-from io import StringIO
 from behave.model import Feature, Scenario, Step
 from behave.formatter.base import Formatter
 
@@ -26,11 +29,15 @@ class CucumberEclipseFormatter(Formatter):
     Protocol:
     1. Connect to Eclipse on specified port
     2. For each message:
-       - Serialize message as JSON
+       - Serialize message as JSON (Cucumber Message format)
        - Send 4-byte integer (big-endian) with message length
        - Send JSON message bytes
        - Wait for acknowledgment byte (0x01)
     3. After TestRunFinished, send 0 length and wait for goodbye (0x00)
+    
+    The formatter sends simplified Cucumber Messages that are compatible with
+    the Eclipse unittest view. Full Cucumber Messages support can be added by
+    using the cucumber-messages Python library.
     """
     
     HANDLED_MESSAGE = 0x01
