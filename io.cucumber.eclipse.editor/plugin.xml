@@ -35,6 +35,10 @@
       </extension>
     
     <extension point="org.eclipse.ui.commands">
+      <category
+            id="io.cucumber.eclipse.editor.category"
+            name="Cucumber"
+            description="Cucumber Editor Commands" />
       <command
             categoryId="io.cucumber.eclipse.editor.category"
             id="io.cucumber.eclipse.editor.format"
