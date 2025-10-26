@@ -157,9 +157,9 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 			args.add("--tags");
 			args.add(tags);
 		}
-		MessageEndpointProcess endpoint;
+		JavaMessageEndpointProcess endpoint;
 		try {
-			endpoint = new MessageEndpointProcess(launch);
+			endpoint = new JavaMessageEndpointProcess(launch);
 			endpoint.addArguments(args);
 		} catch (IOException e) {
 			throw new CoreException(
@@ -173,7 +173,7 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 			launch.addProcess(endpoint);
 
 			if (launchMode == Mode.DEBUG) {
-				GherkingDebugTarget<MessageEndpointProcess> debugTarget = new GherkingDebugTarget<MessageEndpointProcess>(
+				GherkingDebugTarget<JavaMessageEndpointProcess> debugTarget = new GherkingDebugTarget<JavaMessageEndpointProcess>(
 						launch, endpoint, "cucumber-jvm");
 				IBreakpoint[] breakpoints = DebugPlugin.getDefault().getBreakpointManager()
 						.getBreakpoints(GherkingBreakpoint.MODEL_ID);
