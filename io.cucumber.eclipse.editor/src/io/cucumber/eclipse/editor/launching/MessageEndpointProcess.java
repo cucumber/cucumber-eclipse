@@ -152,14 +152,17 @@ public abstract class MessageEndpointProcess implements IProcess, EnvelopeProvid
 	
 	/**
 	 * Deserialize an envelope from bytes.
-	 * Backend-specific implementations should override this to use their preferred JSON library.
+	 * Default implementation uses Jackson from the java.plugins bundle.
+	 * Backend-specific implementations can override this to use a different JSON library if needed.
 	 * 
 	 * @param buffer byte buffer containing the message
 	 * @param length length of the message in the buffer
 	 * @return deserialized Envelope
 	 * @throws IOException if deserialization fails
 	 */
-	protected abstract Envelope deserializeEnvelope(byte[] buffer, int length) throws IOException;
+	protected Envelope deserializeEnvelope(byte[] buffer, int length) throws IOException {
+		return io.cucumber.eclipse.java.plugins.Jackson.OBJECT_MAPPER.readerFor(Envelope.class).readValue(buffer, 0, length);
+	}
 	
 	/**
 	 * Get the port number that the server socket is listening on

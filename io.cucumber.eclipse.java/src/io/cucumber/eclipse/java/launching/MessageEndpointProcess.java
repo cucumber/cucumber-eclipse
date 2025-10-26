@@ -1,12 +1,12 @@
 package io.cucumber.eclipse.java.launching;
 
 import java.io.IOException;
+import java.util.Collection;
 
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.model.IProcess;
 
-import io.cucumber.eclipse.java.plugins.Jackson;
-import io.cucumber.messages.types.Envelope;
+import io.cucumber.eclipse.java.plugins.CucumberEclipsePlugin;
 
 /**
  * Integrates message endpoint with the Eclipse launcher framework for Java/JVM.
@@ -16,9 +16,9 @@ import io.cucumber.messages.types.Envelope;
  * 
  * @author christoph
  */
-public class MessageEndpointProcess extends io.cucumber.eclipse.editor.launching.MessageEndpointProcess {
+public class JavaMessageEndpointProcess extends io.cucumber.eclipse.editor.launching.MessageEndpointProcess {
 
-	public MessageEndpointProcess(ILaunch launch) throws IOException {
+	public JavaMessageEndpointProcess(ILaunch launch) throws IOException {
 		super(launch);
 		setAttribute(IProcess.ATTR_PROCESS_TYPE, "cucumber-message-endpoint");
 	}
@@ -27,9 +27,15 @@ public class MessageEndpointProcess extends io.cucumber.eclipse.editor.launching
 	public String getLabel() {
 		return "Cucumber Message Listener";
 	}
-
-	@Override
-	protected Envelope deserializeEnvelope(byte[] buffer, int length) throws IOException {
-		return Jackson.OBJECT_MAPPER.readerFor(Envelope.class).readValue(buffer, 0, length);
+	
+	/**
+	 * Adds Java-specific plugin arguments to enable Eclipse integration.
+	 * This adds the CucumberEclipsePlugin with the port number.
+	 * 
+	 * @param args Collection of command arguments to add to
+	 */
+	public void addArguments(Collection<String> args) {
+		args.add("-p");
+		args.add(CucumberEclipsePlugin.class.getName() + ":" + String.valueOf(getPort()));
 	}
 }

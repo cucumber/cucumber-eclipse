@@ -6,8 +6,6 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.model.IProcess;
 
 import io.cucumber.eclipse.editor.launching.MessageEndpointProcess;
-import io.cucumber.eclipse.java.plugins.Jackson;
-import io.cucumber.messages.types.Envelope;
 
 /**
  * Message endpoint for Python/Behave that receives Cucumber messages via socket.
@@ -27,10 +25,5 @@ public class BehaveMessageEndpointProcess extends MessageEndpointProcess {
 	@Override
 	public String getLabel() {
 		return "Behave Message Listener";
-	}
-
-	@Override
-	protected Envelope deserializeEnvelope(byte[] buffer, int length) throws IOException {
-		return Jackson.OBJECT_MAPPER.readerFor(Envelope.class).readValue(buffer, 0, length);
 	}
 }
