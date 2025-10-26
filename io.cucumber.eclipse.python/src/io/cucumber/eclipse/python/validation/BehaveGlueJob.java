@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
+import io.cucumber.eclipse.editor.marker.MarkerFactory;
 import io.cucumber.eclipse.python.Activator;
 import io.cucumber.eclipse.python.launching.BehaveProcessLauncher;
 import io.cucumber.eclipse.python.preferences.BehavePreferences;
@@ -41,6 +42,16 @@ final class BehaveGlueJob extends Job {
 	//   Given I have a calculator               # ../calculator.feature:7
 	private static final Pattern STEP_USAGE_PATTERN = Pattern
 			.compile("\\s+(Given|When|Then|And|But)\\s+(.+?)\\s+#\\s+(.+?):(\\d+)");
+	
+	// Pattern to match undefined step lines like:
+	//   When I add 2 and 3 numbers              # features/calculator.feature:8
+	private static final Pattern UNDEFINED_STEP_PATTERN = Pattern
+			.compile("\\s+(Given|When|Then|And|But)\\s+(.+?)\\s+#\\s+(.+?):(\\d+)");
+	
+	// Pattern to match snippet decorator lines like:
+	// @when(u'I add 2 and 3 numbers')
+	private static final Pattern SNIPPET_DECORATOR_PATTERN = Pattern
+			.compile("@(given|when|then)\\(u?'(.+?)'\\)");
 
 	private Supplier<GherkinEditorDocument> documentSupplier;
 	private volatile Collection<StepMatch> matchedSteps = Collections.emptyList();
@@ -88,9 +99,17 @@ final class BehaveGlueJob extends Job {
 
 			// Parse the output
 			Map<Integer, StepMatch> stepMatchMap = new HashMap<>();
+			Map<String, Integer> undefinedStepsMap = new HashMap<>(); // step text -> line number
+			Map<String, String> snippetsMap = new HashMap<>(); // step text -> snippet
+			
 			String currentStepPattern = null;
 			String currentStepFile = null;
 			int currentStepLine = -1;
+			
+			boolean inUndefinedSection = false;
+			boolean inSnippetSection = false;
+			StringBuilder currentSnippet = null;
+			String currentSnippetStepText = null;
 
 			try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
 				String line;
@@ -98,6 +117,64 @@ final class BehaveGlueJob extends Job {
 					if (monitor.isCanceled()) {
 						process.destroy();
 						return Status.CANCEL_STATUS;
+					}
+
+					// Check for section headers
+					if (line.startsWith("UNDEFINED STEPS[")) {
+						inUndefinedSection = true;
+						inSnippetSection = false;
+						continue;
+					} else if (line.contains("You can implement step definitions for undefined steps with these snippets:")) {
+						inUndefinedSection = false;
+						inSnippetSection = true;
+						continue;
+					} else if (line.startsWith("UNUSED STEP DEFINITIONS[") || 
+							   (line.trim().isEmpty() && inUndefinedSection)) {
+						inUndefinedSection = false;
+					}
+					
+					// Parse undefined steps section
+					if (inUndefinedSection) {
+						Matcher undefinedMatcher = UNDEFINED_STEP_PATTERN.matcher(line);
+						if (undefinedMatcher.find()) {
+							String stepText = undefinedMatcher.group(2).trim();
+							String featureFile = undefinedMatcher.group(3);
+							int featureLine = Integer.parseInt(undefinedMatcher.group(4));
+							
+							// Only record for the current feature file
+							if (featureFile.contains(resource.getName())) {
+								undefinedStepsMap.put(stepText, featureLine);
+							}
+						}
+						continue;
+					}
+					
+					// Parse snippet section
+					if (inSnippetSection) {
+						// Check if this is a snippet decorator line
+						Matcher snippetMatcher = SNIPPET_DECORATOR_PATTERN.matcher(line);
+						if (snippetMatcher.find()) {
+							// Save previous snippet if exists
+							if (currentSnippet != null && currentSnippetStepText != null) {
+								snippetsMap.put(currentSnippetStepText, currentSnippet.toString());
+							}
+							
+							// Start new snippet
+							currentSnippetStepText = snippetMatcher.group(2).trim();
+							currentSnippet = new StringBuilder();
+							currentSnippet.append(line).append("\n");
+						} else if (currentSnippet != null && !line.trim().isEmpty()) {
+							// Continue building current snippet
+							currentSnippet.append(line).append("\n");
+						} else if (line.trim().isEmpty() && currentSnippet != null) {
+							// Empty line marks end of snippet
+							if (currentSnippetStepText != null) {
+								snippetsMap.put(currentSnippetStepText, currentSnippet.toString());
+							}
+							currentSnippet = null;
+							currentSnippetStepText = null;
+						}
+						continue;
 					}
 
 					// Check if this is a step definition line
@@ -124,6 +201,11 @@ final class BehaveGlueJob extends Job {
 						}
 					}
 				}
+				
+				// Save last snippet if exists
+				if (currentSnippet != null && currentSnippetStepText != null) {
+					snippetsMap.put(currentSnippetStepText, currentSnippet.toString());
+				}
 			}
 
 			// Wait for process to complete
@@ -132,17 +214,30 @@ final class BehaveGlueJob extends Job {
 			// Store matched steps
 			matchedSteps = new ArrayList<>(stepMatchMap.values());
 
-			// Collect all steps from the feature document to find unmatched ones
-			List<Integer> unmatchedLineNumbers = new ArrayList<>();
+			// Build map of unmatched steps with their snippets
+			Map<Integer, Collection<String>> unmatchedStepsWithSnippets = new HashMap<>();
 			editorDocument.getSteps().forEach(step -> {
 				int lineNumber = step.getLocation().getLine().intValue();
 				if (!stepMatchMap.containsKey(lineNumber)) {
-					unmatchedLineNumbers.add(lineNumber);
+					String stepText = step.getText();
+					
+					// Try to find matching snippet for this step text
+					List<String> snippets = new ArrayList<>();
+					if (snippetsMap.containsKey(stepText)) {
+						snippets.add(snippetsMap.get(stepText));
+					}
+					
+					unmatchedStepsWithSnippets.put(lineNumber, snippets);
 				}
 			});
 			
-			// Create markers for unmatched steps
-			BehaveMarkerFactory.unmatchedSteps(resource, unmatchedLineNumbers, Activator.PLUGIN_ID, false);
+			// Create markers for unmatched steps with snippets
+			if (!unmatchedStepsWithSnippets.isEmpty()) {
+				MarkerFactory.missingSteps(resource, unmatchedStepsWithSnippets, Activator.PLUGIN_ID, false);
+			} else {
+				// Delete any existing unmatched step markers if all steps are now matched
+				BehaveMarkerFactory.unmatchedSteps(resource, Collections.emptyList(), Activator.PLUGIN_ID, false);
+			}
 
 			return Status.OK_STATUS;
 
