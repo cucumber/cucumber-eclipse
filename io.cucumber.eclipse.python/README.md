@@ -12,6 +12,11 @@ This bundle provides support for launching Cucumber feature files using Python's
   - No capture mode
   - Dry run
 - Tag-based test filtering
+- **Real-time validation of step definitions**:
+  - Automatically detects unmatched steps (steps without glue code)
+  - Shows warning markers on unmatched steps
+  - Provides quick-fix support with code snippets to implement missing steps
+  - Ctrl+Click navigation from steps to their Python implementations
 
 ## Requirements
 
