@@ -181,6 +181,16 @@
 	  	<persistent value="true"/>
 	</extension>
 	<extension
+	    id="cucumber.eclipse.marker.language.support_available"
+	    name="Language Support Available"
+	    point="org.eclipse.core.resources.markers">
+	    <super type="org.eclipse.core.resources.problemmarker"/>
+	  	<super type="cucumber.eclipse.marker"/>
+	  	<attribute name="cucumber.eclipse.marker.language.support_available.bundle_id"/>
+	  	<attribute name="cucumber.eclipse.marker.language.support_available.language"/>
+	  	<persistent value="true"/>
+	</extension>
+	<extension
          point="org.eclipse.ui.editors.markerAnnotationSpecification">
       <specification
             annotationType="cucumber.eclipse.annotation.gherkin.unmatched_step"
@@ -395,6 +405,13 @@
          name="Cucumber">
    </page>
 </extension>
+	 <extension
+         point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator
+            class="io.cucumber.eclipse.editor.quickfix.LanguageSupportMarkerResolutionGenerator"
+            markerType="cucumber.eclipse.marker.language.support_available">
+      </markerResolutionGenerator>
+   </extension>
 	 <!-- Eclipse Activity Support -->
 	 <extension
          point="org.eclipse.ui.activities">
