@@ -194,11 +194,6 @@ public class BehaveProcessLauncher {
 			// Ignore and try other checks
 		}
 		
-		// Check for Python-related files/folders as fallback
-		return project.getFile("requirements.txt").exists() ||
-		       project.getFile("setup.py").exists() ||
-		       project.getFile("pyproject.toml").exists() ||
-		       project.getFolder("venv").exists() ||
-		       project.getFolder(".venv").exists();
+		return false;
 	}
 }
