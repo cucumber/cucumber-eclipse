@@ -12,23 +12,15 @@
 		<repository location="https://download.eclipse.org/technology/m2e/releases/latest/"/>
 		<unit id="org.eclipse.m2e.sdk.feature.feature.group" version="0.0.0"/>
 	</location>
-	<location includeDependencyDepth="infinite" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
+	<location includeDependencyDepth="infinite" includeDependencyScopes="compile" includeSource="true" missingManifest="error" type="Maven">
 		<dependencies>
 			<dependency>
 				<groupId>io.cucumber</groupId>
 				<artifactId>gherkin</artifactId>
-				<version>36.0.0</version>
+				<version>36.1.0</version>
 				<type>jar</type>
 			</dependency>
 		</dependencies>
-		<instructions><![CDATA[
-Bundle-Name:           ${mvnGroupId}:${mvnArtifactId}:${mvnVersion}
-version:               ${version_cleanup;${mvnVersion}}
-Bundle-SymbolicName:   ${mvnGroupId}.${mvnArtifactId}
-Bundle-Version:        ${version}
-Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
-Export-Package:        *;version="${version}";-noimport:=true
-]]></instructions>
 	</location>
 	<location includeDependencyDepth="infinite" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
 		<dependencies>
