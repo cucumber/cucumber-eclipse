@@ -143,14 +143,87 @@ Created `examples/python-calculator/` demonstrating usage:
    - Parallel execution support
 
 4. **Step Definition Navigation**
-   - Jump from feature file to step definition
+   - Jump from feature file to step definition ✅ (Implemented)
    - Step definition completion
    - Unused step detection
 
-5. **Test Results Integration**
+5. **Test Results Integration** ✅ (Implemented)
    - Eclipse test results view integration
    - Visual representation of test execution
    - Failed test navigation
+
+## Recent Updates
+
+### Remote Test Execution Support (v3.0.0)
+
+Added support for real-time test execution monitoring using the Cucumber Messages protocol:
+
+#### New Components
+
+1. **BehaveMessageEndpointProcess**
+   - Located in `io.cucumber.eclipse.python.launching`
+   - Implements message endpoint for receiving Cucumber messages from Python
+   - Similar to Java's MessageEndpointProcess but tailored for Python/Behave
+   - Implements EnvelopeProvider interface for integration with Eclipse
+   - Creates server socket and listens for incoming test execution messages
+   - Handles message deserialization using Jackson ObjectMapper
+   - Distributes messages to registered EnvelopeListeners
+
+2. **Python Formatter Plugin**
+   - Located in `python-plugins/behave_cucumber_eclipse.py`
+   - Custom Behave formatter that connects to Eclipse via socket
+   - Sends Cucumber Messages in JSON format
+   - Uses same protocol as Java CucumberEclipsePlugin:
+     - 4-byte big-endian integer for message length
+     - JSON-encoded message
+     - Waits for acknowledgment byte (0x01)
+     - Sends goodbye message (0x00) on completion
+   - Reads port from environment variable or Behave userdata (-D option)
+   - No additional Python dependencies beyond standard library
+
+3. **Updated Launch Configuration**
+   - `CucumberBehaveLaunchConfigurationDelegate` now creates MessageEndpointProcess
+   - Automatically injects formatter arguments to Behave command
+   - Adds python-plugins directory to PYTHONPATH
+   - Coordinates between Eclipse and Python processes
+
+4. **Enhanced BehaveProcessLauncher**
+   - Added support for setting PYTHONPATH environment variable
+   - New `launch(String pythonPluginPath)` method for custom environment setup
+   - Maintains backward compatibility with existing `launch()` method
+
+#### Protocol Details
+
+The Python formatter implements the same binary protocol as the Java backend:
+
+```
+1. Connect to Eclipse on specified port (passed via -D cucumber_eclipse_port=<port>)
+2. For each test event:
+   a. Serialize event as Cucumber Message (JSON)
+   b. Send message length as 4-byte big-endian integer
+   c. Send JSON message bytes
+   d. Wait for acknowledgment (0x01) from Eclipse
+   e. If Eclipse sends goodbye (0x00), close connection
+3. After test run completes:
+   a. Send TestRunFinished message
+   b. Send 0 length to signal end
+   c. Wait for final acknowledgment
+   d. Close socket
+```
+
+#### Integration Points
+
+- **EnvelopeProvider**: MessageEndpointProcess implements this interface to distribute messages
+- **EnvelopeListener**: Eclipse components can register as listeners to receive test events
+- **Unittest View**: Messages are routed to Eclipse's unittest view for display
+- **Jackson**: Reuses Jackson ObjectMapper from java.plugins bundle for JSON deserialization
+
+#### Build Configuration
+
+- Updated `build.properties` to include python-plugins directory in bundle
+- Updated `MANIFEST.MF` to add dependency on io.cucumber.eclipse.java.plugins
+- Python formatter is packaged with the plugin and added to PYTHONPATH automatically
+
 
 ## Testing
 

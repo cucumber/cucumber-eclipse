@@ -21,7 +21,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.debug.core,
  org.eclipse.core.variables,
  io.cucumber.messages;bundle-version="13.2.1",
- io.cucumber.tag-expressions;bundle-version="3.0.0"
+ io.cucumber.tag-expressions;bundle-version="3.0.0",
+ io.cucumber.eclipse.java.plugins;bundle-version="3.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: io.cucumber.eclipse.python
 Bundle-ActivationPolicy: lazy
