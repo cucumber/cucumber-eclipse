@@ -87,7 +87,7 @@ Export-Package:        *;version="${version}";-noimport:=true
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-text</artifactId>
-				<version>1.14.0</version>
+				<version>1.15.0</version>
 				<type>jar</type>
 			</dependency>
 		</dependencies>
