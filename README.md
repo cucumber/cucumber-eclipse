@@ -94,6 +94,94 @@ To manage these features:
 2. Find the "Cucumber" category
 3. Check or uncheck the activities you want to enable or disable
 
+## Setting Up Development Environment
+
+### Prerequisites
+
+- **Eclipse IDE**: Eclipse IDE for Eclipse Committers (2024-06 or later) - [Download](https://www.eclipse.org/downloads/packages/)
+- **Java 21**: JDK 21 or higher - [Download](https://adoptium.net/)
+- **Maven**: Maven 3.6+ (for command-line builds) - [Download](https://maven.apache.org/)
+
+### Option 1: Using Oomph (Recommended)
+
+[Oomph](https://wiki.eclipse.org/Eclipse_Oomph_Installer) is Eclipse's installation and project provisioning system that automates the setup process.
+
+1. **Download and launch Eclipse Installer**
+   - Download from [Eclipse Installer](https://www.eclipse.org/downloads/packages/installer)
+   - Start the Eclipse Installer
+
+2. **Switch to Advanced Mode**
+   - Click the menu icon (☰) in the top-right corner
+   - Select "Advanced Mode"
+
+3. **Add the Cucumber Eclipse Setup**
+   - Click the "+" icon to add a new project
+   - Select "Github Projects" as the catalog
+   - Paste the setup file URL:
+     ```
+     https://raw.githubusercontent.com/cucumber/cucumber-eclipse/main/CucumberEclipse.setup
+     ```
+   - Or use a local file if you've already cloned the repository:
+     ```
+     file:/path/to/cucumber-eclipse/CucumberEclipse.setup
+     ```
+
+4. **Select Product and Project**
+   - Select "Eclipse IDE for Eclipse Committers" as the product
+   - Check "Cucumber Eclipse" in the project list
+   - Click "Next"
+
+5. **Configure Variables**
+   - Set your desired installation and workspace locations
+   - Configure GitHub credentials (if you want to contribute)
+   - Click "Next" and then "Finish"
+
+6. **Wait for Setup**
+   - Oomph will now:
+     - Install required Eclipse features (PDE, M2E)
+     - Clone the Cucumber Eclipse repository
+     - Set up the target platform
+     - Import all plugin projects
+     - Configure workspace preferences
+   - This may take several minutes depending on your internet connection
+
+7. **Start Development**
+   - Once setup completes, Eclipse will open with all projects imported
+   - The target platform will be automatically set
+   - You're ready to start developing!
+
+### Option 2: Manual Setup
+
+If you prefer to set up the environment manually:
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/cucumber/cucumber-eclipse.git
+   cd cucumber-eclipse
+   ```
+
+2. **Import projects into Eclipse**
+   - Open Eclipse IDE for Eclipse Committers
+   - Go to `File` → `Import` → `General` → `Existing Projects into Workspace`
+   - Select the cloned repository root directory
+   - Make sure "Search for nested projects" is checked
+   - Select all projects and click "Finish"
+
+3. **Set the target platform**
+   - Open `io.cucumber.eclipse.targetdefinition/cucumber.eclipse.targetdefinition.target`
+   - Wait for the target platform to resolve (this may take a few minutes)
+   - Click "Set as Active Target Platform" in the top-right corner of the editor
+
+4. **Configure Java 21**
+   - Go to `Window` → `Preferences` → `Java` → `Installed JREs`
+   - Add JDK 21 if not already present
+   - Ensure it's set as the default
+
+5. **Build the workspace**
+   - Go to `Project` → `Clean...`
+   - Select "Clean all projects" and click "OK"
+   - Wait for the automatic build to complete
+
 ## Build and install from source
 
 To use the latest features, you can choose to build and install from source.
