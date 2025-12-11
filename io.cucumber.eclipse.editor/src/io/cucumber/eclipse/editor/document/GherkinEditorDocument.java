@@ -40,11 +40,24 @@ import io.cucumber.messages.types.Source;
 import io.cucumber.messages.types.SourceMediaType;
 
 /**
- * 
- * Defines unified access from the editor to the parsed content
+ * Provides unified access to Gherkin feature file content from the Eclipse editor.
+ * <p>
+ * This class extends {@link GherkinStream} to parse and expose Gherkin documents,
+ * including features, scenarios, steps, and language-specific keywords. It maintains
+ * a cache of parsed documents and automatically updates when the underlying document changes.
+ * </p>
+ * <p>
+ * Key features:
+ * <ul>
+ * <li>Parses Gherkin feature files using the Cucumber Gherkin parser</li>
+ * <li>Provides access to language-specific keywords and dialects</li>
+ * <li>Maintains position mapping between Gherkin elements and document locations</li>
+ * <li>Caches parsed documents and invalidates on changes</li>
+ * <li>Supports both workspace-managed and detached documents</li>
+ * </ul>
+ * </p>
  * 
  * @author christoph
- *
  */
 public final class GherkinEditorDocument extends GherkinStream {
 
@@ -138,14 +151,32 @@ public final class GherkinEditorDocument extends GherkinStream {
 		return locale;
 	}
 
+	/**
+	 * @return the underlying Eclipse document
+	 */
 	public IDocument getDocument() {
 		return document;
 	}
 
+	/**
+	 * Converts a Gherkin location to an Eclipse document position.
+	 * 
+	 * @param location the Gherkin location
+	 * @return the corresponding Eclipse position
+	 * @throws BadLocationException if the location is invalid
+	 */
 	public Position getPosition(io.cucumber.messages.types.Location location) throws BadLocationException {
 		return getPosition(location, 0);
 	}
 
+	/**
+	 * Converts a Gherkin location to an Eclipse document position with line offset adjustment.
+	 * 
+	 * @param location   the Gherkin location
+	 * @param lineOffset offset to subtract from the line number
+	 * @return the corresponding Eclipse position
+	 * @throws BadLocationException if the location is invalid
+	 */
 	public Position getPosition(io.cucumber.messages.types.Location location, int lineOffset)
 			throws BadLocationException {
 		int line =  location.getLine().intValue();
@@ -153,6 +184,14 @@ public final class GherkinEditorDocument extends GherkinStream {
 		return new Position(offset + location.getColumn().orElse(0l).intValue() - 1, 1);
 	}
 
+	/**
+	 * Gets the end-of-line position for the specified Gherkin location.
+	 * Handles different line ending characters (CR, LF, CRLF).
+	 * 
+	 * @param location the Gherkin location
+	 * @return the position at the end of the line
+	 * @throws BadLocationException if the location is invalid
+	 */
 	public Position getEolPosition(io.cucumber.messages.types.Location location) throws BadLocationException {
 		int line = location.getLine().intValue();
 		int offset = document.getLineOffset(line - 1);
@@ -211,10 +250,11 @@ public final class GherkinEditorDocument extends GherkinStream {
 	}
 
 	/**
-	 * Computes the longest keyword prefix the given line
+	 * Finds the longest keyword that matches the beginning of the given line.
+	 * Only checks step keywords (Given, When, Then, And, But).
 	 * 
 	 * @param line the line to check
-	 * @return the longest match for the given line
+	 * @return the longest matching keyword, or empty if no match
 	 */
 	public Optional<GherkinKeyword> getKeyWordOfLine(String line) {
 		String typed = line.stripLeading();
@@ -225,10 +265,11 @@ public final class GherkinEditorDocument extends GherkinStream {
 	}
 
 	/**
+	 * Creates a stream of Gherkin keywords using the provided accessor function.
+	 * Filters out wildcard keywords (*) and trims whitespace.
 	 * 
-	 * 
-	 * @param keyWords the keywords to fetch
-	 * @return A stream of {@link GherkinKeyword}s for the given access function
+	 * @param keyWords function to extract keywords from the dialect
+	 * @return a stream of {@link GherkinKeyword}s for the current dialect
 	 */
 	public Stream<GherkinKeyword> keyWords(Function<GherkinDialect, List<String>> keyWords) {
 		return keyWords.apply(dialect).stream().map(s -> s.trim())
@@ -237,15 +278,25 @@ public final class GherkinEditorDocument extends GherkinStream {
 	}
 
 	/**
-	 * A cached instance for the given document, the instance is automatically
-	 * updated on each request to {@link GherkinEditorDocument#get(IDocument)}, the
-	 * returned instance itself is immutable
+	 * Returns a cached GherkinEditorDocument for the given document.
+	 * The cached instance is automatically re-parsed if the document has changed.
+	 * Only works with compatible Gherkin feature documents.
 	 * 
-	 * @param document the document to get the corresponding
-	 *                 {@link GherkinEditorDocument} for
-	 * @return {@link GherkinEditorDocument} for the given document
+	 * @param document the document to get the corresponding GherkinEditorDocument for
+	 * @return the GherkinEditorDocument for the given document, or null if not compatible
 	 */
 	public static GherkinEditorDocument get(IDocument document) {
+		return get(document, false);
+	}
+
+	/**
+	 * Returns a cached or newly created GherkinEditorDocument for the given document.
+	 * 
+	 * @param document the document to get the corresponding GherkinEditorDocument for
+	 * @param create   if true, creates a document even if not compatible; if false, returns null for incompatible documents
+	 * @return the GherkinEditorDocument for the given document, or null if not compatible and create is false
+	 */
+	public static GherkinEditorDocument get(IDocument document, boolean create) {
 		Objects.requireNonNull(document, "document can't be null");
 		if (isCompatible(document)) {
 			return DOCUMENT_MAP.compute(document, (key, value) -> {
@@ -255,17 +306,22 @@ public final class GherkinEditorDocument extends GherkinStream {
 				return value;
 			});
 		}
+		if (create) {
+			return parse(document, () -> null);
+		}
 		return null;
 	}
 
 	/**
-	 * if the resource is currently managed by TextFileBufferManager returns the
-	 * cached instance of the corresponding document, otherwise create a detached
-	 * copy of the resource if it is convertible otherwise <code>null</code> is
-	 * returned
+	 * Returns a GherkinEditorDocument for the given resource.
+	 * <p>
+	 * If the resource is currently managed by TextFileBufferManager, returns the
+	 * cached instance. Otherwise, creates a detached copy by reading the file contents.
+	 * Only works with IFile resources.
+	 * </p>
 	 * 
-	 * @param resource the resource to request a gherking document
-	 * @return {@link GherkinEditorDocument} for the given resource
+	 * @param resource the resource to get a GherkinEditorDocument for
+	 * @return the GherkinEditorDocument for the given resource, or null if not an IFile or if an error occurs
 	 */
 	public static GherkinEditorDocument get(IResource resource) {
 		if (resource instanceof IFile) {
@@ -289,6 +345,7 @@ public final class GherkinEditorDocument extends GherkinStream {
 	}
 
 	/**
+	 * Checks if the given document is currently cached.
 	 * 
 	 * @param document the document to check
 	 * @return true if the document is currently cached
@@ -298,11 +355,11 @@ public final class GherkinEditorDocument extends GherkinStream {
 	}
 
 	/**
-	 * Checks if the given document is a {@link GherkinEditorDocument} comptible one
+	 * Checks if the given document is compatible with GherkinEditorDocument.
+	 * A document is compatible if it has the Gherkin feature content type.
 	 * 
 	 * @param document the document to check
-	 * @return <code>true</code> if the given document is one that could be used
-	 *         with {@link GherkinEditorDocument}
+	 * @return true if the document can be used with GherkinEditorDocument, false otherwise
 	 */
 	public static boolean isCompatible(IDocument document) {
 		if (document != null) {
@@ -329,15 +386,23 @@ public final class GherkinEditorDocument extends GherkinStream {
 	}
 
 	/**
-	 * Parses the string into a (temporary) document
+	 * Parses the given document into a GherkinEditorDocument.
+	 * Creates a new instance without caching.
 	 * 
 	 * @param document the document to parse
-	 * @return a detached {@link GherkinEditorDocument} instance
+	 * @param resource supplier for the associated resource, or null if none
+	 * @return a detached GherkinEditorDocument instance
 	 */
 	public static GherkinEditorDocument parse(IDocument document, Supplier<IResource> resource) {
 		return new GherkinEditorDocument(document, resource);
 	}
 
+	/**
+	 * Resolves the workspace resource for the given document.
+	 * 
+	 * @param document the document to resolve
+	 * @return the associated IResource, or null if it cannot be determined
+	 */
 	public static IResource resourceForDocument(IDocument document) {
 		ITextFileBuffer buffer = FileBuffers.getTextFileBufferManager().getTextFileBuffer(document);
 		if (buffer != null) {

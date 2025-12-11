@@ -29,7 +29,7 @@ public class GherkinDamagerRepairer extends DefaultDamagerRepairer {
 
 	@Override
 	public void setDocument(IDocument document) {
-		updateLanguage(GherkinEditorDocument.get(document));
+		updateLanguage(GherkinEditorDocument.get(document, true));
 		super.setDocument(document);
 	}
 
@@ -37,7 +37,7 @@ public class GherkinDamagerRepairer extends DefaultDamagerRepairer {
 	public IRegion getDamageRegion(ITypedRegion partition, DocumentEvent e, boolean documentPartitioningChanged) {
 		IRegion region = super.getDamageRegion(partition, e, documentPartitioningChanged);
 		IDocument doc = e.getDocument();
-		GherkinEditorDocument gherkinDocument = GherkinEditorDocument.get(doc);
+		GherkinEditorDocument gherkinDocument = GherkinEditorDocument.get(doc, true);
 		GherkinDialect dialect = gherkinDocument.getDialect();
 		String language = dialect.getLanguage();
 		if (!language.equals(currentLanguage)) {
