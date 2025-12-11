@@ -16,6 +16,7 @@ _Where sleek plugin meets seamless BDD workflow_
 - 🗂️ Step definition navigation: Jump between features and step definitions like a time traveler.
 - 🎨 I18n Syntax Highlighting: Make your tests shine with vibrant visual feedback.
 - 🛠️ Cucumber Console Output Panel: See clear results and trace bugs in a heartbeat.
+- 🔍 Structured Compare: Semantic diff view for feature files showing changes at Feature, Scenario, and Step levels.
 
 
 

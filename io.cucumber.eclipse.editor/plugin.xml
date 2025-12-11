@@ -476,4 +476,22 @@
             pattern="io.cucumber.eclipse.editor/io.cucumber.console">
       </activityPatternBinding>
    </extension>
+   
+   <!-- Structured Compare Support -->
+   <extension
+         point="org.eclipse.compare.structureCreators">
+      <structureCreator
+            class="io.cucumber.eclipse.editor.compare.GherkinStructureCreator"
+            extensions="feature"
+            id="io.cucumber.eclipse.editor.compare.structureCreator">
+      </structureCreator>
+   </extension>
+   <extension
+         point="org.eclipse.compare.contentViewers">
+      <viewer
+            class="org.eclipse.compare.contentmergeviewer.TextMergeViewer"
+            extensions="feature"
+            id="io.cucumber.eclipse.editor.compare.textViewer">
+      </viewer>
+   </extension>
 </plugin>
