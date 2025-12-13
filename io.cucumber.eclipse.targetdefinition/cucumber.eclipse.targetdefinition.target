@@ -45,7 +45,7 @@ Export-Package:        *;version="${version}";-noimport:=true
 			<dependency>
 				<groupId>io.cucumber</groupId>
 				<artifactId>cucumber-core</artifactId>
-				<version>7.32.0</version>
+				<version>7.33.0</version>
 				<type>jar</type>
 			</dependency>
 		</dependencies>
