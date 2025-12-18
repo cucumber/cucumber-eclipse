@@ -28,6 +28,7 @@ import io.cucumber.eclipse.editor.CucumberServiceRegistry;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.launching.ILauncher;
 import io.cucumber.eclipse.editor.launching.Mode;
+import io.cucumber.eclipse.editor.preferences.CucumberEditorPreferences;
 import io.cucumber.messages.types.Feature;
 import io.cucumber.messages.types.Location;
 import io.cucumber.messages.types.Scenario;
@@ -53,8 +54,9 @@ public class CucumberRunCodeMiningProvider implements ICodeMiningProvider {
 				return Collections.emptyList();
 			}
 			List<ICodeMining> list = new ArrayList<>();
+			CucumberEditorPreferences preferences = CucumberEditorPreferences.of(editorDocument.getResource());
 			for (Mode mode : Mode.values()) {
-				if (!mode.showShortcut(editorDocument.getResource())) {
+				if (!preferences.isShowShortcutFor(mode)) {
 					continue;
 				}
 				for (ILauncher launcher : CucumberServiceRegistry.getLauncher()) {
