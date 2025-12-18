@@ -1,13 +1,8 @@
 package io.cucumber.eclipse.editor.launching;
 
-import org.eclipse.core.resources.IResource;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.ILaunchMode;
-
-import io.cucumber.eclipse.editor.Activator;
-import io.cucumber.eclipse.editor.preferences.ICucumberPreferenceConstants;
-import io.cucumber.eclipse.editor.properties.CucumberEditorProperties;
 
 public enum Mode {
 	RUN, DEBUG, PROFILE;
@@ -76,14 +71,5 @@ public enum Mode {
 			return "";
 		}
 
-	}
-
-	public boolean showShortcut(IResource resource) {
-		CucumberEditorProperties properties = CucumberEditorProperties.of(resource);
-		if (properties.isEnabled()) {
-			return properties.isShowShortcutFor(this);
-		}
-		return Activator.getDefault().getPreferenceStore()
-				.getBoolean(ICucumberPreferenceConstants.PREF_SHOW_RUN_SHORTCUT_PREFIX + name());
 	}
 }

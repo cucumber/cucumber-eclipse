@@ -47,6 +47,8 @@ Export-Package: io.cucumber.eclipse.editor,
  io.cucumber.eclipse.editor.hyperlinks,
  io.cucumber.eclipse.editor.launching,
  io.cucumber.eclipse.editor.marker,
+ io.cucumber.eclipse.editor.preferences;x-internal:=true,
+ io.cucumber.eclipse.editor.properties;x-internal:=true,
  io.cucumber.eclipse.editor.steps,
  io.cucumber.eclipse.editor.syntaxhighlight
 Import-Package: org.apache.commons.io;version="[2.16.0,3.0.0)",
