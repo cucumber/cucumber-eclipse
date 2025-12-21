@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -19,6 +20,8 @@ public class BehaveProcessLauncher {
 	private String featurePath;
 	private String workingDirectory;
 	private List<String> additionalArgs = new ArrayList<>();
+	private Integer remotePort;
+	private String pythonPluginPath;
 	
 	/**
 	 * Sets the behave command to use (defaults to "behave")
@@ -123,6 +126,23 @@ public class BehaveProcessLauncher {
 	}
 	
 	/**
+	 * Configures remote connection for test execution monitoring.
+	 * This will add the formatter and set the port via environment variable.
+	 * 
+	 * @param port Port number for Eclipse message endpoint
+	 * @param pythonPluginPath Path to python-plugins directory
+	 * @return this launcher
+	 */
+	public BehaveProcessLauncher withRemoteConnection(int port, String pythonPluginPath) {
+		this.remotePort = port;
+		this.pythonPluginPath = pythonPluginPath;
+		// Add the formatter argument
+		this.additionalArgs.add("--format");
+		this.additionalArgs.add("behave_cucumber_eclipse:CucumberEclipseFormatter");
+		return this;
+	}
+	
+	/**
 	 * Launches the behave process with the configured parameters
 	 * 
 	 * @return the started Process
@@ -144,10 +164,28 @@ public class BehaveProcessLauncher {
 			processBuilder.directory(new File(workingDirectory));
 		}
 		
+		Map<String, String> env = processBuilder.environment();
+		
+		// Add Python plugin path to PYTHONPATH if provided
+		if (pythonPluginPath != null && !pythonPluginPath.isEmpty()) {
+			String existingPythonPath = env.get("PYTHONPATH");
+			if (existingPythonPath != null && !existingPythonPath.isEmpty()) {
+				env.put("PYTHONPATH", pythonPluginPath + File.pathSeparator + existingPythonPath);
+			} else {
+				env.put("PYTHONPATH", pythonPluginPath);
+			}
+		}
+		
+		// Set port as environment variable for remote connection
+		if (remotePort != null) {
+			env.put("CUCUMBER_ECLIPSE_PORT", String.valueOf(remotePort));
+		}
+		
 		processBuilder.redirectErrorStream(true);
 		
 		return processBuilder.start();
 	}
+
 	
 	/**
 	 * Checks if a resource belongs to a Behave/Python project
