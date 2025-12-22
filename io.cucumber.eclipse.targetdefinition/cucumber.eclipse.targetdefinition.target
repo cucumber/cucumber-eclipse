@@ -17,7 +17,7 @@
 			<dependency>
 				<groupId>io.cucumber</groupId>
 				<artifactId>gherkin</artifactId>
-				<version>37.0.0</version>
+				<version>37.0.1</version>
 				<type>jar</type>
 			</dependency>
 		</dependencies>
