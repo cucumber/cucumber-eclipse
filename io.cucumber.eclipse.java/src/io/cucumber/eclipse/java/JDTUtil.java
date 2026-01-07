@@ -125,7 +125,23 @@ public class JDTUtil {
 			}
 		}
 		URL[] urls = urlList.toArray(new URL[urlList.size()]);
-		return new URLClassLoader(urls, new FilteringClassLoader(parent));
+		return new SafeURLClassLoader(urls, new FilteringClassLoader(parent));
+	}
+
+	//TODO workaround for https://github.com/cucumber/cucumber-jvm/pull/3135
+	private static final class SafeURLClassLoader extends URLClassLoader {
+		private SafeURLClassLoader(URL[] urls, ClassLoader parent) {
+			super(urls, parent);
+		}
+
+		@Override
+		protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+			try {
+				return super.loadClass(name, resolve);
+			} catch (LinkageError error) {
+				throw new ClassNotFoundException(name + " [" + error.getMessage() + "]", error);
+			}
+		}
 	}
 
 	// TODO workaround for bug https://github.com/cucumber/cucumber-jvm/issues/2212
