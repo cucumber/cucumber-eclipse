@@ -108,6 +108,8 @@ final class GlueJob extends Job {
 					long start = System.currentTimeMillis();
 					DebugTrace debug = Tracing.get();
 					debug.traceEntry(PERFORMANCE_STEPS, resource);
+					// Clear any existing glue validation error markers at the start
+					MarkerFactory.clearGlueValidationError(resource, "glue_validation_error");
 					CucumberJavaPreferences projectProperties = getProperties(editorDocument);
 					try (CucumberRuntime rt = CucumberRuntime.create(javaProject)) {
 						rt.setGenerator(new IncrementingUuidGenerator());
@@ -146,6 +148,10 @@ final class GlueJob extends Job {
 											+ (System.currentTimeMillis() - start) + "ms)");
 						} catch (Throwable e) {
 							ILog.get().error("Validate Glue-Code failed", e);
+							// Create an error marker to notify the user
+							MarkerFactory.glueValidationError(resource,
+								"Failed to validate step definitions. Check that your project is properly configured and dependencies are available. See error log for details.",
+								"glue_validation_error");
 						}
 					}
 				}
