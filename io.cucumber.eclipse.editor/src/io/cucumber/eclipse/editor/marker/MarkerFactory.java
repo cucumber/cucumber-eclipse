@@ -408,4 +408,58 @@ public class MarkerFactory {
 
 	}
 
+	/**
+	 * Creates an error marker indicating that glue code validation failed.
+	 * This is used to notify users when step definition matching fails due to errors,
+	 * rather than silently failing in the background.
+	 * 
+	 * @param resource the resource to mark (typically a .feature file)
+	 * @param message the error message to display
+	 * @param sourceId unique identifier for this type of error marker
+	 */
+	public static void glueValidationError(IResource resource, String message, String sourceId) {
+		mark(resource, new IMarkerBuilder() {
+			@Override
+			public void build() throws CoreException {
+				// Delete existing glue validation error markers with this source ID
+				IMarker[] existingMarkers = resource.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_ZERO);
+				for (IMarker marker : existingMarkers) {
+					String source = marker.getAttribute(IMarker.SOURCE_ID, "");
+					if (sourceId.equals(source)) {
+						marker.delete();
+					}
+				}
+				
+				// Create new error marker
+				IMarker marker = resource.createMarker(IMarker.PROBLEM);
+				marker.setAttribute(IMarker.SOURCE_ID, sourceId);
+				marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+				marker.setAttribute(IMarker.MESSAGE, message);
+				marker.setAttribute(IMarker.LINE_NUMBER, 1);
+				marker.setAttribute(IMarker.TRANSIENT, true);
+			}
+		});
+	}
+
+	/**
+	 * Clears glue code validation error markers from a resource.
+	 * 
+	 * @param resource the resource to clear markers from
+	 * @param sourceId unique identifier for the error markers to clear
+	 */
+	public static void clearGlueValidationError(IResource resource, String sourceId) {
+		mark(resource, new IMarkerBuilder() {
+			@Override
+			public void build() throws CoreException {
+				IMarker[] existingMarkers = resource.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_ZERO);
+				for (IMarker marker : existingMarkers) {
+					String source = marker.getAttribute(IMarker.SOURCE_ID, "");
+					if (sourceId.equals(source)) {
+						marker.delete();
+					}
+				}
+			}
+		});
+	}
+
 }
