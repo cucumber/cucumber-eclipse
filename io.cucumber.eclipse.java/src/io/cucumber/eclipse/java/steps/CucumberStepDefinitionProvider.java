@@ -70,7 +70,7 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 		try {
 			IJavaProject javaProject = JDTUtil.getJavaProject(resource);
 			SubMonitor subMonitor = SubMonitor.convert(monitor, "Searching Java Glue Code steps", 200);
-			Collection<CucumberStepDefinition> steps = CucumberGlueValidator.getAvaiableSteps(viewer.getDocument(),
+			Collection<CucumberStepDefinition> steps = CucumberGlueValidator.getAvailableSteps(viewer.getDocument(),
 					subMonitor.split(100));
 			SubMonitor remaining = subMonitor.setWorkRemaining(steps.size());
 			Map<String, IType> typeBuffer = new ConcurrentHashMap<>();

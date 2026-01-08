@@ -70,4 +70,112 @@
             name="Java Backend">
       </page>
    </extension>
+  
+   <!-- Cucumber Feature Builder -->
+   <extension
+         id="cucumberFeatureBuilder"
+         name="Cucumber Feature Builder"
+         point="org.eclipse.core.resources.builders">
+      <builder
+            hasNature="false">
+         <run
+               class="io.cucumber.eclipse.java.builder.CucumberFeatureBuilder">
+         </run>
+      </builder>
+   </extension>
+   
+   <!-- Commands for adding/removing the builder -->
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            categoryId="io.cucumber.eclipse.editor.category"
+            id="io.cucumber.eclipse.java.builder.addBuilder"
+            name="Enable Cucumber Builder">
+      </command>
+      <command
+            categoryId="io.cucumber.eclipse.editor.category"
+            id="io.cucumber.eclipse.java.builder.removeBuilder"
+            name="Disable Cucumber Builder">
+      </command>
+   </extension>
+   
+   <!-- Handlers for the commands -->
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="io.cucumber.eclipse.java.builder.AddCucumberBuilderHandler"
+            commandId="io.cucumber.eclipse.java.builder.addBuilder">
+      </handler>
+      <handler
+            class="io.cucumber.eclipse.java.builder.RemoveCucumberBuilderHandler"
+            commandId="io.cucumber.eclipse.java.builder.removeBuilder">
+      </handler>
+   </extension>
+   
+   <!-- Property tester for builder presence -->
+   <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="io.cucumber.eclipse.java.builder.CucumberBuilderPropertyTester"
+            id="io.cucumber.eclipse.java.builder.propertyTester"
+            namespace="io.cucumber.eclipse.java.builder"
+            properties="hasCucumberBuilder"
+            type="org.eclipse.core.resources.IProject">
+      </propertyTester>
+   </extension>
+   
+   <!-- Menu contributions under Project > Configure -->
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
+         <command
+               commandId="io.cucumber.eclipse.java.builder.addBuilder"
+               label="Enable Cucumber Builder"
+               style="push">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                     <adapt
+                           type="org.eclipse.core.resources.IProject">
+                        <not>
+                           <test
+                                 property="io.cucumber.eclipse.java.builder.hasCucumberBuilder"
+                                 forcePluginActivation="true">
+                           </test>
+                        </not>
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="io.cucumber.eclipse.java.builder.removeBuilder"
+               label="Disable Cucumber Builder"
+               style="push">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                     <adapt
+                           type="org.eclipse.core.resources.IProject">
+                        <test
+                              property="io.cucumber.eclipse.java.builder.hasCucumberBuilder"
+                              forcePluginActivation="true">
+                        </test>
+                     </adapt>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+   </extension>
 </plugin>
