@@ -29,6 +29,7 @@ import org.eclipse.jface.text.IDocumentListener;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.java.plugins.CucumberStepDefinition;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
+import io.cucumber.eclipse.java.preferences.CucumberJavaPreferences;
 
 /**
  * Validates Cucumber feature files by matching Gherkin steps with their Java step definitions.
@@ -163,8 +164,14 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 
 			@Override
 			public void documentChanged(DocumentEvent event) {
-				// TODO configurable
-				validate(document, 1000);
+				GherkinEditorDocument editorDoc = GherkinEditorDocument.get(document);
+				int timeout;
+				if (editorDoc != null && editorDoc.getResource() != null) {
+					timeout = CucumberJavaPreferences.of(editorDoc.getResource()).validationTimeout();
+				} else {
+					timeout = CucumberJavaPreferences.DEFAULT_VALIDATION_TIMEOUT;
+				}
+				validate(document, timeout);
 			}
 
 			@Override

@@ -37,17 +37,21 @@ import io.cucumber.eclipse.java.properties.CucumberJavaBackendProperties;
  * @param showHooks whether to show hook annotations in feature files
  * @param glueFilter list of active glue code package filters
  * @param plugins list of validation plugin class names
+ * @param validationTimeout timeout in milliseconds for validation debouncing
  * 
  * @see CucumberJavaBackendProperties for direct project property access
  */
 public final record CucumberJavaPreferences(IPreferenceStore store, IEclipsePreferences node, boolean showHooks,
 		List<String> glueFilter,
-		List<String> plugins) {
+		List<String> plugins,
+		int validationTimeout) {
 
+	public static final int DEFAULT_VALIDATION_TIMEOUT = 1000;
 	static final String PREF_USE_STEP_DEFINITIONS_FILTERS = Activator.PLUGIN_ID + ".use_step_definitions_filters";
 	static final String PREF_ACTIVE_FILTERS_LIST = Activator.PLUGIN_ID + ".active_filters";
 	static final String PREF_INACTIVE_FILTERS_LIST = Activator.PLUGIN_ID + ".inactive_filters";
 	static final String PREF_SHOW_HOOK_ANNOTATIONS = Activator.PLUGIN_ID + ".show_hooks";
+	static final String PREF_VALIDATION_TIMEOUT = Activator.PLUGIN_ID + ".validation_timeout";
 
 	/**
 	 * Creates a preferences instance using workspace settings only.
@@ -75,12 +79,17 @@ public final record CucumberJavaPreferences(IPreferenceStore store, IEclipsePref
 			if (properties.isEnabled()) {
 				// project settings overwrite preferences...
 				return new CucumberJavaPreferences(store, properties.node(), properties.isShowHooks(),
-						properties.getGlueFilter().toList(), properties.getPlugins().toList());
+						properties.getGlueFilter().toList(), properties.getPlugins().toList(),
+						properties.getValidationTimeout());
 			}
 		}
 		boolean showHooks = store.getBoolean(PREF_SHOW_HOOK_ANNOTATIONS);
+		int validationTimeout = store.getInt(PREF_VALIDATION_TIMEOUT);
+		if (validationTimeout <= 0) {
+			validationTimeout = DEFAULT_VALIDATION_TIMEOUT;
+		}
 		String string = store.getString(CucumberJavaPreferences.PREF_ACTIVE_FILTERS_LIST);
-		return new CucumberJavaPreferences(store, null, showHooks, parseList(string), List.of());
+		return new CucumberJavaPreferences(store, null, showHooks, parseList(string), List.of(), validationTimeout);
 	}
 
 	/**
