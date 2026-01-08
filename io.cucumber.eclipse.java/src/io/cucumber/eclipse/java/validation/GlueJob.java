@@ -103,6 +103,7 @@ final class GlueJob extends Job {
 		if (editorDocument != null) {
 			try {
 				IResource resource = editorDocument.getResource();
+				monitor.subTask(resource.getName());
 				IJavaProject javaProject = JDTUtil.getJavaProject(resource);
 				if (javaProject != null) {
 					long start = System.currentTimeMillis();

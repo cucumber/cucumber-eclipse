@@ -80,6 +80,33 @@ then you need to point Eclipse to the folder of version your are interested in.
 
 The full option list can be found at [Cucumber-Options](https://github.com/cucumber/cucumber-jvm/blob/master/core/src/main/java/cucumber/api/CucumberOptions.java)
 
+## Automatic Feature File Validation with Project Builder
+
+Cucumber-Eclipse provides an optional project builder that automatically validates all feature files in your project during each build. This feature is useful when you want immediate feedback on step definition matching across your entire project.
+
+### Enabling the Builder
+
+To enable automatic validation for a Java project:
+
+1. Right-click on your project in the Project Explorer
+2. Select **Project → Configure → Enable Cucumber Builder**
+3. The builder will now validate all `.feature` files whenever the project is built
+
+### Disabling the Builder
+
+To disable automatic validation:
+
+1. Right-click on your project in the Project Explorer
+2. Select **Project → Configure → Disable Cucumber Builder**
+
+### Important Notes
+
+- The builder validates **all** feature files in the project, not just those currently open in an editor
+- This may be slower than on-demand validation (which only validates files as you open them)
+- Validation runs automatically on every build, including when Java files change (since step definitions may be affected)
+- For large projects with many feature files, consider whether the automatic validation overhead is acceptable for your workflow
+- If you only work with a subset of feature files at a time, you may prefer to keep the builder disabled and rely on on-demand validation as you open files in the editor
+
 ## Customizing Cucumber Features with Activity Groups
 
 Cucumber Eclipse supports Eclipse Activity Groups, which allow you to selectively enable or disable certain plugin features to reduce UI clutter. You can control the visibility of:
