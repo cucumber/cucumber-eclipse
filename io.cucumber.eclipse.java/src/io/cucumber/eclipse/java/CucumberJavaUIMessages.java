@@ -31,6 +31,8 @@ public class CucumberJavaUIMessages extends NLS {
 	public static String CucumberJavaPreferencesPage__Could_not_open_package_selection_dialog_for_step_filters;
 	public static String CucumberJavaPreferencesPage__title;
 	public static String CucumberJavaPreferencesPage__description;
+	public static String CucumberJavaPreferencesPage__validation_timeout_label;
+	public static String CucumberJavaPreferencesPage__validation_timeout_description;
 
 	static {
 		// load message values from bundle file
