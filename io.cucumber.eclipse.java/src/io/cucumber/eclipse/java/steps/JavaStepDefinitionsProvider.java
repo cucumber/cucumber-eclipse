@@ -32,6 +32,7 @@ import org.eclipse.jdt.core.search.SearchRequestor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 
+import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.eclipse.editor.steps.IStepDefinitionsProvider;
 import io.cucumber.eclipse.editor.steps.ParameterType;
 import io.cucumber.eclipse.editor.steps.StepParameter;
@@ -91,7 +92,7 @@ public abstract class JavaStepDefinitionsProvider implements IStepDefinitionsPro
 			engine.search(pattern, new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() }, scope,
 					requestor, null);
 		} catch (Throwable t) {
-			t.printStackTrace();
+			EditorLogging.error("JDT search failed - this may be a bug in the JDT plugin", t);
 			// if the search engine failed, skip it is a bug into the JDT plugin
 		}
 	}

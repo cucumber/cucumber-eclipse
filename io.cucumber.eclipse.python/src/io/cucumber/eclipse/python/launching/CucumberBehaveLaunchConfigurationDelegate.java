@@ -14,6 +14,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 
+import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.eclipse.python.Activator;
 import io.cucumber.eclipse.python.preferences.BehavePreferences;
 
@@ -81,7 +82,7 @@ public class CucumberBehaveLaunchConfigurationDelegate extends LaunchConfigurati
 		try {
 			return VariablesPlugin.getDefault().getStringVariableManager().performStringSubstitution(s);
 		} catch (CoreException e) {
-			System.out.println("Could not substitute variable " + s);
+			EditorLogging.error("Could not substitute variable: " + s, e);
 			return null;
 		}
 	}

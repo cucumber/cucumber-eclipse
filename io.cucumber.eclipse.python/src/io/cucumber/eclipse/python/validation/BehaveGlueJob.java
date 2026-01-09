@@ -16,12 +16,12 @@ import java.util.regex.Pattern;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
+import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.python.Activator;
 import io.cucumber.eclipse.python.launching.BehaveProcessLauncher;
@@ -151,7 +151,7 @@ final class BehaveGlueJob extends Job {
 			return Status.CANCEL_STATUS;
 		} catch (IOException e) {
 			// Log the error but don't show error popup - create marker instead
-			ILog.get().error("Behave validation failed - check that behave is installed and accessible", e);
+			EditorLogging.error("Behave validation failed - check that behave is installed and accessible", e);
 			try {
 				BehaveMarkerFactory.behaveExecutionError(resource, 
 					"Failed to run behave for validation. Check that behave is installed and the behave command is configured correctly in preferences. See error log for details.");

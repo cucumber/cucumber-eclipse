@@ -15,6 +15,7 @@ import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 
 import io.cucumber.eclipse.editor.CucumberServiceRegistry;
+import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.marker.MarkerFactory;
 
@@ -58,9 +59,9 @@ public class StepHyperlinkDetector implements IHyperlinkDetector {
 						return hyperlinks;
 					}
 				} catch (BadLocationException e) {
-					e.printStackTrace();
+					EditorLogging.error("Failed to detect hyperlink at offset: " + offset, e);
 				} catch (CoreException e) {
-					e.printStackTrace();
+					EditorLogging.error("Failed to detect hyperlink", e);
 				}
 			}
 		}

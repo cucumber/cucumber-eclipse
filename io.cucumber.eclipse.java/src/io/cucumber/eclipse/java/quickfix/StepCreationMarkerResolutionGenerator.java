@@ -24,6 +24,7 @@ import org.eclipse.ui.IMarkerResolutionGenerator;
 import org.eclipse.ui.IMarkerResolutionGenerator2;
 import org.eclipse.ui.views.markers.WorkbenchMarkerResolution;
 
+import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.eclipse.editor.Images;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.marker.MarkerFactory;
@@ -70,7 +71,7 @@ public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionG
 			}
 			return new IMarkerResolution[0];
 		} catch (CoreException e) {
-			e.printStackTrace();
+			EditorLogging.error("Failed to get marker resolutions for step creation", e);
 		}
 		return new IMarkerResolution[0];
 	}

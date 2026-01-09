@@ -35,6 +35,7 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 
+import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.eclipse.editor.SWTUtil;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.MatchedHookStep;
@@ -93,7 +94,7 @@ public class JavaReferencesCodeMiningProvider implements ICodeMiningProvider {
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 			} catch (CoreException e) {
-				e.printStackTrace();
+				EditorLogging.error("Code mining failed", e);
 			}
 			return Collections.emptyList();
 		});

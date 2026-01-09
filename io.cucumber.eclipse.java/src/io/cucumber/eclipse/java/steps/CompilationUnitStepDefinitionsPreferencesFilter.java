@@ -10,6 +10,8 @@ import org.eclipse.jdt.core.IPackageDeclaration;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 
+import io.cucumber.eclipse.editor.EditorLogging;
+
 public class CompilationUnitStepDefinitionsPreferencesFilter implements Predicate<ICompilationUnit> {
 
 	private String[] filters;
@@ -43,7 +45,7 @@ public class CompilationUnitStepDefinitionsPreferencesFilter implements Predicat
 				}
 			}
 		} catch (JavaModelException e) {
-			e.printStackTrace();
+			EditorLogging.error("Failed to check compilation unit for step definitions filter", e);
 			return false;
 		}
 		return false;
