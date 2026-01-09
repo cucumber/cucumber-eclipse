@@ -14,6 +14,8 @@ import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStreamsProxy;
 import org.eclipse.debug.core.model.ISuspendResume;
 
+import io.cucumber.eclipse.editor.EditorLogging;
+import io.cucumber.eclipse.editor.EnvelopeReader;
 import io.cucumber.eclipse.editor.launching.EnvelopeListener;
 import io.cucumber.eclipse.editor.launching.EnvelopeProvider;
 import io.cucumber.eclipse.java.Activator;
@@ -35,8 +37,19 @@ public class MessageEndpointProcess extends MessageEndpoint
 	private Map<String, String> attributes = new HashMap<>();
 	private volatile boolean suspended;
 	private IBreakpoint[] breakpoints;
+	
+	private static volatile boolean errorLogged = false;
+	private EnvelopeReader reader;
 
 	public MessageEndpointProcess(ILaunch launch) throws IOException {
+		reader = Activator.getEnvelopeReader();
+		if (reader == null) {
+			if (!errorLogged) {
+				errorLogged = true;
+				EditorLogging.error(
+						"EnvelopeReader service not available. Please ensure io.cucumber.eclipse.jackson bundle is installed.");
+			}
+		}
 		this.launch = launch;
 		launch.addProcess(this);
 		attributes.put(IProcess.ATTR_PROCESS_TYPE, "cucumber-message-endpoint");
@@ -93,8 +106,7 @@ public class MessageEndpointProcess extends MessageEndpoint
 				try {
 					consumer.handleEnvelope(envelope);
 				} catch (RuntimeException e) {
-					Activator.getDefault().getLog()
-							.error("Listener throws RuntimeException while handling Envelope " + envelope, e);
+					EditorLogging.error("Listener throws RuntimeException while handling Envelope " + envelope, e);
 				}
 			}
 		}
@@ -122,19 +134,16 @@ public class MessageEndpointProcess extends MessageEndpoint
 
 	@Override
 	public boolean canDisconnect() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public void disconnect() throws DebugException {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public boolean isDisconnected() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -164,6 +173,19 @@ public class MessageEndpointProcess extends MessageEndpoint
 	@Override
 	public void suspend() throws DebugException {
 		suspended = true;
+	}
+
+	@Override
+	protected Envelope readEnvelope(byte[] buffer, int length) throws IOException {
+		if (reader == null) {
+			return null;
+		}
+		return reader.readEnvelope(buffer, length);
+	}
+
+	@Override
+	protected void onError(Exception e) {
+		EditorLogging.error("Message Endpoint recived an error", e);
 	}
 
 }

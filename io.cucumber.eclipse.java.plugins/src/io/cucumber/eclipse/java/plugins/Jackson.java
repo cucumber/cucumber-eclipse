@@ -17,7 +17,7 @@ import io.cucumber.messages.types.Envelope;
 final class Jackson implements Serializer {
 	// Copied from io.cucumber.core.plugin.Jackson as it is package protected and
 	// there seems no way to access it!
-    public static final ObjectMapper OBJECT_MAPPER = JsonMapper.builder()
+	private static final ObjectMapper OBJECT_MAPPER = JsonMapper.builder()
             .addModule(new Jdk8Module())
             .serializationInclusion(Include.NON_ABSENT)
             .constructorDetector(ConstructorDetector.USE_PROPERTIES_BASED)

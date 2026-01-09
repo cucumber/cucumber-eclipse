@@ -48,16 +48,17 @@ public abstract class MessageEndpoint {
 								buffer = new byte[framelength];
 							}
 							inputStream.readFully(buffer, 0, framelength);
-							Envelope envelope = Jackson.OBJECT_MAPPER.readerFor(Envelope.class).readValue(buffer, 0,
-									framelength);
+							Envelope envelope = readEnvelope(buffer, framelength);
 							try {
-								handleMessage(envelope);
+								if (envelope != null) {
+									handleMessage(envelope);
+								}
 							} catch (InterruptedException e) {
 								break;
 							}
 							outputStream.write(CucumberEclipsePlugin.HANDLED_MESSAGE);
 							outputStream.flush();
-							if (envelope.getTestRunFinished().isPresent()) {
+							if (envelope != null && envelope.getTestRunFinished().isPresent()) {
 								break;
 							}
 						}
@@ -65,7 +66,8 @@ public abstract class MessageEndpoint {
 						outputStream.flush();
 					}
 					socket.close();
-				} catch (IOException e) {
+				} catch (Exception e) {
+					onError(e);
 				} finally {
 					try {
 						serverSocket.close();
@@ -73,10 +75,15 @@ public abstract class MessageEndpoint {
 					}
 				}
 			}
+
 		});
 		thread.setDaemon(true);
 		thread.start();
 	}
+
+	protected abstract void onError(Exception e);
+
+	protected abstract Envelope readEnvelope(byte[] buffer, int length) throws IOException;
 
 	public void addArguments(Collection<String> args) {
 		args.add("-p");
