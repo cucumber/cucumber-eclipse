@@ -9,6 +9,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 
+import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.messages.types.Step;
 
 public class StepHyperlink implements IHyperlink {
@@ -51,7 +52,7 @@ public class StepHyperlink implements IHyperlink {
 					return;
 				}
 			} catch (CoreException e) {
-				e.printStackTrace();
+				EditorLogging.error("Failed to open step definition in editor", e);
 			}
 		}
 		MessageDialog.openInformation(textViewer.getTextWidget().getShell(), getTypeLabel(),

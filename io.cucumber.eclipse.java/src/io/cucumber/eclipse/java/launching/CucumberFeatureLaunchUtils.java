@@ -11,6 +11,8 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.console.ConsolePlugin;
 
+import io.cucumber.eclipse.editor.EditorLogging;
+
 public class CucumberFeatureLaunchUtils {
 
 	private CucumberFeatureLaunchUtils() {
@@ -53,7 +55,7 @@ public class CucumberFeatureLaunchUtils {
 		try {
 			s = config.getAttribute(attrib, "");
 		} catch (CoreException e) {
-			e.printStackTrace();
+			EditorLogging.error("Failed to read launch configuration attribute: " + attrib, e);
 		}
 		text.setText(s);
 	}

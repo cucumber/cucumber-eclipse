@@ -14,8 +14,14 @@ public class Tracing implements DebugOptionsListener {
 
 	private static final DebugTrace NULL_DEBUG_TRACE = new NullDebugTrace();
 	public static final String PERFORMANCE = "/perf";
-
 	public static final String PERFORMANCE_STEPS = "/perf/steps";
+	
+	// Debug tracing options
+	public static final String DEBUG = "/debug";
+	public static final String DEBUG_LAUNCHING = "/debug/launching";
+	public static final String DEBUG_VALIDATION = "/debug/validation";
+	public static final String DEBUG_SEARCH = "/debug/search";
+	
 	private static volatile DebugOptions options;
 
 	Tracing() {

@@ -34,6 +34,8 @@ import org.osgi.framework.FrameworkUtil;
 
 import io.cucumber.core.feature.FeatureWithLines;
 import io.cucumber.core.gherkin.Feature;
+import io.cucumber.eclipse.editor.EditorLogging;
+import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.editor.console.CucumberConsole;
 import io.cucumber.eclipse.editor.console.CucumberConsoleFactory;
 import io.cucumber.eclipse.editor.debug.GherkingBreakpoint;
@@ -94,16 +96,11 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		isRerun = config.getAttribute(CucumberFeatureLaunchConstants.ATTR_IS_RERUN, isRerun);
 		isUsage = config.getAttribute(CucumberFeatureLaunchConstants.ATTR_IS_USAGE, isUsage);
 
-		System.out.println("Launching ....................... " + featurePath);
-		System.out.println("Glueing ....................... " + gluePath);
-		System.out.println("is monochrome.................." + isMonochrome);
-		System.out.println("is pretty.................." + isPretty);
-		System.out.println("is progress.................." + isProgress);
-		System.out.println("is html.................." + isHtml);
-		System.out.println("is json.................." + isJson);
-		System.out.println("is junit.................." + isJunit);
-		System.out.println("is usage.................." + isUsage);
-		System.out.println("is rerun.................." + isRerun);
+		Tracing.get().trace(Tracing.DEBUG_LAUNCHING, "Launching feature: " + featurePath);
+		Tracing.get().trace(Tracing.DEBUG_LAUNCHING, "Glue path: " + gluePath);
+		Tracing.get().trace(Tracing.DEBUG_LAUNCHING, "monochrome:" + isMonochrome + ", pretty:" + isPretty + 
+				", progress:" + isProgress + ", html:" + isHtml + ", json:" + isJson + 
+				", junit:" + isJunit + ", usage:" + isUsage + ", rerun:" + isRerun);
 
 		String glue = "--glue";
 		String formatter = "--plugin"; // Cucumber-JVM's --format option is deprecated. Please use --plugin instead.
@@ -201,9 +198,10 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 								}
 							}
 						} catch (CoreException e) {
-							e.printStackTrace();
+							EditorLogging.error("Debug event processing failed", e);
 						} catch (InterruptedException e) {
-							e.printStackTrace();
+							Thread.currentThread().interrupt();
+							EditorLogging.error("Debug event processing interrupted", e);
 						}
 					}
 
@@ -287,7 +285,7 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		}
 		String[] finalClassPath = classPath.toArray(String[]::new);
 		for (String string : finalClassPath) {
-			System.out.println(string);
+			Tracing.get().trace(Tracing.DEBUG_LAUNCHING, "Classpath entry: " + string);
 		}
 		VMRunnerConfiguration runConfig = new VMRunnerConfiguration(
 				CucumberFeatureLaunchConstants.CUCUMBER_API_CLI_MAIN, finalClassPath);
@@ -304,7 +302,7 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		try {
 			return VariablesPlugin.getDefault().getStringVariableManager().performStringSubstitution(s);
 		} catch (CoreException e) {
-			System.out.println("Could not substitute variable " + s);
+			EditorLogging.error("Could not substitute variable: " + s, e);
 			return null;
 		}
 	}

@@ -15,7 +15,6 @@ import java.util.function.Supplier;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -36,6 +35,7 @@ import io.cucumber.core.eventbus.IncrementingUuidGenerator;
 import io.cucumber.core.feature.GluePath;
 import io.cucumber.core.gherkin.FeatureParserException;
 import io.cucumber.core.options.RuntimeOptionsBuilder;
+import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.marker.MarkerFactory;
@@ -148,7 +148,7 @@ final class GlueJob extends Job {
 											+ snippets.size() + " snippet(s) where suggested || total run time "
 											+ (System.currentTimeMillis() - start) + "ms)");
 						} catch (Throwable e) {
-							ILog.get().error("Validate Glue-Code failed", e);
+							EditorLogging.error("Validate Glue-Code failed", e);
 							// Create an error marker to notify the user
 							MarkerFactory.glueValidationError(resource,
 								"Failed to validate step definitions. Check that your project is properly configured and dependencies are available. See error log for details.",
@@ -203,7 +203,7 @@ final class GlueJob extends Job {
 				validationErrors.putAll(map);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			EditorLogging.error("Failed to get validation errors from plugin: " + plugin.getClass().getName(), e);
 		}
 
 	}
@@ -261,7 +261,7 @@ final class GlueJob extends Job {
 			try {
 				runtimeOptions.addGlue(GluePath.parse(gluePath));
 			} catch (RuntimeException e) {
-				e.printStackTrace();
+				EditorLogging.error("Failed to parse glue path: " + gluePath, e);
 			}
 		});
 	}
