@@ -15,7 +15,7 @@
 		<maven.compiler.target>17</maven.compiler.target>
 		<cucumber-version>7.33.0</cucumber-version>
 		<hamcrest.version>2.2</hamcrest.version>
-		<jackson-databind.version>2.12.4</jackson-databind.version>
+		<jackson-databind.version>2.20.1</jackson-databind.version>
 	</properties>
 
 

@@ -2,6 +2,9 @@ package io.cucumber.eclipse.java;
 
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
+import org.osgi.util.tracker.ServiceTracker;
+
+import io.cucumber.eclipse.editor.EnvelopeReader;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -13,6 +16,8 @@ public class Activator extends AbstractUIPlugin {
 
 	// The shared instance
 	private static Activator plugin;
+	
+	private ServiceTracker<EnvelopeReader, EnvelopeReader> envelopeReaderTracker;
 
 	/**
 	 * The constructor
@@ -24,22 +29,16 @@ public class Activator extends AbstractUIPlugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-		// FIXME das gibt probleme
-//		IPreferenceStore store = getPreferenceStore();
-//		store.setDefault(CucumberJavaPreferences.PREF_SHOW_HOOK_ANNOTATIONS, true);
-//		store.addPropertyChangeListener(new CucumberJavaPreferencesChangeListener());
-//		JavaCore.addElementChangedListener(new IElementChangedListener() {
-//
-//			@Override
-//			public void elementChanged(ElementChangedEvent event) {
-//				IJavaElementDelta delta = event.getDelta();
-//				System.out.println("Element changed: " + delta.getElement());
-//			}
-//		});
+		envelopeReaderTracker = new ServiceTracker<>(context, EnvelopeReader.class, null);
+		envelopeReaderTracker.open();
 	}
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
+		if (envelopeReaderTracker != null) {
+			envelopeReaderTracker.close();
+			envelopeReaderTracker = null;
+		}
 		plugin = null;
 		super.stop(context);
 	}
@@ -61,6 +60,17 @@ public class Activator extends AbstractUIPlugin {
 	public static void error(String string, Throwable e) {
 		getDefault().getLog().warn(string, e);
 
+	}
+	
+	/**
+	 * Returns the EnvelopeReader service, or null if not available
+	 */
+	public static EnvelopeReader getEnvelopeReader() {
+		Activator activator = getDefault();
+		if (activator == null || activator.envelopeReaderTracker == null) {
+			return null;
+		}
+		return activator.envelopeReaderTracker.getService();
 	}
 
 }

@@ -110,6 +110,40 @@ Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io
 Export-Package:        *;version="${version}";-noimport:=true
 ]]></instructions>
 	</location>
+	<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" label="Jackson" missingManifest="generate" type="Maven">
+		<dependencies>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-annotations</artifactId>
+				<version>2.20</version>
+				<type>jar</type>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-core</artifactId>
+				<version>2.20.1</version>
+				<type>jar</type>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+				<version>2.20.1</version>
+				<type>jar</type>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.datatype</groupId>
+				<artifactId>jackson-datatype-jdk8</artifactId>
+				<version>2.20.1</version>
+				<type>jar</type>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.module</groupId>
+				<artifactId>jackson-module-parameter-names</artifactId>
+				<version>2.20.1</version>
+				<type>jar</type>
+			</dependency>
+		</dependencies>
+	</location>
 </locations>
 	<targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-21"/>
 </target>

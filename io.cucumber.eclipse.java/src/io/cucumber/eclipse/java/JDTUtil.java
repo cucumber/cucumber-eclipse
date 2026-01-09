@@ -57,8 +57,7 @@ import io.cucumber.eclipse.java.steps.JavaStepDefinitionsProvider;
 @SuppressWarnings("restriction")
 public class JDTUtil {
 
-	public JDTUtil() {
-		// TODO Auto-generated constructor stub
+	private JDTUtil() {
 	}
 
 	public static IJavaProject getJavaProject(String projectName) {
