@@ -47,6 +47,15 @@ public class CucumberPreferencePage extends FieldEditorPreferencePage implements
 		return image;
 	}
 
+	@Override
+	public boolean performOk() {
+		boolean performOk = super.performOk();
+		if (performOk) {
+			EditorReconciler.reconcileAllFeatureEditors();
+		}
+		return performOk;
+	}
+
 	public static String getString(String key) {
 		// TODO: load strings via .messages file from resource bundle...
 		return key;

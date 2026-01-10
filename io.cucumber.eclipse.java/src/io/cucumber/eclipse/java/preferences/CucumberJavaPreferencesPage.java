@@ -13,6 +13,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
+import io.cucumber.eclipse.editor.preferences.EditorReconciler;
 import io.cucumber.eclipse.java.CucumberJavaUIMessages;
 import io.cucumber.eclipse.java.preferences.GlueCodePackageTable.FilterStrings;
 
@@ -127,7 +128,11 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 			return false;
 		}
 		
-		return super.performOk();
+		boolean result = super.performOk();
+		if (result) {
+			EditorReconciler.reconcileAllFeatureEditors();
+		}
+		return result;
 	}
 
 	@Override
