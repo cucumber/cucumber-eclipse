@@ -18,6 +18,7 @@ import org.eclipse.ui.dialogs.PropertyPage;
 import io.cucumber.eclipse.editor.Images;
 import io.cucumber.eclipse.editor.launching.Mode;
 import io.cucumber.eclipse.editor.preferences.CucumberPreferencePage;
+import io.cucumber.eclipse.editor.preferences.EditorReconciler;
 
 public class CucumberPropertiesPage extends PropertyPage {
 
@@ -84,6 +85,7 @@ public class CucumberPropertiesPage extends PropertyPage {
 		}
 		CucumberEditorProperties properties = new CucumberEditorProperties(node);
 		properties.flush();
+		EditorReconciler.reconcileAllFeatureEditors();
 		return true;
 	}
 
