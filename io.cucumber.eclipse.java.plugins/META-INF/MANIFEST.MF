@@ -9,3 +9,4 @@ Require-Bundle: io.cucumber.cucumber-plugin,
  io.cucumber.messages,
  io.cucumber.cucumber-core
 Export-Package: io.cucumber.eclipse.java.plugins
+Import-Package: com.fasterxml.jackson.annotation;version="[2.20.0,3.0.0)"

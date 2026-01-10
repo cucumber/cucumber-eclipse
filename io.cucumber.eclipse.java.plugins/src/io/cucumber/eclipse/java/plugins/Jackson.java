@@ -1,5 +1,7 @@
 package io.cucumber.eclipse.java.plugins;
 
+import static io.cucumber.core.internal.com.fasterxml.jackson.annotation.JsonInclude.Value.construct;
+
 import java.io.IOException;
 import java.io.Writer;
 
@@ -17,16 +19,19 @@ import io.cucumber.messages.types.Envelope;
 final class Jackson implements Serializer {
 	// Copied from io.cucumber.core.plugin.Jackson as it is package protected and
 	// there seems no way to access it!
-	private static final ObjectMapper OBJECT_MAPPER = JsonMapper.builder()
-            .addModule(new Jdk8Module())
-            .serializationInclusion(Include.NON_ABSENT)
-            .constructorDetector(ConstructorDetector.USE_PROPERTIES_BASED)
-            .enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING)
-            .enable(DeserializationFeature.READ_ENUMS_USING_TO_STRING)
-            .enable(DeserializationFeature.USE_LONG_FOR_INTS)
-            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-            .disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
-            .build();
+	 private static final ObjectMapper OBJECT_MAPPER = JsonMapper.builder()
+	            .addModule(new Jdk8Module())
+				.defaultPropertyInclusion(construct(
+	                Include.NON_ABSENT,
+	                Include.NON_ABSENT))
+	            .constructorDetector(ConstructorDetector.USE_PROPERTIES_BASED)
+	            .enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING)
+	            .enable(DeserializationFeature.READ_ENUMS_USING_TO_STRING)
+	            .enable(DeserializationFeature.USE_LONG_FOR_INTS)
+	            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+	            .disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
+	            .build();
+
 
 	@Override
 	public void writeValue(Writer writer, Envelope value) throws IOException {
