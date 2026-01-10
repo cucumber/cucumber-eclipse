@@ -25,8 +25,9 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.osgi.service.component.annotations.Component;
 
+import io.cucumber.eclipse.editor.EditorLogging;
+import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.editor.hyperlinks.IStepDefinitionOpener;
-import io.cucumber.eclipse.java.Activator;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberCodeLocation;
 import io.cucumber.eclipse.java.plugins.MatchedPickleStep;
@@ -45,10 +46,10 @@ public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
 			if (methods.length == 1) {
 				open(methods[0]);
 			} else {
-				Activator.getDefault().getLog().warn("More than one method matches: " + Arrays.toString(methods));
+				EditorLogging.error("More than one method matches: " + Arrays.toString(methods));
 			}
 		} catch (PartInitException | JavaModelException e) {
-			Activator.error("Open target method failed", e);
+			EditorLogging.error("Open target method failed", e);
 		}
 	}
 
@@ -62,7 +63,7 @@ public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
 	public boolean openInEditor(ITextViewer textViewer, IResource resource, Step step) throws CoreException {
 		IJavaProject project = JDTUtil.getJavaProject(resource);
 		if (project == null) {
-			Activator.getDefault().getLog().warn("Not a javaproject, canOpen not called?");
+			EditorLogging.error("Not a javaproject, canOpen not called?");
 			return false;
 		}
 		AtomicReference<IMethod[]> resolvedMethods = new AtomicReference<>();
@@ -98,6 +99,7 @@ public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
 								sb.append("'\r\n");
 							}
 						}
+						sb.append(" found -> ");
 
 						CucumberCodeLocation location = steps.stream()
 								.filter(matched -> step.getLocation().getLine() == matched.getLocation().getLine())
@@ -106,8 +108,10 @@ public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
 //								.filter(matched -> matched.getTestStep().getStep().getText()
 //										.equalsIgnoreCase(step.getText()))
 								.map(matched -> matched.getCodeLocation()).findFirst().orElse(null);
-						sb.append(" found -> " + location + "\r\n");
-						Activator.getDefault().getLog().info(sb.toString());
+						
+						sb.append(location != null ? location.toString() : "null");
+						Tracing.get().trace(Tracing.DEBUG_STEPS, sb.toString());
+						
 						if (location != null) {
 							resolvedMethods.set(JDTUtil.resolveMethod(project, location, monitor));
 						}

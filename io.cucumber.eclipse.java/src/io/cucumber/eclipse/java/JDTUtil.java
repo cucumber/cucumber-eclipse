@@ -3,6 +3,8 @@ package io.cucumber.eclipse.java;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -12,6 +14,7 @@ import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -110,15 +113,15 @@ public class JDTUtil {
 
 	public static URLClassLoader createClassloader(IJavaProject javaProject, ClassLoader parent) throws CoreException {
 		String[] classPathEntries = JavaRuntime.computeDefaultRuntimeClassPath(javaProject);
-		List<URL> urlList = new ArrayList<URL>();
+		Set<URL> urlList = new LinkedHashSet<>();
 		for (String entry : classPathEntries) {
 			try {
 				if (entry.startsWith("file:/")) {
-					urlList.add(new URL(entry));
+					urlList.add(new URI(entry).toURL());
 				} else {
 					urlList.add(new File(entry).toURI().toURL());
 				}
-			} catch (MalformedURLException e) {
+			} catch (MalformedURLException | URISyntaxException e) {
 				Activator.getDefault().getLog().error(
 						"can't add classpathentry " + entry + " for project " + javaProject.getProject().getName(), e);
 			}

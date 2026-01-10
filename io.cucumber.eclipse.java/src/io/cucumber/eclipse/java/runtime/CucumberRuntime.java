@@ -32,8 +32,8 @@ import io.cucumber.core.resource.Resource;
 import io.cucumber.core.runtime.Runtime;
 import io.cucumber.core.runtime.TimeServiceEventBus;
 import io.cucumber.core.snippets.SnippetType;
+import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
-import io.cucumber.eclipse.java.Activator;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.launching.FileResource;
 import io.cucumber.plugin.Plugin;
@@ -85,7 +85,7 @@ public final class CucumberRuntime implements AutoCloseable {
 		try {
 			classLoader.close();
 		} catch (IOException e) {
-			Activator.warn("can't close classlaoder for project " + javaProject.getElementName(), e);
+			EditorLogging.error("can't close classlaoder for project " + javaProject.getElementName(), e);
 		}
 	}
 

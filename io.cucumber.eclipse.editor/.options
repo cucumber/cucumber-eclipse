@@ -3,4 +3,5 @@ io.cucumber.eclipse.editor/perf=false
 io.cucumber.eclipse.editor/perf/steps=false
 io.cucumber.eclipse.editor/debug/launching=false
 io.cucumber.eclipse.editor/debug/validation=false
-io.cucumber.eclipse.editor/debug/search=false;
+io.cucumber.eclipse.editor/debug/search=false
+io.cucumber.eclipse.editor/debug/steps=false
