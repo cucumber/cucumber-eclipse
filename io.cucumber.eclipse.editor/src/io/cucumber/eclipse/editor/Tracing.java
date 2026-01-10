@@ -21,6 +21,7 @@ public class Tracing implements DebugOptionsListener {
 	public static final String DEBUG_LAUNCHING = "/debug/launching";
 	public static final String DEBUG_VALIDATION = "/debug/validation";
 	public static final String DEBUG_SEARCH = "/debug/search";
+	public static final String DEBUG_STEPS = "/debug/steps";
 	
 	private static volatile DebugOptions options;
 

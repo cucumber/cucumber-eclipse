@@ -30,7 +30,7 @@ public class CucumberMissingStepsPlugin implements Plugin, ConcurrentEventListen
 	private void handleSnippetsSuggestedEvent(SnippetsSuggestedEvent event) {
 		Location stepLocation = event.getStepLocation();
 		snippets.computeIfAbsent(stepLocation.getLine(), l -> ConcurrentHashMap.newKeySet())
-				.addAll(event.getSnippets());
+				.addAll(event.getSuggestion().getSnippets());
 	}
 
 	public Map<Integer, Collection<String>> getSnippets() {
