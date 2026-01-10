@@ -96,11 +96,13 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		isRerun = config.getAttribute(CucumberFeatureLaunchConstants.ATTR_IS_RERUN, isRerun);
 		isUsage = config.getAttribute(CucumberFeatureLaunchConstants.ATTR_IS_USAGE, isUsage);
 
-		Tracing.get().trace(Tracing.DEBUG_LAUNCHING, "Launching feature: " + featurePath);
-		Tracing.get().trace(Tracing.DEBUG_LAUNCHING, "Glue path: " + gluePath);
-		Tracing.get().trace(Tracing.DEBUG_LAUNCHING, "monochrome:" + isMonochrome + ", pretty:" + isPretty + 
-				", progress:" + isProgress + ", html:" + isHtml + ", json:" + isJson + 
-				", junit:" + isJunit + ", usage:" + isUsage + ", rerun:" + isRerun);
+		if (Tracing.DEBUG_LAUNCHING_ENABLED) {
+			Tracing.get().trace(Tracing.DEBUG_LAUNCHING, "Launching feature: " + featurePath);
+			Tracing.get().trace(Tracing.DEBUG_LAUNCHING, "Glue path: " + gluePath);
+			Tracing.get().trace(Tracing.DEBUG_LAUNCHING, "monochrome:" + isMonochrome + ", pretty:" + isPretty + 
+					", progress:" + isProgress + ", html:" + isHtml + ", json:" + isJson + 
+					", junit:" + isJunit + ", usage:" + isUsage + ", rerun:" + isRerun);
+		}
 
 		String glue = "--glue";
 		String formatter = "--plugin"; // Cucumber-JVM's --format option is deprecated. Please use --plugin instead.
@@ -284,8 +286,10 @@ public class CucumberFeatureLocalApplicationLaunchConfigurationDelegate extends 
 		} catch (IOException e1) {
 		}
 		String[] finalClassPath = classPath.toArray(String[]::new);
-		for (String string : finalClassPath) {
-			Tracing.get().trace(Tracing.DEBUG_LAUNCHING, "Classpath entry: " + string);
+		if (Tracing.DEBUG_LAUNCHING_ENABLED) {
+			for (String string : finalClassPath) {
+				Tracing.get().trace(Tracing.DEBUG_LAUNCHING, "Classpath entry: " + string);
+			}
 		}
 		VMRunnerConfiguration runConfig = new VMRunnerConfiguration(
 				CucumberFeatureLaunchConstants.CUCUMBER_API_CLI_MAIN, finalClassPath);

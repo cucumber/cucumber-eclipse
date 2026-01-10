@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -86,6 +87,12 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 	 * Used to track and clean up project-level preference listeners.
 	 */
 	private static final Map<IEclipsePreferences, IPreferenceChangeListener> preferenceChangeListeners = new HashMap<>();
+
+	/**
+	 * Global element changed listener for tracking Java model changes.
+	 * Initialized once and cleaned up on shutdown.
+	 */
+	private static GlueCodeChangeListener glueCodeChangeListener;
 
 	static {
 		/*
@@ -276,6 +283,11 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 				preferenceChangeListeners.put(projectNode, preferenceListener);
 			}
 		}
+		// Register global element changed listener if not already registered
+		if (glueCodeChangeListener == null) {
+			glueCodeChangeListener = new GlueCodeChangeListener();
+			JavaCore.addElementChangedListener(glueCodeChangeListener);
+		}
 	}
 
 	/**
@@ -310,6 +322,12 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 			node.removePreferenceChangeListener(listener);
 		});
 		preferenceChangeListeners.clear();
+
+		// Remove element changed listener
+		if (glueCodeChangeListener != null) {
+			JavaCore.removeElementChangedListener(glueCodeChangeListener);
+			glueCodeChangeListener = null;
+		}
 
 		// Cancel and clean up all jobs
 		jobMap.values().forEach(job -> {
@@ -510,7 +528,36 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 				return true;
 			}
 		});
+	}
 
+	/**
+	 * Revalidates all feature file documents currently open in the specified project.
+	 * <p>
+	 * This method is called by {@link GlueCodeChangeListener} when Java glue code changes
+	 * are detected. It iterates through all documents in the job map and triggers
+	 * revalidation for those belonging to the specified project.
+	 * </p>
+	 * <p>
+	 * This method is package-protected to allow the listener to trigger revalidation
+	 * while keeping the implementation details encapsulated.
+	 * </p>
+	 * 
+	 * @param project the project whose feature files should be revalidated
+	 * @throws CoreException if project access fails
+	 */
+	static void revalidateProject(IProject project) throws CoreException {
+		// Make a snapshot to avoid concurrent modification
+		Map<IDocument, GlueJob> snapshot = new HashMap<>(jobMap);
+
+		for (IDocument document : snapshot.keySet()) {
+			GherkinEditorDocument editorDoc = GherkinEditorDocument.get(document);
+			if (editorDoc != null && editorDoc.getResource() != null) {
+				IProject docProject = editorDoc.getResource().getProject();
+				if (project.equals(docProject)) {
+					validate(document, 500);
+				}
+			}
+		}
 	}
 
 }
