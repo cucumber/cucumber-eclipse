@@ -109,8 +109,10 @@ public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
 //										.equalsIgnoreCase(step.getText()))
 								.map(matched -> matched.getCodeLocation()).findFirst().orElse(null);
 						
-						sb.append(location != null ? location.toString() : "null");
-						Tracing.get().trace(Tracing.DEBUG_STEPS, sb.toString());
+						if (Tracing.DEBUG_STEPS_ENABLED) {
+							sb.append(location != null ? location.toString() : "null");
+							Tracing.get().trace(Tracing.DEBUG_STEPS, sb.toString());
+						}
 						
 						if (location != null) {
 							resolvedMethods.set(JDTUtil.resolveMethod(project, location, monitor));
