@@ -2,6 +2,8 @@ package io.cucumber.eclipse.java.validation;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -22,14 +24,22 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
+import io.cucumber.eclipse.java.Activator;
 import io.cucumber.eclipse.java.plugins.CucumberStepDefinition;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
 import io.cucumber.eclipse.java.preferences.CucumberJavaPreferences;
+import io.cucumber.eclipse.java.properties.CucumberJavaBackendProperties;
 
 /**
  * Validates Cucumber feature files by matching Gherkin steps with their Java step definitions.
@@ -64,6 +74,18 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 	 * Thread-safe to allow concurrent access from UI and background threads.
 	 */
 	private static ConcurrentMap<IDocument, GlueJob> jobMap = new ConcurrentHashMap<>();
+
+	/**
+	 * Global property change listeners for preference stores.
+	 * Used to track and clean up workspace-level preference listeners.
+	 */
+	private static final Map<IPreferenceStore, IPropertyChangeListener> propertyChangeListeners = new HashMap<>();
+
+	/**
+	 * Global preference change listeners for Eclipse preference nodes.
+	 * Used to track and clean up project-level preference listeners.
+	 */
+	private static final Map<IEclipsePreferences, IPreferenceChangeListener> preferenceChangeListeners = new HashMap<>();
 
 	static {
 		/*
@@ -109,7 +131,6 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 					GlueJob remove = jobMap.remove(document);
 					if (remove != null) {
 						remove.cancel();
-						remove.disposeListener();
 					}
 				}
 
@@ -198,7 +219,6 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 		jobMap.compute(document, (key, oldJob) -> {
 			if (oldJob != null) {
 				oldJob.cancel();
-				oldJob.disposeListener();
 			}
 			GlueJob verificationJob = new GlueJob(oldJob, () -> GherkinEditorDocument.get(document));
 			verificationJob.setUser(false);
@@ -210,6 +230,92 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 			}
 			return verificationJob;
 		});
+	}
+
+	/**
+	 * Sets up a global preference listener that triggers revalidation for all
+	 * currently known documents when preferences change.
+	 * <p>
+	 * This method is idempotent - it only registers listeners once for each
+	 * preference scope. The listeners are registered at both the workspace and
+	 * project-specific preference levels.
+	 * </p>
+	 * <p>
+	 * This method is package-protected to allow GlueJob to register listeners
+	 * when it has access to the resource.
+	 * </p>
+	 * 
+	 * @param resource the resource to determine which preference scopes to listen to
+	 */
+	static synchronized void setupGlobalPreferenceListener(IResource resource) {
+		// Register workspace-level preference listener
+		IPreferenceStore workspaceStore = Activator.getDefault().getPreferenceStore();
+		if (!propertyChangeListeners.containsKey(workspaceStore)) {
+			IPropertyChangeListener propertyListener = new IPropertyChangeListener() {
+				@Override
+				public void propertyChange(PropertyChangeEvent event) {
+					revalidateAllDocuments();
+				}
+			};
+			workspaceStore.addPropertyChangeListener(propertyListener);
+			propertyChangeListeners.put(workspaceStore, propertyListener);
+		}
+
+		// Register project-level preference listener if this resource has project-specific settings
+		if (resource != null) {
+			CucumberJavaBackendProperties properties = CucumberJavaBackendProperties.of(resource);
+			IEclipsePreferences projectNode = properties.node();
+			if (!preferenceChangeListeners.containsKey(projectNode)) {
+				IPreferenceChangeListener preferenceListener = new IPreferenceChangeListener() {
+					@Override
+					public void preferenceChange(PreferenceChangeEvent event) {
+						revalidateAllDocuments();
+					}
+				};
+				projectNode.addPreferenceChangeListener(preferenceListener);
+				preferenceChangeListeners.put(projectNode, preferenceListener);
+			}
+		}
+	}
+
+	/**
+	 * Triggers revalidation for all currently known documents.
+	 * <p>
+	 * This method makes a copy of the current job map to avoid concurrent
+	 * modification issues, then triggers validation for each document.
+	 * </p>
+	 */
+	private static void revalidateAllDocuments() {
+		// Make a copy to avoid concurrent modification
+		Map<IDocument, GlueJob> snapshot = new HashMap<>(jobMap);
+		snapshot.keySet().forEach(document -> validate(document, 500));
+	}
+
+	/**
+	 * Cleans up global preference listeners and resources.
+	 * <p>
+	 * This method should be called when the plugin is stopping to ensure
+	 * proper cleanup of all registered preference listeners.
+	 * </p>
+	 */
+	public static synchronized void shutdown() {
+		// Remove all property change listeners
+		propertyChangeListeners.forEach((store, listener) -> {
+			store.removePropertyChangeListener(listener);
+		});
+		propertyChangeListeners.clear();
+
+		// Remove all preference change listeners
+		preferenceChangeListeners.forEach((node, listener) -> {
+			node.removePreferenceChangeListener(listener);
+		});
+		preferenceChangeListeners.clear();
+
+		// Cancel and clean up all jobs
+		jobMap.values().forEach(job -> {
+			job.cancel();
+		});
+		jobMap.clear();
 	}
 
 	/**
@@ -237,7 +343,6 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 		return jobMap.compute(editorDocument.getDocument(), (key, oldJob) -> {
 			if (oldJob != null) {
 				oldJob.cancel();
-				oldJob.disposeListener();
 			}
 			GlueJob verificationJob = new GlueJob(oldJob, () -> editorDocument);
 			verificationJob.addJobChangeListener(new IJobChangeListener() {

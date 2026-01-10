@@ -39,6 +39,7 @@ public class Activator extends AbstractUIPlugin {
 			envelopeReaderTracker.close();
 			envelopeReaderTracker = null;
 		}
+		io.cucumber.eclipse.java.validation.CucumberGlueValidator.shutdown();
 		plugin = null;
 		super.stop(context);
 	}
