@@ -28,6 +28,7 @@ public class Activator extends AbstractUIPlugin {
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
+		io.cucumber.eclipse.python.validation.BehaveGlueValidator.shutdown();
 		plugin = null;
 		super.stop(context);
 	}
