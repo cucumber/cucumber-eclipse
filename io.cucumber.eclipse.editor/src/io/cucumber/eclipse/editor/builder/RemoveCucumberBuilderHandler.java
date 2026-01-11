@@ -1,4 +1,4 @@
-package io.cucumber.eclipse.java.builder;
+package io.cucumber.eclipse.editor.builder;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -11,11 +11,13 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 /**
- * Handler for adding the Cucumber builder to a project.
- * 
- * @author cucumber-eclipse
+ * Handler for removing the Cucumber builder from a project.
+ * <p>
+ * This handler is invoked from the Project > Configure context menu to
+ * disable automated validation of feature files on project builds.
+ * </p>
  */
-public class AddCucumberBuilderHandler extends AbstractHandler {
+public class RemoveCucumberBuilderHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -32,9 +34,9 @@ public class AddCucumberBuilderHandler extends AbstractHandler {
 
 			if (project != null) {
 				try {
-					CucumberFeatureBuilder.addBuilder(project);
+					CucumberFeatureBuilder.removeBuilder(project);
 				} catch (CoreException e) {
-					throw new ExecutionException("Failed to add Cucumber builder", e);
+					throw new ExecutionException("Failed to remove Cucumber builder", e);
 				}
 			}
 		}

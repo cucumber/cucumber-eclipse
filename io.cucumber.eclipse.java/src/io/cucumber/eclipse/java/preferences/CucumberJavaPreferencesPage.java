@@ -28,7 +28,6 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 	public static final String PAGE_ID = "cucumber.eclipse.editor.steps.jdt.CucumberJavaPreferencesPage"; //$NON-NLS-1$
 
 	private Button showHookAnnotations;
-	private Text validationTimeoutText;
 	private GlueCodePackageTable glueCodePackageTable;
 
 	private CucumberJavaPreferences javaPreferences;
@@ -84,17 +83,6 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 		};
 
 		showHookAnnotations = createHookButton(container, javaPreferences.showHooks());
-		
-		// Validation timeout field
-		Composite timeoutComposite = SWTFactory.createComposite(container, parent.getFont(), 2, 1, GridData.FILL_HORIZONTAL, 0, 0);
-		Label timeoutLabel = new Label(timeoutComposite, SWT.NONE);
-		timeoutLabel.setText(CucumberJavaUIMessages.CucumberJavaPreferencesPage__validation_timeout_label);
-		timeoutLabel.setToolTipText(CucumberJavaUIMessages.CucumberJavaPreferencesPage__validation_timeout_description);
-		
-		validationTimeoutText = new Text(timeoutComposite, SWT.BORDER | SWT.SINGLE);
-		validationTimeoutText.setLayoutData(new GridData(100, SWT.DEFAULT));
-		validationTimeoutText.setText(String.valueOf(javaPreferences.validationTimeout()));
-		validationTimeoutText.setToolTipText(CucumberJavaUIMessages.CucumberJavaPreferencesPage__validation_timeout_description);
 
 	}
 
@@ -114,20 +102,6 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 
 		CucumberJavaPreferences.setShowHooks(getPreferenceStore(), showHookAnnotations.getSelection());
 		
-		// Save validation timeout
-		try {
-			int timeout = Integer.parseInt(validationTimeoutText.getText().trim());
-			if (timeout > 0) {
-				getPreferenceStore().setValue(CucumberJavaPreferences.PREF_VALIDATION_TIMEOUT, timeout);
-			} else {
-				setErrorMessage("Validation timeout must be a positive number");
-				return false;
-			}
-		} catch (NumberFormatException e) {
-			setErrorMessage("Validation timeout must be a valid number");
-			return false;
-		}
-		
 		boolean result = super.performOk();
 		if (result) {
 			EditorReconciler.reconcileAllFeatureEditors();
@@ -140,7 +114,6 @@ public class CucumberJavaPreferencesPage extends PreferencePage implements IWork
 		glueCodePackageTable.performDefaults();
 		showHookAnnotations.setSelection(
 				getPreferenceStore().getDefaultBoolean(CucumberJavaPreferences.PREF_SHOW_HOOK_ANNOTATIONS));
-		validationTimeoutText.setText(String.valueOf(CucumberJavaPreferences.DEFAULT_VALIDATION_TIMEOUT));
 		super.performDefaults();
 	}
 

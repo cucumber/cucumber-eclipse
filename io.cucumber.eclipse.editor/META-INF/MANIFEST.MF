@@ -41,6 +41,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: io.cucumber.eclipse.editor
 Bundle-ActivationPolicy: lazy
 Export-Package: io.cucumber.eclipse.editor,
+ io.cucumber.eclipse.editor.builder,
  io.cucumber.eclipse.editor.console,
  io.cucumber.eclipse.editor.debug,
  io.cucumber.eclipse.editor.document,
@@ -50,7 +51,8 @@ Export-Package: io.cucumber.eclipse.editor,
  io.cucumber.eclipse.editor.preferences;x-internal:=true,
  io.cucumber.eclipse.editor.properties;x-internal:=true,
  io.cucumber.eclipse.editor.steps,
- io.cucumber.eclipse.editor.syntaxhighlight
+ io.cucumber.eclipse.editor.syntaxhighlight,
+ io.cucumber.eclipse.editor.validation
 Import-Package: org.apache.commons.io;version="[2.16.0,3.0.0)",
  org.apache.commons.text.similarity;version="[1.14.0,2.0.0)",
  org.osgi.service.component.annotations;version="1.3.0"

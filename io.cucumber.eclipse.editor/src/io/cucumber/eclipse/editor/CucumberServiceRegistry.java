@@ -19,6 +19,7 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 import io.cucumber.eclipse.editor.hyperlinks.IStepDefinitionOpener;
 import io.cucumber.eclipse.editor.launching.ILauncher;
 import io.cucumber.eclipse.editor.steps.IStepDefinitionsProvider;
+import io.cucumber.eclipse.editor.validation.IGlueValidator;
 
 /**
  * The {@link CucumberServiceRegistry} gives access to the extensions provided
@@ -37,6 +38,9 @@ public class CucumberServiceRegistry {
 
 	@Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
 	private final List<ILauncher> cucumberLauncher = new CopyOnWriteArrayList<>();
+
+	@Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
+	private final List<IGlueValidator> glueValidators = new CopyOnWriteArrayList<>();
 
 	private static final AtomicReference<CucumberServiceRegistry> REGISTRY = new AtomicReference<>();
 
@@ -67,6 +71,16 @@ public class CucumberServiceRegistry {
 		return get().stepDefinitionsProvider.stream().filter(p -> {
 			try {
 				return p.support(resource);
+			} catch (CoreException e) {
+				return false;
+			}
+		}).collect(Collectors.toUnmodifiableList());
+	}
+
+	public static List<IGlueValidator> getGlueValidators(IResource resource) {
+		return get().glueValidators.stream().filter(v -> {
+			try {
+				return v.canValidate(resource);
 			} catch (CoreException e) {
 				return false;
 			}

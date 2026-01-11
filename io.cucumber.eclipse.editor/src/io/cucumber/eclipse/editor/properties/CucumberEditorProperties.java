@@ -37,6 +37,9 @@ public record CucumberEditorProperties(IEclipsePreferences node) {
 	
 	/** Key prefix for launch shortcut visibility settings (suffixed with mode name) */
 	public static final String KEY_SHOW_LAUNCH_SHORTCUT_PREFIX = "showShortcut";
+	
+	/** Key for validation timeout in milliseconds */
+	public static final String KEY_VALIDATION_TIMEOUT = "validationTimeout";
 
 	/**
 	 * Creates a properties instance for the given resource.
@@ -137,5 +140,38 @@ public record CucumberEditorProperties(IEclipsePreferences node) {
 			return;
 		}
 		node.putBoolean(KEY_SHOW_LAUNCH_SHORTCUT_PREFIX + mode.name(), show);
+	}
+
+	/**
+	 * Gets the validation timeout in milliseconds.
+	 * <p>
+	 * This controls the delay between document changes and validation execution.
+	 * </p>
+	 * 
+	 * @return the validation timeout in milliseconds
+	 */
+	public int getValidationTimeout() {
+		if (node == null) {
+			return io.cucumber.eclipse.editor.preferences.CucumberEditorPreferences.DEFAULT_VALIDATION_TIMEOUT;
+		}
+		int timeout = node.getInt(KEY_VALIDATION_TIMEOUT,
+				io.cucumber.eclipse.editor.preferences.CucumberEditorPreferences.DEFAULT_VALIDATION_TIMEOUT);
+		return timeout > 0 ? timeout
+				: io.cucumber.eclipse.editor.preferences.CucumberEditorPreferences.DEFAULT_VALIDATION_TIMEOUT;
+	}
+
+	/**
+	 * Sets the validation timeout in milliseconds.
+	 * <p>
+	 * Call {@link #flush()} to persist the change.
+	 * </p>
+	 * 
+	 * @param timeout the validation timeout in milliseconds
+	 */
+	public void setValidationTimeout(int timeout) {
+		if (node == null) {
+			return;
+		}
+		node.putInt(KEY_VALIDATION_TIMEOUT, timeout);
 	}
 }
