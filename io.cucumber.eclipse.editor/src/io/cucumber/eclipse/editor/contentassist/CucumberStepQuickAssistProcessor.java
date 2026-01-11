@@ -13,6 +13,7 @@ import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
+import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
 import io.cucumber.eclipse.editor.marker.MarkerFactory;
 import io.cucumber.eclipse.editor.steps.ExpressionDefinition;
 
@@ -39,7 +40,7 @@ public class CucumberStepQuickAssistProcessor implements IQuickAssistProcessor {
 
 	@Override
 	public boolean canAssist(IQuickAssistInvocationContext invocationContext) {
-		return GherkinEditorDocument.isCompatible(invocationContext.getSourceViewer().getDocument());
+		return GherkinEditorDocumentManager.isCompatible(invocationContext.getSourceViewer().getDocument());
 	}
 
 	@Override
@@ -48,7 +49,7 @@ public class CucumberStepQuickAssistProcessor implements IQuickAssistProcessor {
 		IDocument document = viewer.getDocument();
 		try {
 			int line = document.getLineOfOffset(invocationContext.getOffset());
-			GherkinEditorDocument editorDocument = GherkinEditorDocument.get(document);
+			GherkinEditorDocument editorDocument = GherkinEditorDocumentManager.get(document);
 			if (MarkerFactory.hasMarker(editorDocument.getResource(), MarkerFactory.UNMATCHED_STEP, line + 1)) {
 				return CucumberTemplates.computeTemplateProposals(viewer, invocationContext.getOffset(), (proposal) -> {
 					String lineText = proposal.getLineText();

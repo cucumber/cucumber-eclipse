@@ -9,6 +9,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
+import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
 
 public class EditorInputPropertyTester extends PropertyTester {
 
@@ -21,7 +22,7 @@ public class EditorInputPropertyTester extends PropertyTester {
 					ITextFileBuffer buffer = FileBuffers.getTextFileBufferManager()
 							.getTextFileBuffer(fileInput.getFile().getFullPath(), LocationKind.IFILE);
 					if (buffer != null) {
-						return GherkinEditorDocument.isCompatible(buffer.getDocument());
+						return GherkinEditorDocumentManager.isCompatible(buffer.getDocument());
 					}
 				}
 			}

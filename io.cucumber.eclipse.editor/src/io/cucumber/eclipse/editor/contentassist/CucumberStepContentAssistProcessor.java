@@ -11,6 +11,7 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
+import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
 import io.cucumber.eclipse.editor.steps.ExpressionDefinition;
 
 /**
@@ -30,7 +31,7 @@ public class CucumberStepContentAssistProcessor implements IContentAssistProcess
 			ExpressionDefinition definition = proposal.getStepDefinition().getExpression();
 			if (definition.getText().startsWith(prefix)) {
 				proposal.setRelevance(PREFIX_MATCH);
-			} else if (definition.matchIgnoreTypes(proposal.getLineText(), GherkinEditorDocument.get(viewer.getDocument()).getLocale())) {
+			} else if (definition.matchIgnoreTypes(proposal.getLineText(), GherkinEditorDocumentManager.get(viewer.getDocument()).getLocale())) {
 				proposal.setRelevance(Integer.MAX_VALUE);
 			} else {
 				// TODO configure disable

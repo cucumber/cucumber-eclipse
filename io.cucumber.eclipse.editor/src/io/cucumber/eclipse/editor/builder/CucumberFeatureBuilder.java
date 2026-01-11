@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
+import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
 import io.cucumber.eclipse.editor.validation.DocumentValidator;
 
 /**
@@ -74,7 +75,7 @@ public class CucumberFeatureBuilder extends IncrementalProjectBuilder {
 				if (resource instanceof IFile) {
 					IFile file = (IFile) resource;
 					if ("feature".equals(file.getFileExtension())) {
-						GherkinEditorDocument editorDocument = GherkinEditorDocument.get(file);
+						GherkinEditorDocument editorDocument = GherkinEditorDocumentManager.get(file);
 						if (editorDocument != null) {
 							// Trigger validation through DocumentValidator
 							DocumentValidator.revalidate(editorDocument.getDocument());

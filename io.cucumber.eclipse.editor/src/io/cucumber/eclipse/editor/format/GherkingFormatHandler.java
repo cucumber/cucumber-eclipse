@@ -13,6 +13,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
+import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
 import io.cucumber.gherkin.utils.pretty.Pretty;
 import io.cucumber.gherkin.utils.pretty.Syntax;
 import io.cucumber.messages.types.GherkinDocument;
@@ -25,7 +26,7 @@ public class GherkingFormatHandler extends AbstractHandler {
 		if (part instanceof IEditorPart editor) {
 			IEditorInput editorInput = editor.getEditorInput();
 			if (editorInput instanceof IFileEditorInput fileInput) {
-				GherkinEditorDocument document = GherkinEditorDocument.get(fileInput.getFile());
+				GherkinEditorDocument document = GherkinEditorDocumentManager.get(fileInput.getFile());
 				if (document != null) {
 					formatDocument(document, fileInput.getFile());
 				}

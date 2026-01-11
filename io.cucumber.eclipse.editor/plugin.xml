@@ -91,7 +91,7 @@
   <extension
         point="org.eclipse.core.filebuffers.documentSetup">
      <participant
-           class="io.cucumber.eclipse.editor.validation.DocumentValidator"
+           class="io.cucumber.eclipse.editor.document.GherkinDocumentSetupParticipant"
            contentTypeId="io.cucumber.eclipse.editor.content-type.feature">
      </participant>
   </extension>

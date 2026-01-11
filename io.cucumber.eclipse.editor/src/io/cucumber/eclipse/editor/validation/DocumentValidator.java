@@ -1,35 +1,29 @@
 package io.cucumber.eclipse.editor.validation;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.eclipse.core.filebuffers.FileBuffers;
-import org.eclipse.core.filebuffers.IDocumentSetupParticipant;
-import org.eclipse.core.filebuffers.IFileBuffer;
-import org.eclipse.core.filebuffers.IFileBufferListener;
-import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IDocumentListener;
 
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
+import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
+import io.cucumber.eclipse.editor.document.IGherkinDocumentListener;
+import io.cucumber.eclipse.editor.preferences.CucumberEditorPreferences;
 
 /**
  * Central document validator for Gherkin feature files.
  * <p>
- * This class implements {@link IDocumentSetupParticipant} to automatically
- * attach validation to feature file documents when they are opened. It
- * coordinates both syntax validation and glue code validation in a unified way.
+ * This class implements {@link IGherkinDocumentListener} to automatically
+ * receive notifications about document lifecycle events from the 
+ * {@link GherkinEditorDocumentManager}. It coordinates both syntax validation 
+ * and glue code validation in a unified way.
  * </p>
  * <p>
  * The validator handles:
  * <ul>
- * <li>Document lifecycle tracking (setup and disposal)</li>
+ * <li>Document lifecycle tracking via manager notifications</li>
  * <li>Debounced validation on document changes</li>
  * <li>Background job management</li>
  * <li>Cleanup when documents are closed</li>
@@ -43,109 +37,74 @@ import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
  * definitions</li>
  * </ol>
  * </p>
+ * <p>
+ * This validator is registered as a singleton with the manager during plugin activation.
+ * </p>
  * 
  * @see VerificationJob
  * @see IGlueValidator
+ * @see GherkinEditorDocumentManager
  */
-public class DocumentValidator implements IDocumentSetupParticipant {
+public class DocumentValidator implements IGherkinDocumentListener {
 
 	/**
 	 * Maps documents to their currently running or scheduled validation jobs.
 	 * Thread-safe to allow concurrent access from UI and background threads.
 	 */
-	private static ConcurrentMap<IDocument, VerificationJob> jobMap = new ConcurrentHashMap<>();
+	private static final ConcurrentMap<IDocument, VerificationJob> jobMap = new ConcurrentHashMap<>();
 
-	static {
-		/*
-		 * Listens for file buffer lifecycle events to clean up validation jobs when
-		 * documents are closed. This prevents memory leaks and unnecessary validation
-		 * of closed documents.
-		 */
-		FileBuffers.getTextFileBufferManager().addFileBufferListener(new IFileBufferListener() {
+	/**
+	 * Singleton instance of the validator.
+	 */
+	private static final DocumentValidator INSTANCE = new DocumentValidator();
 
-			@Override
-			public void underlyingFileMoved(IFileBuffer buffer, IPath path) {
-			}
-
-			@Override
-			public void underlyingFileDeleted(IFileBuffer buffer) {
-			}
-
-			@Override
-			public void stateValidationChanged(IFileBuffer buffer, boolean isStateValidated) {
-			}
-
-			@Override
-			public void stateChanging(IFileBuffer buffer) {
-			}
-
-			@Override
-			public void stateChangeFailed(IFileBuffer buffer) {
-			}
-
-			@Override
-			public void dirtyStateChanged(IFileBuffer buffer, boolean isDirty) {
-			}
-
-			@Override
-			public void bufferDisposed(IFileBuffer buffer) {
-				if (buffer instanceof ITextFileBuffer) {
-					IDocument document = ((ITextFileBuffer) buffer).getDocument();
-					VerificationJob job = jobMap.remove(document);
-					if (job != null) {
-						job.cancel();
-					}
-				}
-			}
-
-			@Override
-			public void bufferCreated(IFileBuffer buffer) {
-			}
-
-			@Override
-			public void bufferContentReplaced(IFileBuffer buffer) {
-			}
-
-			@Override
-			public void bufferContentAboutToBeReplaced(IFileBuffer buffer) {
-			}
-		});
+	/**
+	 * Private constructor - use singleton instance.
+	 */
+	private DocumentValidator() {
 	}
 
 	/**
-	 * Sets up validation for a feature file document.
-	 * <p>
-	 * Called automatically by Eclipse when a feature file is opened. This method:
-	 * <ul>
-	 * <li>Attaches a document listener to track changes</li>
-	 * <li>Schedules validation with a delay after each change (debouncing)</li>
-	 * <li>Performs an initial validation immediately</li>
-	 * </ul>
-	 * </p>
-	 * 
-	 * @param document the document to set up validation for
+	 * Initializes the validator by registering it with the document manager.
+	 * Should be called during plugin activation.
+	 */
+	public static void initialize() {
+		GherkinEditorDocumentManager.addDocumentListener(INSTANCE);
+	}
+
+	/**
+	 * Called when a new Gherkin document is set up.
+	 * Schedules immediate validation for the new document.
 	 */
 	@Override
-	public void setup(IDocument document) {
-		document.addDocumentListener(new IDocumentListener() {
-
-			@Override
-			public void documentChanged(DocumentEvent event) {
-				GherkinEditorDocument editorDoc = GherkinEditorDocument.get(document);
-				int timeout;
-				if (editorDoc != null && editorDoc.getResource() != null) {
-					timeout = io.cucumber.eclipse.editor.preferences.CucumberEditorPreferences.of(editorDoc.getResource()).getValidationTimeout();
-				} else {
-					timeout = io.cucumber.eclipse.editor.preferences.CucumberEditorPreferences.DEFAULT_VALIDATION_TIMEOUT;
-				}
-				validate(event.getDocument(), timeout);
-			}
-
-			@Override
-			public void documentAboutToBeChanged(DocumentEvent event) {
-			}
-		});
+	public void documentSetup(IDocument document) {
 		validate(document, 0);
+	}
+
+	/**
+	 * Called when a Gherkin document changes.
+	 * Schedules validation with a configurable delay (debouncing).
+	 */
+	@Override
+	public void documentChanged(IDocument document) {
+		IResource resource = GherkinEditorDocumentManager.resourceForDocument(document);
+		if (resource == null) {
+			return;
+		}
+		int timeout = CucumberEditorPreferences.of(resource).getValidationTimeout();
+		validate(document, timeout);
+	}
+
+	/**
+	 * Called when a Gherkin document is removed.
+	 * Cancels any running validation job and cleans up resources.
+	 */
+	@Override
+	public void documentRemoved(IDocument document) {
+		VerificationJob job = jobMap.remove(document);
+		if (job != null) {
+			job.cancel();
+		}
 	}
 
 	/**
@@ -165,7 +124,7 @@ public class DocumentValidator implements IDocumentSetupParticipant {
 			if (oldJob != null) {
 				oldJob.cancel();
 			}
-			GherkinEditorDocument editorDocument = GherkinEditorDocument.get(document);
+			GherkinEditorDocument editorDocument = GherkinEditorDocumentManager.get(document);
 			VerificationJob verificationJob = new VerificationJob(oldJob, editorDocument);
 			verificationJob.setUser(false);
 			verificationJob.setPriority(Job.DECORATE);
@@ -199,15 +158,13 @@ public class DocumentValidator implements IDocumentSetupParticipant {
 	 * </p>
 	 */
 	public static void revalidateAllDocuments() {
-		Map<IDocument, VerificationJob> snapshot = new HashMap<>(jobMap);
-		snapshot.keySet().forEach(document -> {
-			IResource resource = GherkinEditorDocument.resourceForDocument(document);
+		jobMap.keySet().forEach(document -> {
+			IResource resource = GherkinEditorDocumentManager.resourceForDocument(document);
 			if (resource == null) {
 				// Document (no longer) managed by a text buffer...
 				return;
 			}
-			int timeout = io.cucumber.eclipse.editor.preferences.CucumberEditorPreferences.of(resource)
-					.getValidationTimeout();
+			int timeout = CucumberEditorPreferences.of(resource).getValidationTimeout();
 			validate(document, timeout);
 		});
 	}
