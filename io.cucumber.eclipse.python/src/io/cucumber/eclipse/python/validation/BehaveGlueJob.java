@@ -58,7 +58,7 @@ final class BehaveGlueJob extends Job {
 		}
 
 		IResource resource = editorDocument.getResource();
-		if (resource == null) {
+		if (!BehaveProcessLauncher.isBehaveProject(resource)) {
 			return Status.CANCEL_STATUS;
 		}
 
@@ -69,6 +69,7 @@ final class BehaveGlueJob extends Job {
 		if (project == null) {
 			return Status.CANCEL_STATUS;
 		}
+
 
 		try {
 			// Get behave command from preferences

@@ -17,7 +17,7 @@
 	 <extension
 	       point="org.eclipse.core.filebuffers.documentSetup">
 	    <participant
-	          class="io.cucumber.eclipse.java.validation.CucumberGlueValidator"
+	          class="io.cucumber.eclipse.java.validation.JavaGlueValidator"
 	          contentTypeId="io.cucumber.eclipse.editor.content-type.feature">
 	    </participant>
 	 </extension>

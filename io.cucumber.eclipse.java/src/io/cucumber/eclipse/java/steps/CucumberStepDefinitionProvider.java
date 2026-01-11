@@ -34,7 +34,7 @@ import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberCodeLocation;
 import io.cucumber.eclipse.java.plugins.CucumberStepDefinition;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;
-import io.cucumber.eclipse.java.validation.CucumberGlueValidator;
+import io.cucumber.eclipse.java.validation.JavaGlueValidator;
 
 /**
  * Step definition provider that calls cucumber to find steps for the project
@@ -70,7 +70,7 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 		try {
 			IJavaProject javaProject = JDTUtil.getJavaProject(resource);
 			SubMonitor subMonitor = SubMonitor.convert(monitor, "Searching Java Glue Code steps", 200);
-			Collection<CucumberStepDefinition> steps = CucumberGlueValidator.getAvailableSteps(viewer.getDocument(),
+			Collection<CucumberStepDefinition> steps = JavaGlueValidator.getAvailableSteps(viewer.getDocument(),
 					subMonitor.split(100));
 			SubMonitor remaining = subMonitor.setWorkRemaining(steps.size());
 			Map<String, IType> typeBuffer = new ConcurrentHashMap<>();

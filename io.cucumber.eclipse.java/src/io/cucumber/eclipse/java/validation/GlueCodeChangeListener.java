@@ -36,11 +36,11 @@ import io.cucumber.eclipse.java.JDTUtil;
  * we only revalidate if something relevant actually changed.
  * </p>
  * <p>
- * The listener is designed to be package-protected and used exclusively by {@link CucumberGlueValidator}
+ * The listener is designed to be package-protected and used exclusively by {@link JavaGlueValidator}
  * to maintain separation of concerns and keep the validator class focused on validation logic.
  * </p>
  * 
- * @see CucumberGlueValidator
+ * @see JavaGlueValidator
  * @see IElementChangedListener
  */
 class GlueCodeChangeListener implements IElementChangedListener {
@@ -86,7 +86,7 @@ class GlueCodeChangeListener implements IElementChangedListener {
 			
 			for (IProject project : affectedProjects) {
 				try {
-					CucumberGlueValidator.revalidateProject(project);
+					JavaGlueValidator.revalidateProject(project);
 				} catch (CoreException e) {
 					if (Tracing.DEBUG_VALIDATION_GLUE_ENABLED) {
 						DebugTrace trace = Tracing.get();

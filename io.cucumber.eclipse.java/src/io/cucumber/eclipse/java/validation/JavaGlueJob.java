@@ -44,15 +44,15 @@ import io.cucumber.eclipse.java.preferences.CucumberJavaPreferences;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;
 import io.cucumber.plugin.Plugin;
 
-final class GlueJob extends Job {
+final class JavaGlueJob extends Job {
 
-	private GlueJob oldJob;
+	private JavaGlueJob oldJob;
 
 	volatile Collection<MatchedStep<?>> matchedSteps;
 	volatile Collection<CucumberStepDefinition> parsedSteps;
 	private Supplier<GherkinEditorDocument> documentSupplier;
 
-	GlueJob(GlueJob oldJob, Supplier<GherkinEditorDocument> documentSupplier) {
+	JavaGlueJob(JavaGlueJob oldJob, Supplier<GherkinEditorDocument> documentSupplier) {
 		super("Verify Cucumber Glue Code");
 		this.oldJob = oldJob;
 		this.documentSupplier = documentSupplier;
@@ -189,7 +189,7 @@ final class GlueJob extends Job {
 	private CucumberJavaPreferences getProperties(GherkinEditorDocument editorDocument) {
 		IResource resource = editorDocument.getResource();
 		CucumberJavaPreferences projectProperties = CucumberJavaPreferences.of(resource);
-		CucumberGlueValidator.setupGlobalPreferenceListener(resource);
+		JavaGlueValidator.setupGlobalPreferenceListener(resource);
 		return projectProperties;
 	}
 

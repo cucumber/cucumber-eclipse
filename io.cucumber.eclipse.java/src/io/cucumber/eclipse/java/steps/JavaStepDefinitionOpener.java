@@ -32,7 +32,7 @@ import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberCodeLocation;
 import io.cucumber.eclipse.java.plugins.MatchedPickleStep;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
-import io.cucumber.eclipse.java.validation.CucumberGlueValidator;
+import io.cucumber.eclipse.java.validation.JavaGlueValidator;
 import io.cucumber.messages.types.Step;
 
 @Component(service = IStepDefinitionOpener.class)
@@ -76,7 +76,7 @@ public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
 				@Override
 				public void run(IProgressMonitor monitor) throws CoreException {
 					try {
-						Collection<MatchedStep<?>> steps = CucumberGlueValidator
+						Collection<MatchedStep<?>> steps = JavaGlueValidator
 								.getMatchedSteps(document, monitor);
 
 						StringBuilder sb = new StringBuilder();
