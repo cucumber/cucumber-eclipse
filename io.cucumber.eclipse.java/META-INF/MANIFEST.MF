@@ -4,7 +4,6 @@ Bundle-Name: Java
 Bundle-SymbolicName: io.cucumber.eclipse.java;singleton:=true
 Bundle-Version: 3.0.0.qualifier
 Export-Package: io.cucumber.eclipse.java;x-internal:=true,
- io.cucumber.eclipse.java.builder;x-internal:=true,
  io.cucumber.eclipse.java.codemining;x-internal:=true,
  io.cucumber.eclipse.java.launching;x-internal:=true,
  io.cucumber.eclipse.java.plugins;x-internal:=true,
@@ -47,4 +46,5 @@ Import-Package: org.eclipse.unittest.ui,
  org.osgi.util.tracker
 Service-Component: OSGI-INF/io.cucumber.eclipse.java.launching.CucumberRuntimeLauncher.xml,
  OSGI-INF/io.cucumber.eclipse.java.steps.CucumberStepDefinitionProvider.xml,
- OSGI-INF/io.cucumber.eclipse.java.steps.JavaStepDefinitionOpener.xml
+ OSGI-INF/io.cucumber.eclipse.java.steps.JavaStepDefinitionOpener.xml,
+ OSGI-INF/io.cucumber.eclipse.java.validation.JavaGlueValidatorService.xml

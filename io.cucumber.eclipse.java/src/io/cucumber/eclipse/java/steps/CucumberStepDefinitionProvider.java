@@ -23,7 +23,9 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.text.ITextViewer;
 import org.osgi.framework.Constants;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 import io.cucumber.core.gherkin.Feature;
 import io.cucumber.core.resource.Resource;
@@ -34,7 +36,7 @@ import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberCodeLocation;
 import io.cucumber.eclipse.java.plugins.CucumberStepDefinition;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;
-import io.cucumber.eclipse.java.validation.JavaGlueValidator;
+import io.cucumber.eclipse.java.validation.JavaGlueValidatorService;
 
 /**
  * Step definition provider that calls cucumber to find steps for the project
@@ -46,9 +48,12 @@ import io.cucumber.eclipse.java.validation.JavaGlueValidator;
 		IStepDefinitionsProvider.PROVIDER_NAME + "=Cucumber JVM Runtime", Constants.SERVICE_RANKING + ":Integer=100" })
 public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider {
 
-	private Feature dummyFeature;
+	private final Feature dummyFeature;
+	private final JavaGlueValidatorService javaValidator;
 
-	public CucumberStepDefinitionProvider() throws URISyntaxException {
+	@Activate
+	public CucumberStepDefinitionProvider(@Reference JavaGlueValidatorService validator) throws URISyntaxException {
+		javaValidator = validator;
 		URI uri = new URI("dummy:uri");
 		dummyFeature = CucumberRuntime.loadFeature(new Resource() {
 
@@ -70,7 +75,7 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 		try {
 			IJavaProject javaProject = JDTUtil.getJavaProject(resource);
 			SubMonitor subMonitor = SubMonitor.convert(monitor, "Searching Java Glue Code steps", 200);
-			Collection<CucumberStepDefinition> steps = JavaGlueValidator.getAvailableSteps(viewer.getDocument(),
+			Collection<CucumberStepDefinition> steps = javaValidator.getAvailableSteps(viewer.getDocument(),
 					subMonitor.split(100));
 			SubMonitor remaining = subMonitor.setWorkRemaining(steps.size());
 			Map<String, IType> typeBuffer = new ConcurrentHashMap<>();
@@ -99,17 +104,14 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 			try {
 				IMethod[] methods = JDTUtil.resolveMethod(project, codeLocation, monitor);
 				if (methods.length == 1) {
-					
-					
 					// perfect match
 					IMethod method = methods[0];
 					int lineNumber = getLineNumber(method.getCompilationUnit(), method);
 					ExpressionDefinition expression = new ExpressionDefinition(cucumberStepDefinition.getPattern());
 					String id = method.getHandleIdentifier();
-					return new StepDefinition(id, JDTUtil.getMethodName(method), expression,
-							type.getResource(), lineNumber, method.getElementName(),
-							type.getPackageFragment().getElementName(), getParameter(method),
-							JDTUtil.getJavadoc(method));
+					return new StepDefinition(id, JDTUtil.getMethodName(method), expression, type.getResource(),
+							lineNumber, method.getElementName(), type.getPackageFragment().getElementName(),
+							getParameter(method), JDTUtil.getJavadoc(method));
 				}
 			} catch (JavaModelException e) {
 			}

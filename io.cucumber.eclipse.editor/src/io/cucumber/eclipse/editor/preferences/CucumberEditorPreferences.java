@@ -37,6 +37,8 @@ import io.cucumber.eclipse.editor.properties.CucumberEditorProperties;
 public final record CucumberEditorPreferences(IPreferenceStore store, IEclipsePreferences node) {
 
 	static final String PREF_SHOW_RUN_SHORTCUT_PREFIX = Activator.PLUGIN_ID + ".show_run_shortcut_";
+	static final String PREF_VALIDATION_TIMEOUT = Activator.PLUGIN_ID + ".validation_timeout";
+	public static final int DEFAULT_VALIDATION_TIMEOUT = 500;
 
 	/**
 	 * Creates a preferences instance using workspace settings only.
@@ -108,5 +110,34 @@ public final record CucumberEditorPreferences(IPreferenceStore store, IEclipsePr
 	 */
 	protected static void setShowShortcutFor(IPreferenceStore store, Mode mode, boolean show) {
 		store.setValue(PREF_SHOW_RUN_SHORTCUT_PREFIX + mode.name(), show);
+	}
+
+	/**
+	 * Gets the validation timeout in milliseconds.
+	 * <p>
+	 * This controls the delay between document changes and validation execution
+	 * (debouncing). If project-specific settings are active, returns the project
+	 * value. Otherwise, returns the workspace preference.
+	 * </p>
+	 * 
+	 * @return the validation timeout in milliseconds
+	 */
+	public int getValidationTimeout() {
+		if (node != null) {
+			int timeout = node.getInt(CucumberEditorProperties.KEY_VALIDATION_TIMEOUT, DEFAULT_VALIDATION_TIMEOUT);
+			return timeout > 0 ? timeout : DEFAULT_VALIDATION_TIMEOUT;
+		}
+		int timeout = store.getInt(PREF_VALIDATION_TIMEOUT);
+		return timeout > 0 ? timeout : DEFAULT_VALIDATION_TIMEOUT;
+	}
+
+	/**
+	 * Sets the workspace preference for validation timeout.
+	 * 
+	 * @param store the preference store to update
+	 * @param timeout the validation timeout in milliseconds
+	 */
+	public static void setValidationTimeout(IPreferenceStore store, int timeout) {
+		store.setValue(PREF_VALIDATION_TIMEOUT, timeout);
 	}
 }

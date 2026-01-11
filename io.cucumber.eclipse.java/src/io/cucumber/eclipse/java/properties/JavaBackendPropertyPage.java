@@ -37,11 +37,9 @@ import io.cucumber.eclipse.java.preferences.GlueCodePackageTable.FilterStrings;
 public class JavaBackendPropertyPage extends PropertyPage {
 
 	private Text validationPlugins;
-	private Text validationTimeoutText;
 	private Button enableProjectSpecific;
 	private GlueCodePackageTable glueCodePackageTable;
 	private Button hookButton;
-	private Label timeoutLabel;
 
 	public JavaBackendPropertyPage() {
 		setTitle("Cucumber Java Options");
@@ -152,17 +150,6 @@ public class JavaBackendPropertyPage extends PropertyPage {
 		hookButton.setLayoutData(gd);
 		((GridData) glueCodePackageTable.getControl().getLayoutData()).horizontalSpan = 2;
 		
-		timeoutLabel = new Label(parent, SWT.NONE);
-		timeoutLabel.setText("Validation timeout (ms):");
-		timeoutLabel.setToolTipText("Time to wait after typing before validating feature files (milliseconds)");
-		
-		validationTimeoutText = new Text(parent, SWT.BORDER | SWT.SINGLE);
-		GridData timeoutData = new GridData(100, SWT.DEFAULT);
-		validationTimeoutText.setLayoutData(timeoutData);
-		validationTimeoutText.setText(String.valueOf(node.getInt(CucumberJavaBackendProperties.KEY_VALIDATION_TIMEOUT, 
-				CucumberJavaBackendProperties.DEFAULT_VALIDATION_TIMEOUT)));
-		validationTimeoutText.setToolTipText("Time to wait after typing before validating feature files (milliseconds)");
-		
 		updateUI();
 	}
 
@@ -170,8 +157,6 @@ public class JavaBackendPropertyPage extends PropertyPage {
 		boolean enable = enableProjectSpecific.getSelection();
 		glueCodePackageTable.setEnabled(enable);
 		hookButton.setEnabled(enable);
-		validationTimeoutText.setEnabled(enable);
-		timeoutLabel.setEnabled(enable);
 	}
 
 	private IResource getResource() {
@@ -188,7 +173,6 @@ public class JavaBackendPropertyPage extends PropertyPage {
 		validationPlugins.setText("");
 		glueCodePackageTable.performDefaults();
 		hookButton.setSelection(false);
-		validationTimeoutText.setText(String.valueOf(CucumberJavaBackendProperties.DEFAULT_VALIDATION_TIMEOUT));
 	}
 
 	@Override
@@ -201,20 +185,6 @@ public class JavaBackendPropertyPage extends PropertyPage {
 		node.put(CucumberJavaBackendProperties.KEY_INACTIVE_FILTER, filters.inactive());
 		node.putBoolean(CucumberJavaBackendProperties.KEY_SHOW_HOOK, hookButton.getSelection());
 		
-		// Save validation timeout
-		try {
-			int timeout = Integer.parseInt(validationTimeoutText.getText().trim());
-			if (timeout > 0) {
-				node.putInt(CucumberJavaBackendProperties.KEY_VALIDATION_TIMEOUT, timeout);
-			} else {
-				setErrorMessage("Validation timeout must be a positive number");
-				return false;
-			}
-		} catch (NumberFormatException e) {
-			setErrorMessage("Validation timeout must be a valid number");
-			return false;
-		}
-		
 		try {
 			node.flush();
 		} catch (BackingStoreException e) {
@@ -223,7 +193,5 @@ public class JavaBackendPropertyPage extends PropertyPage {
 		EditorReconciler.reconcileAllFeatureEditors();
 		return true;
 	}
-
-
 
 }

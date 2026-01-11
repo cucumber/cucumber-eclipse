@@ -1,12 +1,14 @@
-package io.cucumber.eclipse.java.builder;
+package io.cucumber.eclipse.editor.builder;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.IProject;
 
 /**
  * Property tester to check if a project has the Cucumber builder configured.
- * 
- * @author cucumber-eclipse
+ * <p>
+ * This tester is used in the UI to show/hide the "Enable/Disable Cucumber Builder"
+ * menu items in the Project > Configure context menu based on the current builder state.
+ * </p>
  */
 public class CucumberBuilderPropertyTester extends PropertyTester {
 

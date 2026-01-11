@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="io.cucumber.eclipse.python.validation.BehaveGlueValidatorService">
+   <service>
+      <provide interface="io.cucumber.eclipse.editor.validation.IGlueValidator"/>
+   </service>
+   <implementation class="io.cucumber.eclipse.python.validation.BehaveGlueValidatorService"/>
+</scr:component>

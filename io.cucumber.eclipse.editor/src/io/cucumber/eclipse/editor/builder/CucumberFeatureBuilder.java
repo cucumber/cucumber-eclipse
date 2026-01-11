@@ -1,39 +1,47 @@
-package io.cucumber.eclipse.java.builder;
+package io.cucumber.eclipse.editor.builder;
 
 import java.util.Map;
 
 import org.eclipse.core.resources.ICommand;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import io.cucumber.eclipse.java.validation.JavaGlueValidator;
+import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
+import io.cucumber.eclipse.editor.validation.DocumentValidator;
 
 /**
  * Builder for validating Cucumber feature files in a project.
  * <p>
  * This builder processes all .feature files in the project and triggers
- * validation to update markers for unmatched steps and other glue code issues.
- * Since glue code (Java files, class files) can change and affect validation,
+ * validation to update markers for syntax errors, unmatched steps, and other
+ * glue code issues. Since glue code can change and affect validation,
  * this builder always performs a full build rather than incremental builds.
  * </p>
+ * <p>
+ * The builder delegates to the {@link DocumentValidator} which coordinates
+ * both syntax and glue validation across all registered backends.
+ * </p>
  * 
- * @author cucumber-eclipse
+ * @see DocumentValidator
  */
 public class CucumberFeatureBuilder extends IncrementalProjectBuilder {
 
 	/**
 	 * ID of the Cucumber Feature Builder
 	 */
-	public static final String BUILDER_ID = "io.cucumber.eclipse.java.cucumberFeatureBuilder";
+	public static final String BUILDER_ID = "io.cucumber.eclipse.editor.cucumberFeatureBuilder";
 
 	@Override
 	protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
 		try {
-			JavaGlueValidator.validateProject(getProject(), monitor);
+			validateProject(getProject(), monitor);
 		} catch (Exception e) {
 			ILog.get().error("Failed to validate project: " + getProject().getName(), e);
 		}
@@ -43,6 +51,39 @@ public class CucumberFeatureBuilder extends IncrementalProjectBuilder {
 	@Override
 	protected void clean(IProgressMonitor monitor) throws CoreException {
 		// Clean is handled by marker deletion which is automatic when resources are cleaned
+	}
+
+	/**
+	 * Validates all feature files in the given project.
+	 * <p>
+	 * This method visits all resources in the project and triggers validation
+	 * for each .feature file using the {@link DocumentValidator}.
+	 * </p>
+	 * 
+	 * @param project the project to validate
+	 * @param monitor the progress monitor for tracking and cancellation
+	 * @throws CoreException if resource visitation fails
+	 */
+	private static void validateProject(IProject project, IProgressMonitor monitor) throws CoreException {
+		project.accept(new IResourceVisitor() {
+			@Override
+			public boolean visit(IResource resource) throws CoreException {
+				if (monitor.isCanceled()) {
+					return false;
+				}
+				if (resource instanceof IFile) {
+					IFile file = (IFile) resource;
+					if ("feature".equals(file.getFileExtension())) {
+						GherkinEditorDocument editorDocument = GherkinEditorDocument.get(file);
+						if (editorDocument != null) {
+							// Trigger validation through DocumentValidator
+							DocumentValidator.revalidate(editorDocument.getDocument());
+						}
+					}
+				}
+				return true;
+			}
+		});
 	}
 
 	/**

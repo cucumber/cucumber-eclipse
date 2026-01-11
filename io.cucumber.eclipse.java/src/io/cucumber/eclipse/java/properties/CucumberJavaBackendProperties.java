@@ -39,8 +39,6 @@ public final record CucumberJavaBackendProperties(IEclipsePreferences node) {
 	static final String KEY_VALIDATION_PLUGINS = "validationPlugins";
 	static final String KEY_ENABLE_PROJECT_SPECIFIC_SETTINGS = "enableProjectSpecific";
 	static final String KEY_SHOW_HOOK = "enableShowHook";
-	static final String KEY_VALIDATION_TIMEOUT = "validationTimeout";
-	static final int DEFAULT_VALIDATION_TIMEOUT = 1000;
 
 	/**
 	 * Creates a properties instance for the given resource.
@@ -188,38 +186,6 @@ public final record CucumberJavaBackendProperties(IEclipsePreferences node) {
 			return;
 		}
 		node.putBoolean(KEY_SHOW_HOOK, show);
-	}
-
-	/**
-	 * Gets the validation timeout in milliseconds.
-	 * <p>
-	 * The validation timeout controls the delay before background validation
-	 * starts after a document change, allowing for debouncing during typing.
-	 * </p>
-	 * 
-	 * @return the validation timeout in milliseconds, or the default if not configured
-	 */
-	public int getValidationTimeout() {
-		if (node == null) {
-			return DEFAULT_VALIDATION_TIMEOUT;
-		}
-		int timeout = node.getInt(KEY_VALIDATION_TIMEOUT, DEFAULT_VALIDATION_TIMEOUT);
-		return timeout > 0 ? timeout : DEFAULT_VALIDATION_TIMEOUT;
-	}
-
-	/**
-	 * Sets the validation timeout in milliseconds.
-	 * <p>
-	 * Call {@link #flush()} to persist the change.
-	 * </p>
-	 * 
-	 * @param timeout the validation timeout in milliseconds (must be positive)
-	 */
-	public void setValidationTimeout(int timeout) {
-		if (node == null) {
-			return;
-		}
-		node.putInt(KEY_VALIDATION_TIMEOUT, timeout);
 	}
 
 	/**

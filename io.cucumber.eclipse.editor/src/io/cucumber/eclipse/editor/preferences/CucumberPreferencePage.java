@@ -2,6 +2,7 @@ package io.cucumber.eclipse.editor.preferences;
 
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
@@ -34,6 +35,14 @@ public class CucumberPreferencePage extends FieldEditorPreferencePage implements
 					getLabelForMode(mode), parent));
 
 		}
+		
+		IntegerFieldEditor timeoutEditor = new IntegerFieldEditor(
+				CucumberEditorPreferences.PREF_VALIDATION_TIMEOUT,
+				"Validation timeout (ms):",
+				parent);
+		timeoutEditor.setValidRange(100, 10000);
+		timeoutEditor.setTextLimit(5);
+		addField(timeoutEditor);
 	}
 
 	public static String getLabelForMode(Mode mode) {

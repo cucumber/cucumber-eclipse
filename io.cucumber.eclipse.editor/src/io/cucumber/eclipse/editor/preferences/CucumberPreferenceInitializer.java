@@ -14,6 +14,8 @@ public class CucumberPreferenceInitializer extends AbstractPreferenceInitializer
 		for (Mode mode : Mode.values()) {
 			store.setDefault(CucumberEditorPreferences.PREF_SHOW_RUN_SHORTCUT_PREFIX + mode.name(), true);
 		}
+		store.setDefault(CucumberEditorPreferences.PREF_VALIDATION_TIMEOUT, 
+				CucumberEditorPreferences.DEFAULT_VALIDATION_TIMEOUT);
 	}
 
 }
