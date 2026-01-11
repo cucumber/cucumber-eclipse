@@ -20,7 +20,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Position;
 
 import io.cucumber.gherkin.GherkinDialect;
-import io.cucumber.gherkin.GherkinDialectProvider;
+import io.cucumber.gherkin.GherkinDialects;
 import io.cucumber.gherkin.GherkinParser;
 import io.cucumber.messages.types.Envelope;
 import io.cucumber.messages.types.Source;
@@ -58,9 +58,6 @@ public final class GherkinEditorDocument extends GherkinStream {
 			GherkinDialect::getRuleKeywords, GherkinDialect::getBackgroundKeywords,
 			GherkinDialect::getExamplesKeywords);
 
-	// TODO allow definition of default language in preferences
-	private final GherkinDialectProvider provider = new GherkinDialectProvider();
-
 	private volatile boolean dirty;
 	private final IDocument document;
 	private final GherkinDialect dialect;
@@ -90,7 +87,7 @@ public final class GherkinEditorDocument extends GherkinStream {
 		Optional<String> langOpt = getFeature().map(f -> f.getLanguage()).filter(Objects::nonNull)
 				.filter(Predicate.not(String::isBlank));
 
-		dialect = langOpt.flatMap(lang -> provider.getDialect(lang)).or(() -> {
+		dialect = langOpt.flatMap(lang -> GherkinDialects.getDialect(lang)).or(() -> {
 			try {
 				IRegion firstLine = document.getLineInformation(0);
 				String line = document.get(firstLine.getOffset(), firstLine.getLength()).trim();
@@ -98,7 +95,7 @@ public final class GherkinEditorDocument extends GherkinStream {
 					String[] split = line.split("language:", 2);
 					if (split.length == 2) {
 						try {
-							return provider.getDialect(split[1].trim());
+							return GherkinDialects.getDialect(split[1].trim());
 						} catch (Exception e) {
 						}
 					}
@@ -106,8 +103,9 @@ public final class GherkinEditorDocument extends GherkinStream {
 				}
 			} catch (BadLocationException e) {
 			}
-			return Optional.of(provider.getDefaultDialect());
-		}).get();
+			return Optional.empty();
+		}).or(() -> GherkinDialects.getDialect("en"))
+				.orElseThrow(() -> new IllegalStateException("Can't find any dialect for the document!"));
 
 		locale = Locale.forLanguageTag(dialect.getLanguage());
 
