@@ -42,7 +42,7 @@ import io.cucumber.eclipse.java.plugins.MatchedHookStep;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
 import io.cucumber.eclipse.java.preferences.CucumberJavaPreferences;
 import io.cucumber.eclipse.java.steps.JavaStepDefinitionOpener;
-import io.cucumber.eclipse.java.validation.CucumberGlueValidator;
+import io.cucumber.eclipse.java.validation.JavaGlueValidator;
 import io.cucumber.plugin.event.HookType;
 import io.cucumber.plugin.event.Location;
 import io.cucumber.plugin.event.TestStep;
@@ -66,7 +66,7 @@ public class JavaReferencesCodeMiningProvider implements ICodeMiningProvider {
 				if (javaProject != null) {
 					CucumberJavaPreferences preferences = CucumberJavaPreferences.of(javaProject.getProject());
 					if (preferences.showHooks()) {
-						Collection<MatchedStep<?>> steps = CucumberGlueValidator.getMatchedSteps(document, monitor);
+						Collection<MatchedStep<?>> steps = JavaGlueValidator.getMatchedSteps(document, monitor);
 						List<ICodeMining> list = new ArrayList<>();
 
 						Map<Integer, List<MatchedHookStep>> stepByLine = steps.stream()

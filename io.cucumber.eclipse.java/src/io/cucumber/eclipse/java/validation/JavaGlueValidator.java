@@ -64,17 +64,17 @@ import io.cucumber.eclipse.java.properties.CucumberJavaBackendProperties;
  * without blocking the UI thread.
  * </p>
  * 
- * @see GlueJob for the background validation implementation
+ * @see JavaGlueJob for the background validation implementation
  * @see CucumberStepDefinition for step definition representation
  * @see MatchedStep for matched step information
  */
-public class CucumberGlueValidator implements IDocumentSetupParticipant {
+public class JavaGlueValidator implements IDocumentSetupParticipant {
 
 	/**
 	 * Maps documents to their currently running or scheduled validation jobs.
 	 * Thread-safe to allow concurrent access from UI and background threads.
 	 */
-	private static ConcurrentMap<IDocument, GlueJob> jobMap = new ConcurrentHashMap<>();
+	private static ConcurrentMap<IDocument, JavaGlueJob> jobMap = new ConcurrentHashMap<>();
 
 	/**
 	 * Global property change listeners for preference stores.
@@ -135,7 +135,7 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 			public void bufferDisposed(IFileBuffer buffer) {
 				if (buffer instanceof ITextFileBuffer) {
 					IDocument document = ((ITextFileBuffer) buffer).getDocument();
-					GlueJob remove = jobMap.remove(document);
+					JavaGlueJob remove = jobMap.remove(document);
 					if (remove != null) {
 						remove.cancel();
 					}
@@ -227,7 +227,7 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 			if (oldJob != null) {
 				oldJob.cancel();
 			}
-			GlueJob verificationJob = new GlueJob(oldJob, () -> GherkinEditorDocument.get(document));
+			JavaGlueJob verificationJob = new JavaGlueJob(oldJob, () -> GherkinEditorDocument.get(document));
 			verificationJob.setUser(false);
 			verificationJob.setPriority(Job.DECORATE);
 			if (delay > 0) {
@@ -299,7 +299,7 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 	 */
 	private static void revalidateAllDocuments() {
 		// Make a copy to avoid concurrent modification
-		Map<IDocument, GlueJob> snapshot = new HashMap<>(jobMap);
+		Map<IDocument, JavaGlueJob> snapshot = new HashMap<>(jobMap);
 		snapshot.keySet().forEach(document -> validate(document, 500));
 	}
 
@@ -362,7 +362,7 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 			if (oldJob != null) {
 				oldJob.cancel();
 			}
-			GlueJob verificationJob = new GlueJob(oldJob, () -> editorDocument);
+			JavaGlueJob verificationJob = new JavaGlueJob(oldJob, () -> editorDocument);
 			verificationJob.addJobChangeListener(new IJobChangeListener() {
 
 				@Override
@@ -422,9 +422,9 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 	 * @throws OperationCanceledException if the operation was cancelled via the monitor
 	 * @throws InterruptedException if the thread was interrupted while waiting
 	 */
-	private static GlueJob sync(IDocument document, IProgressMonitor monitor)
+	private static JavaGlueJob sync(IDocument document, IProgressMonitor monitor)
 			throws OperationCanceledException, InterruptedException {
-		GlueJob glueJob = jobMap.get(document);
+		JavaGlueJob glueJob = jobMap.get(document);
 		if (glueJob != null) {
 			glueJob.join(TimeUnit.SECONDS.toMillis(30), monitor);
 		}
@@ -454,7 +454,7 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 	public static Collection<MatchedStep<?>> getMatchedSteps(IDocument document, IProgressMonitor monitor)
 			throws OperationCanceledException, InterruptedException {
 		if (document != null) {
-			GlueJob job = sync(document, monitor);
+			JavaGlueJob job = sync(document, monitor);
 			if (job != null) {
 				return job.matchedSteps;
 			}
@@ -486,7 +486,7 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 	public static Collection<CucumberStepDefinition> getAvailableSteps(IDocument document, IProgressMonitor monitor)
 			throws OperationCanceledException, InterruptedException {
 		if (document != null) {
-			GlueJob job = sync(document, monitor);
+			JavaGlueJob job = sync(document, monitor);
 			if (job != null) {
 				return job.parsedSteps;
 			}
@@ -547,7 +547,7 @@ public class CucumberGlueValidator implements IDocumentSetupParticipant {
 	 */
 	static void revalidateProject(IProject project) throws CoreException {
 		// Make a snapshot to avoid concurrent modification
-		Map<IDocument, GlueJob> snapshot = new HashMap<>(jobMap);
+		Map<IDocument, JavaGlueJob> snapshot = new HashMap<>(jobMap);
 
 		for (IDocument document : snapshot.keySet()) {
 			GherkinEditorDocument editorDoc = GherkinEditorDocument.get(document);

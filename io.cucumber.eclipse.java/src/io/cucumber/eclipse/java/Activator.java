@@ -5,6 +5,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.util.tracker.ServiceTracker;
 
 import io.cucumber.eclipse.editor.EnvelopeReader;
+import io.cucumber.eclipse.java.validation.JavaGlueValidator;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -39,7 +40,7 @@ public class Activator extends AbstractUIPlugin {
 			envelopeReaderTracker.close();
 			envelopeReaderTracker = null;
 		}
-		io.cucumber.eclipse.java.validation.CucumberGlueValidator.shutdown();
+		JavaGlueValidator.shutdown();
 		plugin = null;
 		super.stop(context);
 	}

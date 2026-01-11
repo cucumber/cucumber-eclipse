@@ -30,7 +30,7 @@ import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.marker.MarkerFactory;
 import io.cucumber.eclipse.java.Activator;
 import io.cucumber.eclipse.java.JDTUtil;
-import io.cucumber.eclipse.java.validation.CucumberGlueValidator;
+import io.cucumber.eclipse.java.validation.JavaGlueValidator;
 
 // TODO instead of existing files we should consider allow to create a new file with the snippet
 public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionGenerator, IMarkerResolutionGenerator2 {
@@ -103,7 +103,7 @@ public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionG
 		private void applySnippet(String snippet) {
 			try {
 				SnippetApplicator.generateSnippet(snippet, (IFile) unit.getResource());
-				CucumberGlueValidator.revalidate(editorDocument.getDocument());
+				JavaGlueValidator.revalidate(editorDocument.getDocument());
 			} catch (CoreException | MalformedTreeException | IOException | BadLocationException e) {
 				Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
 						String.format("Couldn't generate snippet %s for %s", snippet, unit.getResource()), e));

@@ -10,7 +10,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import io.cucumber.eclipse.java.validation.CucumberGlueValidator;
+import io.cucumber.eclipse.java.validation.JavaGlueValidator;
 
 /**
  * Builder for validating Cucumber feature files in a project.
@@ -33,7 +33,7 @@ public class CucumberFeatureBuilder extends IncrementalProjectBuilder {
 	@Override
 	protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
 		try {
-			CucumberGlueValidator.validateProject(getProject(), monitor);
+			JavaGlueValidator.validateProject(getProject(), monitor);
 		} catch (Exception e) {
 			ILog.get().error("Failed to validate project: " + getProject().getName(), e);
 		}
