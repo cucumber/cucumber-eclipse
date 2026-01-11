@@ -26,6 +26,7 @@ import org.eclipse.swt.events.MouseEvent;
 
 import io.cucumber.eclipse.editor.CucumberServiceRegistry;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
+import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
 import io.cucumber.eclipse.editor.launching.ILauncher;
 import io.cucumber.eclipse.editor.launching.Mode;
 import io.cucumber.eclipse.editor.preferences.CucumberEditorPreferences;
@@ -49,7 +50,7 @@ public class CucumberRunCodeMiningProvider implements ICodeMiningProvider {
 		return CompletableFuture.supplyAsync(() -> {
 			IDocument document = viewer.getDocument();
 
-			GherkinEditorDocument editorDocument = GherkinEditorDocument.get(document);
+			GherkinEditorDocument editorDocument = GherkinEditorDocumentManager.get(document);
 			if (editorDocument == null) {
 				return Collections.emptyList();
 			}
@@ -124,7 +125,7 @@ public class CucumberRunCodeMiningProvider implements ICodeMiningProvider {
 
 						@Override
 						public void run(IProgressMonitor monitor) throws CoreException {
-							launcher.launch(GherkinEditorDocument.get(viewer.getDocument()),
+							launcher.launch(GherkinEditorDocumentManager.get(viewer.getDocument()),
 									new StructuredSelection(getElement()), mode, !(element instanceof Feature),
 									monitor);
 

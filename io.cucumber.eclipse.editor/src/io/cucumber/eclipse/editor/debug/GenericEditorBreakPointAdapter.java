@@ -7,6 +7,7 @@ import org.eclipse.jface.text.ITextViewer;
 import org.osgi.service.component.annotations.Component;
 
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
+import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
 
 /**
  * Workaround for Bug 575970
@@ -25,7 +26,7 @@ public class GenericEditorBreakPointAdapter implements IAdapterFactory {
 		if (adapterType == IToggleBreakpointsTarget.class) {
 			ITextViewer textViewer = Adapters.adapt(adaptableObject, ITextViewer.class);
 			if (textViewer != null) {
-				GherkinEditorDocument gherkinEditorDocument = GherkinEditorDocument.get(textViewer.getDocument());
+				GherkinEditorDocument gherkinEditorDocument = GherkinEditorDocumentManager.get(textViewer.getDocument());
 				if (gherkinEditorDocument != null) {
 					return adapterType.cast(new GherkingToggleBreakpointsTarget());
 				}

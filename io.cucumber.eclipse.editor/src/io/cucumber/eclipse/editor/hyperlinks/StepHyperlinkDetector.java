@@ -17,6 +17,7 @@ import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import io.cucumber.eclipse.editor.CucumberServiceRegistry;
 import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
+import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
 import io.cucumber.eclipse.editor.marker.MarkerFactory;
 
 public class StepHyperlinkDetector implements IHyperlinkDetector {
@@ -25,7 +26,7 @@ public class StepHyperlinkDetector implements IHyperlinkDetector {
 	public IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean canShowMultipleHyperlinks) {
 		int offset = region.getOffset();
 		IDocument document = textViewer.getDocument();
-		GherkinEditorDocument editorDocument = GherkinEditorDocument.get(document);
+		GherkinEditorDocument editorDocument = GherkinEditorDocumentManager.get(document);
 		if (editorDocument != null) {
 			IResource resource = editorDocument.getResource();
 			List<IStepDefinitionOpener> openers = CucumberServiceRegistry.getStepDefinitionOpener().stream()

@@ -31,6 +31,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import io.cucumber.eclipse.editor.CucumberServiceRegistry;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
+import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
 import io.cucumber.messages.types.Feature;
 import io.cucumber.tagexpressions.TagExpressionParser;
 
@@ -73,7 +74,7 @@ public class CucumberFeatureLaunchShortcut implements ILaunchShortcut {
 
 					@Override
 					public void run(IProgressMonitor monitor) throws CoreException {
-						GherkinEditorDocument editorDocument = GherkinEditorDocument.get(document);
+						GherkinEditorDocument editorDocument = GherkinEditorDocumentManager.get(document);
 						Optional<Feature> feature = editorDocument.getFeature();
 						if (feature.isPresent()) {
 							ILauncher launcher = getLauncher(modeType)
@@ -126,7 +127,7 @@ public class CucumberFeatureLaunchShortcut implements ILaunchShortcut {
 					Map<GherkinEditorDocument, StructuredSelection> documents = Arrays
 							.stream(((StructuredSelection) selection).toArray())
 							.map(o -> Adapters.adapt(o, IFile.class)).filter(Objects::nonNull)
-							.map(GherkinEditorDocument::get).filter(doc -> doc.getFeature().isPresent())
+							.map(GherkinEditorDocumentManager::get).filter(doc -> doc.getFeature().isPresent())
 							.collect(Collectors.toMap(Function.identity(),
 									doc -> new StructuredSelection(doc.getFeature().get())));
 					if (documents.isEmpty()) {

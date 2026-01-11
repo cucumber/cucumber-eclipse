@@ -44,11 +44,14 @@ public class Activator extends AbstractUIPlugin {
 				new Hashtable<>(Collections.singletonMap(DebugOptions.LISTENER_SYMBOLICNAME, PLUGIN_ID)));
 		// trigger activation of the service registry
 		new ServiceTracker<>(context, CucumberServiceRegistry.class, null).open();
+		// initialize document validator
+		io.cucumber.eclipse.editor.validation.DocumentValidator.initialize();
 	}
 
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
+		io.cucumber.eclipse.editor.validation.DocumentValidator.shutdown();
 		tracingRegistration.unregister();
 		TRACING.optionsChanged(null);
 		plugin = null;

@@ -20,6 +20,7 @@ import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import io.cucumber.eclipse.editor.Activator;
 import io.cucumber.eclipse.editor.Images;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
+import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
 import io.cucumber.eclipse.editor.document.GherkinKeyword;
 import io.cucumber.gherkin.GherkinDialect;
 import io.cucumber.messages.types.Feature;
@@ -37,7 +38,7 @@ public class GherkinContentAssistProcessor implements IContentAssistProcessor {
 	public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
 
 		IDocument document = viewer.getDocument();
-		GherkinEditorDocument editorDocument = GherkinEditorDocument.get(document);
+		GherkinEditorDocument editorDocument = GherkinEditorDocumentManager.get(document);
 		try {
 			IRegion line = viewer.getDocument().getLineInformationOfOffset(offset);
 			String typed = viewer.getDocument().get(line.getOffset(), offset - line.getOffset()).stripLeading();
@@ -98,7 +99,7 @@ public class GherkinContentAssistProcessor implements IContentAssistProcessor {
 		// TODO provide context infos according to cucumber documentation see
 		// https://cucumber.io/docs/gherkin/reference/
 		IDocument document = viewer.getDocument();
-		GherkinEditorDocument editorDocument = GherkinEditorDocument.get(document);
+		GherkinEditorDocument editorDocument = GherkinEditorDocumentManager.get(document);
 		editorDocument.keyWords(GherkinDialect::getFeatureKeywords);
 		return null;
 	}

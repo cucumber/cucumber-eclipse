@@ -19,6 +19,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.osgi.service.component.annotations.Component;
 
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
+import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
 import io.cucumber.messages.types.Step;
 import io.cucumber.messages.types.Location;
 
@@ -65,7 +66,7 @@ public class GherkingToggleBreakpointsTarget implements IToggleBreakpointsTarget
 	public void toggleBreakpoints(IWorkbenchPart part, ISelection selection) throws CoreException {
 		ITextViewer textViewer = Adapters.adapt(part, ITextViewer.class);
 		if (textViewer != null) {
-			GherkinEditorDocument gherkinEditorDocument = GherkinEditorDocument.get(textViewer.getDocument());
+			GherkinEditorDocument gherkinEditorDocument = GherkinEditorDocumentManager.get(textViewer.getDocument());
 			if (gherkinEditorDocument != null) {
 				ITextEditor textEditor = Adapters.adapt(part, ITextEditor.class);
 				if (textEditor != null) {
@@ -98,7 +99,7 @@ public class GherkingToggleBreakpointsTarget implements IToggleBreakpointsTarget
 			if (textViewer != null) {
 				IDocument document = textViewer.getDocument();
 				if (document != null) {
-					GherkinEditorDocument editorDocument = GherkinEditorDocument.get(document);
+					GherkinEditorDocument editorDocument = GherkinEditorDocumentManager.get(document);
 					ITextSelection textSelection = (ITextSelection) selection;
 					int lineNumber = textSelection.getStartLine() + 1;
 					Stream<Location> stream = editorDocument.getSteps().map(Step::getLocation);

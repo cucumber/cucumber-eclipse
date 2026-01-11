@@ -8,6 +8,7 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
+import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
 import io.cucumber.gherkin.GherkinDialect;
 
 /**
@@ -29,7 +30,7 @@ public class GherkinDamagerRepairer extends DefaultDamagerRepairer {
 
 	@Override
 	public void setDocument(IDocument document) {
-		updateLanguage(GherkinEditorDocument.get(document, true));
+		updateLanguage(GherkinEditorDocumentManager.get(document, true));
 		super.setDocument(document);
 	}
 
@@ -37,7 +38,7 @@ public class GherkinDamagerRepairer extends DefaultDamagerRepairer {
 	public IRegion getDamageRegion(ITypedRegion partition, DocumentEvent e, boolean documentPartitioningChanged) {
 		IRegion region = super.getDamageRegion(partition, e, documentPartitioningChanged);
 		IDocument doc = e.getDocument();
-		GherkinEditorDocument gherkinDocument = GherkinEditorDocument.get(doc, true);
+		GherkinEditorDocument gherkinDocument = GherkinEditorDocumentManager.get(doc, true);
 		GherkinDialect dialect = gherkinDocument.getDialect();
 		String language = dialect.getLanguage();
 		if (!language.equals(currentLanguage)) {

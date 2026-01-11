@@ -41,6 +41,7 @@ import io.cucumber.eclipse.editor.Activator;
 import io.cucumber.eclipse.editor.CucumberServiceRegistry;
 import io.cucumber.eclipse.editor.Images;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
+import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
 import io.cucumber.eclipse.editor.document.GherkinKeyword;
 import io.cucumber.eclipse.editor.steps.IStepDefinitionsProvider;
 import io.cucumber.eclipse.editor.steps.StepDefinition;
@@ -88,7 +89,7 @@ public class CucumberTemplates {
 		if (model != null && model.anyPositionContains(offset)) {
 			return null;
 		}
-		GherkinEditorDocument editorDocument = GherkinEditorDocument.get(document);
+		GherkinEditorDocument editorDocument = GherkinEditorDocumentManager.get(document);
 		if (editorDocument == null) {
 			return null;
 		}

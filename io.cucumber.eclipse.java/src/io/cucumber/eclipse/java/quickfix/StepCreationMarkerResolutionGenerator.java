@@ -27,6 +27,7 @@ import org.eclipse.ui.views.markers.WorkbenchMarkerResolution;
 import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.eclipse.editor.Images;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
+import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
 import io.cucumber.eclipse.editor.marker.MarkerFactory;
 import io.cucumber.eclipse.editor.validation.DocumentValidator;
 import io.cucumber.eclipse.java.Activator;
@@ -57,7 +58,7 @@ public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionG
 				IResource resource = marker.getResource();
 				IJavaProject project = JDTUtil.getJavaProject(resource);
 				if (project != null) {
-					GherkinEditorDocument editorDocument = GherkinEditorDocument.get(resource);
+					GherkinEditorDocument editorDocument = GherkinEditorDocumentManager.get(resource);
 					if (editorDocument != null) {
 						Collection<ICompilationUnit> glueSources = JDTUtil.getGlueSources(project, null);
 						// TODO sort?, show sources that are used in the document first?
