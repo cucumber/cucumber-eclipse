@@ -52,6 +52,31 @@ public class EditorReconciler {
 			}
 		}
 	}
+	
+	public static void reconcileFeatureEditor(IDocument document) {
+		if (!PlatformUI.isWorkbenchRunning()) {
+			return;
+		}
+		IWorkbench workbench = PlatformUI.getWorkbench();
+		if (workbench == null) {
+			return;
+		}
+		for (IWorkbenchWindow window : workbench.getWorkbenchWindows()) {
+			for (IWorkbenchPage page : window.getPages()) {
+				for (IEditorReference editorRef : page.getEditorReferences()) {
+					IEditorPart editor = editorRef.getEditor(false);
+					if (editor instanceof ITextEditor textEditor) {
+						IDocumentProvider documentProvider = textEditor.getDocumentProvider();
+						if (documentProvider != null
+								&& documentProvider.getDocument(editor.getEditorInput()) == document) {
+							reconcileEditor(textEditor);
+							return;
+						}
+					}
+				}
+			}
+		}
+	}
 
 	private static boolean isFeatureEditor(ITextEditor editor) {
 		try {

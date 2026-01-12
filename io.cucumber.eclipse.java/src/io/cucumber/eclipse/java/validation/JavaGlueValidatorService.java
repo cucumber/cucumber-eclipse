@@ -2,21 +2,26 @@ package io.cucumber.eclipse.java.validation;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.text.IDocument;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 
+import io.cucumber.eclipse.editor.EditorReconciler;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
+import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
+import io.cucumber.eclipse.editor.document.IGherkinDocumentListener;
 import io.cucumber.eclipse.editor.validation.DocumentValidator;
 import io.cucumber.eclipse.editor.validation.IGlueValidator;
 import io.cucumber.eclipse.java.JDTUtil;
@@ -36,10 +41,13 @@ import io.cucumber.eclipse.java.properties.CucumberJavaBackendProperties;
  * @see JavaGlueValidator for the complete validation infrastructure
  * @see JavaGlueJob for the actual validation implementation
  */
-@Component(service = { IGlueValidator.class, JavaGlueValidatorService.class })
-public class JavaGlueValidatorService implements IGlueValidator {
+@Component(service = { IGlueValidator.class, JavaGlueStore.class })
+public class JavaGlueValidatorService implements IGlueValidator, JavaGlueStore, IGherkinDocumentListener {
 
 	private final Map<IEclipsePreferences, IPreferenceChangeListener> preferenceChangeListeners = new HashMap<>();
+	private final Map<IDocument, JavaGlueJob> jobMap = new ConcurrentHashMap<>();
+
+	private final Map<IDocument, GlueSteps> glueMap = new ConcurrentHashMap<>();
 
 	private GlueCodeChangeListener glueCodeChangeListener;
 
@@ -56,8 +64,7 @@ public class JavaGlueValidatorService implements IGlueValidator {
 	public void validate(GherkinEditorDocument editorDocument, IProgressMonitor monitor) throws CoreException {
 		IResource resource = editorDocument.getResource();
 		listenForChanges(resource);
-		// Delegate to JavaGlueValidator to create and run the validation job
-		JavaGlueValidator.validate(editorDocument, monitor);
+		new JavaGlueJob(editorDocument, this).run(monitor);
 	}
 
 	private synchronized void listenForChanges(IResource resource) {
@@ -75,22 +82,60 @@ public class JavaGlueValidatorService implements IGlueValidator {
 		}
 	}
 
-	public Collection<CucumberStepDefinition> getAvailableSteps(IDocument document, IProgressMonitor monitor)
-			throws InterruptedException {
-		return JavaGlueValidator.getAvailableSteps(document, monitor);
+	@Override
+	public Collection<CucumberStepDefinition> getAvailableSteps(IDocument document) {
+		GlueSteps glueSteps = glueMap.get(document);
+		if (glueSteps == null) {
+			return List.of();
+		}
+		return glueSteps.availableSteps();
 	}
 
-	public Collection<MatchedStep<?>> getMatchedSteps(IDocument document, IProgressMonitor monitor)
-			throws OperationCanceledException, InterruptedException {
-		return JavaGlueValidator.getMatchedSteps(document, monitor);
+	@Override
+	public Collection<MatchedStep<?>> getMatchedSteps(IDocument document) {
+		GlueSteps glueSteps = glueMap.get(document);
+		if (glueSteps == null) {
+			return List.of();
+		}
+		return glueSteps.matchedSteps();
+	}
+
+	@Activate
+	void register() {
+		GherkinEditorDocumentManager.addDocumentListener(this);
 	}
 
 	@Deactivate
-	public synchronized void shutdown() {
+	synchronized void shutdown() {
+		GherkinEditorDocumentManager.removeDocumentListener(this);
 		preferenceChangeListeners.forEach(IEclipsePreferences::removePreferenceChangeListener);
 		if (glueCodeChangeListener != null) {
 			JavaCore.removeElementChangedListener(glueCodeChangeListener);
 		}
+		jobMap.values().forEach(JavaGlueJob::cancel);
+	}
+
+	void updateGlueSteps(IDocument document, Collection<CucumberStepDefinition> availableSteps,
+			Collection<MatchedStep<?>> matchedSteps) {
+		glueMap.put(document, new GlueSteps(List.copyOf(availableSteps), List.copyOf(matchedSteps)));
+		EditorReconciler.reconcileFeatureEditor(document);
+	}
+
+	private static record GlueSteps(Collection<CucumberStepDefinition> availableSteps,
+			Collection<MatchedStep<?>> matchedSteps) {
+	}
+
+	@Override
+	public void documentCreated(IDocument document) {
+	}
+
+	@Override
+	public void documentChanged(IDocument document) {
+	}
+
+	@Override
+	public void documentDisposed(IDocument document) {
+		glueMap.remove(document);
 	}
 
 }

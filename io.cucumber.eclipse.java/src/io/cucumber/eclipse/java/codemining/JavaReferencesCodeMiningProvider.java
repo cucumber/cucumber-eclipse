@@ -45,7 +45,7 @@ import io.cucumber.eclipse.java.plugins.MatchedHookStep;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
 import io.cucumber.eclipse.java.preferences.CucumberJavaPreferences;
 import io.cucumber.eclipse.java.steps.JavaStepDefinitionOpener;
-import io.cucumber.eclipse.java.validation.JavaGlueValidatorService;
+import io.cucumber.eclipse.java.validation.JavaGlueStore;
 import io.cucumber.plugin.event.HookType;
 import io.cucumber.plugin.event.Location;
 import io.cucumber.plugin.event.TestStep;
@@ -62,16 +62,16 @@ import io.cucumber.plugin.event.TestStep;
 						 */ }, immediate = true)
 public class JavaReferencesCodeMiningProvider implements ICodeMiningProvider {
 
-	private static AtomicReference<JavaGlueValidatorService> validationService = new AtomicReference<>();
+	private static AtomicReference<JavaGlueStore> glueStoreService = new AtomicReference<>();
 
 	@Reference
-	public void setJavaGlueValidatorService(JavaGlueValidatorService service) {
-		validationService.set(service);
+	public void setJavaGlueValidatorService(JavaGlueStore service) {
+		glueStoreService.set(service);
 		EditorReconciler.reconcileAllFeatureEditors();
 	}
 
-	public void unsetJavaGlueValidatorService(JavaGlueValidatorService service) {
-		if (validationService.compareAndSet(service, null)) {
+	public void unsetJavaGlueValidatorService(JavaGlueStore service) {
+		if (glueStoreService.compareAndSet(service, null)) {
 			EditorReconciler.reconcileAllFeatureEditors();
 		}
 	}
@@ -83,13 +83,12 @@ public class JavaReferencesCodeMiningProvider implements ICodeMiningProvider {
 			try {
 				IDocument document = viewer.getDocument();
 				IJavaProject javaProject = JDTUtil.getJavaProject(document);
-
 				if (javaProject != null) {
 					CucumberJavaPreferences preferences = CucumberJavaPreferences.of(javaProject.getProject());
 					if (preferences.showHooks()) {
-						JavaGlueValidatorService service = validationService.get();
+						JavaGlueStore service = glueStoreService.get();
 						if (service != null) {
-							Collection<MatchedStep<?>> steps = service.getMatchedSteps(document, monitor);
+							Collection<MatchedStep<?>> steps = service.getMatchedSteps(document);
 							if (!steps.isEmpty()) {
 								return computeCodeMinings(document, javaProject, steps);
 							}
@@ -97,8 +96,6 @@ public class JavaReferencesCodeMiningProvider implements ICodeMiningProvider {
 					}
 				}
 			} catch (OperationCanceledException e) {
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
 			} catch (CoreException e) {
 				EditorLogging.error("Code mining failed", e);
 			}

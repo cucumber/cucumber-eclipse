@@ -3,6 +3,6 @@
    <service>
       <provide interface="io.cucumber.eclipse.editor.hyperlinks.IStepDefinitionOpener"/>
    </service>
-   <reference cardinality="1..1" interface="io.cucumber.eclipse.java.validation.JavaGlueValidatorService" name="glueValidatorService" parameter="0"/>
+   <reference cardinality="1..1" interface="io.cucumber.eclipse.java.validation.JavaGlueStore" name="glueValidatorService" parameter="0"/>
    <implementation class="io.cucumber.eclipse.java.steps.JavaStepDefinitionOpener"/>
 </scr:component>
