@@ -6,17 +6,16 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.ElementChangedEvent;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IElementChangedListener;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaElementDelta;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.osgi.service.debug.DebugTrace;
 
 import io.cucumber.eclipse.editor.Tracing;
+import io.cucumber.eclipse.editor.validation.DocumentValidator;
 import io.cucumber.eclipse.java.JDTUtil;
 
 /**
@@ -85,14 +84,7 @@ class GlueCodeChangeListener implements IElementChangedListener {
 			}
 			
 			for (IProject project : affectedProjects) {
-				try {
-					JavaGlueValidator.revalidateProject(project);
-				} catch (CoreException e) {
-					if (Tracing.DEBUG_VALIDATION_GLUE_ENABLED) {
-						DebugTrace trace = Tracing.get();
-						trace.trace(Tracing.DEBUG_VALIDATION_GLUE, "Error revalidating project " + project.getName(), e);
-					}
-				}
+				DocumentValidator.revalidateDocuments(project);
 			}
 		} else {
 			if (Tracing.DEBUG_VALIDATION_GLUE_ENABLED) {

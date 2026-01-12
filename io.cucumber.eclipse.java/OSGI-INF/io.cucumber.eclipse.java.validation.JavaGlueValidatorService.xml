@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="io.cucumber.eclipse.java.validation.JavaGlueValidatorService">
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" deactivate="shutdown" name="io.cucumber.eclipse.java.validation.JavaGlueValidatorService">
    <service>
       <provide interface="io.cucumber.eclipse.editor.validation.IGlueValidator"/>
       <provide interface="io.cucumber.eclipse.java.validation.JavaGlueValidatorService"/>

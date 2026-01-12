@@ -81,7 +81,6 @@ final class JavaGlueJob extends Job {
 			try {
 				IResource resource = editorDocument.getResource();
 				MarkerFactory.clearGlueValidationError(resource, "glue_validation_error");
-				JavaGlueValidator.setupProjectPreferenceListener(resource);
 				monitor.subTask(resource.getName());
 				IJavaProject javaProject = JDTUtil.getJavaProject(resource);
 				if (javaProject != null) {
@@ -189,7 +188,6 @@ final class JavaGlueJob extends Job {
 	private CucumberJavaPreferences getProperties(GherkinEditorDocument editorDocument) {
 		IResource resource = editorDocument.getResource();
 		CucumberJavaPreferences projectProperties = CucumberJavaPreferences.of(resource);
-		JavaGlueValidator.setupProjectPreferenceListener(resource);
 		return projectProperties;
 	}
 
