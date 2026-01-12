@@ -7,7 +7,6 @@ import org.osgi.util.tracker.ServiceTracker;
 
 import io.cucumber.eclipse.editor.EnvelopeReader;
 import io.cucumber.eclipse.editor.validation.DocumentValidator;
-import io.cucumber.eclipse.java.validation.JavaGlueValidator;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -50,7 +49,6 @@ public class Activator extends AbstractUIPlugin {
 			getPreferenceStore().removePropertyChangeListener(propertyChangeListener);
 			propertyChangeListener = null;
 		}
-		JavaGlueValidator.shutdown();
 		plugin = null;
 		super.stop(context);
 	}

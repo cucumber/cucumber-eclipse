@@ -1,9 +1,5 @@
 package io.cucumber.eclipse.java.steps;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,16 +23,13 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-import io.cucumber.core.gherkin.Feature;
-import io.cucumber.core.resource.Resource;
 import io.cucumber.eclipse.editor.steps.ExpressionDefinition;
 import io.cucumber.eclipse.editor.steps.IStepDefinitionsProvider;
 import io.cucumber.eclipse.editor.steps.StepDefinition;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberCodeLocation;
 import io.cucumber.eclipse.java.plugins.CucumberStepDefinition;
-import io.cucumber.eclipse.java.runtime.CucumberRuntime;
-import io.cucumber.eclipse.java.validation.JavaGlueValidatorService;
+import io.cucumber.eclipse.java.validation.JavaGlueStore;
 
 /**
  * Step definition provider that calls cucumber to find steps for the project
@@ -48,25 +41,11 @@ import io.cucumber.eclipse.java.validation.JavaGlueValidatorService;
 		IStepDefinitionsProvider.PROVIDER_NAME + "=Cucumber JVM Runtime", Constants.SERVICE_RANKING + ":Integer=100" })
 public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider {
 
-	private final Feature dummyFeature;
-	private final JavaGlueValidatorService javaValidator;
+	private final JavaGlueStore javaValidator;
 
 	@Activate
-	public CucumberStepDefinitionProvider(@Reference JavaGlueValidatorService validator) throws URISyntaxException {
+	public CucumberStepDefinitionProvider(@Reference JavaGlueStore validator) throws URISyntaxException {
 		javaValidator = validator;
-		URI uri = new URI("dummy:uri");
-		dummyFeature = CucumberRuntime.loadFeature(new Resource() {
-
-			@Override
-			public URI getUri() {
-				return uri;
-			}
-
-			@Override
-			public InputStream getInputStream() throws IOException {
-				return new ByteArrayInputStream("Feature: Dummy\r\nScenario: Dummy\r\nGiven a dummy".getBytes());
-			}
-		}).get();
 	}
 
 	@Override
@@ -75,16 +54,13 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 		try {
 			IJavaProject javaProject = JDTUtil.getJavaProject(resource);
 			SubMonitor subMonitor = SubMonitor.convert(monitor, "Searching Java Glue Code steps", 200);
-			Collection<CucumberStepDefinition> steps = javaValidator.getAvailableSteps(viewer.getDocument(),
-					subMonitor.split(100));
+			Collection<CucumberStepDefinition> steps = javaValidator.getAvailableSteps(viewer.getDocument());
 			SubMonitor remaining = subMonitor.setWorkRemaining(steps.size());
 			Map<String, IType> typeBuffer = new ConcurrentHashMap<>();
 			return steps.parallelStream()
 					.map(cucumberStep -> parseStepDefintion(cucumberStep, javaProject, typeBuffer, remaining.split(1)))
 					.filter(Objects::nonNull).collect(Collectors.toList());
 		} catch (OperationCanceledException e) {
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
 		}
 		return Collections.emptyList();
 	}

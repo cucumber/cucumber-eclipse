@@ -34,17 +34,17 @@ import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberCodeLocation;
 import io.cucumber.eclipse.java.plugins.MatchedPickleStep;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
-import io.cucumber.eclipse.java.validation.JavaGlueValidatorService;
+import io.cucumber.eclipse.java.validation.JavaGlueStore;
 import io.cucumber.messages.types.Step;
 
 @Component(service = IStepDefinitionOpener.class)
 public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
 
-	private JavaGlueValidatorService glueValidatorService;
+	private JavaGlueStore glueStore;
 
 	@Activate
-	public JavaStepDefinitionOpener(@Reference JavaGlueValidatorService glueValidatorService) {
-		this.glueValidatorService = glueValidatorService;
+	public JavaStepDefinitionOpener(@Reference JavaGlueStore glueValidatorService) {
+		this.glueStore = glueValidatorService;
 	}
 
 	public static void showMethod(IMethod[] methods, Shell shell) {
@@ -72,7 +72,6 @@ public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
 	public boolean openInEditor(ITextViewer textViewer, IResource resource, Step step) throws CoreException {
 		IJavaProject project = JDTUtil.getJavaProject(resource);
 		if (project == null) {
-			EditorLogging.error("Not a javaproject, canOpen not called?");
 			return false;
 		}
 		AtomicReference<IMethod[]> resolvedMethods = new AtomicReference<>();
@@ -85,7 +84,7 @@ public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
 				@Override
 				public void run(IProgressMonitor monitor) throws CoreException {
 					try {
-						Collection<MatchedStep<?>> steps = glueValidatorService.getMatchedSteps(document, monitor);
+						Collection<MatchedStep<?>> steps = glueStore.getMatchedSteps(document);
 						StringBuilder sb = new StringBuilder();
 						sb.append("step '");
 						sb.append(step.getText());
@@ -124,8 +123,6 @@ public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
 						if (location != null) {
 							resolvedMethods.set(JDTUtil.resolveMethod(project, location, monitor));
 						}
-
-					} catch (InterruptedException e) {
 					} finally {
 						done.set(true);
 					}

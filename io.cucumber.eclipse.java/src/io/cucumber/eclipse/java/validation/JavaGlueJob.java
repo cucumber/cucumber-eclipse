@@ -5,13 +5,11 @@ import static io.cucumber.eclipse.editor.Tracing.PERFORMANCE_STEPS;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -46,96 +44,74 @@ import io.cucumber.plugin.Plugin;
 
 final class JavaGlueJob extends Job {
 
-	private JavaGlueJob oldJob;
+	private final JavaGlueValidatorService service;
 
-	volatile Collection<MatchedStep<?>> matchedSteps;
-	volatile Collection<CucumberStepDefinition> parsedSteps;
-	private Supplier<GherkinEditorDocument> documentSupplier;
+	private final GherkinEditorDocument editorDocument;
 
-	JavaGlueJob(JavaGlueJob oldJob, Supplier<GherkinEditorDocument> documentSupplier) {
+	JavaGlueJob(GherkinEditorDocument document, JavaGlueValidatorService service) {
 		super("Verify Cucumber Glue Code");
-		this.oldJob = oldJob;
-		this.documentSupplier = documentSupplier;
-		if (oldJob != null) {
-			this.matchedSteps = oldJob.matchedSteps;
-			this.parsedSteps = oldJob.parsedSteps;
-		} else {
-			this.matchedSteps = Collections.emptySet();
-			this.parsedSteps = Collections.emptySet();
-		}
+		this.editorDocument = document;
+		this.service = service;
 	}
 
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
-		if (oldJob != null) {
-			try {
-				oldJob.join();
-				oldJob = null;
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-				return Status.CANCEL_STATUS;
-			}
-		}
-		GherkinEditorDocument editorDocument = documentSupplier.get();
-		if (editorDocument != null) {
-			try {
-				IResource resource = editorDocument.getResource();
-				MarkerFactory.clearGlueValidationError(resource, "glue_validation_error");
-				monitor.subTask(resource.getName());
-				IJavaProject javaProject = JDTUtil.getJavaProject(resource);
-				if (javaProject != null) {
-					long start = System.currentTimeMillis();
-					DebugTrace debug = Tracing.get();
-					debug.traceEntry(PERFORMANCE_STEPS, resource);
-					// Clear any existing glue validation error markers at the start
-					CucumberJavaPreferences projectProperties = getProperties(editorDocument);
-					try (CucumberRuntime rt = CucumberRuntime.create(javaProject)) {
-						rt.setGenerator(new IncrementingUuidGenerator());
-						RuntimeOptionsBuilder runtimeOptions = rt.getRuntimeOptions();
-						runtimeOptions.setDryRun();
-						try {
-							rt.addFeature(editorDocument);
-						} catch (FeatureParserException e) {
-							// the feature has syntax errors, we can't check the glue then...
-							return Status.CANCEL_STATUS;
+		try {
+			IResource resource = editorDocument.getResource();
+			MarkerFactory.clearGlueValidationError(resource, "glue_validation_error");
+			monitor.subTask(resource.getName());
+			IJavaProject javaProject = JDTUtil.getJavaProject(resource);
+			if (javaProject != null) {
+				long start = System.currentTimeMillis();
+				DebugTrace debug = Tracing.get();
+				debug.traceEntry(PERFORMANCE_STEPS, resource);
+				// Clear any existing glue validation error markers at the start
+				CucumberJavaPreferences projectProperties = getProperties(editorDocument);
+				try (CucumberRuntime rt = CucumberRuntime.create(javaProject)) {
+					rt.setGenerator(new IncrementingUuidGenerator());
+					RuntimeOptionsBuilder runtimeOptions = rt.getRuntimeOptions();
+					runtimeOptions.setDryRun();
+					try {
+						rt.addFeature(editorDocument);
+					} catch (FeatureParserException e) {
+						// the feature has syntax errors, we can't check the glue then...
+						return Status.CANCEL_STATUS;
+					}
+					addGlueOptions(runtimeOptions, projectProperties);
+					CucumberMissingStepsPlugin missingStepsPlugin = new CucumberMissingStepsPlugin();
+					CucumberStepParserPlugin stepParserPlugin = new CucumberStepParserPlugin();
+					CucumberMatchedStepsPlugin matchedStepsPlugin = new CucumberMatchedStepsPlugin();
+					rt.addPlugin(stepParserPlugin);
+					rt.addPlugin(matchedStepsPlugin);
+					rt.addPlugin(missingStepsPlugin);
+					Collection<Plugin> validationPlugins = addValidationPlugins(editorDocument, rt, projectProperties);
+					try {
+						rt.run(monitor);
+						Map<Integer, String> validationErrors = new HashMap<>();
+						for (Plugin plugin : validationPlugins) {
+							addErrors(plugin, validationErrors);
 						}
-						addGlueOptions(runtimeOptions, projectProperties);
-						CucumberMissingStepsPlugin missingStepsPlugin = new CucumberMissingStepsPlugin();
-						CucumberStepParserPlugin stepParserPlugin = new CucumberStepParserPlugin();
-						CucumberMatchedStepsPlugin matchedStepsPlugin = new CucumberMatchedStepsPlugin();
-						rt.addPlugin(stepParserPlugin);
-						rt.addPlugin(matchedStepsPlugin);
-						rt.addPlugin(missingStepsPlugin);
-						Collection<Plugin> validationPlugins = addValidationPlugins(editorDocument, rt,
-								projectProperties);
-						try {
-							rt.run(monitor);
-							Map<Integer, String> validationErrors = new HashMap<>();
-							for (Plugin plugin : validationPlugins) {
-								addErrors(plugin, validationErrors);
-							}
-							Map<Integer, Collection<String>> snippets = missingStepsPlugin.getSnippets();
-							MarkerFactory.validationErrorOnStepDefinition(resource, validationErrors, false);
-							MarkerFactory.missingSteps(resource, snippets, Activator.PLUGIN_ID, false);
-							Collection<CucumberStepDefinition> steps = stepParserPlugin.getStepList();
-							matchedSteps = Collections.unmodifiableCollection(matchedStepsPlugin.getMatchedSteps());
-							parsedSteps = Collections.unmodifiableCollection(stepParserPlugin.getStepList());
-							debug.traceExit(PERFORMANCE_STEPS,
-									matchedSteps.size() + " step(s) /  " + steps.size() + " step(s)  matched, "
-											+ snippets.size() + " snippet(s) where suggested || total run time "
-											+ (System.currentTimeMillis() - start) + "ms)");
-						} catch (Throwable e) {
-							EditorLogging.error("Validate Glue-Code failed", e);
-							// Create an error marker to notify the user
-							MarkerFactory.glueValidationError(resource,
+						Map<Integer, Collection<String>> snippets = missingStepsPlugin.getSnippets();
+						MarkerFactory.validationErrorOnStepDefinition(resource, validationErrors, false);
+						MarkerFactory.missingSteps(resource, snippets, Activator.PLUGIN_ID, false);
+						Collection<CucumberStepDefinition> steps = stepParserPlugin.getStepList();
+						Collection<MatchedStep<?>> matchedSteps = matchedStepsPlugin.getMatchedSteps();
+						service.updateGlueSteps(editorDocument.getDocument(), steps, matchedSteps);
+						debug.traceExit(PERFORMANCE_STEPS,
+								matchedSteps.size() + " step(s) /  " + steps.size() + " step(s)  matched, "
+										+ snippets.size() + " snippet(s) where suggested || total run time "
+										+ (System.currentTimeMillis() - start) + "ms)");
+					} catch (Throwable e) {
+						EditorLogging.error("Validate Glue-Code failed", e);
+						// Create an error marker to notify the user
+						MarkerFactory.glueValidationError(resource,
 								"Failed to validate step definitions. Check that your project is properly configured and dependencies are available. See error log for details.",
 								"glue_validation_error");
-						}
 					}
 				}
-			} catch (CoreException e) {
-				return e.getStatus();
 			}
+		} catch (CoreException e) {
+			return e.getStatus();
 		}
 		return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
 	}
