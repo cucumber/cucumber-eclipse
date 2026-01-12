@@ -11,22 +11,20 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IDocumentListener;
 
 /**
- * Document setup participant that registers Gherkin feature documents with the
- * manager.
+ * Integrates Gherkin documents with Eclipse's file buffer lifecycle.
  * <p>
- * This class is automatically invoked by Eclipse when a feature file document
- * is created. It implements {@link IDocumentListener} to track document changes
- * and notify the {@link GherkinEditorDocumentManager} about document lifecycle
- * events.
+ * This participant is registered via the {@code org.eclipse.core.filebuffers.documentSetup}
+ * extension point and handles document lifecycle events for Gherkin feature files:
+ * <ul>
+ * <li>Registers document listeners when buffers are created</li>
+ * <li>Notifies {@link GherkinEditorDocumentManager} of document changes</li>
+ * <li>Cleans up resources when buffers are disposed</li>
+ * </ul>
  * </p>
  * <p>
- * The participant:
- * <ul>
- * <li>Registers itself as a document listener to track changes</li>
- * <li>Notifies the manager when a document is set up (created)</li>
- * <li>Notifies the manager when a document changes</li>
- * <li>Uses a single listener instance per document to avoid duplicates</li>
- * </ul>
+ * The setup method is called early in the document lifecycle (on empty documents),
+ * so actual tracking is performed via the file buffer listener interface to ensure
+ * full content is available.
  * </p>
  * 
  * @author christoph
@@ -34,30 +32,32 @@ import org.eclipse.jface.text.IDocumentListener;
 public class GherkinDocumentSetupParticipant
 		implements IDocumentSetupParticipant, IDocumentListener, IFileBufferListener {
 
-	// TODO make IDocumentSetupParticipant a service and allow registering listeners
-	// by whiteboard service
-
 	public GherkinDocumentSetupParticipant() {
 		FileBuffers.getTextFileBufferManager().addFileBufferListener(this);
 	}
 
 	/**
-	 * Called by Eclipse when a feature file document is created.
+	 * Called when a document is initially set up.
 	 * <p>
-	 * Registers this instance as a document listener and notifies the manager about
-	 * the new document.
+	 * This method is invoked on empty documents, so we use it only to ensure
+	 * the file buffer listener is registered. Actual document tracking happens
+	 * in {@link #bufferCreated(IFileBuffer)} and {@link #bufferDisposed(IFileBuffer)}.
 	 * </p>
-	 * 
-	 * @param document the document being set up
 	 */
 	@Override
 	public void setup(IDocument document) {
-		if (GherkinEditorDocumentManager.isCompatibleTextBuffer(document)) {
-			document.addDocumentListener(this);
-			GherkinEditorDocumentManager.setupTextBuffer(document);
-		}
+		// This method is only called on the empty document and we use it to trigger our
+		// registration of the buffer listener only that do the actual work in
+		// bufferCreated / bufferDisposed
 	}
 
+	/**
+	 * Called when a document's content changes.
+	 * <p>
+	 * Notifies the document manager to invalidate the cached parsed representation
+	 * and trigger change notifications to registered listeners.
+	 * </p>
+	 */
 	@Override
 	public void documentChanged(DocumentEvent event) {
 		GherkinEditorDocumentManager.textBufferChanged(event.getDocument());
@@ -67,15 +67,40 @@ public class GherkinDocumentSetupParticipant
 	public void documentAboutToBeChanged(DocumentEvent event) {
 	}
 
+	/**
+	 * Called when a file buffer is created.
+	 * <p>
+	 * For compatible Gherkin documents, this method:
+	 * <ul>
+	 * <li>Registers this instance as a document listener</li>
+	 * <li>Notifies the document manager of document creation</li>
+	 * </ul>
+	 * </p>
+	 */
 	@Override
 	public void bufferCreated(IFileBuffer buffer) {
+		if (buffer instanceof ITextFileBuffer textbuffer) {
+			IDocument document = textbuffer.getDocument();
+			if (GherkinEditorDocumentManager.isCompatibleTextBuffer(document)) {
+				document.addDocumentListener(this);
+				GherkinEditorDocumentManager.textBufferCreated(document);
+			}
+		}
 
 	}
 
+	/**
+	 * Called when a file buffer is disposed.
+	 * <p>
+	 * Removes document listeners and notifies the document manager
+	 * to clean up cached resources for the document.
+	 * </p>
+	 */
 	@Override
 	public void bufferDisposed(IFileBuffer buffer) {
 		if (buffer instanceof ITextFileBuffer textbuffer) {
 			IDocument document = textbuffer.getDocument();
+			document.removeDocumentListener(this);
 			GherkinEditorDocumentManager.textBufferRemoved(document);
 		}
 	}

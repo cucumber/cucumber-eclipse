@@ -27,19 +27,20 @@ public interface IGherkinDocumentListener {
 	 * </p>
 	 * 
 	 * @param document the document that was set up
-	 * @param editorDocument the parsed Gherkin editor document
 	 */
-	void documentSetup(IDocument document);
+	void documentCreated(IDocument document);
 
 	/**
 	 * Called when a Gherkin document has changed.
 	 * <p>
 	 * This is invoked after the document content has been modified.
 	 * Listeners can use this to schedule validation or other processing.
+	 * The cached GherkinEditorDocument is invalidated before this event,
+	 * so calling {@link GherkinEditorDocumentManager#get(IDocument)} will
+	 * return a freshly parsed instance.
 	 * </p>
 	 * 
 	 * @param document the document that changed
-	 * @param editorDocument the parsed Gherkin editor document (may be stale if dirty)
 	 */
 	void documentChanged(IDocument document);
 
@@ -53,5 +54,5 @@ public interface IGherkinDocumentListener {
 	 * 
 	 * @param document the document that was removed
 	 */
-	void documentRemoved(IDocument document);
+	void documentDisposed(IDocument document);
 }
