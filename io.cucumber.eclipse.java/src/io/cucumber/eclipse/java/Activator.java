@@ -1,10 +1,12 @@
 package io.cucumber.eclipse.java;
 
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.util.tracker.ServiceTracker;
 
 import io.cucumber.eclipse.editor.EnvelopeReader;
+import io.cucumber.eclipse.editor.validation.DocumentValidator;
 import io.cucumber.eclipse.java.validation.JavaGlueValidator;
 
 /**
@@ -19,6 +21,8 @@ public class Activator extends AbstractUIPlugin {
 	private static Activator plugin;
 	
 	private ServiceTracker<EnvelopeReader, EnvelopeReader> envelopeReaderTracker;
+	
+	private IPropertyChangeListener propertyChangeListener;
 
 	/**
 	 * The constructor
@@ -32,6 +36,8 @@ public class Activator extends AbstractUIPlugin {
 		plugin = this;
 		envelopeReaderTracker = new ServiceTracker<>(context, EnvelopeReader.class, null);
 		envelopeReaderTracker.open();
+		propertyChangeListener = event -> DocumentValidator.revalidateAllDocuments();
+		getPreferenceStore().addPropertyChangeListener(propertyChangeListener);
 	}
 
 	@Override
@@ -39,6 +45,10 @@ public class Activator extends AbstractUIPlugin {
 		if (envelopeReaderTracker != null) {
 			envelopeReaderTracker.close();
 			envelopeReaderTracker = null;
+		}
+		if (propertyChangeListener != null) {
+			getPreferenceStore().removePropertyChangeListener(propertyChangeListener);
+			propertyChangeListener = null;
 		}
 		JavaGlueValidator.shutdown();
 		plugin = null;
