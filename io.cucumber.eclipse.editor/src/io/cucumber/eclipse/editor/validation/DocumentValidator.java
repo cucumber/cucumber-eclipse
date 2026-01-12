@@ -3,6 +3,7 @@ package io.cucumber.eclipse.editor.validation;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.IDocument;
@@ -144,14 +145,26 @@ public class DocumentValidator implements IGherkinDocumentListener {
 	 * </p>
 	 */
 	public static void revalidateAllDocuments() {
-		jobMap.keySet().forEach(document -> {
-			IResource resource = GherkinEditorDocumentManager.resourceForDocument(document);
+		jobMap.forEach((doc, job) -> {
+			IResource resource = GherkinEditorDocumentManager.resourceForDocument(doc);
 			if (resource == null) {
 				// Document (no longer) managed by a text buffer...
 				return;
 			}
 			int timeout = CucumberEditorPreferences.of(resource).getValidationTimeout();
-			validate(document, timeout);
+			job.schedule(Math.max(0, timeout));
+		});
+
+	}
+
+	public static void revalidateDocuments(IProject project) {
+		jobMap.forEach((doc, job) -> {
+			IResource resource = GherkinEditorDocumentManager.resourceForDocument(doc);
+			if (resource == null || resource.getProject() != project) {
+				return;
+			}
+			int timeout = CucumberEditorPreferences.of(resource).getValidationTimeout();
+			job.schedule(Math.max(0, timeout));
 		});
 	}
 
@@ -166,5 +179,7 @@ public class DocumentValidator implements IGherkinDocumentListener {
 		jobMap.values().forEach(Job::cancel);
 		jobMap.clear();
 	}
+
+
 
 }
