@@ -23,7 +23,9 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.eclipse.editor.Tracing;
@@ -32,11 +34,18 @@ import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberCodeLocation;
 import io.cucumber.eclipse.java.plugins.MatchedPickleStep;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
-import io.cucumber.eclipse.java.validation.JavaGlueValidator;
+import io.cucumber.eclipse.java.validation.JavaGlueValidatorService;
 import io.cucumber.messages.types.Step;
 
 @Component(service = IStepDefinitionOpener.class)
 public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
+
+	private JavaGlueValidatorService glueValidatorService;
+
+	@Activate
+	public JavaStepDefinitionOpener(@Reference JavaGlueValidatorService glueValidatorService) {
+		this.glueValidatorService = glueValidatorService;
+	}
 
 	public static void showMethod(IMethod[] methods, Shell shell) {
 		if (methods == null || methods.length == 0) {
@@ -76,9 +85,7 @@ public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
 				@Override
 				public void run(IProgressMonitor monitor) throws CoreException {
 					try {
-						Collection<MatchedStep<?>> steps = JavaGlueValidator
-								.getMatchedSteps(document, monitor);
-
+						Collection<MatchedStep<?>> steps = glueValidatorService.getMatchedSteps(document, monitor);
 						StringBuilder sb = new StringBuilder();
 						sb.append("step '");
 						sb.append(step.getText());

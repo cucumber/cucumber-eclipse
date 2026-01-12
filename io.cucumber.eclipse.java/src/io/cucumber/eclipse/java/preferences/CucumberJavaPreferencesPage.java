@@ -13,7 +13,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
-import io.cucumber.eclipse.editor.preferences.EditorReconciler;
+import io.cucumber.eclipse.editor.EditorReconciler;
 import io.cucumber.eclipse.java.CucumberJavaUIMessages;
 import io.cucumber.eclipse.java.preferences.GlueCodePackageTable.FilterStrings;
 

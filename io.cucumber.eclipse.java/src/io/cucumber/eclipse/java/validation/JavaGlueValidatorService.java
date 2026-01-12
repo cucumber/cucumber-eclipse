@@ -5,6 +5,7 @@ import java.util.Collection;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.text.IDocument;
 import org.osgi.service.component.annotations.Component;
@@ -13,6 +14,7 @@ import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.validation.IGlueValidator;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberStepDefinition;
+import io.cucumber.eclipse.java.plugins.MatchedStep;
 
 /**
  * Java/JVM backend implementation of {@link IGlueValidator}.
@@ -47,6 +49,11 @@ public class JavaGlueValidatorService implements IGlueValidator {
 	public Collection<CucumberStepDefinition> getAvailableSteps(IDocument document, IProgressMonitor monitor)
 			throws InterruptedException {
 		return JavaGlueValidator.getAvailableSteps(document, monitor);
+	}
+
+	public Collection<MatchedStep<?>> getMatchedSteps(IDocument document, IProgressMonitor monitor)
+			throws OperationCanceledException, InterruptedException {
+		return JavaGlueValidator.getMatchedSteps(document, monitor);
 	}
 
 }

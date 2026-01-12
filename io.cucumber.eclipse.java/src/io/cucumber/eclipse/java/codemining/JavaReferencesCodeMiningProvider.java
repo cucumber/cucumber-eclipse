@@ -34,15 +34,18 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 import io.cucumber.eclipse.editor.EditorLogging;
+import io.cucumber.eclipse.editor.EditorReconciler;
 import io.cucumber.eclipse.editor.SWTUtil;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.MatchedHookStep;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
 import io.cucumber.eclipse.java.preferences.CucumberJavaPreferences;
 import io.cucumber.eclipse.java.steps.JavaStepDefinitionOpener;
-import io.cucumber.eclipse.java.validation.JavaGlueValidator;
+import io.cucumber.eclipse.java.validation.JavaGlueValidatorService;
 import io.cucumber.plugin.event.HookType;
 import io.cucumber.plugin.event.Location;
 import io.cucumber.plugin.event.TestStep;
@@ -53,7 +56,25 @@ import io.cucumber.plugin.event.TestStep;
  * @author christoph
  *
  */
+@Component(service = { /*
+						 * This is actually registered through plugin.xml we only use the component to
+						 * get the required services
+						 */ }, immediate = true)
 public class JavaReferencesCodeMiningProvider implements ICodeMiningProvider {
+
+	private static AtomicReference<JavaGlueValidatorService> validationService = new AtomicReference<>();
+
+	@Reference
+	public void setJavaGlueValidatorService(JavaGlueValidatorService service) {
+		validationService.set(service);
+		EditorReconciler.reconcileAllFeatureEditors();
+	}
+
+	public void unsetJavaGlueValidatorService(JavaGlueValidatorService service) {
+		if (validationService.compareAndSet(service, null)) {
+			EditorReconciler.reconcileAllFeatureEditors();
+		}
+	}
 
 	@Override
 	public CompletableFuture<List<? extends ICodeMining>> provideCodeMinings(ITextViewer viewer,
@@ -66,28 +87,13 @@ public class JavaReferencesCodeMiningProvider implements ICodeMiningProvider {
 				if (javaProject != null) {
 					CucumberJavaPreferences preferences = CucumberJavaPreferences.of(javaProject.getProject());
 					if (preferences.showHooks()) {
-						Collection<MatchedStep<?>> steps = JavaGlueValidator.getMatchedSteps(document, monitor);
-						List<ICodeMining> list = new ArrayList<>();
-
-						Map<Integer, List<MatchedHookStep>> stepByLine = steps.stream()
-								.filter(MatchedHookStep.class::isInstance).map(MatchedHookStep.class::cast)
-								.collect(Collectors.groupingBy(step -> step.getLocation().getLine()));
-						for (Entry<Integer, List<MatchedHookStep>> entry : stepByLine.entrySet()) {
-							int lineNumber = entry.getKey() - 1;
-							Map<HookType, List<MatchedHookStep>> hooksByType = entry.getValue().stream()
-									.collect(Collectors.groupingBy(hookStep -> hookStep.getTestStep().getHookType()));
-							hooksByType.entrySet().stream()
-									.sorted((e1, e2) -> e1.getKey().ordinal() - e2.getKey().ordinal()).map(e -> {
-										try {
-											return new HooksCodeMining(lineNumber, document,
-													JavaReferencesCodeMiningProvider.this, e.getKey(), e.getValue(),
-													javaProject);
-										} catch (BadLocationException e3) {
-											return null;
-										}
-									}).filter(Objects::nonNull).forEach(list::add);
+						JavaGlueValidatorService service = validationService.get();
+						if (service != null) {
+							Collection<MatchedStep<?>> steps = service.getMatchedSteps(document, monitor);
+							if (!steps.isEmpty()) {
+								return computeCodeMinings(document, javaProject, steps);
+							}
 						}
-						return list;
 					}
 				}
 			} catch (OperationCanceledException e) {
@@ -98,6 +104,27 @@ public class JavaReferencesCodeMiningProvider implements ICodeMiningProvider {
 			}
 			return Collections.emptyList();
 		});
+	}
+
+	private List<? extends ICodeMining> computeCodeMinings(IDocument document, IJavaProject javaProject,
+			Collection<MatchedStep<?>> steps) {
+		List<ICodeMining> list = new ArrayList<>();
+		Map<Integer, List<MatchedHookStep>> stepByLine = steps.stream().filter(MatchedHookStep.class::isInstance)
+				.map(MatchedHookStep.class::cast).collect(Collectors.groupingBy(step -> step.getLocation().getLine()));
+		for (Entry<Integer, List<MatchedHookStep>> entry : stepByLine.entrySet()) {
+			int lineNumber = entry.getKey() - 1;
+			Map<HookType, List<MatchedHookStep>> hooksByType = entry.getValue().stream()
+					.collect(Collectors.groupingBy(hookStep -> hookStep.getTestStep().getHookType()));
+			hooksByType.entrySet().stream().sorted((e1, e2) -> e1.getKey().ordinal() - e2.getKey().ordinal()).map(e -> {
+				try {
+					return new HooksCodeMining(lineNumber, document, JavaReferencesCodeMiningProvider.this, e.getKey(),
+							e.getValue(), javaProject);
+				} catch (BadLocationException ble) {
+					return null;
+				}
+			}).filter(Objects::nonNull).forEach(list::add);
+		}
+		return list;
 	}
 
 	@Override

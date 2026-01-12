@@ -1,4 +1,4 @@
-package io.cucumber.eclipse.editor.preferences;
+package io.cucumber.eclipse.editor;
 
 import org.eclipse.core.filebuffers.FileBuffers;
 import org.eclipse.core.filebuffers.ITextFileBuffer;
@@ -31,6 +31,9 @@ public class EditorReconciler {
 	 * This forces code minings and other editor features to refresh.
 	 */
 	public static void reconcileAllFeatureEditors() {
+		if (!PlatformUI.isWorkbenchRunning()) {
+			return;
+		}
 		IWorkbench workbench = PlatformUI.getWorkbench();
 		if (workbench == null) {
 			return;

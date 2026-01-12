@@ -18,11 +18,11 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.PropertyPage;
 
+import io.cucumber.eclipse.editor.EditorReconciler;
 import io.cucumber.eclipse.editor.Images;
 import io.cucumber.eclipse.editor.launching.Mode;
 import io.cucumber.eclipse.editor.preferences.CucumberEditorPreferences;
 import io.cucumber.eclipse.editor.preferences.CucumberPreferencePage;
-import io.cucumber.eclipse.editor.preferences.EditorReconciler;
 
 public class CucumberPropertiesPage extends PropertyPage {
 
