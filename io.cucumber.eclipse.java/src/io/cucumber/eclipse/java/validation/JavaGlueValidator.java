@@ -197,7 +197,7 @@ public class JavaGlueValidator {
 	 * @throws InterruptedException       if the thread was interrupted while
 	 *                                    waiting for validation
 	 */
-	public static Collection<MatchedStep<?>> getMatchedSteps(IDocument document, IProgressMonitor monitor)
+	static Collection<MatchedStep<?>> getMatchedSteps(IDocument document, IProgressMonitor monitor)
 			throws OperationCanceledException, InterruptedException {
 		if (document != null) {
 			JavaGlueJob job = sync(document, monitor);
@@ -235,7 +235,7 @@ public class JavaGlueValidator {
 	 * @throws InterruptedException       if the thread was interrupted while
 	 *                                    waiting for validation
 	 */
-	public static Collection<CucumberStepDefinition> getAvailableSteps(IDocument document, IProgressMonitor monitor)
+	static Collection<CucumberStepDefinition> getAvailableSteps(IDocument document, IProgressMonitor monitor)
 			throws OperationCanceledException, InterruptedException {
 		if (document != null) {
 			JavaGlueJob job = sync(document, monitor);

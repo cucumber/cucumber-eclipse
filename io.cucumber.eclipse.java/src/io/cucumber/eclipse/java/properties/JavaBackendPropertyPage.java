@@ -29,7 +29,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.osgi.service.prefs.BackingStoreException;
 
-import io.cucumber.eclipse.editor.preferences.EditorReconciler;
+import io.cucumber.eclipse.editor.EditorReconciler;
 import io.cucumber.eclipse.java.preferences.CucumberJavaPreferencesPage;
 import io.cucumber.eclipse.java.preferences.GlueCodePackageTable;
 import io.cucumber.eclipse.java.preferences.GlueCodePackageTable.FilterStrings;

@@ -13,6 +13,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import io.cucumber.eclipse.editor.Activator;
+import io.cucumber.eclipse.editor.EditorReconciler;
 import io.cucumber.eclipse.editor.launching.Mode;
 
 public class CucumberPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
