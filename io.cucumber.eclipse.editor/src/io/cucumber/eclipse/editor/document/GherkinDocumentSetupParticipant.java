@@ -34,6 +34,9 @@ import org.eclipse.jface.text.IDocumentListener;
 public class GherkinDocumentSetupParticipant
 		implements IDocumentSetupParticipant, IDocumentListener, IFileBufferListener {
 
+	// TODO make IDocumentSetupParticipant a service and allow registering listeners
+	// by whiteboard service
+
 	public GherkinDocumentSetupParticipant() {
 		FileBuffers.getTextFileBufferManager().addFileBufferListener(this);
 	}
@@ -49,15 +52,15 @@ public class GherkinDocumentSetupParticipant
 	 */
 	@Override
 	public void setup(IDocument document) {
-		if (GherkinEditorDocumentManager.isCompatible(document)) {
+		if (GherkinEditorDocumentManager.isCompatibleTextBuffer(document)) {
 			document.addDocumentListener(this);
-			GherkinEditorDocumentManager.notifyNewDocument(document);
+			GherkinEditorDocumentManager.setupTextBuffer(document);
 		}
 	}
 
 	@Override
 	public void documentChanged(DocumentEvent event) {
-		GherkinEditorDocumentManager.notifyDocumentChanged(event.getDocument());
+		GherkinEditorDocumentManager.textBufferChanged(event.getDocument());
 	}
 
 	@Override
@@ -73,7 +76,7 @@ public class GherkinDocumentSetupParticipant
 	public void bufferDisposed(IFileBuffer buffer) {
 		if (buffer instanceof ITextFileBuffer textbuffer) {
 			IDocument document = textbuffer.getDocument();
-			GherkinEditorDocumentManager.texFileBufferRemoved(document);
+			GherkinEditorDocumentManager.textBufferRemoved(document);
 		}
 	}
 

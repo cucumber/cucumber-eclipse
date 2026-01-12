@@ -22,7 +22,7 @@ public class EditorInputPropertyTester extends PropertyTester {
 					ITextFileBuffer buffer = FileBuffers.getTextFileBufferManager()
 							.getTextFileBuffer(fileInput.getFile().getFullPath(), LocationKind.IFILE);
 					if (buffer != null) {
-						return GherkinEditorDocumentManager.isCompatible(buffer.getDocument());
+						return GherkinEditorDocumentManager.isCompatibleTextBuffer(buffer.getDocument());
 					}
 				}
 			}
