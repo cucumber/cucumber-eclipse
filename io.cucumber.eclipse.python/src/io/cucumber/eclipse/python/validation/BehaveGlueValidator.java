@@ -12,15 +12,10 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences.PreferenceChangeEvent;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.validation.DocumentValidator;
-import io.cucumber.eclipse.python.Activator;
 import io.cucumber.eclipse.python.preferences.BehavePreferences;
 
 /**
@@ -51,12 +46,6 @@ public class BehaveGlueValidator {
 	 * Thread-safe to allow concurrent access from UI and background threads.
 	 */
 	private static ConcurrentMap<IDocument, BehaveGlueJob> jobMap = new ConcurrentHashMap<>();
-
-	/**
-	 * Global property change listeners for preference stores. Used to track and
-	 * clean up workspace-level preference listeners.
-	 */
-	private static final Map<IPreferenceStore, IPropertyChangeListener> propertyChangeListeners = new HashMap<>();
 
 	/**
 	 * Global preference change listeners for Eclipse preference nodes. Used to
@@ -90,12 +79,11 @@ public class BehaveGlueValidator {
 	}
 
 	/**
-	 * Sets up a global preference listener that triggers revalidation for all
+	 * Sets up project-level preference listener that triggers revalidation for all
 	 * currently known documents when preferences change.
 	 * <p>
 	 * This method is idempotent - it only registers listeners once for each
-	 * preference scope. The listeners are registered at both the workspace and
-	 * project-specific preference levels.
+	 * project preference scope.
 	 * </p>
 	 * <p>
 	 * This method is package-protected to allow BehaveGlueJob to register listeners
@@ -105,31 +93,12 @@ public class BehaveGlueValidator {
 	 * @param resource the resource to determine which preference scopes to listen
 	 *                 to
 	 */
-	static synchronized void setupGlobalPreferenceListener(IResource resource) {
-// Register workspace-level preference listener
-		IPreferenceStore workspaceStore = Activator.getDefault().getPreferenceStore();
-		if (!propertyChangeListeners.containsKey(workspaceStore)) {
-			IPropertyChangeListener propertyListener = new IPropertyChangeListener() {
-				@Override
-				public void propertyChange(PropertyChangeEvent event) {
-					DocumentValidator.revalidateAllDocuments();
-				}
-			};
-			workspaceStore.addPropertyChangeListener(propertyListener);
-			propertyChangeListeners.put(workspaceStore, propertyListener);
-		}
-
-// Register project-level preference listener if this resource has project-specific settings
+	static synchronized void setupProjectPreferenceListener(IResource resource) {
 		if (resource != null) {
 			BehavePreferences prefs = BehavePreferences.of(resource);
 			IEclipsePreferences projectNode = prefs.node();
 			if (projectNode != null && !preferenceChangeListeners.containsKey(projectNode)) {
-				IPreferenceChangeListener preferenceListener = new IPreferenceChangeListener() {
-					@Override
-					public void preferenceChange(PreferenceChangeEvent event) {
-						DocumentValidator.revalidateAllDocuments();
-					}
-				};
+				IPreferenceChangeListener preferenceListener = event -> DocumentValidator.revalidateAllDocuments();
 				projectNode.addPreferenceChangeListener(preferenceListener);
 				preferenceChangeListeners.put(projectNode, preferenceListener);
 			}
@@ -137,26 +106,18 @@ public class BehaveGlueValidator {
 	}
 
 	/**
-	 * Cleans up global preference listeners and resources.
+	 * Cleans up preference listeners and resources.
 	 * <p>
 	 * This method should be called when the plugin is stopping to ensure proper
 	 * cleanup of all registered preference listeners.
 	 * </p>
 	 */
 	public static synchronized void shutdown() {
-// Remove all property change listeners
-		propertyChangeListeners.forEach((store, listener) -> {
-			store.removePropertyChangeListener(listener);
-		});
-		propertyChangeListeners.clear();
-
-// Remove all preference change listeners
 		preferenceChangeListeners.forEach((node, listener) -> {
 			node.removePreferenceChangeListener(listener);
 		});
 		preferenceChangeListeners.clear();
 
-// Cancel and clean up all jobs
 		jobMap.values().forEach(job -> {
 			job.cancel();
 		});

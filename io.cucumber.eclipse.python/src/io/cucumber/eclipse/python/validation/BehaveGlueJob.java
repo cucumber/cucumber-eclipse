@@ -62,8 +62,7 @@ final class BehaveGlueJob extends Job {
 			return Status.CANCEL_STATUS;
 		}
 
-		// Setup global preference listener now that we have the resource
-		BehaveGlueValidator.setupGlobalPreferenceListener(resource);
+		BehaveGlueValidator.setupProjectPreferenceListener(resource);
 
 		IProject project = resource.getProject();
 		if (project == null) {
