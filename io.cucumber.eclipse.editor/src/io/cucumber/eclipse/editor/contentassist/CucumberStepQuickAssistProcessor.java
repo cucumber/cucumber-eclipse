@@ -40,7 +40,7 @@ public class CucumberStepQuickAssistProcessor implements IQuickAssistProcessor {
 
 	@Override
 	public boolean canAssist(IQuickAssistInvocationContext invocationContext) {
-		return GherkinEditorDocumentManager.isCompatible(invocationContext.getSourceViewer().getDocument());
+		return GherkinEditorDocumentManager.isCompatibleTextBuffer(invocationContext.getSourceViewer().getDocument());
 	}
 
 	@Override

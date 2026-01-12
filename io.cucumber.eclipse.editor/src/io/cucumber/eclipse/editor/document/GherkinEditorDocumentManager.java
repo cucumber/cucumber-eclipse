@@ -75,12 +75,9 @@ public final class GherkinEditorDocumentManager {
 	 */
 	public static GherkinEditorDocument get(IDocument document, boolean create) {
 		Objects.requireNonNull(document, "document can't be null");
-		if (isCompatible(document)) {
-			return DOCUMENT_MAP.compute(document, (key, value) -> {
-				if (value == null || value.isDirty()) {
-					return GherkinEditorDocument.create(key, () -> resourceForDocument(key));
-				}
-				return value;
+		if (isCompatibleTextBuffer(document)) {
+			return DOCUMENT_MAP.computeIfAbsent(document, key -> {
+				return GherkinEditorDocument.create(key, () -> resourceForDocument(key));
 			});
 		}
 		if (create) {
@@ -131,7 +128,7 @@ public final class GherkinEditorDocumentManager {
 	 * @return true if the document can be used with GherkinEditorDocument, false
 	 *         otherwise
 	 */
-	public static boolean isCompatible(IDocument document) {
+	public static boolean isCompatibleTextBuffer(IDocument document) {
 		if (document != null) {
 			ITextFileBuffer buffer = FileBuffers.getTextFileBufferManager().getTextFileBuffer(document);
 			if (buffer != null) {
@@ -197,7 +194,7 @@ public final class GherkinEditorDocumentManager {
 	 * 
 	 * @param document the document that was set up
 	 */
-	static void notifyNewDocument(IDocument document) {
+	static void setupTextBuffer(IDocument document) {
 		for (IGherkinDocumentListener listener : LISTENERS) {
 			try {
 				listener.documentSetup(document);
@@ -213,7 +210,8 @@ public final class GherkinEditorDocumentManager {
 	 * 
 	 * @param document the document that changed
 	 */
-	static void notifyDocumentChanged(IDocument document) {
+	static void textBufferChanged(IDocument document) {
+		DOCUMENT_MAP.remove(document);
 		for (IGherkinDocumentListener listener : LISTENERS) {
 			try {
 				listener.documentChanged(document);
@@ -228,7 +226,7 @@ public final class GherkinEditorDocumentManager {
 	 * 
 	 * @param document the document that was removed
 	 */
-	static void texFileBufferRemoved(IDocument document) {
+	static void textBufferRemoved(IDocument document) {
 		GherkinEditorDocument removed = DOCUMENT_MAP.remove(document);
 		if (removed != null) {
 			for (IGherkinDocumentListener listener : LISTENERS) {

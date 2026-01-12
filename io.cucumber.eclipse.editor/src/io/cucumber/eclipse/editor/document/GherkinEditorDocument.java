@@ -13,9 +13,7 @@ import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IDocumentListener;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Position;
 
@@ -58,7 +56,6 @@ public final class GherkinEditorDocument extends GherkinStream {
 			GherkinDialect::getRuleKeywords, GherkinDialect::getBackgroundKeywords,
 			GherkinDialect::getExamplesKeywords);
 
-	private volatile boolean dirty;
 	private final IDocument document;
 	private final GherkinDialect dialect;
 	private final Locale locale;
@@ -69,19 +66,6 @@ public final class GherkinEditorDocument extends GherkinStream {
 
 		super(getEnvelopes(document));
 		this.resourceSupplier = resourceSupplier;
-		document.addDocumentListener(new IDocumentListener() {
-
-			@Override
-			public void documentChanged(DocumentEvent event) {
-				GherkinEditorDocument.this.dirty = true;
-				document.removeDocumentListener(this);
-			}
-
-			@Override
-			public void documentAboutToBeChanged(DocumentEvent event) {
-
-			}
-		});
 		this.document = document;
 
 		Optional<String> langOpt = getFeature().map(f -> f.getLanguage()).filter(Objects::nonNull)
@@ -109,10 +93,6 @@ public final class GherkinEditorDocument extends GherkinStream {
 
 		locale = Locale.forLanguageTag(dialect.getLanguage());
 
-	}
-
-	boolean isDirty() {
-		return dirty;
 	}
 
 	private static Envelope[] getEnvelopes(IDocument document) {
