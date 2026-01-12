@@ -7,7 +7,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.IDocument;
 
-import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
 import io.cucumber.eclipse.editor.document.IGherkinDocumentListener;
 import io.cucumber.eclipse.editor.preferences.CucumberEditorPreferences;
@@ -77,7 +76,7 @@ public class DocumentValidator implements IGherkinDocumentListener {
 	 * Schedules immediate validation for the new document.
 	 */
 	@Override
-	public void documentSetup(IDocument document) {
+	public void documentCreated(IDocument document) {
 		validate(document, 0);
 	}
 
@@ -100,7 +99,7 @@ public class DocumentValidator implements IGherkinDocumentListener {
 	 * Cancels any running validation job and cleans up resources.
 	 */
 	@Override
-	public void documentRemoved(IDocument document) {
+	public void documentDisposed(IDocument document) {
 		VerificationJob job = jobMap.remove(document);
 		if (job != null) {
 			job.cancel();
@@ -110,8 +109,9 @@ public class DocumentValidator implements IGherkinDocumentListener {
 	/**
 	 * Schedules validation for the specified document with an optional delay.
 	 * <p>
-	 * This method cancels any existing validation job for the document and
-	 * schedules a new one. The delay parameter allows for debouncing to avoid
+	 * This method reuses the existing validation job for the document if one exists,
+	 * or creates a new one. If a job is already scheduled or running, it will be
+	 * canceled and rescheduled. The delay parameter allows for debouncing to avoid
 	 * excessive validation during rapid typing.
 	 * </p>
 	 * 
@@ -120,21 +120,7 @@ public class DocumentValidator implements IGherkinDocumentListener {
 	 *                 immediate)
 	 */
 	private static void validate(IDocument document, int delay) {
-		jobMap.compute(document, (key, oldJob) -> {
-			if (oldJob != null) {
-				oldJob.cancel();
-			}
-			GherkinEditorDocument editorDocument = GherkinEditorDocumentManager.get(document);
-			VerificationJob verificationJob = new VerificationJob(oldJob, editorDocument);
-			verificationJob.setUser(false);
-			verificationJob.setPriority(Job.DECORATE);
-			if (delay > 0) {
-				verificationJob.schedule(delay);
-			} else {
-				verificationJob.schedule();
-			}
-			return verificationJob;
-		});
+		jobMap.computeIfAbsent(document, VerificationJob::new).schedule(Math.max(0, delay));
 	}
 
 	/**

@@ -6,14 +6,20 @@ import java.util.Locale;
 import io.cucumber.gherkin.GherkinDialect;
 
 /**
- * High level representation of a keyword in the gherkin language with some
- * helper methods
+ * High-level representation of a Gherkin language keyword.
+ * <p>
+ * This class wraps a Gherkin keyword (e.g., "Given", "When", "Then", "Feature")
+ * along with its locale and dialect information. It provides utility methods for
+ * keyword matching and comparison that respect locale-specific case rules.
+ * </p>
  * 
  * @author christoph
- *
  */
 public class GherkinKeyword {
 
+	/**
+	 * Comparator that orders keywords by their lowercase key representation.
+	 */
 	public static final Comparator<? super GherkinKeyword> KEY_ORDER = (w1, w2) -> w1.lcKey.compareTo(w2.lcKey);
 	private final String key;
 	private final Locale locale;
@@ -28,7 +34,7 @@ public class GherkinKeyword {
 	}
 
 	/**
-	 * @return the key words string representation
+	 * @return the keyword string representation (e.g., "Given", "When", "Feature")
 	 */
 	public String getKey() {
 		return key;

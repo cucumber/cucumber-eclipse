@@ -12,10 +12,21 @@ import io.cucumber.messages.types.StepDefinition;
 import io.cucumber.messages.types.TestStep;
 
 /**
- * Event collecting the whole context of a given test step
+ * Event that captures the complete context of a test step execution.
+ * <p>
+ * This class links together the different layers of a Cucumber test:
+ * <ul>
+ * <li>The Gherkin feature, scenario, and step definitions</li>
+ * <li>The test step from the test execution</li>
+ * <li>The step definition implementation</li>
+ * </ul>
+ * </p>
+ * <p>
+ * Used primarily for debugging support to construct stack frames
+ * that navigate between Gherkin source and step implementations.
+ * </p>
  * 
  * @author christoph
- *
  */
 public class TestStepEvent {
 
@@ -33,18 +44,41 @@ public class TestStepEvent {
 		this.stepDefinition = stepDefinition;
 	}
 
+	/**
+	 * @return the feature containing the test step
+	 */
 	public Feature getFeature() {
 		return feature;
 	}
 
+	/**
+	 * @return the scenario containing the test step
+	 */
 	public Scenario getScenario() {
 		return scenario;
 	}
 
+	/**
+	 * @return the Gherkin step definition
+	 */
 	public Step getStep() {
 		return step;
 	}
 
+	/**
+	 * Constructs a debug stack trace for this test step.
+	 * <p>
+	 * The stack trace includes frames for:
+	 * <ol>
+	 * <li>The step implementation (with step definition)</li>
+	 * <li>The scenario</li>
+	 * <li>The feature</li>
+	 * </ol>
+	 * </p>
+	 * 
+	 * @param thread the debug thread to associate frames with
+	 * @return an array of stack frames representing the execution context
+	 */
 	public IStackFrame[] getStackTrace(IThread thread) {
 		GherkingStackFrame stepFrame = new GherkingStepStackFrame(thread, testStep, step, stepDefinition);
 

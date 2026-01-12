@@ -196,8 +196,13 @@ public final class GherkinEditorDocument extends GherkinStream {
 	}
 
 	/**
+	 * Returns all top-level Gherkin keywords for the current language.
+	 * <p>
+	 * Top-level keywords include: Scenario, Scenario Outline, Rule, Background, and Examples.
+	 * </p>
+	 * 
 	 * @return a stream of all {@link GherkinKeyword}s for the current language that
-	 *         are related to steps
+	 *         are related to top-level constructs
 	 */
 	public Stream<GherkinKeyword> getTopLevelKeywords() {
 		return TOP_LEVEL_KEYWORD.stream().flatMap(this::keyWords);
@@ -211,8 +216,8 @@ public final class GherkinEditorDocument extends GherkinStream {
 	}
 
 	/**
-	 * @return a stream of all {@link GherkinKeyword}s for the current related to
-	 *         feature
+	 * @return a stream of all {@link GherkinKeyword}s for the current language
+	 *         related to features
 	 */
 	public Stream<GherkinKeyword> getFeatureKeywords() {
 		return keyWords(GherkinDialect::getFeatureKeywords);

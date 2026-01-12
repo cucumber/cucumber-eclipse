@@ -20,10 +20,24 @@ import io.cucumber.messages.types.TestStepFinished;
 import io.cucumber.messages.types.TestStepStarted;
 
 /**
- * Handler that links the individual message parts together
+ * Base class for handling Cucumber message envelopes during test execution.
+ * <p>
+ * This handler processes the stream of {@link Envelope} messages produced by
+ * Cucumber test runs and maintains the relationships between:
+ * <ul>
+ * <li>Gherkin source elements (features, scenarios, steps)</li>
+ * <li>Pickle steps (parsed test cases)</li>
+ * <li>Test steps (actual execution)</li>
+ * <li>Step definitions (implementation code)</li>
+ * </ul>
+ * </p>
+ * <p>
+ * Subclasses must implement {@link #handleTestStepStart(TestStepEvent)} to
+ * receive notifications when test steps begin execution, with full context
+ * including the source Gherkin and matched step definition.
+ * </p>
  * 
  * @author christoph
- *
  */
 public abstract class GherkinMessageHandler implements EnvelopeListener {
 
@@ -93,8 +107,20 @@ public abstract class GherkinMessageHandler implements EnvelopeListener {
 		}
 	}
 
+	/**
+	 * Called when a test step execution starts.
+	 * <p>
+	 * Subclasses should override this method to react to test step execution,
+	 * for example to update UI, set breakpoints, or track execution state.
+	 * </p>
+	 * 
+	 * @param event the test step event with full execution context
+	 */
 	protected abstract void handleTestStepStart(TestStepEvent event);
 
+	/**
+	 * Links test steps to their corresponding pickle steps and step definitions.
+	 */
 	private final class TestStepLink {
 
 		private TestStep testStep;
@@ -112,6 +138,9 @@ public abstract class GherkinMessageHandler implements EnvelopeListener {
 		}
 	}
 
+	/**
+	 * Links pickle steps back to their Gherkin source elements.
+	 */
 	private final class PickleStepLink {
 
 		private PickleStep step;
@@ -146,6 +175,9 @@ public abstract class GherkinMessageHandler implements EnvelopeListener {
 
 	}
 
+	/**
+	 * Captures the Gherkin source context for a test step.
+	 */
 	private final class Backtrace {
 
 		final Feature feature;

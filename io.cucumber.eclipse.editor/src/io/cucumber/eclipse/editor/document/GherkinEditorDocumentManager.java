@@ -194,10 +194,10 @@ public final class GherkinEditorDocumentManager {
 	 * 
 	 * @param document the document that was set up
 	 */
-	static void setupTextBuffer(IDocument document) {
+	static void textBufferCreated(IDocument document) {
 		for (IGherkinDocumentListener listener : LISTENERS) {
 			try {
-				listener.documentSetup(document);
+				listener.documentCreated(document);
 			} catch (Exception e) {
 				// Prevent one listener from breaking others
 			}
@@ -231,7 +231,7 @@ public final class GherkinEditorDocumentManager {
 		if (removed != null) {
 			for (IGherkinDocumentListener listener : LISTENERS) {
 				try {
-					listener.documentRemoved(document);
+					listener.documentDisposed(document);
 				} catch (Exception e) {
 					// Prevent one listener from breaking others
 				}
