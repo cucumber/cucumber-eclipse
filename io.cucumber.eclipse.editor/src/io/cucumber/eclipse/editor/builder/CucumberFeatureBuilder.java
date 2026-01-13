@@ -17,6 +17,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
+import io.cucumber.eclipse.editor.validation.BatchUpdater;
 import io.cucumber.eclipse.editor.validation.DocumentValidator;
 
 /**
@@ -44,7 +45,7 @@ public class CucumberFeatureBuilder extends IncrementalProjectBuilder {
 	@Override
 	protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
 		IProject project = getProject();
-		try {
+		try (BatchUpdater batch = DocumentValidator.batch()) {
 			Set<GherkinEditorDocument> documents = new LinkedHashSet<>();
 			// Collect all feature files with tracking enabled. Tracking sets up
 			// resource change listeners so validation is automatically triggered

@@ -20,6 +20,9 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.jface.text.IDocument;
 
+import io.cucumber.eclipse.editor.validation.BatchUpdater;
+import io.cucumber.eclipse.editor.validation.DocumentValidator;
+
 /**
  * Manages cached instances of {@link GherkinEditorDocument}.
  * <p>
@@ -143,6 +146,10 @@ public final class GherkinEditorDocumentManager {
 						TrackedResourceDocument::new);
 				return trackedDocument.getDocument(true);
 			} else {
+				TrackedResourceDocument trackedDocument = TRACKED_RESOURCES.get(file);
+				if (trackedDocument != null) {
+					return trackedDocument.getDocument(true);
+				}
 				return FileBasedDocument.loadFromFile(file);
 			}
 		}
@@ -318,7 +325,7 @@ public final class GherkinEditorDocumentManager {
 				@Override
 				public void resourceChanged(IResourceChangeEvent event) {
 					if (event.getDelta() != null) {
-						try {
+						try (BatchUpdater batch = DocumentValidator.batch()) {
 							event.getDelta().accept(new IResourceDeltaVisitor() {
 								@Override
 								public boolean visit(IResourceDelta delta) throws CoreException {
