@@ -1,9 +1,10 @@
 package io.cucumber.eclipse.python.validation;
 
+import java.util.Collection;
+
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.jobs.Job;
 import org.osgi.service.component.annotations.Component;
 
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
@@ -34,9 +35,17 @@ public class BehaveGlueValidatorService implements IGlueValidator {
 	}
 
 	@Override
-	public void validate(GherkinEditorDocument editorDocument, IProgressMonitor monitor) throws CoreException {
-		// Delegate to BehaveGlueValidator to create and run the validation job
-		BehaveGlueValidator.validate(editorDocument, monitor);
+	public void validate(Collection<GherkinEditorDocument> editorDocuments, IProgressMonitor monitor)
+			throws CoreException {
+		// For now, validate documents one by one
+		// Future optimization: batch validation with single behave process
+		for (GherkinEditorDocument editorDocument : editorDocuments) {
+			if (monitor.isCanceled()) {
+				break;
+			}
+			// Delegate to BehaveGlueValidator to create and run the validation job
+			BehaveGlueValidator.validate(editorDocument, monitor);
+		}
 	}
 
 }

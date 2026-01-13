@@ -22,11 +22,13 @@ import io.cucumber.eclipse.editor.EditorReconciler;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
 import io.cucumber.eclipse.editor.document.IGherkinDocumentListener;
+import io.cucumber.eclipse.editor.marker.MarkerFactory;
 import io.cucumber.eclipse.editor.validation.DocumentValidator;
 import io.cucumber.eclipse.editor.validation.IGlueValidator;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberStepDefinition;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
+import io.cucumber.eclipse.java.preferences.CucumberJavaPreferences;
 import io.cucumber.eclipse.java.properties.CucumberJavaBackendProperties;
 
 /**
@@ -45,7 +47,6 @@ import io.cucumber.eclipse.java.properties.CucumberJavaBackendProperties;
 public class JavaGlueValidatorService implements IGlueValidator, JavaGlueStore, IGherkinDocumentListener {
 
 	private final Map<IEclipsePreferences, IPreferenceChangeListener> preferenceChangeListeners = new HashMap<>();
-	private final Map<IDocument, JavaGlueJob> jobMap = new ConcurrentHashMap<>();
 
 	private final Map<IDocument, GlueSteps> glueMap = new ConcurrentHashMap<>();
 
@@ -61,10 +62,59 @@ public class JavaGlueValidatorService implements IGlueValidator, JavaGlueStore, 
 	}
 
 	@Override
-	public void validate(GherkinEditorDocument editorDocument, IProgressMonitor monitor) throws CoreException {
-		IResource resource = editorDocument.getResource();
-		listenForChanges(resource);
-		new JavaGlueJob(editorDocument, this).run(monitor);
+	public void validate(Collection<GherkinEditorDocument> editorDocuments, IProgressMonitor monitor)
+			throws CoreException {
+		// Group documents by Java project for efficient batch processing
+		Map<IJavaProject, List<GherkinEditorDocument>> documentsByProject = new HashMap<>();
+		
+		for (GherkinEditorDocument editorDocument : editorDocuments) {
+			if (monitor.isCanceled()) {
+				break;
+			}
+			
+			IResource resource = editorDocument.getResource();
+			if (resource == null) {
+				continue;
+			}
+			
+			// Clear glue validation errors for this resource
+			MarkerFactory.clearGlueValidationError(resource, "glue_validation_error");
+			
+			// Set up change listeners
+			listenForChanges(resource);
+			
+			// Group by Java project
+			IJavaProject javaProject = JDTUtil.getJavaProject(resource);
+			if (javaProject != null && javaProject.exists()) {
+				documentsByProject.computeIfAbsent(javaProject, k -> new java.util.ArrayList<>()).add(editorDocument);
+			}
+		}
+		
+		// Process each Java project's documents with shared runtime setup
+		for (Map.Entry<IJavaProject, List<GherkinEditorDocument>> entry : documentsByProject.entrySet()) {
+			if (monitor.isCanceled()) {
+				break;
+			}
+			
+			IJavaProject javaProject = entry.getKey();
+			List<GherkinEditorDocument> documents = entry.getValue();
+			
+			// Get project preferences once for all documents in this project
+			CucumberJavaPreferences projectPreferences = CucumberJavaPreferences.of(javaProject.getProject());
+			
+			// Validate each document with the shared project context
+			for (GherkinEditorDocument document : documents) {
+				if (monitor.isCanceled()) {
+					break;
+				}
+				
+				GlueSteps glueSteps = JavaGlueJob.validateGlue(document, javaProject, projectPreferences, monitor);
+				if (glueSteps != null) {
+					glueMap.put(document.getDocument(), glueSteps);
+					EditorReconciler.reconcileFeatureEditor(document.getDocument());
+				}
+			}
+		}
 	}
 
 	private synchronized void listenForChanges(IResource resource) {
@@ -112,16 +162,9 @@ public class JavaGlueValidatorService implements IGlueValidator, JavaGlueStore, 
 		if (glueCodeChangeListener != null) {
 			JavaCore.removeElementChangedListener(glueCodeChangeListener);
 		}
-		jobMap.values().forEach(JavaGlueJob::cancel);
 	}
 
-	void updateGlueSteps(IDocument document, Collection<CucumberStepDefinition> availableSteps,
-			Collection<MatchedStep<?>> matchedSteps) {
-		glueMap.put(document, new GlueSteps(List.copyOf(availableSteps), List.copyOf(matchedSteps)));
-		EditorReconciler.reconcileFeatureEditor(document);
-	}
-
-	private static record GlueSteps(Collection<CucumberStepDefinition> availableSteps,
+	static record GlueSteps(Collection<CucumberStepDefinition> availableSteps,
 			Collection<MatchedStep<?>> matchedSteps) {
 	}
 

@@ -1,5 +1,7 @@
 package io.cucumber.eclipse.editor.validation;
 
+import java.util.Collection;
+
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -41,7 +43,7 @@ public interface IGlueValidator {
 	boolean canValidate(IResource resource) throws CoreException;
 
 	/**
-	 * Validates the given Gherkin editor document.
+	 * Validates a collection of Gherkin editor documents.
 	 * <p>
 	 * This method performs the actual validation by:
 	 * <ul>
@@ -56,11 +58,17 @@ public interface IGlueValidator {
 	 * exceptions for validation failures. Instead, create error markers to inform
 	 * the user.
 	 * </p>
+	 * <p>
+	 * Accepting a collection allows validators to optimize validation when multiple
+	 * documents need to be validated, as runtime setup costs can be amortized
+	 * across documents. Implementations may choose to validate documents
+	 * sequentially or in batch depending on the backend capabilities.
+	 * </p>
 	 * 
-	 * @param editorDocument the document to validate
-	 * @param monitor        the progress monitor for cancellation and reporting
+	 * @param editorDocuments the documents to validate
+	 * @param monitor         the progress monitor for cancellation and reporting
 	 * @throws CoreException if a critical error occurs that prevents validation
 	 */
-	void validate(GherkinEditorDocument editorDocument, IProgressMonitor monitor) throws CoreException;
+	void validate(Collection<GherkinEditorDocument> editorDocuments, IProgressMonitor monitor) throws CoreException;
 
 }

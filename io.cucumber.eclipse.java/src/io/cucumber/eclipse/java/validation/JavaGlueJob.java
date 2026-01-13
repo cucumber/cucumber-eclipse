@@ -14,9 +14,6 @@ import java.util.Set;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.osgi.service.debug.DebugTrace;
@@ -30,7 +27,6 @@ import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.marker.MarkerFactory;
 import io.cucumber.eclipse.java.Activator;
-import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberMatchedStepsPlugin;
 import io.cucumber.eclipse.java.plugins.CucumberMissingStepsPlugin;
 import io.cucumber.eclipse.java.plugins.CucumberStepDefinition;
@@ -38,84 +34,104 @@ import io.cucumber.eclipse.java.plugins.CucumberStepParserPlugin;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
 import io.cucumber.eclipse.java.preferences.CucumberJavaPreferences;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;
+import io.cucumber.eclipse.java.validation.JavaGlueValidatorService.GlueSteps;
 import io.cucumber.plugin.Plugin;
 
-final class JavaGlueJob extends Job {
+/**
+ * Utility class for validating Cucumber glue code in Java projects.
+ * <p>
+ * This class provides the core validation logic that runs Cucumber in dry-run mode
+ * to match Gherkin steps with their corresponding Java step definitions.
+ * </p>
+ */
+final class JavaGlueJob {
 
-	private final JavaGlueValidatorService service;
-
-	private final GherkinEditorDocument editorDocument;
-
-	JavaGlueJob(GherkinEditorDocument document, JavaGlueValidatorService service) {
-		super("Verify Cucumber Glue Code");
-		this.editorDocument = document;
-		this.service = service;
+	private JavaGlueJob() {
+		// Utility class - prevent instantiation
 	}
 
-	@Override
-	protected IStatus run(IProgressMonitor monitor) {
+	/**
+	 * Validates glue code for a single document within the context of a Java project.
+	 * 
+	 * @param editorDocument the document to validate
+	 * @param javaProject the Java project containing the glue code
+	 * @param projectPreferences the project-specific Cucumber preferences
+	 * @param monitor the progress monitor for cancellation
+	 * @return GlueSteps containing matched and available steps, or null if validation failed
+	 */
+	static GlueSteps validateGlue(GherkinEditorDocument editorDocument, IJavaProject javaProject,
+			CucumberJavaPreferences projectPreferences, IProgressMonitor monitor) {
+		
 		try {
 			IResource resource = editorDocument.getResource();
-			MarkerFactory.clearGlueValidationError(resource, "glue_validation_error");
 			monitor.subTask(resource.getName());
-			IJavaProject javaProject = JDTUtil.getJavaProject(resource);
-			if (javaProject != null) {
-				long start = System.currentTimeMillis();
-				DebugTrace debug = Tracing.get();
-				debug.traceEntry(PERFORMANCE_STEPS, resource);
-				// Clear any existing glue validation error markers at the start
-				CucumberJavaPreferences projectProperties = getProperties(editorDocument);
-				try (CucumberRuntime rt = CucumberRuntime.create(javaProject)) {
-					rt.setGenerator(new IncrementingUuidGenerator());
-					RuntimeOptionsBuilder runtimeOptions = rt.getRuntimeOptions();
-					runtimeOptions.setDryRun();
-					try {
-						rt.addFeature(editorDocument);
-					} catch (FeatureParserException e) {
-						// the feature has syntax errors, we can't check the glue then...
-						return Status.CANCEL_STATUS;
+			
+			long start = System.currentTimeMillis();
+			DebugTrace debug = Tracing.get();
+			debug.traceEntry(PERFORMANCE_STEPS, resource);
+			
+			try (CucumberRuntime rt = CucumberRuntime.create(javaProject)) {
+				rt.setGenerator(new IncrementingUuidGenerator());
+				RuntimeOptionsBuilder runtimeOptions = rt.getRuntimeOptions();
+				runtimeOptions.setDryRun();
+				
+				try {
+					rt.addFeature(editorDocument);
+				} catch (FeatureParserException e) {
+					// the feature has syntax errors, we can't check the glue then...
+					return null;
+				}
+				
+				addGlueOptions(runtimeOptions, projectPreferences);
+				
+				CucumberMissingStepsPlugin missingStepsPlugin = new CucumberMissingStepsPlugin();
+				CucumberStepParserPlugin stepParserPlugin = new CucumberStepParserPlugin();
+				CucumberMatchedStepsPlugin matchedStepsPlugin = new CucumberMatchedStepsPlugin();
+				rt.addPlugin(stepParserPlugin);
+				rt.addPlugin(matchedStepsPlugin);
+				rt.addPlugin(missingStepsPlugin);
+				
+				Collection<Plugin> validationPlugins = addValidationPlugins(editorDocument, rt, projectPreferences);
+				
+				try {
+					rt.run(monitor);
+					
+					Map<Integer, String> validationErrors = new HashMap<>();
+					for (Plugin plugin : validationPlugins) {
+						addErrors(plugin, validationErrors);
 					}
-					addGlueOptions(runtimeOptions, projectProperties);
-					CucumberMissingStepsPlugin missingStepsPlugin = new CucumberMissingStepsPlugin();
-					CucumberStepParserPlugin stepParserPlugin = new CucumberStepParserPlugin();
-					CucumberMatchedStepsPlugin matchedStepsPlugin = new CucumberMatchedStepsPlugin();
-					rt.addPlugin(stepParserPlugin);
-					rt.addPlugin(matchedStepsPlugin);
-					rt.addPlugin(missingStepsPlugin);
-					Collection<Plugin> validationPlugins = addValidationPlugins(editorDocument, rt, projectProperties);
-					try {
-						rt.run(monitor);
-						Map<Integer, String> validationErrors = new HashMap<>();
-						for (Plugin plugin : validationPlugins) {
-							addErrors(plugin, validationErrors);
-						}
-						Map<Integer, Collection<String>> snippets = missingStepsPlugin.getSnippets();
-						MarkerFactory.validationErrorOnStepDefinition(resource, validationErrors, false);
-						MarkerFactory.missingSteps(resource, snippets, Activator.PLUGIN_ID, false);
-						Collection<CucumberStepDefinition> steps = stepParserPlugin.getStepList();
-						Collection<MatchedStep<?>> matchedSteps = matchedStepsPlugin.getMatchedSteps();
-						service.updateGlueSteps(editorDocument.getDocument(), steps, matchedSteps);
-						debug.traceExit(PERFORMANCE_STEPS,
-								matchedSteps.size() + " step(s) /  " + steps.size() + " step(s)  matched, "
-										+ snippets.size() + " snippet(s) where suggested || total run time "
-										+ (System.currentTimeMillis() - start) + "ms)");
-					} catch (Throwable e) {
-						EditorLogging.error("Validate Glue-Code failed", e);
-						// Create an error marker to notify the user
-						MarkerFactory.glueValidationError(resource,
-								"Failed to validate step definitions. Check that your project is properly configured and dependencies are available. See error log for details.",
-								"glue_validation_error");
-					}
+					
+					Map<Integer, Collection<String>> snippets = missingStepsPlugin.getSnippets();
+					MarkerFactory.validationErrorOnStepDefinition(resource, validationErrors, false);
+					MarkerFactory.missingSteps(resource, snippets, Activator.PLUGIN_ID, false);
+					
+					Collection<CucumberStepDefinition> steps = stepParserPlugin.getStepList();
+					Collection<MatchedStep<?>> matchedSteps = matchedStepsPlugin.getMatchedSteps();
+					
+					debug.traceExit(PERFORMANCE_STEPS,
+							matchedSteps.size() + " step(s) /  " + steps.size() + " step(s)  matched, "
+									+ snippets.size() + " snippet(s) where suggested || total run time "
+									+ (System.currentTimeMillis() - start) + "ms)");
+					
+					return new GlueSteps(List.copyOf(steps), List.copyOf(matchedSteps));
+					
+				} catch (Throwable e) {
+					EditorLogging.error("Validate Glue-Code failed", e);
+					// Create an error marker to notify the user
+					MarkerFactory.glueValidationError(resource,
+							"Failed to validate step definitions. Check that your project is properly configured and dependencies are available. See error log for details.",
+							"glue_validation_error");
+					return null;
 				}
 			}
 		} catch (CoreException e) {
-			return e.getStatus();
+			EditorLogging.error("Failed to create Cucumber runtime", e);
+			return null;
 		}
-		return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
 	}
 
 	private static Collection<Plugin> addValidationPlugins(GherkinEditorDocument editorDocument, CucumberRuntime rt,
-			CucumberJavaPreferences projectProperties) {
+			CucumberJavaPreferences projectPreferences) {
 		List<Plugin> validationPlugins = new ArrayList<>();
 		IDocument doc = editorDocument.getDocument();
 		Set<String> plugins = new LinkedHashSet<>();
@@ -130,7 +146,7 @@ final class JavaGlueJob extends Job {
 				}
 			}
 		}
-		projectProperties.plugins().forEach(plugins::add);
+		projectPreferences.plugins().forEach(plugins::add);
 		for (String plugin : plugins) {
 			Plugin classpathPlugin = rt.addPluginFromClasspath(plugin);
 			if (classpathPlugin != null) {
@@ -153,18 +169,11 @@ final class JavaGlueJob extends Job {
 		} catch (Exception e) {
 			EditorLogging.error("Failed to get validation errors from plugin: " + plugin.getClass().getName(), e);
 		}
-
-	}
-
-	private CucumberJavaPreferences getProperties(GherkinEditorDocument editorDocument) {
-		IResource resource = editorDocument.getResource();
-		CucumberJavaPreferences projectProperties = CucumberJavaPreferences.of(resource);
-		return projectProperties;
 	}
 
 	private static void addGlueOptions(RuntimeOptionsBuilder runtimeOptions,
-			CucumberJavaPreferences projectProperties) {
-		projectProperties.glueFilter().forEach(gluePath -> {
+			CucumberJavaPreferences projectPreferences) {
+		projectPreferences.glueFilter().forEach(gluePath -> {
 			gluePath = gluePath.trim();
 			if (gluePath.endsWith("*")) {
 				gluePath = gluePath.substring(0, gluePath.length() - 1);

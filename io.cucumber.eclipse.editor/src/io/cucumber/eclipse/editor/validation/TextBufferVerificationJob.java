@@ -1,5 +1,8 @@
 package io.cucumber.eclipse.editor.validation;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.eclipse.jface.text.IDocument;
 
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
@@ -31,11 +34,12 @@ class TextBufferVerificationJob extends VerificationJob {
 	}
 
 	/**
-	 * Retrieves the editor document from the manager using the IDocument instance.
+	 * Retrieves the editor documents from the manager using the IDocument instance.
 	 */
 	@Override
-	protected GherkinEditorDocument getEditorDocument() {
-		return GherkinEditorDocumentManager.get(document);
+	protected Collection<GherkinEditorDocument> getEditorDocuments() {
+		GherkinEditorDocument editorDocument = GherkinEditorDocumentManager.get(document);
+		return editorDocument == null ? List.of() : List.of(editorDocument);
 	}
 
 }
