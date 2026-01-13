@@ -1,5 +1,8 @@
 package io.cucumber.eclipse.editor.validation;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.eclipse.core.resources.IResource;
 
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
@@ -31,11 +34,12 @@ class ResourceVerificationJob extends VerificationJob {
 	}
 
 	/**
-	 * Retrieves the editor document from the manager using the resource.
+	 * Retrieves the editor documents from the manager using the resource.
 	 */
 	@Override
-	protected GherkinEditorDocument getEditorDocument() {
-		return GherkinEditorDocumentManager.get(resource);
+	protected Collection<GherkinEditorDocument> getEditorDocuments() {
+		GherkinEditorDocument document = GherkinEditorDocumentManager.get(resource);
+		return document == null ? List.of() : List.of(document);
 	}
 
 }

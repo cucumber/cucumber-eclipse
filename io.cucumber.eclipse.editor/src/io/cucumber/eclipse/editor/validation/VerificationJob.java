@@ -1,6 +1,10 @@
 package io.cucumber.eclipse.editor.validation;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IResource;
@@ -16,15 +20,17 @@ import io.cucumber.eclipse.editor.marker.MarkerFactory;
 import io.cucumber.messages.types.ParseError;
 
 /**
- * Background job that performs comprehensive validation of a Gherkin document.
+ * Background job that performs comprehensive validation of Gherkin documents.
  * <p>
  * This job performs validation in two stages:
  * <ol>
  * <li><b>Syntax Validation</b>: Checks the Gherkin syntax and creates markers
  * for parse errors. If syntax errors are found, glue validation is
- * skipped.</li>
- * <li><b>Glue Validation</b>: If syntax is valid, delegates to all applicable
- * {@link IGlueValidator} implementations to validate step definitions.</li>
+ * skipped for that document.</li>
+ * <li><b>Glue Validation</b>: For documents with valid syntax, delegates to all applicable
+ * {@link IGlueValidator} implementations to validate step definitions. Documents
+ * are grouped by their applicable validators to ensure each validator only
+ * processes documents it can handle.</li>
  * </ol>
  * </p>
  * <p>
@@ -54,48 +60,114 @@ abstract class VerificationJob extends Job {
 
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
-		GherkinEditorDocument editorDocument = getEditorDocument();
-		if (editorDocument == null) {
-			return Status.OK_STATUS;
-		}
-
-		IResource resource = editorDocument.getResource();
-		if (resource == null) {
+		Collection<GherkinEditorDocument> editorDocuments = getEditorDocuments();
+		if (editorDocuments.isEmpty()) {
 			return Status.OK_STATUS;
 		}
 
 		// Stage 1: Syntax validation
-		List<ParseError> syntaxErrors = editorDocument.getParseError().collect(Collectors.toList());
+		List<GherkinEditorDocument> validDocuments = validateSyntax(editorDocuments, monitor);
 		if (monitor.isCanceled()) {
 			return Status.CANCEL_STATUS;
 		}
 
-		MarkerFactory.syntaxErrorOnGherkin(resource, syntaxErrors, false);
-
-		// Stage 2: Glue validation (only if no syntax errors)
-		if (syntaxErrors.isEmpty()) {
-			try {
-				for (IGlueValidator validator : CucumberServiceRegistry.getGlueValidators(resource)) {
-					if (monitor.isCanceled()) {
-						break;
-					}
-					validator.validate(editorDocument, monitor);
-				}
-			} catch (Exception e) {
-				EditorLogging.error("Error during glue validation", e);
-			}
-		}
+		// Stage 2: Glue validation
+		validateGlue(validDocuments, monitor);
 
 		return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
 	}
 
 	/**
-	 * Retrieves the GherkinEditorDocument to validate.
-	 * Subclasses implement this to provide the document from their specific source
+	 * Validates the Gherkin syntax of all documents and creates markers for parse errors.
+	 * 
+	 * @param editorDocuments the documents to validate
+	 * @param monitor the progress monitor for cancellation
+	 * @return list of documents with valid syntax that should proceed to glue validation
+	 */
+	private List<GherkinEditorDocument> validateSyntax(Collection<GherkinEditorDocument> editorDocuments,
+			IProgressMonitor monitor) {
+		List<GherkinEditorDocument> validDocuments = new ArrayList<>();
+		
+		for (GherkinEditorDocument editorDocument : editorDocuments) {
+			if (monitor.isCanceled()) {
+				break;
+			}
+
+			IResource resource = editorDocument.getResource();
+			if (resource == null) {
+				continue;
+			}
+
+			List<ParseError> syntaxErrors = editorDocument.getParseError().collect(Collectors.toList());
+			MarkerFactory.syntaxErrorOnGherkin(resource, syntaxErrors, false);
+
+			// Only pass documents with valid syntax to glue validation
+			if (syntaxErrors.isEmpty()) {
+				validDocuments.add(editorDocument);
+			}
+		}
+		
+		return validDocuments;
+	}
+
+	/**
+	 * Validates glue code by grouping documents by their applicable validators
+	 * and calling each validator with only the documents it can handle.
+	 * 
+	 * @param validDocuments documents with valid syntax to validate
+	 * @param monitor the progress monitor for cancellation
+	 */
+	private void validateGlue(List<GherkinEditorDocument> validDocuments, IProgressMonitor monitor) {
+		if (validDocuments.isEmpty()) {
+			return;
+		}
+
+		// Group documents by their applicable validators
+		Map<IGlueValidator, List<GherkinEditorDocument>> validatorToDocuments = new LinkedHashMap<>();
+		
+		for (GherkinEditorDocument document : validDocuments) {
+			if (monitor.isCanceled()) {
+				break;
+			}
+			
+			IResource resource = document.getResource();
+			if (resource == null) {
+				continue;
+			}
+			
+			try {
+				for (IGlueValidator validator : CucumberServiceRegistry.getGlueValidators(resource)) {
+					validatorToDocuments.computeIfAbsent(validator, k -> new ArrayList<>()).add(document);
+				}
+			} catch (Exception e) {
+				EditorLogging.error("Error determining validators for resource: " + resource.getFullPath(), e);
+			}
+		}
+
+		// Validate each group of documents with their respective validator
+		for (Map.Entry<IGlueValidator, List<GherkinEditorDocument>> entry : validatorToDocuments.entrySet()) {
+			if (monitor.isCanceled()) {
+				break;
+			}
+			
+			IGlueValidator validator = entry.getKey();
+			List<GherkinEditorDocument> documents = entry.getValue();
+			
+			try {
+				validator.validate(documents, monitor);
+			} catch (Exception e) {
+				EditorLogging.error("Error during glue validation with " + validator.getClass().getName(), e);
+			}
+		}
+	}
+
+	/**
+	 * Retrieves the GherkinEditorDocuments to validate.
+	 * Subclasses implement this to provide the documents from their specific source
 	 * (text buffer or resource).
 	 * 
-	 * @return the document to validate, or null if not available
+	 * @return the documents to validate, or an empty collection if not available
 	 */
-	protected abstract GherkinEditorDocument getEditorDocument();
+	protected abstract Collection<GherkinEditorDocument> getEditorDocuments();
 
 }
