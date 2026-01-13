@@ -9,6 +9,8 @@ import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.IDocument;
 
@@ -69,6 +71,8 @@ public class DocumentValidator implements IGherkinDocumentListener {
 	 * Singleton instance of the validator.
 	 */
 	private static final DocumentValidator INSTANCE = new DocumentValidator();
+
+	private BatchUpdater batch;
 
 	/**
 	 * Private constructor - use singleton instance.
@@ -142,17 +146,29 @@ public class DocumentValidator implements IGherkinDocumentListener {
 	private static void validate(IDocument document, int delay) {
 		ITextFileBuffer textBuffer = GherkinEditorDocumentManager.getTextBuffer(document);
 		if (textBuffer != null) {
-			textBufferDocuments.computeIfAbsent(document, doc -> {
+			VerificationJob job = textBufferDocuments.computeIfAbsent(document, doc -> {
 				IPath location = textBuffer.getLocation();
 				return new TextBufferVerificationJob(document, location == null ? "Document" : location.toOSString());
-			}).schedule(Math.max(0, delay));
+			});
+			if (INSTANCE.addToBatch(document)) {
+				return;
+			}
+			job.schedule(Math.max(0, delay));
 			return;
 		}
 		IResource resource = GherkinEditorDocumentManager.resourceForDocument(document);
 		if (resource != null) {
-			resourceDocuments.computeIfAbsent(resource, ResourceVerificationJob::new).schedule(Math.max(0, delay));
+			validate(resource, delay);
 			return;
 		}
+	}
+
+	private static void validate(IResource resource, int delay) {
+		VerificationJob job = resourceDocuments.computeIfAbsent(resource, ResourceVerificationJob::new);
+		if (INSTANCE.addToBatch(resource)) {
+			return;
+		}
+		job.schedule(Math.max(0, delay));
 	}
 
 	/**
@@ -183,11 +199,17 @@ public class DocumentValidator implements IGherkinDocumentListener {
 				// Document (no longer) managed by a text buffer...
 				return;
 			}
+			if (INSTANCE.addToBatch(doc)) {
+				return;
+			}
 			scheduleValidation(resource, job);
 			scheduled.add(resource);
 		});
 		resourceDocuments.forEach((resource, job) -> {
 			if (scheduled.add(resource)) {
+				if (INSTANCE.addToBatch(resource)) {
+					return;
+				}
 				scheduleValidation(resource, job);
 			}
 		});
@@ -203,8 +225,8 @@ public class DocumentValidator implements IGherkinDocumentListener {
 	 * <p>
 	 * This method is useful when project-specific configuration changes affect
 	 * feature files, such as glue path changes or project setup modifications.
-	 * Ensures each resource is validated only once even if tracked both as
-	 * text buffer and resource.
+	 * Ensures each resource is validated only once even if tracked both as text
+	 * buffer and resource.
 	 * </p>
 	 * 
 	 * @param project the project whose documents should be revalidated
@@ -216,10 +238,17 @@ public class DocumentValidator implements IGherkinDocumentListener {
 			if (resource == null || resource.getProject() != project) {
 				return;
 			}
+			if (INSTANCE.addToBatch(doc)) {
+				return;
+			}
 			scheduleValidation(resource, job);
 		});
 		resourceDocuments.forEach((resource, job) -> {
+
 			if (resource.getProject() == project && scheduled.add(resource)) {
+				if (INSTANCE.addToBatch(resource)) {
+					return;
+				}
 				scheduleValidation(resource, job);
 			}
 		});
@@ -237,6 +266,105 @@ public class DocumentValidator implements IGherkinDocumentListener {
 		textBufferDocuments.clear();
 		resourceDocuments.values().forEach(Job::cancel);
 		resourceDocuments.clear();
+	}
+
+	private synchronized void performBatchUpdate() {
+		BatchUpdater updater = this.batch;
+		if (updater == null) {
+			return;
+		}
+		updater.references--;
+		// Check if we can cancel any previous batch
+		updater.checkForCancel();
+		if (updater.references <= 0) {
+			this.batch = null;
+			if (updater.documents.isEmpty() && updater.resources.isEmpty()) {
+				return;
+			}
+			if (updater.documents.size() + updater.resources.size() == 1) {
+				for (IDocument doc : updater.documents) {
+					validate(doc, 0);
+				}
+				for (IResource resource : updater.resources) {
+					validate(resource, 0);
+				}
+				return;
+			}
+			BatchVerificationJob job = new BatchVerificationJob(updater);
+			// During a batch run in the background we collect other requests for update in
+			// another batch to prevent concurrent runs of verification. The most likely
+			// event is that the user is editing a feature file in the meanwhile, so once
+			// our batch job completes, we complete the next batch created here, what
+			// results in a single document and then the cycle ends (or we trigger a new
+			// batch verification if more things have been changed.
+			BatchUpdater nextBatch = getBatch(job);
+			job.addJobChangeListener(new IJobChangeListener() {
+
+				@Override
+				public void sleeping(IJobChangeEvent event) {
+				}
+
+				@Override
+				public void scheduled(IJobChangeEvent event) {
+				}
+
+				@Override
+				public void running(IJobChangeEvent event) {
+				}
+
+				@Override
+				public void done(IJobChangeEvent event) {
+					nextBatch.close();
+
+				}
+
+				@Override
+				public void awake(IJobChangeEvent event) {
+				}
+
+				@Override
+				public void aboutToRun(IJobChangeEvent event) {
+				}
+			});
+			job.schedule();
+		} else {
+
+		}
+	}
+
+	private synchronized boolean addToBatch(IDocument document) {
+		if (batch != null) {
+			batch.documents.add(document);
+			return true;
+		}
+		return false;
+	}
+
+	private synchronized boolean addToBatch(IResource resource) {
+		if (batch != null) {
+			batch.resources.add(resource);
+			return true;
+		}
+		return false;
+	}
+
+	public static BatchUpdater batch() {
+		return INSTANCE.getBatch(null);
+	}
+
+	private synchronized BatchUpdater getBatch(BatchVerificationJob job) {
+		if (batch == null) {
+			return batch = new BatchUpdater(job) {
+
+				@Override
+				public void close() {
+					performBatchUpdate();
+				}
+
+			};
+		}
+		batch.references++;
+		return batch;
 	}
 
 }

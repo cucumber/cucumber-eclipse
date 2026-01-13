@@ -61,6 +61,7 @@ abstract class VerificationJob extends Job {
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
 		Collection<GherkinEditorDocument> editorDocuments = getEditorDocuments();
+		monitor.subTask("Validate " + editorDocuments.size() + " Documents");
 		if (editorDocuments.isEmpty()) {
 			return Status.OK_STATUS;
 		}

@@ -107,4 +107,9 @@ class FileBasedDocument extends Document {
 		}
 	}
 
+	@Override
+	public String toString() {
+		return "FileBasedDocument [" + file + "]";
+	}
+
 }
