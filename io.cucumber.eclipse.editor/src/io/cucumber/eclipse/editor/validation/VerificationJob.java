@@ -8,12 +8,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.text.IDocument;
 
 import io.cucumber.eclipse.editor.CucumberServiceRegistry;
 import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
-import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
 import io.cucumber.eclipse.editor.marker.MarkerFactory;
 import io.cucumber.messages.types.ParseError;
 
@@ -35,18 +33,28 @@ import io.cucumber.messages.types.ParseError;
  * rescheduled to run again after the current run completes.
  * </p>
  */
-class VerificationJob extends Job {
+abstract class VerificationJob extends Job {
 
-	private final IDocument document;
+	VerificationJob(String name) {
+		super("Verify " + name);
+	}
 
-	VerificationJob(IDocument document) {
-		super("Verify Gherkin Document");
-		this.document = document;
+	/**
+	 * Returns true if this job belongs to the specified family.
+	 * All VerificationJob instances belong to the VerificationJob.class family,
+	 * allowing bulk operations on verification jobs.
+	 * 
+	 * @param family the job family identifier
+	 * @return true if this job belongs to the family
+	 */
+	@Override
+	public boolean belongsTo(Object family) {
+		return family == VerificationJob.class;
 	}
 
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
-		GherkinEditorDocument editorDocument = GherkinEditorDocumentManager.get(document);
+		GherkinEditorDocument editorDocument = getEditorDocument();
 		if (editorDocument == null) {
 			return Status.OK_STATUS;
 		}
@@ -80,5 +88,14 @@ class VerificationJob extends Job {
 
 		return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
 	}
+
+	/**
+	 * Retrieves the GherkinEditorDocument to validate.
+	 * Subclasses implement this to provide the document from their specific source
+	 * (text buffer or resource).
+	 * 
+	 * @return the document to validate, or null if not available
+	 */
+	protected abstract GherkinEditorDocument getEditorDocument();
 
 }

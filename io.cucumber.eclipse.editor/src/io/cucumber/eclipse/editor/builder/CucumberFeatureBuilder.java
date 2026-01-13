@@ -1,6 +1,8 @@
 package io.cucumber.eclipse.editor.builder;
 
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IFile;
@@ -41,10 +43,36 @@ public class CucumberFeatureBuilder extends IncrementalProjectBuilder {
 
 	@Override
 	protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
+		IProject project = getProject();
 		try {
-			validateProject(getProject(), monitor);
+			Set<GherkinEditorDocument> documents = new LinkedHashSet<>();
+			// Collect all feature files with tracking enabled. Tracking sets up
+			// resource change listeners so validation is automatically triggered
+			// when files change outside the editor.
+			project.accept(new IResourceVisitor() {
+				@Override
+				public boolean visit(IResource resource) throws CoreException {
+					if (monitor.isCanceled()) {
+						return false;
+					}
+					if (resource instanceof IFile) {
+						IFile file = (IFile) resource;
+						if ("feature".equals(file.getFileExtension())) {
+							GherkinEditorDocument editorDocument = GherkinEditorDocumentManager.get(file, true);
+							if (editorDocument != null) {
+								documents.add(editorDocument);
+							}
+						}
+					}
+					return true;
+				}
+			});
+			if (!documents.isEmpty()) {
+				// if we have collected some data trigger validation for this project
+				DocumentValidator.revalidateDocuments(project);
+			}
 		} catch (Exception e) {
-			ILog.get().error("Failed to validate project: " + getProject().getName(), e);
+			ILog.get().error("Failed to validate project: " + project.getName(), e);
 		}
 		return null;
 	}
@@ -52,39 +80,6 @@ public class CucumberFeatureBuilder extends IncrementalProjectBuilder {
 	@Override
 	protected void clean(IProgressMonitor monitor) throws CoreException {
 		// Clean is handled by marker deletion which is automatic when resources are cleaned
-	}
-
-	/**
-	 * Validates all feature files in the given project.
-	 * <p>
-	 * This method visits all resources in the project and triggers validation
-	 * for each .feature file using the {@link DocumentValidator}.
-	 * </p>
-	 * 
-	 * @param project the project to validate
-	 * @param monitor the progress monitor for tracking and cancellation
-	 * @throws CoreException if resource visitation fails
-	 */
-	private static void validateProject(IProject project, IProgressMonitor monitor) throws CoreException {
-		project.accept(new IResourceVisitor() {
-			@Override
-			public boolean visit(IResource resource) throws CoreException {
-				if (monitor.isCanceled()) {
-					return false;
-				}
-				if (resource instanceof IFile) {
-					IFile file = (IFile) resource;
-					if ("feature".equals(file.getFileExtension())) {
-						GherkinEditorDocument editorDocument = GherkinEditorDocumentManager.get(file);
-						if (editorDocument != null) {
-							// Trigger validation through DocumentValidator
-							DocumentValidator.revalidate(editorDocument.getDocument());
-						}
-					}
-				}
-				return true;
-			}
-		});
 	}
 
 	/**

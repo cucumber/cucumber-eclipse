@@ -18,9 +18,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
 import org.eclipse.osgi.service.debug.DebugTrace;
 
 import io.cucumber.core.eventbus.IncrementingUuidGenerator;
@@ -120,19 +118,16 @@ final class JavaGlueJob extends Job {
 			CucumberJavaPreferences projectProperties) {
 		List<Plugin> validationPlugins = new ArrayList<>();
 		IDocument doc = editorDocument.getDocument();
-		int lines = doc.getNumberOfLines();
 		Set<String> plugins = new LinkedHashSet<>();
-		for (int i = 0; i < lines; i++) {
-			try {
-				IRegion firstLine = doc.getLineInformation(i);
-				String line = doc.get(firstLine.getOffset(), firstLine.getLength()).trim();
-				if (line.startsWith("#")) {
-					String[] split = line.split("validation-plugin:", 2);
-					if (split.length == 2) {
-						plugins.add(split[1].trim());
-					}
+		String documentContent = doc.get();
+		String[] lines = documentContent.split("\\r?\\n");
+		for (String line : lines) {
+			String trimmed = line.trim();
+			if (trimmed.startsWith("#")) {
+				String[] split = trimmed.split("validation-plugin:", 2);
+				if (split.length == 2) {
+					plugins.add(split[1].trim());
 				}
-			} catch (BadLocationException e) {
 			}
 		}
 		projectProperties.plugins().forEach(plugins::add);
