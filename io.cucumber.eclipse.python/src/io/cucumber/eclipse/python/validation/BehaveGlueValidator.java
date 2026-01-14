@@ -1,127 +1,36 @@
 package io.cucumber.eclipse.python.validation;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
 import org.eclipse.jface.text.IDocument;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
-import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
-import io.cucumber.eclipse.editor.validation.DocumentValidator;
-import io.cucumber.eclipse.python.preferences.BehavePreferences;
+import io.cucumber.eclipse.editor.hyperlinks.IStepDefinitionOpener;
 
 /**
- * Provides access to Behave glue validation results and manages validation
- * jobs.
+ * Provides access to Behave glue validation results.
  * <p>
- * This class maintains a cache of validation jobs and their results (matched
- * steps) to support features like:
- * <ul>
- * <li>Navigation to step definitions (Ctrl+Click)</li>
- * <li>Code mining for step references</li>
- * </ul>
- * </p>
- * <p>
- * Validation is triggered by the
- * {@link io.cucumber.eclipse.editor.validation.DocumentValidator} through the
- * {@link BehaveGlueValidatorService}. This class no longer manages document
- * lifecycle or triggers validation directly.
+ * This class serves as a bridge between the OSGi service (BehaveGlueStore)
+ * and consumers like {@link IStepDefinitionOpener} that need access to
+ * step matching results.
  * </p>
  * 
+ * @see BehaveGlueValidatorService for the main validation logic
  * @see BehaveGlueJob for the background validation implementation
- * @see BehaveGlueValidatorService for integration with the validation framework
  */
+@Component
 public class BehaveGlueValidator {
 
-	/**
-	 * Maps documents to their currently running or scheduled validation jobs.
-	 * Thread-safe to allow concurrent access from UI and background threads.
-	 */
-	private static ConcurrentMap<IDocument, BehaveGlueJob> jobMap = new ConcurrentHashMap<>();
+	private static volatile BehaveGlueStore store;
 
-	/**
-	 * Global preference change listeners for Eclipse preference nodes. Used to
-	 * track and clean up project-level preference listeners.
-	 */
-	private static final Map<IEclipsePreferences, IPreferenceChangeListener> preferenceChangeListeners = new HashMap<>();
-
-	/**
-	 * Creates and runs a validation job for the given editor document.
-	 * <p>
-	 * This method is called by {@link BehaveGlueValidatorService} when the
-	 * DocumentValidator triggers validation. It manages the job lifecycle, ensuring
-	 * only one job runs at a time per document.
-	 * </p>
-	 * 
-	 * @param editorDocument the document to validate
-	 * @param monitor        the progress monitor
-	 * @throws CoreException if validation fails
-	 */
-	static void validate(GherkinEditorDocument editorDocument, IProgressMonitor monitor) throws CoreException {
-		IDocument document = editorDocument.getDocument();
-		BehaveGlueJob job = jobMap.compute(document, (key, oldJob) -> {
-			if (oldJob != null) {
-				oldJob.cancel();
-			}
-			return new BehaveGlueJob(() -> editorDocument);
-		});
-
-// Run the job directly in this thread (called from DocumentValidator's background job)
-		job.run(monitor);
+	@Reference
+	void setStore(BehaveGlueStore store) {
+		BehaveGlueValidator.store = store;
 	}
 
-	/**
-	 * Sets up project-level preference listener that triggers revalidation for all
-	 * currently known documents when preferences change.
-	 * <p>
-	 * This method is idempotent - it only registers listeners once for each
-	 * project preference scope.
-	 * </p>
-	 * <p>
-	 * This method is package-protected to allow BehaveGlueJob to register listeners
-	 * when it has access to the resource.
-	 * </p>
-	 * 
-	 * @param resource the resource to determine which preference scopes to listen
-	 *                 to
-	 */
-	static synchronized void setupProjectPreferenceListener(IResource resource) {
-		if (resource != null) {
-			BehavePreferences prefs = BehavePreferences.of(resource);
-			IEclipsePreferences projectNode = prefs.node();
-			if (projectNode != null && !preferenceChangeListeners.containsKey(projectNode)) {
-				IPreferenceChangeListener preferenceListener = event -> DocumentValidator.revalidateAllDocuments();
-				projectNode.addPreferenceChangeListener(preferenceListener);
-				preferenceChangeListeners.put(projectNode, preferenceListener);
-			}
-		}
-	}
-
-	/**
-	 * Cleans up preference listeners and resources.
-	 * <p>
-	 * This method should be called when the plugin is stopping to ensure proper
-	 * cleanup of all registered preference listeners.
-	 * </p>
-	 */
-	public static synchronized void shutdown() {
-		preferenceChangeListeners.forEach((node, listener) -> {
-			node.removePreferenceChangeListener(listener);
-		});
-		preferenceChangeListeners.clear();
-
-		jobMap.values().forEach(job -> {
-			job.cancel();
-		});
-		jobMap.clear();
+	void unsetStore(BehaveGlueStore store) {
+		BehaveGlueValidator.store = null;
 	}
 
 	/**
@@ -142,12 +51,10 @@ public class BehaveGlueValidator {
 	 *         </ul>
 	 */
 	public static Collection<StepMatch> getMatchedSteps(IDocument document) {
-		if (document != null) {
-			BehaveGlueJob job = jobMap.get(document);
-			if (job != null) {
-				return job.getMatchedSteps();
-			}
+		BehaveGlueStore currentStore = store;
+		if (currentStore != null && document != null) {
+			return currentStore.getMatchedSteps(document);
 		}
-		return Collections.emptyList();
+		return java.util.Collections.emptyList();
 	}
 }

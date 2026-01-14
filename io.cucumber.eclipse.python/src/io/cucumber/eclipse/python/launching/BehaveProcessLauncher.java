@@ -16,7 +16,7 @@ import org.eclipse.core.runtime.CoreException;
 public class BehaveProcessLauncher {
 
 	private String command = "behave";
-	private String featurePath;
+	private List<String> featurePaths = new ArrayList<>();
 	private String workingDirectory;
 	private List<String> additionalArgs = new ArrayList<>();
 	
@@ -32,7 +32,15 @@ public class BehaveProcessLauncher {
 	 * Sets the feature file or directory path
 	 */
 	public BehaveProcessLauncher withFeaturePath(String featurePath) {
-		this.featurePath = featurePath;
+		this.featurePaths.add(featurePath);
+		return this;
+	}
+	
+	/**
+	 * Sets multiple feature file or directory paths
+	 */
+	public BehaveProcessLauncher withFeaturePaths(List<String> featurePaths) {
+		this.featurePaths.addAll(featurePaths);
 		return this;
 	}
 	
@@ -132,11 +140,10 @@ public class BehaveProcessLauncher {
 		List<String> commandList = new ArrayList<>();
 		commandList.add(command);
 		
-		if (featurePath != null && !featurePath.isEmpty()) {
-			commandList.add(featurePath);
-		}
-		
 		commandList.addAll(additionalArgs);
+		
+		// Add feature paths at the end
+		commandList.addAll(featurePaths);
 		
 		ProcessBuilder processBuilder = new ProcessBuilder(commandList);
 		

@@ -5,7 +5,6 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 import io.cucumber.eclipse.editor.validation.DocumentValidator;
-import io.cucumber.eclipse.python.validation.BehaveGlueValidator;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -40,7 +39,6 @@ public class Activator extends AbstractUIPlugin {
 			getPreferenceStore().removePropertyChangeListener(propertyChangeListener);
 			propertyChangeListener = null;
 		}
-		BehaveGlueValidator.shutdown();
 		plugin = null;
 		super.stop(context);
 	}
