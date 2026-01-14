@@ -1,6 +1,8 @@
 package io.cucumber.eclipse.java.plugins;
 
+import java.net.URI;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -19,7 +21,7 @@ import io.cucumber.plugin.event.SnippetsSuggestedEvent;
  */
 public class CucumberMissingStepsPlugin implements Plugin, ConcurrentEventListener, EventListener {
 
-	private Map<Integer, Collection<String>> snippets = new ConcurrentHashMap<>();
+	private Map<URI, Map<Integer, Collection<String>>> snippetsByFeature = new ConcurrentHashMap<>();
 
 	@Override
 	public void setEventPublisher(EventPublisher publisher) {
@@ -28,13 +30,15 @@ public class CucumberMissingStepsPlugin implements Plugin, ConcurrentEventListen
 	}
 
 	private void handleSnippetsSuggestedEvent(SnippetsSuggestedEvent event) {
+		URI featureUri = event.getUri();
 		Location stepLocation = event.getStepLocation();
-		snippets.computeIfAbsent(stepLocation.getLine(), l -> ConcurrentHashMap.newKeySet())
-				.addAll(event.getSuggestion().getSnippets());
+		snippetsByFeature.computeIfAbsent(featureUri, k -> new ConcurrentHashMap<>())
+				.computeIfAbsent(stepLocation.getLine(), l -> ConcurrentHashMap.newKeySet())
+				.addAll(event.getSnippets());
 	}
 
-	public Map<Integer, Collection<String>> getSnippets() {
-		return snippets;
+	public Map<Integer, Collection<String>> getSnippetsForFeature(URI featureUri) {
+		return snippetsByFeature.getOrDefault(featureUri, Map.of());
 	}
 
 }

@@ -152,13 +152,13 @@ public final class CucumberRuntime implements AutoCloseable {
 		return null;
 	}
 
-	public void addFeature(GherkinEditorDocument document) {
+	public Optional<Feature> addFeature(GherkinEditorDocument document) {
 		IResource resource = document.getResource();
 		URI uri = Objects.requireNonNullElseGet(resource.getLocationURI(), () -> resource.getRawLocationURI());
 		// TODO can we get any information about an error here??
 		// TODO it would be good if the featureparser would be capable of loading
 		// directly a GherkingDocument
-		loadFeature(new Resource() {
+		Optional<Feature> feature = loadFeature(new Resource() {
 
 			@Override
 			public URI getUri() {
@@ -169,7 +169,9 @@ public final class CucumberRuntime implements AutoCloseable {
 			public InputStream getInputStream() throws IOException {
 				return new ByteArrayInputStream(document.getDocument().get().getBytes(StandardCharsets.UTF_8));
 			}
-		}).ifPresent(features::add);
+		});
+		feature.ifPresent(features::add);
+		return feature;
 	}
 
 	public static CucumberRuntime create(IJavaProject javaProject) throws CoreException {
