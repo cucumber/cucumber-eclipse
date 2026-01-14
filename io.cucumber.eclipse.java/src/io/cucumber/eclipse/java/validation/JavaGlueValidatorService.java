@@ -1,9 +1,11 @@
 package io.cucumber.eclipse.java.validation;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.core.resources.IResource;
@@ -102,16 +104,35 @@ public class JavaGlueValidatorService implements IGlueValidator, JavaGlueStore, 
 			// Get project preferences once for all documents in this project
 			CucumberJavaPreferences projectPreferences = CucumberJavaPreferences.of(javaProject.getProject());
 			
-			// Validate each document with the shared project context
+			// Group documents by their validation plugins
+			Map<Set<String>, List<GherkinEditorDocument>> documentsByPlugins = new HashMap<>();
+			
 			for (GherkinEditorDocument document : documents) {
+				Set<String> plugins = JavaGlueJob.extractValidationPlugins(document, projectPreferences);
+				documentsByPlugins.computeIfAbsent(plugins, k -> new ArrayList<>()).add(document);
+			}
+			
+			// Process each group with the same validation plugins together
+			for (Map.Entry<Set<String>, List<GherkinEditorDocument>> pluginEntry : documentsByPlugins.entrySet()) {
 				if (monitor.isCanceled()) {
 					break;
 				}
 				
-				GlueSteps glueSteps = JavaGlueJob.validateGlue(document, javaProject, projectPreferences, monitor);
-				if (glueSteps != null) {
-					glueMap.put(document.getDocument(), glueSteps);
-					EditorReconciler.reconcileFeatureEditor(document.getDocument());
+				Set<String> plugins = pluginEntry.getKey();
+				List<GherkinEditorDocument> docsForPlugins = pluginEntry.getValue();
+				
+				// Validate all documents in this group together
+				Map<GherkinEditorDocument, GlueSteps> results = JavaGlueJob.validateGlue(
+						docsForPlugins, javaProject, projectPreferences, plugins, monitor);
+				
+				// Store results in glue map
+				for (Map.Entry<GherkinEditorDocument, GlueSteps> result : results.entrySet()) {
+					GherkinEditorDocument document = result.getKey();
+					GlueSteps glueSteps = result.getValue();
+					if (glueSteps != null) {
+						glueMap.put(document.getDocument(), glueSteps);
+						EditorReconciler.reconcileFeatureEditor(document.getDocument());
+					}
 				}
 			}
 		}

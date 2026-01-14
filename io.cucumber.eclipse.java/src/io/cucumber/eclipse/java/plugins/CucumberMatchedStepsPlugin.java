@@ -1,6 +1,9 @@
 package io.cucumber.eclipse.java.plugins;
 
+import java.net.URI;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.cucumber.plugin.ConcurrentEventListener;
@@ -20,7 +23,7 @@ import io.cucumber.plugin.event.TestStepFinished;
  */
 public class CucumberMatchedStepsPlugin implements Plugin, ConcurrentEventListener, EventListener {
 
-	private Collection<MatchedStep<?>> matchedSteps = ConcurrentHashMap.newKeySet();
+	private Map<URI, Collection<MatchedStep<?>>> matchedStepsByFeature = new ConcurrentHashMap<>();
 
 	@Override
 	public void setEventPublisher(EventPublisher publisher) {
@@ -28,20 +31,23 @@ public class CucumberMatchedStepsPlugin implements Plugin, ConcurrentEventListen
 	}
 
 	private void handleTestStepFinished(TestStepFinished event) {
+		URI featureUri = event.getTestCase().getUri();
 		TestStep testStep = event.getTestStep();
 		if (testStep instanceof PickleStepTestStep) {
 			PickleStepTestStep pickleStepTestStep = (PickleStepTestStep) testStep;
 			if (pickleStepTestStep.getCodeLocation() != null) {
-				matchedSteps.add(new MatchedPickleStep(pickleStepTestStep));
+				matchedStepsByFeature.computeIfAbsent(featureUri, k -> ConcurrentHashMap.newKeySet())
+						.add(new MatchedPickleStep(pickleStepTestStep));
 			}
 		} else if (testStep instanceof HookTestStep) {
 			HookTestStep hookTestStep = (HookTestStep) testStep;
-			matchedSteps.add(new MatchedHookStep(hookTestStep, event.getTestCase().getLocation()));
+			matchedStepsByFeature.computeIfAbsent(featureUri, k -> ConcurrentHashMap.newKeySet())
+					.add(new MatchedHookStep(hookTestStep, event.getTestCase().getLocation()));
 		}
 	}
 
-	public Collection<MatchedStep<?>> getMatchedSteps() {
-		return matchedSteps;
+	public Collection<MatchedStep<?>> getMatchedStepsForFeature(URI featureUri) {
+		return matchedStepsByFeature.getOrDefault(featureUri, List.of());
 	}
 
 }
