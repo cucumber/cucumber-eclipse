@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.ICommand;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -56,17 +57,13 @@ public class CucumberFeatureBuilder extends IncrementalProjectBuilder {
 					if (monitor.isCanceled()) {
 						return false;
 					}
-					if (resource instanceof IFile) {
-						IFile file = (IFile) resource;
-						if ("feature".equals(file.getFileExtension())) {
-							GherkinEditorDocument editorDocument = GherkinEditorDocumentManager.get(file, true);
-							if (editorDocument != null) {
-								documents.add(editorDocument);
-							}
-						}
+					if (resource instanceof IFile file) {
+						collectFeatures(file, documents);
 					}
 					return true;
 				}
+
+
 			});
 			if (!documents.isEmpty()) {
 				// if we have collected some data trigger validation for this project
@@ -76,6 +73,25 @@ public class CucumberFeatureBuilder extends IncrementalProjectBuilder {
 			ILog.get().error("Failed to validate project: " + project.getName(), e);
 		}
 		return null;
+	}
+
+	private static void collectFeatures(IFile file, Set<GherkinEditorDocument> documents) {
+		if ("feature".equals(file.getFileExtension()) && !isDerived(file.getParent())) {
+			GherkinEditorDocument editorDocument = GherkinEditorDocumentManager.get(file, true);
+			if (editorDocument != null) {
+				documents.add(editorDocument);
+			}
+		}
+	}
+
+	private static boolean isDerived(IContainer container) {
+		if (container == null) {
+			return false;
+		}
+		if (container.isDerived()) {
+			return true;
+		}
+		return isDerived(container.getParent());
 	}
 
 	@Override
