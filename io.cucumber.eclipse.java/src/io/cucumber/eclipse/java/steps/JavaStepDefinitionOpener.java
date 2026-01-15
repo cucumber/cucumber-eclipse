@@ -9,6 +9,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ICoreRunnable;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
@@ -18,8 +19,11 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
@@ -30,6 +34,7 @@ import org.osgi.service.component.annotations.Reference;
 import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.editor.hyperlinks.IStepDefinitionOpener;
+import io.cucumber.eclipse.editor.validation.IGlueValidator;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberCodeLocation;
 import io.cucumber.eclipse.java.plugins.MatchedPickleStep;
@@ -75,14 +80,38 @@ public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
 			return false;
 		}
 		AtomicReference<IMethod[]> resolvedMethods = new AtomicReference<>();
+		AtomicBoolean cancelled = new AtomicBoolean(false);
 		Display display = textViewer.getTextWidget().getDisplay();
 		IDocument document = textViewer.getDocument();
 		BusyIndicator.showWhile(display, () -> {
 			AtomicBoolean done = new AtomicBoolean();
-			Job job = Job.create("Search for step '" + step.getText() + "'", new ICoreRunnable() {
+			AtomicReference<Job> jobRef = new AtomicReference<>();
+			Listener escapeListener = new Listener() {
+				@Override
+				public void handleEvent(Event event) {
+					if (event.type == SWT.KeyDown && event.keyCode == SWT.ESC) {
+						Job job = jobRef.get();
+						if (job != null) {
+							job.cancel();
+							cancelled.set(true);
+							done.set(true);
+							display.wake();
+						}
+					}
+				}
+			};
+			display.addFilter(SWT.KeyDown, escapeListener);
+			Job job = Job.create("Search for step '" + step.getText() + "' (press ESC to cancel)", new ICoreRunnable() {
 
 				@Override
 				public void run(IProgressMonitor monitor) throws CoreException {
+					try {
+						Job.getJobManager().join(IGlueValidator.class, monitor);
+					} catch (OperationCanceledException | InterruptedException e) {
+						cancelled.set(true);
+						display.wake();
+						return;
+					}
 					try {
 						Collection<MatchedStep<?>> steps = glueStore.getMatchedSteps(document);
 						StringBuilder sb = new StringBuilder();
@@ -124,16 +153,26 @@ public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
 							resolvedMethods.set(JDTUtil.resolveMethod(project, location, monitor));
 						}
 					} finally {
+						cancelled.set(cancelled.get() || monitor.isCanceled());
 						done.set(true);
+						display.wake();
 					}
 				}
 			});
+			jobRef.set(job);
 			job.schedule();
-			while (!done.get() && !display.isDisposed()) {
-				if (!display.readAndDispatch())
-					display.sleep();
+			try {
+				while (!done.get() && !display.isDisposed()) {
+					if (!display.readAndDispatch())
+						display.sleep();
+				}
+			} finally {
+				display.removeFilter(SWT.KeyDown, escapeListener);
 			}
 		});
+		if (cancelled.get()) {
+			return true;
+		}
 		IMethod[] method = resolvedMethods.get();
 		if (method != null) {
 			showMethod(method, textViewer.getTextWidget().getShell());

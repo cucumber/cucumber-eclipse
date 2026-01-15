@@ -44,7 +44,7 @@ class BatchVerificationJob extends VerificationJob {
 
 	@Override
 	public boolean belongsTo(Object family) {
-		return family == BatchVerificationJob.class;
+		return family == BatchVerificationJob.class || family == IGlueValidator.class;
 	}
 
 	@Override

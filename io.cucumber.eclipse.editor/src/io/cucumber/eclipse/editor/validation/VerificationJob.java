@@ -55,7 +55,7 @@ abstract class VerificationJob extends Job {
 	 */
 	@Override
 	public boolean belongsTo(Object family) {
-		return family == VerificationJob.class;
+		return family == VerificationJob.class || family == IGlueValidator.class;
 	}
 
 	@Override
