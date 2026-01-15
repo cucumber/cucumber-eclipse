@@ -54,6 +54,7 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.graphics.RGB;
 
+import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.eclipse.java.plugins.CucumberCodeLocation;
 import io.cucumber.eclipse.java.steps.JavaStepDefinitionsProvider;
 
@@ -122,7 +123,7 @@ public class JDTUtil {
 					urlList.add(new File(entry).toURI().toURL());
 				}
 			} catch (MalformedURLException | URISyntaxException e) {
-				Activator.getDefault().getLog().error(
+				EditorLogging.error(
 						"can't add classpathentry " + entry + " for project " + javaProject.getProject().getName(), e);
 			}
 		}

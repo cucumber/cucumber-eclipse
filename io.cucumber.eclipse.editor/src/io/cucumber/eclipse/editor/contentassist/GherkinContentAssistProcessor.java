@@ -17,7 +17,7 @@ import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 
-import io.cucumber.eclipse.editor.Activator;
+import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.eclipse.editor.Images;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
@@ -82,7 +82,7 @@ public class GherkinContentAssistProcessor implements IContentAssistProcessor {
 			// TODO datatables, docstrings, ...
 			return result.toArray(ICompletionProposal[]::new);
 		} catch (BadLocationException e) {
-			Activator.getDefault().getLog().warn("Invalid location encountered while computing proposals", e);
+			EditorLogging.error("Invalid location encountered while computing proposals", e);
 		}
 		return null;
 

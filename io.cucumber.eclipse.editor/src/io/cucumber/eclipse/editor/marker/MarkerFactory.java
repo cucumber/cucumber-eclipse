@@ -12,14 +12,12 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.Region;
 
-import io.cucumber.eclipse.editor.Activator;
+import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.messages.types.Location;
 import io.cucumber.messages.types.ParseError;
 import io.cucumber.messages.types.SourceReference;
@@ -358,8 +356,7 @@ public class MarkerFactory {
 		try {
 			resource.deleteMarkers(CUCUMBER_MARKER, true, IResource.DEPTH_ZERO);
 		} catch (CoreException e) {
-			Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-					String.format("Couldn't remove markers from %s", resource), e));
+			EditorLogging.error(String.format("Couldn't remove markers from %s", resource), e);
 		}
 	}
 
@@ -367,8 +364,7 @@ public class MarkerFactory {
 		try {
 			resource.deleteMarkers(CUCUMBER_MARKER, true, IResource.DEPTH_INFINITE);
 		} catch (CoreException e) {
-			Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-					String.format("Couldn't remove markers from %s", resource), e));
+			EditorLogging.error(String.format("Couldn't remove markers from %s", resource), e);
 		}
 	}
 
@@ -384,8 +380,7 @@ public class MarkerFactory {
 			resource.getWorkspace().run(runnable, null, IWorkspace.AVOID_UPDATE, null);
 
 		} catch (CoreException e) {
-			Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-					String.format("Failed to place marker %s", resource), e));
+			EditorLogging.error(String.format("Failed to place marker %s", resource), e);
 		}
 	}
 
