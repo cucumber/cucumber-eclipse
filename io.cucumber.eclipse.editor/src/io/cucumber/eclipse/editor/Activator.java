@@ -34,6 +34,8 @@ public class Activator extends AbstractUIPlugin {
 
 	private ServiceTracker<CucumberServiceRegistry, CucumberServiceRegistry> serviceTracker;
 
+	private BundleContext context;
+
 	/**
 	 * The constructor
 	 */
@@ -42,25 +44,41 @@ public class Activator extends AbstractUIPlugin {
 
 	@Override
 	public void start(BundleContext context) throws Exception {
+		this.context = context;
 		super.start(context);
 		plugin = this;
 		tracingRegistration = context.registerService(DebugOptionsListener.class, TRACING,
 				new Hashtable<>(Collections.singletonMap(DebugOptions.LISTENER_SYMBOLICNAME, PLUGIN_ID)));
-		serviceTracker = new ServiceTracker<>(context, CucumberServiceRegistry.class, null);
-		serviceTracker.open();
+
 		io.cucumber.eclipse.editor.validation.DocumentValidator.initialize();
 	}
 
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
-		serviceTracker.close();
-		serviceTracker = null;
+		this.context = null;
+		closeTracker();
 		io.cucumber.eclipse.editor.validation.DocumentValidator.shutdown();
 		tracingRegistration.unregister();
 		TRACING.optionsChanged(null);
 		plugin = null;
 		super.stop(context);
+	}
+
+	private synchronized void closeTracker() {
+		if (serviceTracker == null) {
+			return;
+		}
+		serviceTracker.close();
+		serviceTracker = null;
+	}
+	
+	private synchronized ServiceTracker<CucumberServiceRegistry, CucumberServiceRegistry> getServiceTracker() {
+		if (serviceTracker == null && context != null) {
+			serviceTracker = new ServiceTracker<>(context, CucumberServiceRegistry.class, null);
+			serviceTracker.open();
+		}
+		return serviceTracker;
 	}
 
 	@Override
@@ -83,12 +101,14 @@ public class Activator extends AbstractUIPlugin {
 		if (activator == null) {
 			return null;
 		}
-		ServiceTracker<CucumberServiceRegistry, CucumberServiceRegistry> tracker = activator.serviceTracker;
+		ServiceTracker<CucumberServiceRegistry, CucumberServiceRegistry> tracker = activator.getServiceTracker();
 		if (tracker == null) {
 			return null;
 		}
 		return tracker.getService();
 	}
+
+
 
 	static ImageDescriptor getImageDescriptor(String icon) {
 		Activator activator = plugin;
