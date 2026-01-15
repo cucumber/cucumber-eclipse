@@ -106,8 +106,7 @@ public class StepCreationMarkerResolutionGenerator implements IMarkerResolutionG
 				SnippetApplicator.generateSnippet(snippet, (IFile) unit.getResource());
 				DocumentValidator.revalidate(editorDocument.getDocument());
 			} catch (CoreException | MalformedTreeException | IOException | BadLocationException e) {
-				Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID,
-						String.format("Couldn't generate snippet %s for %s", snippet, unit.getResource()), e));
+				EditorLogging.error(String.format("Couldn't generate snippet %s for %s", snippet, unit.getResource()), e);
 			}
 		}
 

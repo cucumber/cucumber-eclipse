@@ -37,8 +37,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
 
 import io.cucumber.cucumberexpressions.CucumberExpressionParserSupport;
-import io.cucumber.eclipse.editor.Activator;
 import io.cucumber.eclipse.editor.CucumberServiceRegistry;
+import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.eclipse.editor.Images;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
@@ -152,7 +152,7 @@ public class CucumberTemplates {
 				}
 			}
 		} catch (BadLocationException e) {
-			Activator.getDefault().getLog().warn("Invalid location encountered while computing context information", e);
+			EditorLogging.error("Invalid location encountered while computing context information", e);
 		}
 		return null;
 	}
@@ -232,9 +232,9 @@ public class CucumberTemplates {
 				try {
 					return provider.findStepDefinitions(viewer, offset, project, monitor).stream();
 				} catch (CoreException e) {
-					Activator.getDefault().getLog().log(e.getStatus());
+					EditorLogging.error(e.getStatus().getMessage(), e);
 				} catch (RuntimeException e) {
-					Activator.getDefault().getLog().error("Internal error while computing step definitions", e);
+					EditorLogging.error("Internal error while computing step definitions", e);
 				}
 				return Stream.empty();
 			}).collect(Collectors.toList());

@@ -18,7 +18,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.osgi.service.component.annotations.Component;
 
 import io.cucumber.eclipse.editor.hyperlinks.IStepDefinitionOpener;
-import io.cucumber.eclipse.python.Activator;
+import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.eclipse.python.launching.BehaveProcessLauncher;
 import io.cucumber.eclipse.python.validation.BehaveGlueValidator;
 import io.cucumber.eclipse.python.validation.StepMatch;
@@ -84,7 +84,7 @@ public class PythonStepDefinitionOpener implements IStepDefinitionOpener {
 				return true;
 			}
 		} catch (PartInitException | org.eclipse.jface.text.BadLocationException e) {
-			Activator.getDefault().getLog().error("Failed to open Python step definition", e);
+			EditorLogging.error("Failed to open Python step definition", e);
 		}
 
 		return false;

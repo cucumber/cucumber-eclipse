@@ -17,6 +17,7 @@ import org.eclipse.core.runtime.SubMonitor;
 
 import io.cucumber.eclipse.editor.Activator;
 import io.cucumber.eclipse.editor.BuildStorage;
+import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.eclipse.editor.StorageHelper;
 
 public class StepDefinitionsStorage implements BuildStorage<StepDefinitionsRepository> {
@@ -83,16 +84,13 @@ public class StepDefinitionsStorage implements BuildStorage<StepDefinitionsRepos
 				this.add(project, repository);
 			}
 		} catch (RuntimeException e) {
-			Activator.getDefault().getLog().log(new Status(Status.ERROR, Activator.PLUGIN_ID,
-					"loading StepDefinitionStore failed, a full rebuild of the project might be required", e));
+			EditorLogging.error("loading StepDefinitionStore failed, a full rebuild of the project might be required", e);
 			this.add(project, new StepDefinitionsRepository());
 		} catch (IOException e) {
-			Activator.getDefault().getLog().log(new Status(Status.ERROR, Activator.PLUGIN_ID,
-					"loading StepDefinitionStore failed, a full rebuild of the project might be required", e));
+			EditorLogging.error("loading StepDefinitionStore failed, a full rebuild of the project might be required", e);
 			this.add(project, new StepDefinitionsRepository());
 		} catch (ClassNotFoundException e) {
-			Activator.getDefault().getLog().log(new Status(Status.ERROR, Activator.PLUGIN_ID,
-					"loading StepDefinitionStore failed, a full rebuild of the project might be required", e));
+			EditorLogging.error("loading StepDefinitionStore failed, a full rebuild of the project might be required", e);
 			this.add(project, new StepDefinitionsRepository());
 		}
 	}
