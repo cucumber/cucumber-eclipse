@@ -2,6 +2,7 @@ package io.cucumber.eclipse.python.steps;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -19,8 +20,9 @@ import org.osgi.service.component.annotations.Component;
 
 import io.cucumber.eclipse.editor.hyperlinks.IStepDefinitionOpener;
 import io.cucumber.eclipse.editor.EditorLogging;
+import io.cucumber.eclipse.python.Activator;
 import io.cucumber.eclipse.python.launching.BehaveProcessLauncher;
-import io.cucumber.eclipse.python.validation.BehaveGlueValidator;
+import io.cucumber.eclipse.python.validation.BehaveGlueStore;
 import io.cucumber.eclipse.python.validation.StepMatch;
 import io.cucumber.messages.types.Step;
 
@@ -42,7 +44,10 @@ public class PythonStepDefinitionOpener implements IStepDefinitionOpener {
 		}
 
 		IDocument document = textViewer.getDocument();
-		Collection<StepMatch> matchedSteps = BehaveGlueValidator.getMatchedSteps(document);
+		BehaveGlueStore glueStore = Activator.getBehaveGlueStore();
+		Collection<StepMatch> matchedSteps = glueStore != null 
+				? glueStore.getMatchedSteps(document) 
+				: Collections.emptyList();
 
 		// Find the step match for this step based on line number
 		int stepLine = step.getLocation().getLine().intValue();
