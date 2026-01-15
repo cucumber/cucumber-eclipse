@@ -5,17 +5,15 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.resources.ICommand;
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import io.cucumber.eclipse.editor.ResourceHelper;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
 import io.cucumber.eclipse.editor.validation.BatchUpdater;
@@ -48,23 +46,23 @@ public class CucumberFeatureBuilder extends IncrementalProjectBuilder {
 		IProject project = getProject();
 		try (BatchUpdater batch = DocumentValidator.batch()) {
 			Set<GherkinEditorDocument> documents = new LinkedHashSet<>();
-			// Collect all feature files with tracking enabled. Tracking sets up
-			// resource change listeners so validation is automatically triggered
-			// when files change outside the editor.
-			project.accept(new IResourceVisitor() {
-				@Override
-				public boolean visit(IResource resource) throws CoreException {
-					if (monitor.isCanceled()) {
-						return false;
-					}
-					if (resource instanceof IFile file) {
-						collectFeatures(file, documents);
-					}
-					return true;
+			
+			// Collect all feature files (excluding derived resources like target/bin)
+			Set<IFile> featureFiles = ResourceHelper.getFeatureFilesInProject(project);
+			
+			// Create tracked documents for validation
+			for (IFile file : featureFiles) {
+				if (monitor.isCanceled()) {
+					break;
 				}
-
-
-			});
+				// Tracking sets up resource change listeners so validation is automatically
+				// triggered when files change outside the editor.
+				GherkinEditorDocument editorDocument = GherkinEditorDocumentManager.get(file, true);
+				if (editorDocument != null) {
+					documents.add(editorDocument);
+				}
+			}
+			
 			if (!documents.isEmpty()) {
 				// if we have collected some data trigger validation for this project
 				DocumentValidator.revalidateDocuments(project);
@@ -73,25 +71,6 @@ public class CucumberFeatureBuilder extends IncrementalProjectBuilder {
 			ILog.get().error("Failed to validate project: " + project.getName(), e);
 		}
 		return null;
-	}
-
-	private static void collectFeatures(IFile file, Set<GherkinEditorDocument> documents) {
-		if ("feature".equals(file.getFileExtension()) && !isDerived(file.getParent())) {
-			GherkinEditorDocument editorDocument = GherkinEditorDocumentManager.get(file, true);
-			if (editorDocument != null) {
-				documents.add(editorDocument);
-			}
-		}
-	}
-
-	private static boolean isDerived(IContainer container) {
-		if (container == null) {
-			return false;
-		}
-		if (container.isDerived()) {
-			return true;
-		}
-		return isDerived(container.getParent());
 	}
 
 	@Override

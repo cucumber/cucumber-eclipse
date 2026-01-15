@@ -36,7 +36,6 @@ import io.cucumber.eclipse.java.plugins.CucumberStepParserPlugin;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
 import io.cucumber.eclipse.java.preferences.CucumberJavaPreferences;
 import io.cucumber.eclipse.java.runtime.CucumberRuntime;
-import io.cucumber.eclipse.java.validation.JavaGlueValidatorService.GlueSteps;
 import io.cucumber.plugin.Plugin;
 
 /**
@@ -46,7 +45,7 @@ import io.cucumber.plugin.Plugin;
  * to match Gherkin steps with their corresponding Java step definitions.
  * </p>
  */
-final class JavaGlueJob {
+public final class JavaGlueJob {
 
 	private JavaGlueJob() {
 		// Utility class - prevent instantiation
@@ -63,7 +62,7 @@ final class JavaGlueJob {
 	 * @param monitor the progress monitor for cancellation
 	 * @return Map of documents to GlueSteps containing matched and available steps
 	 */
-	static Map<GherkinEditorDocument, GlueSteps> validateGlue(Collection<GherkinEditorDocument> editorDocuments, 
+	public static Map<GherkinEditorDocument, GlueSteps> validateGlue(Collection<GherkinEditorDocument> editorDocuments, 
 			IJavaProject javaProject, CucumberJavaPreferences projectPreferences,
 			Set<String> validationPlugins, IProgressMonitor monitor) {
 		

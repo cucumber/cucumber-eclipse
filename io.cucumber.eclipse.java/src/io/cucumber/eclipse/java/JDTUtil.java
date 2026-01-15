@@ -35,6 +35,7 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IImportDeclaration;
 import org.eclipse.jdt.core.IJavaModel;
@@ -349,6 +350,51 @@ public class JDTUtil {
 			}
 
 		}
+		return false;
+	}
+
+	/**
+	 * Checks if a method has any Cucumber-related annotations.
+	 * <p>
+	 * This method examines the method's annotations to determine if it's a Cucumber
+	 * step definition or hook by resolving each annotation's fully qualified name
+	 * and checking it against the Cucumber annotation pattern.
+	 * </p>
+	 * 
+	 * @param method the method to check
+	 * @return true if the method has Cucumber annotations, false otherwise
+	 * @throws JavaModelException if there's an error reading the annotations
+	 */
+	public static boolean hasCucumberAnnotation(IMethod method) throws JavaModelException {
+		IAnnotation[] annotations = method.getAnnotations();
+		if (annotations.length == 0) {
+			return false;
+		}
+		
+		IType declaringType = method.getDeclaringType();
+		if (declaringType == null) {
+			return false;
+		}
+		
+		for (IAnnotation annotation : annotations) {
+			String annotationName = annotation.getElementName();
+			
+			// Try to resolve the annotation type to get its fully qualified name
+			String[][] resolvedType = resolveTypeWithRetry(declaringType, annotationName);
+			
+			if (resolvedType != null && resolvedType.length > 0) {
+				// Convert resolved type to fully qualified name
+				String fullyQualifiedName = Signature.toQualifiedName(resolvedType[0]);
+				
+				// Check against Cucumber annotation pattern (io.cucumber.java.*)
+				Matcher matcher = JavaStepDefinitionsProvider.ioCucumberAnnotationMatcher.matcher(fullyQualifiedName);
+				if (matcher.find()) {
+					return true;
+				}
+				
+			}
+		}
+		
 		return false;
 	}
 

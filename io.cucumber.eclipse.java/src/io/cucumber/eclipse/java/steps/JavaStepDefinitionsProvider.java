@@ -2,7 +2,6 @@ package io.cucumber.eclipse.java.steps;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IProject;
@@ -46,9 +45,6 @@ import io.cucumber.eclipse.java.JDTUtil;
  *
  */
 public abstract class JavaStepDefinitionsProvider implements IStepDefinitionsProvider {
-
-	protected static final Pattern cucumberApiAnnotationMatcher = Pattern
-			.compile("cucumber\\.api\\.java\\.([a-z_]+)\\.(.*)$");
 
 	public static final Pattern ioCucumberAnnotationMatcher = Pattern
 			.compile("io\\.cucumber\\.java\\.([a-z_]+)\\.(.*)$");
@@ -111,30 +107,6 @@ public abstract class JavaStepDefinitionsProvider implements IStepDefinitionsPro
 		} catch (BadLocationException e) {
 			return -1;
 		}
-	}
-
-	/**
-	 * @param importedAnnotations
-	 * @param annotation
-	 * @return CucumberAnnotation
-	 * @throws JavaModelException
-	 */
-	protected static CucumberAnnotation getCukeAnnotation(List<CucumberAnnotation> importedAnnotations,
-			IAnnotation annotation) throws JavaModelException {
-
-		Matcher m = cucumberApiAnnotationMatcher.matcher(annotation.getElementName());
-		if (m.find()) {
-			return new CucumberAnnotation(m.group(2), m.group(1));
-		}
-		m = ioCucumberAnnotationMatcher.matcher(annotation.getElementName());
-		if (m.find()) {
-			return new CucumberAnnotation(m.group(2), m.group(1));
-		}
-		for (CucumberAnnotation cuke : importedAnnotations) {
-			if (cuke.getAnnotation().equals(annotation.getElementName()))
-				return cuke;
-		}
-		return null;
 	}
 
 	/**

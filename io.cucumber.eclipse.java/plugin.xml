@@ -45,6 +45,15 @@
         id="cucumber.eclipse.launching.launchConfigurationTabGroup.localCucumberFeature">
     </launchConfigurationTabGroup>
 </extension>
+	 <extension
+       point="org.eclipse.jdt.ui.queryParticipants">
+    <queryParticipant
+          nature="org.eclipse.jdt.core.javanature"
+          class="io.cucumber.eclipse.java.search.CucumberJavaQueryParticipant"
+          id="io.cucumber.eclipse.java.search.queryParticipant"
+          name="Cucumber Feature File References">
+    </queryParticipant>
+ </extension>
  <extension
        point="org.eclipse.ui.preferencePages">
     <page
