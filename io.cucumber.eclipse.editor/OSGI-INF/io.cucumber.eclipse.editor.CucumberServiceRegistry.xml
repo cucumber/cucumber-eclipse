@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.3.0" activate="start" deactivate="stop" name="io.cucumber.eclipse.editor.CucumberServiceRegistry">
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.3.0" name="io.cucumber.eclipse.editor.CucumberServiceRegistry">
    <service>
       <provide interface="io.cucumber.eclipse.editor.CucumberServiceRegistry"/>
    </service>

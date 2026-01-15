@@ -2,19 +2,16 @@ package io.cucumber.eclipse.editor;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.util.tracker.ServiceTracker;
 
 import io.cucumber.eclipse.editor.hyperlinks.IStepDefinitionOpener;
 import io.cucumber.eclipse.editor.launching.ILauncher;
@@ -31,6 +28,7 @@ import io.cucumber.eclipse.editor.validation.IGlueValidator;
 @Component(service = { CucumberServiceRegistry.class })
 public class CucumberServiceRegistry {
 
+	private static ServiceTracker<CucumberServiceRegistry, CucumberServiceRegistry> tracker;
 	@Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
 	private final List<IStepDefinitionsProvider> stepDefinitionsProvider = new CopyOnWriteArrayList<>();
 	@Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
@@ -42,33 +40,28 @@ public class CucumberServiceRegistry {
 	@Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
 	private final List<IGlueValidator> glueValidators = new CopyOnWriteArrayList<>();
 
-	private static final AtomicReference<CucumberServiceRegistry> REGISTRY = new AtomicReference<>();
-
-	@Activate
-	void start() {
-		REGISTRY.set(this);
-	}
-
-	@Deactivate
-	void stop() {
-		REGISTRY.compareAndSet(this, null);
-	}
-
-	private static CucumberServiceRegistry get() {
-		return Objects.requireNonNullElseGet(REGISTRY.get(), CucumberServiceRegistry::new);
-	}
-
 	public static List<IStepDefinitionOpener> getStepDefinitionOpener() {
-		return Collections.unmodifiableList(get().stepDefinitionOpener);
+		CucumberServiceRegistry service = Activator.getService();
+		if (service == null) {
+			return List.of();
+		}
+		return Collections.unmodifiableList(service.stepDefinitionOpener);
 	}
 
 	public static List<ILauncher> getLauncher() {
-		return Collections.unmodifiableList(get().cucumberLauncher);
+		CucumberServiceRegistry service = Activator.getService();
+		if (service == null) {
+			return List.of();
+		}
+		return Collections.unmodifiableList(service.cucumberLauncher);
 	}
 
 	public static List<IStepDefinitionsProvider> getStepDefinitionsProvider(IResource resource) {
-		// TODO better pass the document?!
-		return get().stepDefinitionsProvider.stream().filter(p -> {
+		CucumberServiceRegistry service = Activator.getService();
+		if (service == null) {
+			return List.of();
+		}
+		return service.stepDefinitionsProvider.stream().filter(p -> {
 			try {
 				return p.support(resource);
 			} catch (CoreException e) {
@@ -78,7 +71,11 @@ public class CucumberServiceRegistry {
 	}
 
 	public static List<IGlueValidator> getGlueValidators(IResource resource) {
-		return get().glueValidators.stream().filter(v -> {
+		CucumberServiceRegistry service = Activator.getService();
+		if (service == null) {
+			return List.of();
+		}
+		return service.glueValidators.stream().filter(v -> {
 			try {
 				return v.canValidate(resource);
 			} catch (CoreException e) {
