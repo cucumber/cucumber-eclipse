@@ -12,10 +12,10 @@ import org.eclipse.swt.graphics.Image;
 public class Images {
 
 	public static Image getCukesIcon() {
-		return Activator.getDefault().getImageRegistry().get(Activator.ICON_CUKES);
+		return Activator.getImage(Activator.ICON_CUKES);
 	}
 
 	public static ImageDescriptor getCukesIconDescriptor() {
-		return Activator.getDefault().getImageRegistry().getDescriptor(Activator.ICON_CUKES);
+		return Activator.getImageDescriptor(Activator.ICON_CUKES);
 	}
 }
