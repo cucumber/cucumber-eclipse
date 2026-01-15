@@ -11,6 +11,7 @@ Export-Package: io.cucumber.eclipse.java;x-internal:=true,
  io.cucumber.eclipse.java.properties;x-internal:=true,
  io.cucumber.eclipse.java.quickfix;x-internal:=true,
  io.cucumber.eclipse.java.runtime;x-internal:=true,
+ io.cucumber.eclipse.java.search;x-internal:=true,
  io.cucumber.eclipse.java.steps;x-internal:=true,
  io.cucumber.eclipse.java.validation;x-internal:=true
 Bundle-Activator: io.cucumber.eclipse.java.Activator
@@ -37,7 +38,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.ide;bundle-version="3.18.0",
  org.eclipse.jdt.debug.ui,
  org.eclipse.core.variables,
- io.cucumber.eclipse.java.plugins
+ io.cucumber.eclipse.java.plugins,
+ org.eclipse.search
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: io.cucumber.eclipse.java
 Bundle-ActivationPolicy: lazy

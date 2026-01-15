@@ -185,10 +185,6 @@ public class JavaGlueValidatorService implements IGlueValidator, JavaGlueStore, 
 		}
 	}
 
-	static record GlueSteps(Collection<CucumberStepDefinition> availableSteps,
-			Collection<MatchedStep<?>> matchedSteps) {
-	}
-
 	@Override
 	public void documentCreated(IDocument document) {
 	}

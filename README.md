@@ -14,6 +14,7 @@ _Where sleek plugin meets seamless BDD workflow_
 - 🧠 Smart Step Matching: Auto-link steps to definitions like magic. Zero guesswork, full precision.
 - 🚀 Auto-suggestions: Context-Aware Autocomplete - Speeds up typing, cuts down typos, feels like IDE sorcery.
 - 🗂️ Step definition navigation: Jump between features and step definitions like a time traveler.
+- 🔍 Find References: Right-click on step definition methods to see which feature files use them.
 - 🎨 I18n Syntax Highlighting: Make your tests shine with vibrant visual feedback.
 - 🛠️ Cucumber Console Output Panel: See clear results and trace bugs in a heartbeat.
 
