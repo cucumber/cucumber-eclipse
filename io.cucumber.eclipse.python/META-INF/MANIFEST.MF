@@ -28,5 +28,4 @@ Bundle-ActivationPolicy: lazy
 Import-Package: org.osgi.service.component.annotations;version="1.3.0"
 Service-Component: OSGI-INF/io.cucumber.eclipse.python.launching.CucumberBehaveLauncher.xml,
  OSGI-INF/io.cucumber.eclipse.python.steps.PythonStepDefinitionOpener.xml,
- OSGI-INF/io.cucumber.eclipse.python.validation.BehaveGlueValidator.xml,
  OSGI-INF/io.cucumber.eclipse.python.validation.BehaveGlueValidatorService.xml
