@@ -7,6 +7,7 @@ import org.osgi.util.tracker.ServiceTracker;
 
 import io.cucumber.eclipse.editor.EnvelopeReader;
 import io.cucumber.eclipse.editor.validation.DocumentValidator;
+import io.cucumber.eclipse.java.validation.JavaGlueStore;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -23,6 +24,8 @@ public class Activator extends AbstractUIPlugin {
 	
 	private IPropertyChangeListener propertyChangeListener;
 
+	private ServiceTracker<JavaGlueStore, JavaGlueStore> glueStoreTracker;
+
 	/**
 	 * The constructor
 	 */
@@ -35,6 +38,8 @@ public class Activator extends AbstractUIPlugin {
 		plugin = this;
 		envelopeReaderTracker = new ServiceTracker<>(context, EnvelopeReader.class, null);
 		envelopeReaderTracker.open();
+		glueStoreTracker = new ServiceTracker<>(context, JavaGlueStore.class, null);
+		glueStoreTracker.open();
 		propertyChangeListener = event -> DocumentValidator.revalidateAllDocuments();
 		getPreferenceStore().addPropertyChangeListener(propertyChangeListener);
 	}
@@ -44,6 +49,10 @@ public class Activator extends AbstractUIPlugin {
 		if (envelopeReaderTracker != null) {
 			envelopeReaderTracker.close();
 			envelopeReaderTracker = null;
+		}
+		if (glueStoreTracker != null) {
+			glueStoreTracker.close();
+			glueStoreTracker = null;
 		}
 		if (propertyChangeListener != null) {
 			getPreferenceStore().removePropertyChangeListener(propertyChangeListener);
@@ -71,6 +80,17 @@ public class Activator extends AbstractUIPlugin {
 			return null;
 		}
 		return activator.envelopeReaderTracker.getService();
+	}
+
+	/**
+	 * Returns the EnvelopeReader service, or null if not available
+	 */
+	public static JavaGlueStore getJavaGlueStore() {
+		Activator activator = getDefault();
+		if (activator == null || activator.glueStoreTracker == null) {
+			return null;
+		}
+		return activator.glueStoreTracker.getService();
 	}
 
 }

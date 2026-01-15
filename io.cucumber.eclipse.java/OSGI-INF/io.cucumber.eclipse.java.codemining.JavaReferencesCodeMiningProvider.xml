@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" immediate="true" name="io.cucumber.eclipse.java.codemining.JavaReferencesCodeMiningProvider">
-   <reference bind="setJavaGlueValidatorService" interface="io.cucumber.eclipse.java.validation.JavaGlueStore" name="JavaGlueValidatorService" unbind="unsetJavaGlueValidatorService"/>
-   <implementation class="io.cucumber.eclipse.java.codemining.JavaReferencesCodeMiningProvider"/>
-</scr:component>
