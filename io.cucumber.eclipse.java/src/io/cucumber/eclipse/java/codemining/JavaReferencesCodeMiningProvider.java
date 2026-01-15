@@ -34,12 +34,10 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 import io.cucumber.eclipse.editor.EditorLogging;
-import io.cucumber.eclipse.editor.EditorReconciler;
 import io.cucumber.eclipse.editor.SWTUtil;
+import io.cucumber.eclipse.java.Activator;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.MatchedHookStep;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
@@ -56,25 +54,7 @@ import io.cucumber.plugin.event.TestStep;
  * @author christoph
  *
  */
-@Component(service = { /*
-						 * This is actually registered through plugin.xml we only use the component to
-						 * get the required services
-						 */ }, immediate = true)
 public class JavaReferencesCodeMiningProvider implements ICodeMiningProvider {
-
-	private static AtomicReference<JavaGlueStore> glueStoreService = new AtomicReference<>();
-
-	@Reference
-	public void setJavaGlueValidatorService(JavaGlueStore service) {
-		glueStoreService.set(service);
-		EditorReconciler.reconcileAllFeatureEditors();
-	}
-
-	public void unsetJavaGlueValidatorService(JavaGlueStore service) {
-		if (glueStoreService.compareAndSet(service, null)) {
-			EditorReconciler.reconcileAllFeatureEditors();
-		}
-	}
 
 	@Override
 	public CompletableFuture<List<? extends ICodeMining>> provideCodeMinings(ITextViewer viewer,
@@ -86,9 +66,9 @@ public class JavaReferencesCodeMiningProvider implements ICodeMiningProvider {
 				if (javaProject != null) {
 					CucumberJavaPreferences preferences = CucumberJavaPreferences.of(javaProject.getProject());
 					if (preferences.showHooks()) {
-						JavaGlueStore service = glueStoreService.get();
-						if (service != null) {
-							Collection<MatchedStep<?>> steps = service.getMatchedSteps(document);
+						JavaGlueStore glueStore = Activator.getJavaGlueStore();
+						if (glueStore != null) {
+							Collection<MatchedStep<?>> steps = glueStore.getMatchedSteps(document);
 							if (!steps.isEmpty()) {
 								return computeCodeMinings(document, javaProject, steps);
 							}
