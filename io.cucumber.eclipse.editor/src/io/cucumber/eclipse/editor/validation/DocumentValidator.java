@@ -9,6 +9,7 @@ import org.eclipse.core.filebuffers.ITextFileBuffer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
@@ -365,6 +366,34 @@ public class DocumentValidator implements IGherkinDocumentListener {
 		}
 		batch.references++;
 		return batch;
+	}
+
+	/**
+	 * Waits for all validation jobs for the specified project to complete.
+	 * <p>
+	 * This method finds all running verification jobs that are processing resources
+	 * from the given project and joins on them, waiting for their completion.
+	 * This is more efficient than waiting for all validation jobs when only
+	 * a specific project's validation is needed.
+	 * </p>
+	 * 
+	 * @param project the project whose validation jobs should be joined
+	 * @throws InterruptedException if the wait is interrupted
+	 * @throws OperationCanceledException if the operation is canceled
+	 */
+	public static void joinValidation(IProject project) throws InterruptedException, OperationCanceledException {
+		if (project == null) {
+			return;
+		}
+		Job[] jobs = Job.getJobManager().find(IGlueValidator.class);
+		for (Job job : jobs) {
+			if (job instanceof VerificationJob) {
+				VerificationJob verificationJob = (VerificationJob) job;
+				if (verificationJob.matches(project)) {
+					job.join();
+				}
+			}
+		}
 	}
 
 }

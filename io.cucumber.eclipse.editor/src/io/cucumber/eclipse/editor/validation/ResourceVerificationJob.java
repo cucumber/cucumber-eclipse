@@ -3,6 +3,7 @@ package io.cucumber.eclipse.editor.validation;
 import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
@@ -40,6 +41,11 @@ class ResourceVerificationJob extends VerificationJob {
 	protected Collection<GherkinEditorDocument> getEditorDocuments() {
 		GherkinEditorDocument document = GherkinEditorDocumentManager.get(resource);
 		return document == null ? List.of() : List.of(document);
+	}
+
+	@Override
+	public boolean matches(IProject project) {
+		return project == resource.getProject();
 	}
 
 }
