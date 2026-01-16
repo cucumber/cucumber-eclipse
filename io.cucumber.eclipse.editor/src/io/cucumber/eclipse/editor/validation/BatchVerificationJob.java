@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -73,6 +74,22 @@ class BatchVerificationJob extends VerificationJob {
 
 	public BatchUpdater getUpdater() {
 		return updater;
+	}
+
+	@Override
+	public boolean matches(IProject project) {
+		for (IDocument doc : updater.documents) {
+			IResource resource = GherkinEditorDocumentManager.resourceForDocument(doc);
+			if (resource != null && resource.getProject() == project) {
+				return true;
+			}
+		}
+		for (IResource resource : updater.resources) {
+			if (resource.getProject() == project) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

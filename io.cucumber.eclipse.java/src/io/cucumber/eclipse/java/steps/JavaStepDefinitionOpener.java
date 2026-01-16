@@ -34,7 +34,7 @@ import org.osgi.service.component.annotations.Reference;
 import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.editor.hyperlinks.IStepDefinitionOpener;
-import io.cucumber.eclipse.editor.validation.IGlueValidator;
+import io.cucumber.eclipse.editor.validation.DocumentValidator;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberCodeLocation;
 import io.cucumber.eclipse.java.plugins.MatchedPickleStep;
@@ -106,7 +106,7 @@ public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
 				@Override
 				public void run(IProgressMonitor monitor) throws CoreException {
 					try {
-						Job.getJobManager().join(IGlueValidator.class, monitor);
+						DocumentValidator.joinValidation(project.getProject());
 					} catch (OperationCanceledException | InterruptedException e) {
 						cancelled.set(true);
 						display.wake();

@@ -3,6 +3,8 @@ package io.cucumber.eclipse.editor.validation;
 import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.text.IDocument;
 
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
@@ -40,6 +42,15 @@ class TextBufferVerificationJob extends VerificationJob {
 	protected Collection<GherkinEditorDocument> getEditorDocuments() {
 		GherkinEditorDocument editorDocument = GherkinEditorDocumentManager.get(document);
 		return editorDocument == null ? List.of() : List.of(editorDocument);
+	}
+
+	@Override
+	public boolean matches(IProject project) {
+		IResource resource = GherkinEditorDocumentManager.resourceForDocument(document);
+		if (resource != null) {
+			return resource.getProject() == project;
+		}
+		return false;
 	}
 
 }

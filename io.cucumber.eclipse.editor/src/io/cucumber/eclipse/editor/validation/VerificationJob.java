@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -170,5 +171,13 @@ abstract class VerificationJob extends Job {
 	 * @return the documents to validate, or an empty collection if not available
 	 */
 	protected abstract Collection<GherkinEditorDocument> getEditorDocuments();
+
+	/**
+	 * Checks if this verification job is currently handling any resource from the given project.
+	 * 
+	 * @param project the project to check
+	 * @return true if any document being validated by this job belongs to the given project
+	 */
+	public abstract boolean matches(IProject project);
 
 }
