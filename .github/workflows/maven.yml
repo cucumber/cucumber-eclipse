@@ -29,7 +29,7 @@ jobs:
         architecture: 'x64'
         cache: maven
     - name: Set up Maven
-      uses: stCarolas/setup-maven@07fbbe97d97ef44336b7382563d66743297e442f # v4.5
+      uses: stCarolas/setup-maven@12eb41b233df95d49b0c11fc1b5bc8312e5d4ce0 # v5.1
       with:
         maven-version: 3.9.9
     - name: Build with Maven
