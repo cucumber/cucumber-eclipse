@@ -63,7 +63,7 @@ Export-Package:        *;version="${version}";-noimport:=true
 			<dependency>
 				<groupId>io.cucumber</groupId>
 				<artifactId>cucumber-expressions</artifactId>
-				<version>18.0.1</version>
+				<version>18.1.0</version>
 				<type>jar</type>
 			</dependency>
 		</dependencies>
