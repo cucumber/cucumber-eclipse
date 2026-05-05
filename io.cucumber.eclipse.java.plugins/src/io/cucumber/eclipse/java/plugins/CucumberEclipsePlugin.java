@@ -153,6 +153,6 @@ public class CucumberEclipsePlugin implements ConcurrentEventListener {
 			};
 		} catch (Exception e) {
 		}
-		return new Jackson();
+		return new io.cucumber.messages.ndjson.Serializer();
 	}
 }

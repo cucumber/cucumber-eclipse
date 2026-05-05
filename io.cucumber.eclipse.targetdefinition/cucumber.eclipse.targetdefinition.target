@@ -12,12 +12,18 @@
 		<repository location="https://download.eclipse.org/technology/m2e/releases/latest/"/>
 		<unit id="org.eclipse.m2e.sdk.feature.feature.group" version="0.0.0"/>
 	</location>
-	<location includeDependencyDepth="infinite" includeDependencyScopes="compile" includeSource="true" missingManifest="error" type="Maven">
+	<location includeDependencyDepth="infinite" includeDependencyScopes="compile" includeSource="true" label="Gherkin" missingManifest="error" type="Maven">
 		<dependencies>
 			<dependency>
 				<groupId>io.cucumber</groupId>
+				<artifactId>gherkin-utils</artifactId>
+				<version>11.0.0</version>
+				<type>jar</type>
+			</dependency>
+			<dependency>
+				<groupId>io.cucumber</groupId>
 				<artifactId>gherkin</artifactId>
-				<version>37.0.1</version>
+				<version>39.0.0</version>
 				<type>jar</type>
 			</dependency>
 		</dependencies>
@@ -27,7 +33,7 @@
 			<dependency>
 				<groupId>io.cucumber</groupId>
 				<artifactId>cucumber-java</artifactId>
-				<version>7.33.0</version>
+				<version>7.34.3</version>
 				<type>jar</type>
 			</dependency>
 		</dependencies>
@@ -36,7 +42,7 @@ Bundle-Name:           ${mvnGroupId}:${mvnArtifactId}:${mvnVersion}
 version:               ${version_cleanup;${mvnVersion}}
 Bundle-SymbolicName:   ${mvnGroupId}.${mvnArtifactId}
 Bundle-Version:        ${version}
-Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
+Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io.cucumber.messages.internal.*,!org.checkerframework.*,!io.cucumber.messages.ndjson.internal.*,*
 Export-Package:        *;version="${version}";-noimport:=true
 ]]></instructions>
 	</location>
@@ -54,25 +60,7 @@ Bundle-Name:           ${mvnGroupId}:${mvnArtifactId}:${mvnVersion}
 version:               ${version_cleanup;${mvnVersion}}
 Bundle-SymbolicName:   ${mvnGroupId}.${mvnArtifactId}
 Bundle-Version:        ${version}
-Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
-Export-Package:        *;version="${version}";-noimport:=true
-]]></instructions>
-	</location>
-	<location includeDependencyDepth="infinite" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
-		<dependencies>
-			<dependency>
-				<groupId>io.cucumber</groupId>
-				<artifactId>cucumber-expressions</artifactId>
-				<version>18.0.1</version>
-				<type>jar</type>
-			</dependency>
-		</dependencies>
-		<instructions><![CDATA[
-Bundle-Name:           ${mvnGroupId}:${mvnArtifactId}:${mvnVersion}
-version:               ${version_cleanup;${mvnVersion}}
-Bundle-SymbolicName:   ${mvnGroupId}.${mvnArtifactId}
-Bundle-Version:        ${version}
-Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
+Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io.cucumber.messages.internal.*,!org.checkerframework.*,!io.cucumber.messages.ndjson.internal.*,*
 Export-Package:        *;version="${version}";-noimport:=true
 ]]></instructions>
 	</location>
@@ -91,24 +79,6 @@ Export-Package:        *;version="${version}";-noimport:=true
 				<type>jar</type>
 			</dependency>
 		</dependencies>
-	</location>
-	<location includeDependencyDepth="infinite" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
-		<dependencies>
-			<dependency>
-				<groupId>io.cucumber</groupId>
-				<artifactId>gherkin-utils</artifactId>
-				<version>10.0.0</version>
-				<type>jar</type>
-			</dependency>
-		</dependencies>
-		<instructions><![CDATA[
-Bundle-Name:           ${mvnGroupId}:${mvnArtifactId}:${mvnVersion}
-version:               ${version_cleanup;${mvnVersion}}
-Bundle-SymbolicName:   ${mvnGroupId}.${mvnArtifactId}
-Bundle-Version:        ${version}
-Import-Package:        !sun.*,io.cucumber.messages.internal.com.google.gson*,!io.cucumber.messages.internal.*,!org.checkerframework.*,*
-Export-Package:        *;version="${version}";-noimport:=true
-]]></instructions>
 	</location>
 	<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" label="Jackson" missingManifest="generate" type="Maven">
 		<dependencies>
@@ -140,6 +110,28 @@ Export-Package:        *;version="${version}";-noimport:=true
 				<groupId>com.fasterxml.jackson.module</groupId>
 				<artifactId>jackson-module-parameter-names</artifactId>
 				<version>2.21.3</version>
+				<type>jar</type>
+			</dependency>
+		</dependencies>
+	</location>
+	<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" label="Cucumber" missingManifest="error" type="Maven">
+		<dependencies>
+			<dependency>
+				<groupId>io.cucumber</groupId>
+				<artifactId>cucumber-expressions</artifactId>
+				<version>19.0.0</version>
+				<type>jar</type>
+			</dependency>
+			<dependency>
+				<groupId>io.cucumber</groupId>
+				<artifactId>messages-ndjson</artifactId>
+				<version>0.4.1</version>
+				<type>jar</type>
+			</dependency>
+			<dependency>
+				<groupId>io.cucumber</groupId>
+				<artifactId>messages</artifactId>
+				<version>32.3.1</version>
 				<type>jar</type>
 			</dependency>
 		</dependencies>
