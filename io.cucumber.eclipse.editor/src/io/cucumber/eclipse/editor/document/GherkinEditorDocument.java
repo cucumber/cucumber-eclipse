@@ -150,7 +150,7 @@ public final class GherkinEditorDocument extends GherkinStream {
 			throws BadLocationException {
 		int line =  location.getLine().intValue();
 		int offset = document.getLineOffset(line - 1 - lineOffset);
-		return new Position(offset + location.getColumn().orElse(0l).intValue() - 1, 1);
+		return new Position(offset + location.getColumn().orElse(0).intValue() - 1, 1);
 	}
 
 	/**
