@@ -45,5 +45,6 @@ jobs:
         git add .
         git config user.name github-actions
         git config user.email github-actions@github.com
-        git commit -m "Add latest update-site for version ${GITHUB_REF##*/}"
+        git commit -F - <<EOF 
+        Add latest update-site for version ${GITHUB_REF##*/}" -m "Created from ${{ github.sha }}"
         git push origin gh-pages
