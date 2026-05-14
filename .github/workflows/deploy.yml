@@ -40,7 +40,6 @@ jobs:
     - name: Deploy to GitHub Pages
       working-directory: gh-pages
       run: |
-        rm -rf update-site/${GITHUB_REF##*/}/
         mkdir -p update-site/${GITHUB_REF##*/}/
         cp -R ../code/io.cucumber.eclipse.updatesite/target/repository/* update-site/${GITHUB_REF##*/}/
         git add .
