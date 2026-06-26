@@ -21,6 +21,7 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 
 import io.cucumber.eclipse.editor.EditorReconciler;
+import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
 import io.cucumber.eclipse.editor.document.IGherkinDocumentListener;
@@ -66,6 +67,9 @@ public class JavaGlueValidatorService implements IGlueValidator, JavaGlueStore, 
 	@Override
 	public void validate(Collection<GherkinEditorDocument> editorDocuments, IProgressMonitor monitor)
 			throws CoreException {
+		boolean perf = Tracing.PERF_STEPS;
+		long start = perf ? System.currentTimeMillis() : 0;
+
 		// Group documents by Java project for efficient batch processing
 		Map<IJavaProject, List<GherkinEditorDocument>> documentsByProject = new HashMap<>();
 		
@@ -90,6 +94,11 @@ public class JavaGlueValidatorService implements IGlueValidator, JavaGlueStore, 
 			if (javaProject != null && javaProject.exists()) {
 				documentsByProject.computeIfAbsent(javaProject, k -> new java.util.ArrayList<>()).add(editorDocument);
 			}
+		}
+
+		if (perf) {
+			Tracing.get().trace(Tracing.PERFORMANCE_STEPS, "Glue validation dispatched: "
+					+ editorDocuments.size() + " doc(s) across " + documentsByProject.size() + " project(s)");
 		}
 		
 		// Process each Java project's documents with shared runtime setup
@@ -135,6 +144,11 @@ public class JavaGlueValidatorService implements IGlueValidator, JavaGlueStore, 
 					}
 				}
 			}
+		}
+
+		if (perf) {
+			Tracing.get().trace(Tracing.PERFORMANCE_STEPS, "Glue validation complete: "
+					+ editorDocuments.size() + " doc(s) in " + (System.currentTimeMillis() - start) + "ms");
 		}
 	}
 

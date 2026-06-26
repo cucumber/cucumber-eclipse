@@ -33,6 +33,7 @@ import io.cucumber.core.runtime.Runtime;
 import io.cucumber.core.runtime.TimeServiceEventBus;
 import io.cucumber.core.snippets.SnippetType;
 import io.cucumber.eclipse.editor.EditorLogging;
+import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.launching.FileResource;
@@ -175,9 +176,15 @@ public final class CucumberRuntime implements AutoCloseable {
 	}
 
 	public static CucumberRuntime create(IJavaProject javaProject) throws CoreException {
-		// TODO can we cache the classlaoder here to optimize performance? As long as
-		// the classpath do not change there won't be any new classes be loaded...
-		return new CucumberRuntime(javaProject);
+		// TODO can we cache the classloader here to optimize performance? As long as
+		// the classpath does not change there won't be any new classes be loaded...
+		CucumberRuntime rt = new CucumberRuntime(javaProject);
+		if (Tracing.PERF_STEPS) {
+			Tracing.get().trace(Tracing.PERFORMANCE_STEPS, "CucumberRuntime created for '"
+					+ javaProject.getElementName() + "' with "
+					+ rt.classLoader.getURLs().length + " classpath URL(s)");
+		}
+		return rt;
 	}
 
 	public void setGenerator(UuidGenerator uuidGenerator) {

@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import io.cucumber.eclipse.editor.ResourceHelper;
+import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
 import io.cucumber.eclipse.editor.validation.BatchUpdater;
@@ -44,11 +45,26 @@ public class CucumberFeatureBuilder extends IncrementalProjectBuilder {
 	@Override
 	protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
 		IProject project = getProject();
+		boolean perf = Tracing.PERF;
+		long start = perf ? System.currentTimeMillis() : 0;
+		String kindName = switch (kind) {
+			case FULL_BUILD -> "FULL";
+			case INCREMENTAL_BUILD -> "INCREMENTAL";
+			case AUTO_BUILD -> "AUTO";
+			case CLEAN_BUILD -> "CLEAN";
+			default -> "UNKNOWN(" + kind + ")";
+		};
+
 		try (BatchUpdater batch = DocumentValidator.batch()) {
 			Set<GherkinEditorDocument> documents = new LinkedHashSet<>();
 			
 			// Collect all feature files (excluding derived resources like target/bin)
 			Set<IFile> featureFiles = ResourceHelper.getFeatureFilesInProject(project);
+
+			if (perf) {
+				Tracing.get().trace(Tracing.PERFORMANCE, "CucumberFeatureBuilder [" + kindName + "] "
+						+ project.getName() + ": " + featureFiles.size() + " feature file(s) found");
+			}
 			
 			// Create tracked documents for validation
 			for (IFile file : featureFiles) {
@@ -69,6 +85,11 @@ public class CucumberFeatureBuilder extends IncrementalProjectBuilder {
 			}
 		} catch (Exception e) {
 			ILog.get().error("Failed to validate project: " + project.getName(), e);
+		}
+
+		if (perf) {
+			Tracing.get().trace(Tracing.PERFORMANCE, "CucumberFeatureBuilder [" + kindName + "] "
+					+ project.getName() + ": done in " + (System.currentTimeMillis() - start) + "ms");
 		}
 		return null;
 	}

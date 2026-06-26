@@ -1,6 +1,7 @@
 package io.cucumber.eclipse.editor.validation;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -15,6 +16,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.IDocument;
 
+import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
 import io.cucumber.eclipse.editor.document.IGherkinDocumentListener;
 import io.cucumber.eclipse.editor.preferences.CucumberEditorPreferences;
@@ -233,26 +235,40 @@ public class DocumentValidator implements IGherkinDocumentListener {
 	 * @param project the project whose documents should be revalidated
 	 */
 	public static void revalidateDocuments(IProject project) {
+		int editorCount = 0;
+		int resourceCount = 0;
 		Set<IResource> scheduled = new HashSet<>();
-		textBufferDocuments.forEach((doc, job) -> {
+		for (Map.Entry<IDocument, VerificationJob> e : textBufferDocuments.entrySet()) {
+			IDocument doc = e.getKey();
+			VerificationJob job = e.getValue();
 			IResource resource = GherkinEditorDocumentManager.resourceForDocument(doc);
 			if (resource == null || resource.getProject() != project) {
-				return;
+				continue;
 			}
 			if (INSTANCE.addToBatch(doc)) {
-				return;
+				editorCount++;
+				continue;
 			}
 			scheduleValidation(resource, job);
-		});
-		resourceDocuments.forEach((resource, job) -> {
-
+			scheduled.add(resource);
+			editorCount++;
+		}
+		for (Map.Entry<IResource, VerificationJob> e : resourceDocuments.entrySet()) {
+			IResource resource = e.getKey();
+			VerificationJob job = e.getValue();
 			if (resource.getProject() == project && scheduled.add(resource)) {
 				if (INSTANCE.addToBatch(resource)) {
-					return;
+					resourceCount++;
+					continue;
 				}
 				scheduleValidation(resource, job);
+				resourceCount++;
 			}
-		});
+		}
+		if (Tracing.PERF) {
+			Tracing.get().trace(Tracing.PERFORMANCE, "revalidateDocuments(" + project.getName() + "): "
+					+ editorCount + " editor doc(s), " + resourceCount + " background doc(s) scheduled");
+		}
 	}
 
 	/**

@@ -16,6 +16,7 @@ import org.eclipse.core.runtime.jobs.Job;
 
 import io.cucumber.eclipse.editor.CucumberServiceRegistry;
 import io.cucumber.eclipse.editor.EditorLogging;
+import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.marker.MarkerFactory;
 import io.cucumber.messages.types.ParseError;
@@ -67,6 +68,13 @@ abstract class VerificationJob extends Job {
 			return Status.OK_STATUS;
 		}
 
+		boolean perf = Tracing.PERF;
+		long start = perf ? System.currentTimeMillis() : 0;
+		if (perf) {
+			Tracing.get().trace(Tracing.PERFORMANCE, getName() + ": starting validation of "
+					+ editorDocuments.size() + " document(s)");
+		}
+
 		// Stage 1: Syntax validation
 		List<GherkinEditorDocument> validDocuments = validateSyntax(editorDocuments, monitor);
 		if (monitor.isCanceled()) {
@@ -75,6 +83,12 @@ abstract class VerificationJob extends Job {
 
 		// Stage 2: Glue validation
 		validateGlue(validDocuments, monitor);
+
+		if (perf) {
+			Tracing.get().trace(Tracing.PERFORMANCE, getName() + ": finished in "
+					+ (System.currentTimeMillis() - start) + "ms"
+					+ " (" + validDocuments.size() + "/" + editorDocuments.size() + " syntax-valid)");
+		}
 
 		return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
 	}
