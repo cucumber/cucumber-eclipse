@@ -26,6 +26,11 @@ _Where sleek plugin meets seamless BDD workflow_
 
 🎉 Elevate Testing. Empower Teams. Embrace Cucumber.
 
+## Performance with Large Projects
+
+Working with many feature files or large Java classpaths?
+See the **[Performance Tuning Guide](docs/performance-tuning.md)** for configuration tips that can significantly reduce validation time.
+
 ## Eclipse-Marketplace
 
 ![Eclipse-Marketplace](https://github.com/cucumber/cucumber-eclipse/blob/gh-pages/images/EclipseMarketPPlace.png)
