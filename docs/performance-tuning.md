@@ -138,8 +138,29 @@ If you are not sure which part is slow, enable the plugin's built-in performance
 
 | Option | What is measured |
 | -------| ---------------- |
-| `perf` | Overall validation timing per document |
-| `perf/steps` | Per-step timing during step-definition matching |
+| `perf` | Validation job start/end, document counts, revalidation trigger counts, builder stats |
+| `perf/steps` | Per-phase timing inside glue validation: classloader creation, feature parsing, Cucumber runtime execution (glue load + step matching), JDT type resolution for content assist |
+
+**Sample output with `perf/steps=true`** (what to look for):
+
+```
+CucumberRuntime created for 'my-project' with 342 classpath URL(s)
+[my-project] Classloader created in 1843ms
+[my-project] Parsed 12/12 feature(s) in 28ms
+[my-project] Runtime (glue load + match) took 3210ms for 12 feature(s), glue filters: []
+  login.feature: 8/47 steps matched, 0 missing
+  checkout.feature: 12/47 steps matched, 0 missing
+[my-project] Total glue validation: 5124ms (12 doc(s), 47 step def(s))
+findStepDefinitions: resolving 47 step def(s) via JDT for checkout.feature
+findStepDefinitions: resolved 47/47 in 612ms
+```
+
+**How to interpret the numbers:**
+
+- A high **Classloader created** time (> 500ms) and a large classpath URL count (> 200) means classloader caching (planned improvement) will help significantly.
+- A high **Runtime (glue load + match)** time with empty `glue filters: []` means adding glue path filters (Option 1) will directly reduce that time.
+- A high **findStepDefinitions** time means content-assist JDT type resolution is slow; this will be addressed by caching (planned improvement).
+- If **Parsed N/N feature(s)** shows many features being parsed each time, limiting the revalidation scope to open editors (planned improvement) will reduce that count.
 
 Additional debug options (useful when investigating unexpected behaviour, not just performance):
 
@@ -156,14 +177,19 @@ Additional debug options (useful when investigating unexpected behaviour, not ju
 Look for lines like:
 
 ```
-Total validation time for 12 document(s): 4823ms
+Verify Features: starting validation of 85 document(s)
+revalidateDocuments(my-project): 2 editor doc(s), 83 background doc(s) scheduled
+[my-project] Classloader created in 1843ms
+[my-project] Runtime (glue load + match) took 3210ms for 85 feature(s), glue filters: []
+[my-project] Total glue validation: 5124ms (85 doc(s), 47 step def(s))
+Verify Features: finished in 5202ms (85/85 syntax-valid)
 ```
 
-A high number here with a small document count means glue scanning (classpath loading) dominates.
-In that case, **Option 1** (glue path filters) will have the most impact.
+The **revalidateDocuments** line is the most diagnostic: it shows how many documents are queued each time a glue change is detected.
+A high background doc count (like 83 in the example above) means many feature files are being revalidated unnecessarily — this is the core problem that incremental improvements address.
 
-If the per-document time is low but many documents are validated at once, the total time is dominated by breadth.
-In that case, **Option 2** (disabling the builder or reducing tracked files) helps most.
+A high **Classloader created** time combined with a large classpath URL count is the next bottleneck.
+A high **Runtime** time with `glue filters: []` means adding glue path filters (Option 1) will directly reduce that time.
 
 ---
 

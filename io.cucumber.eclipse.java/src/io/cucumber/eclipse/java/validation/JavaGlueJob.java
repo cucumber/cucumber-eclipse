@@ -17,7 +17,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.osgi.service.debug.DebugTrace;
 
 import io.cucumber.core.eventbus.IncrementingUuidGenerator;
 import io.cucumber.core.exception.CompositeCucumberException;
@@ -77,98 +76,135 @@ public final class JavaGlueJob {
 			return resultsByDocument;
 		}
 
-		long start = System.currentTimeMillis();
-		DebugTrace debug = Tracing.get();
+		boolean perf = Tracing.PERF_STEPS;
+		long start = perf ? System.currentTimeMillis() : 0;
+		long startPhase = 0;
 
-		try (CucumberRuntime rt = CucumberRuntime.create(javaProject)) {
-			rt.setGenerator(new IncrementingUuidGenerator());
-			RuntimeOptionsBuilder runtimeOptions = rt.getRuntimeOptions();
-			runtimeOptions.setDryRun();
-
-			// Add all features to the runtime and map them by URI
-			Map<URI, GherkinEditorDocument> documentsByUri = new HashMap<>();
-			for (GherkinEditorDocument editorDocument : editorDocuments) {
-				if (monitor.isCanceled()) {
-					break;
-				}
-
-				IResource resource = editorDocument.getResource();
-				monitor.subTask(resource.getName());
-				debug.traceEntry(PERFORMANCE_STEPS, resource);
-
-				try {
-					Optional<Feature> feature = rt.addFeature(editorDocument);
-					if (feature.isPresent()) {
-						URI featureUri = feature.get().getUri();
-						documentsByUri.put(featureUri, editorDocument);
-					}
-				} catch (FeatureParserException e) {
-					// the feature has syntax errors, we can't check the glue then...
-					continue;
-				}
+		try {
+			// --- Phase 1: Create classloader and Cucumber runtime ---
+			if (perf) {
+				startPhase = System.currentTimeMillis();
+			}
+			CucumberRuntime rt = CucumberRuntime.create(javaProject);
+			if (perf) {
+				Tracing.get().trace(PERFORMANCE_STEPS, "[" + javaProject.getElementName() + "] Classloader created in "
+						+ (System.currentTimeMillis() - startPhase) + "ms");
 			}
 
-			if (documentsByUri.isEmpty()) {
-				return resultsByDocument;
-			}
+			try (rt) {
+				rt.setGenerator(new IncrementingUuidGenerator());
+				RuntimeOptionsBuilder runtimeOptions = rt.getRuntimeOptions();
+				runtimeOptions.setDryRun();
 
-			addGlueOptions(runtimeOptions, projectPreferences);
-
-			CucumberMissingStepsPlugin missingStepsPlugin = new CucumberMissingStepsPlugin();
-			CucumberStepParserPlugin stepParserPlugin = new CucumberStepParserPlugin();
-			CucumberMatchedStepsPlugin matchedStepsPlugin = new CucumberMatchedStepsPlugin();
-			rt.addPlugin(stepParserPlugin);
-			rt.addPlugin(matchedStepsPlugin);
-			rt.addPlugin(missingStepsPlugin);
-
-			// Add validation plugins
-			Map<String, Plugin> validationPluginInstances = new HashMap<>();
-			for (String pluginClass : validationPlugins) {
-				Plugin classpathPlugin = rt.addPluginFromClasspath(pluginClass);
-				if (classpathPlugin != null) {
-					validationPluginInstances.put(pluginClass, classpathPlugin);
+				// --- Phase 2: Parse and add all feature files ---
+				if (perf) {
+					startPhase = System.currentTimeMillis();
 				}
-			}
-
-			try {
-				rt.run(monitor);
-
-				// Process results for each document
-				Collection<CucumberStepDefinition> steps = stepParserPlugin.getStepList();
-
-				for (Map.Entry<URI, GherkinEditorDocument> entry : documentsByUri.entrySet()) {
+				Map<URI, GherkinEditorDocument> documentsByUri = new HashMap<>();
+				for (GherkinEditorDocument editorDocument : editorDocuments) {
 					if (monitor.isCanceled()) {
 						break;
 					}
 
-					URI uri = entry.getKey();
-					GherkinEditorDocument document = entry.getValue();
-					IResource resource = document.getResource();
+					IResource resource = editorDocument.getResource();
+					monitor.subTask(resource.getName());
 
-					// Get feature-specific results
-					Collection<MatchedStep<?>> matchedSteps = matchedStepsPlugin.getMatchedStepsForFeature(uri);
-					Map<Integer, Collection<String>> snippets = missingStepsPlugin.getSnippetsForFeature(uri);
-
-					// Collect validation errors from plugins
-					Map<Integer, String> validationErrors = new HashMap<>();
-					for (Plugin plugin : validationPluginInstances.values()) {
-						addErrors(plugin, validationErrors);
+					try {
+						Optional<Feature> feature = rt.addFeature(editorDocument);
+						if (feature.isPresent()) {
+							URI featureUri = feature.get().getUri();
+							documentsByUri.put(featureUri, editorDocument);
+						}
+					} catch (FeatureParserException e) {
+						// the feature has syntax errors, we can't check the glue then...
+						continue;
 					}
-
-					// Create markers for this document
-					MarkerFactory.validationErrorOnStepDefinition(resource, validationErrors, false);
-					MarkerFactory.missingSteps(resource, snippets, Activator.PLUGIN_ID, false);
-
-					debug.traceExit(PERFORMANCE_STEPS, matchedSteps.size() + " step(s) /  " + steps.size()
-							+ " step(s)  matched, " + snippets.size() + " snippet(s) where suggested");
-
-					resultsByDocument.put(document, new GlueSteps(List.copyOf(steps), List.copyOf(matchedSteps)));
 				}
 
-				debug.trace(PERFORMANCE_STEPS, "Total validation time for " + documentsByUri.size() + " document(s): "
-						+ (System.currentTimeMillis() - start) + "ms");
-			} catch (Throwable e) {
-				handleGlueValidationError(e, documentsByUri.values());
+				if (perf) {
+					Tracing.get().trace(PERFORMANCE_STEPS, "[" + javaProject.getElementName() + "] Parsed "
+							+ documentsByUri.size() + "/" + editorDocuments.size()
+							+ " feature(s) in " + (System.currentTimeMillis() - startPhase) + "ms");
+				}
+
+				if (documentsByUri.isEmpty()) {
+					return resultsByDocument;
+				}
+
+				addGlueOptions(runtimeOptions, projectPreferences);
+
+				CucumberMissingStepsPlugin missingStepsPlugin = new CucumberMissingStepsPlugin();
+				CucumberStepParserPlugin stepParserPlugin = new CucumberStepParserPlugin();
+				CucumberMatchedStepsPlugin matchedStepsPlugin = new CucumberMatchedStepsPlugin();
+				rt.addPlugin(stepParserPlugin);
+				rt.addPlugin(matchedStepsPlugin);
+				rt.addPlugin(missingStepsPlugin);
+
+				// Add validation plugins
+				Map<String, Plugin> validationPluginInstances = new HashMap<>();
+				for (String pluginClass : validationPlugins) {
+					Plugin classpathPlugin = rt.addPluginFromClasspath(pluginClass);
+					if (classpathPlugin != null) {
+						validationPluginInstances.put(pluginClass, classpathPlugin);
+					}
+				}
+
+				try {
+					// --- Phase 3: Run Cucumber (classloading + step matching) ---
+					if (perf) {
+						startPhase = System.currentTimeMillis();
+					}
+					rt.run(monitor);
+					if (perf) {
+						Tracing.get().trace(PERFORMANCE_STEPS, "[" + javaProject.getElementName()
+								+ "] Runtime (glue load + match) took " + (System.currentTimeMillis() - startPhase) + "ms"
+								+ " for " + documentsByUri.size() + " feature(s),"
+								+ " glue filters: " + projectPreferences.glueFilter());
+					}
+
+					// --- Phase 4: Process per-document results ---
+					Collection<CucumberStepDefinition> steps = stepParserPlugin.getStepList();
+
+					for (Map.Entry<URI, GherkinEditorDocument> entry : documentsByUri.entrySet()) {
+						if (monitor.isCanceled()) {
+							break;
+						}
+
+						URI uri = entry.getKey();
+						GherkinEditorDocument document = entry.getValue();
+						IResource resource = document.getResource();
+
+						// Get feature-specific results
+						Collection<MatchedStep<?>> matchedSteps = matchedStepsPlugin.getMatchedStepsForFeature(uri);
+						Map<Integer, Collection<String>> snippets = missingStepsPlugin.getSnippetsForFeature(uri);
+
+						// Collect validation errors from plugins
+						Map<Integer, String> validationErrors = new HashMap<>();
+						for (Plugin plugin : validationPluginInstances.values()) {
+							addErrors(plugin, validationErrors);
+						}
+
+						// Create markers for this document
+						MarkerFactory.validationErrorOnStepDefinition(resource, validationErrors, false);
+						MarkerFactory.missingSteps(resource, snippets, Activator.PLUGIN_ID, false);
+
+						if (perf) {
+							Tracing.get().trace(PERFORMANCE_STEPS, "  " + resource.getName() + ": "
+									+ matchedSteps.size() + "/" + steps.size()
+									+ " steps matched, " + snippets.size() + " missing");
+						}
+
+						resultsByDocument.put(document, new GlueSteps(List.copyOf(steps), List.copyOf(matchedSteps)));
+					}
+
+					if (perf) {
+						Tracing.get().trace(PERFORMANCE_STEPS, "[" + javaProject.getElementName()
+								+ "] Total glue validation: " + (System.currentTimeMillis() - start) + "ms"
+								+ " (" + documentsByUri.size() + " doc(s), " + stepParserPlugin.getStepList().size() + " step def(s))");
+					}
+				} catch (Throwable e) {
+					handleGlueValidationError(e, documentsByUri.values());
+				}
 			}
 		} catch (CoreException e) {
 			EditorLogging.error("Failed to create Cucumber runtime", e);

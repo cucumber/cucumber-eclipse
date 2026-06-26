@@ -26,6 +26,7 @@ import org.osgi.service.component.annotations.Reference;
 import io.cucumber.eclipse.editor.steps.ExpressionDefinition;
 import io.cucumber.eclipse.editor.steps.IStepDefinitionsProvider;
 import io.cucumber.eclipse.editor.steps.StepDefinition;
+import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberCodeLocation;
 import io.cucumber.eclipse.java.plugins.CucumberStepDefinition;
@@ -55,11 +56,25 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 			IJavaProject javaProject = JDTUtil.getJavaProject(resource);
 			SubMonitor subMonitor = SubMonitor.convert(monitor, "Searching Java Glue Code steps", 200);
 			Collection<CucumberStepDefinition> steps = javaValidator.getAvailableSteps(viewer.getDocument());
+
+			boolean perf = Tracing.PERF_STEPS;
+			long start = perf ? System.currentTimeMillis() : 0;
+			if (perf) {
+				Tracing.get().trace(Tracing.PERFORMANCE_STEPS, "findStepDefinitions: resolving "
+						+ steps.size() + " step def(s) via JDT for " + resource.getName());
+			}
+
 			SubMonitor remaining = subMonitor.setWorkRemaining(steps.size());
 			Map<String, IType> typeBuffer = new ConcurrentHashMap<>();
-			return steps.parallelStream()
+			Collection<StepDefinition> result = steps.parallelStream()
 					.map(cucumberStep -> parseStepDefintion(cucumberStep, javaProject, typeBuffer, remaining.split(1)))
 					.filter(Objects::nonNull).collect(Collectors.toList());
+
+			if (perf) {
+				Tracing.get().trace(Tracing.PERFORMANCE_STEPS, "findStepDefinitions: resolved "
+						+ result.size() + "/" + steps.size() + " in " + (System.currentTimeMillis() - start) + "ms");
+			}
+			return result;
 		} catch (OperationCanceledException e) {
 		}
 		return Collections.emptyList();
