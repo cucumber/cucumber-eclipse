@@ -4,6 +4,7 @@ public interface CucumberBehaveLaunchConstants {
 
 	public static final String TYPE_ID = "cucumber.eclipse.python.launching.localCucumberBehave";
 
+	public static final String ATTR_PROJECT = "project";
 	public static final String ATTR_FEATURE_PATH = "cucumber feature";
 	public static final String ATTR_FEATURE_WITH_LINE = "cucumber feature_with_line";
 	public static final String ATTR_TAGS = "cucumber tags";
