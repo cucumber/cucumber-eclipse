@@ -93,7 +93,7 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 		});
 		if (type != null) {
 			try {
-				IMethod[] methods = JDTUtil.resolveMethod(project, codeLocation, monitor);
+				IMethod[] methods = JDTUtil.resolveTypeMethod(type, codeLocation, monitor);
 				if (methods.length == 1) {
 					// perfect match
 					IMethod method = methods[0];
