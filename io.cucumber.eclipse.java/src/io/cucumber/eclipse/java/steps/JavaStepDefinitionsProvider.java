@@ -10,14 +10,12 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IClassFile;
-import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IMemberValuePair;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.ISourceReference;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.Signature;
@@ -28,8 +26,6 @@ import org.eclipse.jdt.core.search.SearchMatch;
 import org.eclipse.jdt.core.search.SearchParticipant;
 import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.core.search.SearchRequestor;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.Document;
 
 import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.eclipse.editor.steps.IStepDefinitionsProvider;
@@ -90,22 +86,6 @@ public abstract class JavaStepDefinitionsProvider implements IStepDefinitionsPro
 		} catch (Throwable t) {
 			EditorLogging.error("JDT search failed - this may be a bug in the JDT plugin", t);
 			// if the search engine failed, skip it is a bug into the JDT plugin
-		}
-	}
-
-	/**
-	 * @param compUnit
-	 * @param annotation
-	 * @return int
-	 * @throws JavaModelException
-	 */
-	protected static int getLineNumber(ICompilationUnit compUnit, ISourceReference annotation)
-			throws JavaModelException {
-		Document document = new Document(compUnit.getBuffer().getContents());
-		try {
-			return document.getLineOfOffset(annotation.getSourceRange().getOffset()) + 1;
-		} catch (BadLocationException e) {
-			return -1;
 		}
 	}
 

@@ -1,8 +1,10 @@
 package io.cucumber.eclipse.java.cache;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.ISourceReference;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 
@@ -43,5 +45,14 @@ public interface JavaGlueModelCache {
 	 */
 	IMethod[] resolveMethod(IJavaProject project, CucumberCodeLocation codeLocation, IProgressMonitor monitor)
 			throws JavaModelException;
+
+	/**
+	 * @param compUnit the compilation unit {@code annotation} is declared in
+	 * @param annotation the source element to resolve a line number for
+	 * @return the 1-based line number {@code annotation} starts at, or {@code -1} if it can't be
+	 *         resolved. The {@link org.eclipse.jface.text.Document} used to compute this is cached
+	 *         until {@code compUnit}'s underlying source changes.
+	 */
+	int getLineNumber(ICompilationUnit compUnit, ISourceReference annotation) throws JavaModelException;
 
 }

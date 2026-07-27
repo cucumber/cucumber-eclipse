@@ -73,9 +73,10 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 			Map<String, IType> typeBuffer = new ConcurrentHashMap<>();
 			LongAdder getMethodsNanos = new LongAdder();
 			LongAdder filterNanos = new LongAdder();
+			LongAdder lineNumberNanos = new LongAdder();
 			Collection<StepDefinition> result = steps.parallelStream()
 					.map(cucumberStep -> parseStepDefintion(cucumberStep, javaProject, typeBuffer, perf,
-							getMethodsNanos, filterNanos, remaining.split(1)))
+							getMethodsNanos, filterNanos, lineNumberNanos, remaining.split(1)))
 					.filter(Objects::nonNull).collect(Collectors.toList());
 
 			if (perf) {
@@ -84,7 +85,8 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 				Tracing.get().trace(Tracing.PERFORMANCE_STEPS,
 						"findStepDefinitions phase breakdown (summed across all step def(s), threads run in parallel"
 								+ " so this can exceed wall time): getMethods=" + toMs(getMethodsNanos)
-								+ "ms, resolveTypeMethod=" + toMs(filterNanos) + "ms");
+								+ "ms, resolveTypeMethod=" + toMs(filterNanos) + "ms, lineNumber="
+								+ toMs(lineNumberNanos) + "ms");
 			}
 			return result;
 		} catch (OperationCanceledException e) {
@@ -94,7 +96,7 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 
 	private StepDefinition parseStepDefintion(CucumberStepDefinition cucumberStep, IJavaProject project,
 			Map<String, IType> typeBuffer, boolean perf, LongAdder getMethodsNanos, LongAdder filterNanos,
-			IProgressMonitor monitor) {
+			LongAdder lineNumberNanos, IProgressMonitor monitor) {
 		CucumberCodeLocation codeLocation = cucumberStep.getCodeLocation();
 		io.cucumber.plugin.event.StepDefinition cucumberStepDefinition = cucumberStep.getStepDefinition();
 		IType type = typeBuffer.computeIfAbsent(codeLocation.getTypeName(), typeName -> {
@@ -119,7 +121,11 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 				if (methods.length == 1) {
 					// perfect match
 					IMethod method = methods[0];
-					int lineNumber = getLineNumber(method.getCompilationUnit(), method);
+					long t2 = perf ? System.nanoTime() : 0;
+					int lineNumber = modelCache.getLineNumber(method.getCompilationUnit(), method);
+					if (perf) {
+						lineNumberNanos.add(System.nanoTime() - t2);
+					}
 					ExpressionDefinition expression = new ExpressionDefinition(cucumberStepDefinition.getPattern());
 					String id = method.getHandleIdentifier();
 					return new StepDefinition(id, JDTUtil.getMethodName(method), expression, type.getResource(),
