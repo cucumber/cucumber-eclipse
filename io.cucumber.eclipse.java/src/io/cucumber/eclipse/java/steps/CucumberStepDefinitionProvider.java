@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IResource;
@@ -28,13 +29,14 @@ import io.cucumber.eclipse.editor.steps.IStepDefinitionsProvider;
 import io.cucumber.eclipse.editor.steps.StepDefinition;
 import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.java.JDTUtil;
+import io.cucumber.eclipse.java.cache.JavaGlueModelCache;
 import io.cucumber.eclipse.java.plugins.CucumberCodeLocation;
 import io.cucumber.eclipse.java.plugins.CucumberStepDefinition;
 import io.cucumber.eclipse.java.validation.JavaGlueStore;
 
 /**
  * Step definition provider that calls cucumber to find steps for the project
- * 
+ *
  * @author christoph
  *
  */
@@ -43,10 +45,13 @@ import io.cucumber.eclipse.java.validation.JavaGlueStore;
 public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider {
 
 	private final JavaGlueStore javaValidator;
+	private final JavaGlueModelCache modelCache;
 
 	@Activate
-	public CucumberStepDefinitionProvider(@Reference JavaGlueStore validator) throws URISyntaxException {
+	public CucumberStepDefinitionProvider(@Reference JavaGlueStore validator, @Reference JavaGlueModelCache modelCache)
+			throws URISyntaxException {
 		javaValidator = validator;
+		this.modelCache = modelCache;
 	}
 
 	@Override
@@ -66,13 +71,20 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 
 			SubMonitor remaining = subMonitor.setWorkRemaining(steps.size());
 			Map<String, IType> typeBuffer = new ConcurrentHashMap<>();
+			LongAdder getMethodsNanos = new LongAdder();
+			LongAdder filterNanos = new LongAdder();
 			Collection<StepDefinition> result = steps.parallelStream()
-					.map(cucumberStep -> parseStepDefintion(cucumberStep, javaProject, typeBuffer, remaining.split(1)))
+					.map(cucumberStep -> parseStepDefintion(cucumberStep, javaProject, typeBuffer, perf,
+							getMethodsNanos, filterNanos, remaining.split(1)))
 					.filter(Objects::nonNull).collect(Collectors.toList());
 
 			if (perf) {
 				Tracing.get().trace(Tracing.PERFORMANCE_STEPS, "findStepDefinitions: resolved "
 						+ result.size() + "/" + steps.size() + " in " + (System.currentTimeMillis() - start) + "ms");
+				Tracing.get().trace(Tracing.PERFORMANCE_STEPS,
+						"findStepDefinitions phase breakdown (summed across all step def(s), threads run in parallel"
+								+ " so this can exceed wall time): getMethods=" + toMs(getMethodsNanos)
+								+ "ms, resolveTypeMethod=" + toMs(filterNanos) + "ms");
 			}
 			return result;
 		} catch (OperationCanceledException e) {
@@ -81,7 +93,8 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 	}
 
 	private StepDefinition parseStepDefintion(CucumberStepDefinition cucumberStep, IJavaProject project,
-			Map<String, IType> typeBuffer, IProgressMonitor monitor) {
+			Map<String, IType> typeBuffer, boolean perf, LongAdder getMethodsNanos, LongAdder filterNanos,
+			IProgressMonitor monitor) {
 		CucumberCodeLocation codeLocation = cucumberStep.getCodeLocation();
 		io.cucumber.plugin.event.StepDefinition cucumberStepDefinition = cucumberStep.getStepDefinition();
 		IType type = typeBuffer.computeIfAbsent(codeLocation.getTypeName(), typeName -> {
@@ -93,7 +106,16 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 		});
 		if (type != null) {
 			try {
-				IMethod[] methods = JDTUtil.resolveTypeMethod(type, codeLocation, monitor);
+				long t0 = perf ? System.nanoTime() : 0;
+				IMethod[] typeMethods = modelCache.getMethods(type);
+				if (perf) {
+					getMethodsNanos.add(System.nanoTime() - t0);
+				}
+				long t1 = perf ? System.nanoTime() : 0;
+				IMethod[] methods = JDTUtil.resolveTypeMethod(typeMethods, codeLocation);
+				if (perf) {
+					filterNanos.add(System.nanoTime() - t1);
+				}
 				if (methods.length == 1) {
 					// perfect match
 					IMethod method = methods[0];
@@ -110,6 +132,10 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 		return new StepDefinition(cucumberStepDefinition.getLocation(), StepDefinition.NO_LABEL,
 				new ExpressionDefinition(cucumberStepDefinition.getPattern()), null, -1,
 				cucumberStepDefinition.getLocation(), "", null, null);
+	}
+
+	private static long toMs(LongAdder nanos) {
+		return nanos.sum() / 1_000_000;
 	}
 
 }
