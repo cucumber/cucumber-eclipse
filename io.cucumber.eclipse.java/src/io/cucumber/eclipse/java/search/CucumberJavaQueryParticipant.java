@@ -31,6 +31,7 @@ import io.cucumber.eclipse.editor.document.GherkinEditorDocument;
 import io.cucumber.eclipse.editor.document.GherkinEditorDocumentManager;
 import io.cucumber.eclipse.java.Activator;
 import io.cucumber.eclipse.java.JDTUtil;
+import io.cucumber.eclipse.java.cache.JavaGlueModelCache;
 import io.cucumber.eclipse.java.plugins.CucumberCodeLocation;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
 import io.cucumber.eclipse.java.preferences.CucumberJavaPreferences;
@@ -280,7 +281,7 @@ public class CucumberJavaQueryParticipant implements IQueryParticipant {
 			if (codeLocation != null) {
 				// Try to resolve the method from the code location
 				try {
-					IMethod[] resolvedMethods = JDTUtil.resolveMethod(javaProject, codeLocation, monitor);
+					IMethod[] resolvedMethods = resolveMethod(javaProject, codeLocation, monitor);
 					
 					// Check if our target method is in the resolved methods
 					if (resolvedMethods != null) {
@@ -299,6 +300,20 @@ public class CucumberJavaQueryParticipant implements IQueryParticipant {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Resolves a method through the {@link JavaGlueModelCache}, so a repeated search benefits from
+	 * whatever content-assist has already resolved. Returns {@code null} if the service isn't
+	 * available.
+	 */
+	private static IMethod[] resolveMethod(IJavaProject javaProject, CucumberCodeLocation codeLocation,
+			IProgressMonitor monitor) throws JavaModelException {
+		JavaGlueModelCache modelCache = Activator.getJavaGlueModelCache();
+		if (modelCache == null) {
+			return null;
+		}
+		return modelCache.resolveMethod(javaProject, codeLocation, monitor);
 	}
 
 	/**

@@ -36,6 +36,7 @@ import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.editor.hyperlinks.IStepDefinitionOpener;
 import io.cucumber.eclipse.editor.validation.DocumentValidator;
 import io.cucumber.eclipse.java.JDTUtil;
+import io.cucumber.eclipse.java.cache.JavaGlueModelCache;
 import io.cucumber.eclipse.java.plugins.CucumberCodeLocation;
 import io.cucumber.eclipse.java.plugins.MatchedPickleStep;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
@@ -46,10 +47,13 @@ import io.cucumber.messages.types.Step;
 public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
 
 	private JavaGlueStore glueStore;
+	private JavaGlueModelCache modelCache;
 
 	@Activate
-	public JavaStepDefinitionOpener(@Reference JavaGlueStore glueValidatorService) {
+	public JavaStepDefinitionOpener(@Reference JavaGlueStore glueValidatorService,
+			@Reference JavaGlueModelCache modelCache) {
 		this.glueStore = glueValidatorService;
+		this.modelCache = modelCache;
 	}
 
 	public static void showMethod(IMethod[] methods, Shell shell) {
@@ -150,7 +154,7 @@ public class JavaStepDefinitionOpener implements IStepDefinitionOpener {
 						}
 						
 						if (location != null) {
-							resolvedMethods.set(JDTUtil.resolveMethod(project, location, monitor));
+							resolvedMethods.set(modelCache.resolveMethod(project, location, monitor));
 						}
 					} finally {
 						cancelled.set(cancelled.get() || monitor.isCanceled());
