@@ -39,6 +39,8 @@ import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.eclipse.editor.SWTUtil;
 import io.cucumber.eclipse.java.Activator;
 import io.cucumber.eclipse.java.JDTUtil;
+import io.cucumber.eclipse.java.cache.JavaGlueModelCache;
+import io.cucumber.eclipse.java.plugins.CucumberCodeLocation;
 import io.cucumber.eclipse.java.plugins.MatchedHookStep;
 import io.cucumber.eclipse.java.plugins.MatchedStep;
 import io.cucumber.eclipse.java.preferences.CucumberJavaPreferences;
@@ -150,7 +152,7 @@ public class JavaReferencesCodeMiningProvider implements ICodeMiningProvider {
 				Set<Entry<MatchedHookStep, IMethod[]>> resolvedMethods = list.stream()
 						.collect(Collectors.toMap(Function.identity(), step -> {
 							try {
-								return JDTUtil.resolveMethod(javaProject, step.getCodeLocation(), null);
+								return resolveMethod(javaProject, step.getCodeLocation());
 							} catch (JavaModelException e) {
 								return null;
 							}
@@ -196,6 +198,15 @@ public class JavaReferencesCodeMiningProvider implements ICodeMiningProvider {
 				});
 				return null;
 			});
+		}
+
+		private static IMethod[] resolveMethod(IJavaProject javaProject, CucumberCodeLocation codeLocation)
+				throws JavaModelException {
+			JavaGlueModelCache modelCache = Activator.getJavaGlueModelCache();
+			if (modelCache == null) {
+				return null;
+			}
+			return modelCache.resolveMethod(javaProject, codeLocation, null);
 		}
 
 		private void open(MatchedHookStep step, IMethod[] method, Shell shell) {

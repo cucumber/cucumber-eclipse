@@ -7,6 +7,7 @@ import org.osgi.util.tracker.ServiceTracker;
 
 import io.cucumber.eclipse.editor.EnvelopeReader;
 import io.cucumber.eclipse.editor.validation.DocumentValidator;
+import io.cucumber.eclipse.java.cache.JavaGlueModelCache;
 import io.cucumber.eclipse.java.validation.JavaGlueStore;
 
 /**
@@ -26,6 +27,8 @@ public class Activator extends AbstractUIPlugin {
 
 	private ServiceTracker<JavaGlueStore, JavaGlueStore> glueStoreTracker;
 
+	private ServiceTracker<JavaGlueModelCache, JavaGlueModelCache> modelCacheTracker;
+
 	/**
 	 * The constructor
 	 */
@@ -40,6 +43,8 @@ public class Activator extends AbstractUIPlugin {
 		envelopeReaderTracker.open();
 		glueStoreTracker = new ServiceTracker<>(context, JavaGlueStore.class, null);
 		glueStoreTracker.open();
+		modelCacheTracker = new ServiceTracker<>(context, JavaGlueModelCache.class, null);
+		modelCacheTracker.open();
 		propertyChangeListener = event -> DocumentValidator.revalidateAllDocuments();
 		getPreferenceStore().addPropertyChangeListener(propertyChangeListener);
 	}
@@ -53,6 +58,10 @@ public class Activator extends AbstractUIPlugin {
 		if (glueStoreTracker != null) {
 			glueStoreTracker.close();
 			glueStoreTracker = null;
+		}
+		if (modelCacheTracker != null) {
+			modelCacheTracker.close();
+			modelCacheTracker = null;
 		}
 		if (propertyChangeListener != null) {
 			getPreferenceStore().removePropertyChangeListener(propertyChangeListener);
@@ -91,6 +100,17 @@ public class Activator extends AbstractUIPlugin {
 			return null;
 		}
 		return activator.glueStoreTracker.getService();
+	}
+
+	/**
+	 * Returns the JavaGlueModelCache service, or null if not available
+	 */
+	public static JavaGlueModelCache getJavaGlueModelCache() {
+		Activator activator = getDefault();
+		if (activator == null || activator.modelCacheTracker == null) {
+			return null;
+		}
+		return activator.modelCacheTracker.getService();
 	}
 
 }

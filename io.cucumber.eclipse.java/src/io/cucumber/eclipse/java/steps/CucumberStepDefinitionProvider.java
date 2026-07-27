@@ -112,7 +112,7 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 					getMethodsNanos.add(System.nanoTime() - t0);
 				}
 				long t1 = perf ? System.nanoTime() : 0;
-				IMethod[] methods = JDTUtil.resolveTypeMethod(typeMethods, codeLocation);
+				IMethod[] methods = modelCache.resolveTypeMethod(typeMethods, codeLocation);
 				if (perf) {
 					filterNanos.add(System.nanoTime() - t1);
 				}
