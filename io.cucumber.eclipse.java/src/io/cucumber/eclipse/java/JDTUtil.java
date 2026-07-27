@@ -56,6 +56,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.graphics.RGB;
 
 import io.cucumber.eclipse.editor.EditorLogging;
+import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.java.plugins.CucumberCodeLocation;
 import io.cucumber.eclipse.java.steps.JavaStepDefinitionsProvider;
 
@@ -201,34 +202,52 @@ public class JDTUtil {
 	public static IMethod[] resolveTypeMethod(IType type, CucumberCodeLocation codeLocation, IProgressMonitor monitor)
 			throws JavaModelException {
 		if (type != null) {
-			String methodName = codeLocation.getMethodName();
-			if (methodName.isBlank()) {
-				return null;
-			}
-			IMethod[] candidates = Arrays.stream(type.getMethods())
-					.filter(method -> method.getElementName().equals(methodName)).toArray(IMethod[]::new);
-			if (candidates.length > 1) {
-				String[] parameter = codeLocation.getParameter();
-				return Arrays.stream(candidates).filter(method -> {
-					return method.getNumberOfParameters() == parameter.length;
-				}).filter(method -> {
-					try {
-						String[] resolvedMethodParameterNames = resolveMethodParameterNames(method);
-						for (int i = 0; i < parameter.length; i++) {
-							if (!resolvedMethodParameterNames[i].equals(parameter[i])) {
-								return false;
-							}
-						}
-						return true;
-					} catch (JavaModelException e) {
-						return false;
-					}
-				}).toArray(IMethod[]::new);
-
-			}
-			return candidates;
+			return resolveTypeMethod(type.getMethods(), codeLocation);
 		}
 		return new IMethod[0];
+	}
+
+	/**
+	 * Same as {@link #resolveTypeMethod(IType, CucumberCodeLocation, IProgressMonitor)} but takes the
+	 * type's methods directly, so a caller resolving many code locations against the same type (e.g.
+	 * several step definitions declared in one class) can fetch {@link IType#getMethods()} once and
+	 * reuse it, instead of paying for a fresh lookup on every call.
+	 */
+	public static IMethod[] resolveTypeMethod(IMethod[] typeMethods, CucumberCodeLocation codeLocation)
+			throws JavaModelException {
+		String methodName = codeLocation.getMethodName();
+		if (methodName.isBlank()) {
+			return null;
+		}
+		IMethod[] candidates = Arrays.stream(typeMethods)
+				.filter(method -> method.getElementName().equals(methodName)).toArray(IMethod[]::new);
+		if (candidates.length > 1) {
+			long start = Tracing.PERF_STEPS ? System.nanoTime() : 0;
+			String[] parameter = codeLocation.getParameter();
+			IMethod[] disambiguated = Arrays.stream(candidates).filter(method -> {
+				return method.getNumberOfParameters() == parameter.length;
+			}).filter(method -> {
+				try {
+					String[] resolvedMethodParameterNames = resolveMethodParameterNames(method);
+					for (int i = 0; i < parameter.length; i++) {
+						if (!resolvedMethodParameterNames[i].equals(parameter[i])) {
+							return false;
+						}
+					}
+					return true;
+				} catch (JavaModelException e) {
+					return false;
+				}
+			}).toArray(IMethod[]::new);
+			if (Tracing.PERF_STEPS) {
+				Tracing.get().trace(Tracing.PERFORMANCE_STEPS,
+						"resolveTypeMethod: disambiguated " + candidates.length + " overload(s) of '" + methodName
+								+ "' to " + disambiguated.length + " in " + ((System.nanoTime() - start) / 1_000_000)
+								+ "ms");
+			}
+			return disambiguated;
+		}
+		return candidates;
 	}
 
 	public static String[] resolveMethodParameterNames(IMethod method) throws JavaModelException {
