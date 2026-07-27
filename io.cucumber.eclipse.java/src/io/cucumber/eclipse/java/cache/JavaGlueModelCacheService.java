@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
@@ -12,14 +13,20 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.ISourceReference;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2;
+import org.eclipse.jface.internal.text.html.HTMLPrinter;
+import org.eclipse.jface.resource.ColorRegistry;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
+import org.eclipse.swt.graphics.RGB;
 import org.osgi.service.component.annotations.Component;
 
 import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.plugins.CucumberCodeLocation;
 
+@SuppressWarnings("restriction")
 @Component(service = JavaGlueModelCache.class)
 public class JavaGlueModelCacheService implements JavaGlueModelCache {
 
@@ -29,6 +36,7 @@ public class JavaGlueModelCacheService implements JavaGlueModelCache {
 	private final Map<IType, CachedMethods> cache = new ConcurrentHashMap<>();
 	private final Map<IMethod, String[]> parameterNamesCache = new ConcurrentHashMap<>();
 	private final Map<ICompilationUnit, CachedDocument> documentCache = new ConcurrentHashMap<>();
+	private final Map<IMethod, CachedJavadoc> javadocCache = new ConcurrentHashMap<>();
 
 	private static final class CachedMethods {
 		final long modStamp;
@@ -47,6 +55,16 @@ public class JavaGlueModelCacheService implements JavaGlueModelCache {
 		CachedDocument(long modStamp, Document document) {
 			this.modStamp = modStamp;
 			this.document = document;
+		}
+	}
+
+	private static final class CachedJavadoc {
+		final long modStamp;
+		final String javadoc;
+
+		CachedJavadoc(long modStamp, String javadoc) {
+			this.modStamp = modStamp;
+			this.javadoc = javadoc;
 		}
 	}
 
@@ -181,6 +199,42 @@ public class JavaGlueModelCacheService implements JavaGlueModelCache {
 			}
 			return new CachedDocument(modStamp, document);
 		}).document;
+	}
+
+	@Override
+	public String getJavadoc(IMethod method) {
+		IResource resource = method.getResource();
+		long modStamp = resource != null ? resource.getModificationStamp() : IResource.NULL_STAMP;
+		return javadocCache.compute(method, (m, existing) -> {
+			if (existing != null && existing.modStamp == modStamp) {
+				return existing;
+			}
+			long start = Tracing.PERF_STEPS ? System.nanoTime() : 0;
+			String javadoc = renderJavadoc(m);
+			if (Tracing.PERF_STEPS) {
+				Tracing.get().trace(Tracing.PERFORMANCE_STEPS, "JavaGlueModelCache: MISS for javadoc of '"
+						+ m.getElementName() + "' - rendered in " + ((System.nanoTime() - start) / 1_000_000)
+						+ "ms (modStamp=" + modStamp + ")");
+			}
+			return new CachedJavadoc(modStamp, javadoc);
+		}).javadoc;
+	}
+
+	private static String renderJavadoc(IMethod method) {
+		try {
+			String content = JavadocContentAccess2.getHTMLContent(method, true);
+			if (content != null) {
+				StringBuilder buffer = new StringBuilder(content);
+				ColorRegistry registry = JFaceResources.getColorRegistry();
+				RGB fgRGB = registry.getRGB("org.eclipse.jdt.ui.Javadoc.foregroundColor"); //$NON-NLS-1$
+				RGB bgRGB = registry.getRGB("org.eclipse.jdt.ui.Javadoc.backgroundColor"); //$NON-NLS-1$
+				HTMLPrinter.insertPageProlog(buffer, 0, fgRGB, bgRGB, "");
+				HTMLPrinter.addPageEpilog(buffer);
+				return buffer.toString();
+			}
+		} catch (CoreException e) {
+		}
+		return null;
 	}
 
 }

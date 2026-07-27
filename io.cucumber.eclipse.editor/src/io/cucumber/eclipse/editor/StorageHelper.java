@@ -116,7 +116,7 @@ public class StorageHelper {
 		ExpressionDefinition expression = new ExpressionDefinition(expStr, expLang);
 		// FIXME
 		return new StepDefinition(id, label, expression, resource, line, sourceName, packageName, new StepParameter[0],
-				null);
+				(String) null);
 	}
 
 }
