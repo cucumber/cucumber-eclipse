@@ -6,10 +6,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.ISourceReference;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
 import org.osgi.service.component.annotations.Component;
 
 import io.cucumber.eclipse.editor.Tracing;
@@ -19,8 +23,12 @@ import io.cucumber.eclipse.java.plugins.CucumberCodeLocation;
 @Component(service = JavaGlueModelCache.class)
 public class JavaGlueModelCacheService implements JavaGlueModelCache {
 
+	/** {@link #getDocument(ICompilationUnit)} misses at or above this cost get their own trace line. */
+	private static final long SLOW_MISS_THRESHOLD_MS = 200;
+
 	private final Map<IType, CachedMethods> cache = new ConcurrentHashMap<>();
 	private final Map<IMethod, String[]> parameterNamesCache = new ConcurrentHashMap<>();
+	private final Map<ICompilationUnit, CachedDocument> documentCache = new ConcurrentHashMap<>();
 
 	private static final class CachedMethods {
 		final long modStamp;
@@ -29,6 +37,16 @@ public class JavaGlueModelCacheService implements JavaGlueModelCache {
 		CachedMethods(long modStamp, IMethod[] methods) {
 			this.modStamp = modStamp;
 			this.methods = methods;
+		}
+	}
+
+	private static final class CachedDocument {
+		final long modStamp;
+		final Document document;
+
+		CachedDocument(long modStamp, Document document) {
+			this.modStamp = modStamp;
+			this.document = document;
 		}
 	}
 
@@ -122,6 +140,47 @@ public class JavaGlueModelCacheService implements JavaGlueModelCache {
 			return new IMethod[0];
 		}
 		return resolveTypeMethod(getMethods(type), codeLocation);
+	}
+
+	@Override
+	public int getLineNumber(ICompilationUnit compUnit, ISourceReference annotation) throws JavaModelException {
+		Document document = getDocument(compUnit);
+		try {
+			return document.getLineOfOffset(annotation.getSourceRange().getOffset()) + 1;
+		} catch (BadLocationException e) {
+			return -1;
+		}
+	}
+
+	private Document getDocument(ICompilationUnit compUnit) {
+		IResource resource = compUnit.getResource();
+		long modStamp = resource != null ? resource.getModificationStamp() : IResource.NULL_STAMP;
+		return documentCache.compute(compUnit, (cu, existing) -> {
+			if (existing != null && existing.modStamp == modStamp) {
+				return existing;
+			}
+			long start = Tracing.PERF_STEPS ? System.nanoTime() : 0;
+			Document document;
+			try {
+				document = new Document(cu.getBuffer().getContents());
+			} catch (JavaModelException e) {
+				document = new Document("");
+			}
+			if (Tracing.PERF_STEPS) {
+				long elapsed = (System.nanoTime() - start) / 1_000_000;
+				if (elapsed >= SLOW_MISS_THRESHOLD_MS) {
+					Tracing.get().trace(Tracing.PERFORMANCE_STEPS,
+							"JavaGlueModelCache: SLOW MISS for '" + cu.getElementName() + "' - built Document in "
+									+ elapsed + "ms (modStamp=" + modStamp
+									+ ") - check for concurrent reconciler/build/DSL-support activity");
+				} else {
+					Tracing.get().trace(Tracing.PERFORMANCE_STEPS, "JavaGlueModelCache: MISS for '"
+							+ cu.getElementName() + "' - built Document in " + elapsed + "ms (modStamp=" + modStamp
+							+ ")");
+				}
+			}
+			return new CachedDocument(modStamp, document);
+		}).document;
 	}
 
 }
