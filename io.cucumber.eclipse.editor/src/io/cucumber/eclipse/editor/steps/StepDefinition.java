@@ -2,8 +2,11 @@ package io.cucumber.eclipse.editor.steps;
 
 import java.util.Comparator;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 import org.eclipse.core.resources.IResource;
+
+import io.cucumber.eclipse.editor.Tracing;
 
 /**
  * A parse stepdefinition that relates either to a source file or a classpath
@@ -31,11 +34,13 @@ public final class StepDefinition {
 	private final String packageName;
 	private final String id;
 	private StepParameter[] parameters;
-	private String description;
+	private volatile Supplier<String> descriptionSupplier;
+	private volatile String description;
+	private volatile boolean descriptionResolved;
 
 	/**
 	 * Creates a new {@link StepDefinition}
-	 * 
+	 *
 	 * @param id             the persistent id of this step, this might be used by
 	 *                       plugins to uniquely identify a step across others in
 	 *                       the workspace
@@ -52,6 +57,18 @@ public final class StepDefinition {
 	 */
 	public StepDefinition(String id, String label, ExpressionDefinition expression, IResource source, int lineNumber,
 			String sourceName, String packageName, StepParameter[] parameters, String description) {
+		this(id, label, expression, source, lineNumber, sourceName, packageName, parameters, () -> description);
+	}
+
+	/**
+	 * Same as {@link #StepDefinition(String, String, ExpressionDefinition, IResource, int, String,
+	 * String, StepParameter[], String)} but the description is resolved lazily, on the first actual
+	 * call to {@link #getDescription()}, and memoized from then on - useful when computing the
+	 * description upfront (e.g. rendering Javadoc) is expensive and most step definitions never have
+	 * their description looked at.
+	 */
+	public StepDefinition(String id, String label, ExpressionDefinition expression, IResource source, int lineNumber,
+			String sourceName, String packageName, StepParameter[] parameters, Supplier<String> descriptionSupplier) {
 		this.id = id;
 		this.label = label;
 		this.expression = expression;
@@ -59,7 +76,7 @@ public final class StepDefinition {
 		this.lineNumber = lineNumber;
 		this.sourceName = sourceName;
 		this.packageName = packageName;
-		this.description = description;
+		this.descriptionSupplier = descriptionSupplier;
 		this.parameters = Objects.requireNonNullElseGet(parameters, () -> new StepParameter[0]);
 	}
 
@@ -87,6 +104,21 @@ public final class StepDefinition {
 	}
 
 	public String getDescription() {
+		if (!descriptionResolved) {
+			synchronized (this) {
+				if (!descriptionResolved) {
+					long start = Tracing.PERF_STEPS ? System.nanoTime() : 0;
+					description = descriptionSupplier == null ? null : descriptionSupplier.get();
+					if (Tracing.PERF_STEPS) {
+						Tracing.get().trace(Tracing.PERFORMANCE_STEPS, "StepDefinition.getDescription(): lazily "
+								+ "computed description for '" + id + "' in " + ((System.nanoTime() - start) / 1_000_000)
+								+ "ms");
+					}
+					descriptionSupplier = null;
+					descriptionResolved = true;
+				}
+			}
+		}
 		return description;
 	}
 

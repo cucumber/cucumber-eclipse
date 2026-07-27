@@ -55,4 +55,15 @@ public interface JavaGlueModelCache {
 	 */
 	int getLineNumber(ICompilationUnit compUnit, ISourceReference annotation) throws JavaModelException;
 
+	/**
+	 * @param method the method to render Javadoc HTML for
+	 * @return the rendered Javadoc HTML for {@code method} (styled for display, or {@code null} if
+	 *         it has none / it couldn't be rendered), cached until {@code method}'s underlying
+	 *         source changes. Unlike {@link #getParameterNames(IMethod)}, invalidation is based on
+	 *         the source file's modification stamp rather than {@link IMethod} handle identity: a
+	 *         Javadoc comment can change without the method's signature - and therefore its handle -
+	 *         changing at all.
+	 */
+	String getJavadoc(IMethod method);
+
 }

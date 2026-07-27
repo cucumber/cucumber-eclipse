@@ -47,19 +47,13 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.Signature;
-import org.eclipse.jdt.internal.ui.text.javadoc.JavadocContentAccess2;
 import org.eclipse.jdt.launching.JavaRuntime;
-import org.eclipse.jface.internal.text.html.HTMLPrinter;
-import org.eclipse.jface.resource.ColorRegistry;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.swt.graphics.RGB;
 
 import io.cucumber.eclipse.editor.EditorLogging;
 import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.java.steps.JavaStepDefinitionsProvider;
 
-@SuppressWarnings("restriction")
 public class JDTUtil {
 
 	private JDTUtil() {
@@ -239,23 +233,6 @@ public class JDTUtil {
 		name.append(")");
 
 		return name.toString();
-	}
-
-	public static String getJavadoc(IMethod method) {
-		try {
-			String content = JavadocContentAccess2.getHTMLContent(method, true);
-			if (content != null) {
-				StringBuilder buffer = new StringBuilder(content);
-				ColorRegistry registry = JFaceResources.getColorRegistry();
-				RGB fgRGB = registry.getRGB("org.eclipse.jdt.ui.Javadoc.foregroundColor"); //$NON-NLS-1$
-				RGB bgRGB = registry.getRGB("org.eclipse.jdt.ui.Javadoc.backgroundColor"); //$NON-NLS-1$
-				HTMLPrinter.insertPageProlog(buffer, 0, fgRGB, bgRGB, "");
-				HTMLPrinter.addPageEpilog(buffer);
-				return buffer.toString();
-			}
-		} catch (CoreException e) {
-		}
-		return null;
 	}
 
 	public static Collection<ICompilationUnit> getGlueSources(IJavaProject javaProject, IProgressMonitor monitor)

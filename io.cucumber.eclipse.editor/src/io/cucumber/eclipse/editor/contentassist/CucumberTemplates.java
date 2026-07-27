@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -141,7 +142,7 @@ public class CucumberTemplates {
 
 										return new CucumberTemplateProposal(stepProposal.getTemplate(), ctx, region,
 												icon, stepProposal.relevance,
-												stepProposal.getStepDefinition().getDescription());
+												stepProposal.getStepDefinition()::getDescription);
 									}).sorted(RELEVANCE_ORDER).toArray(ICompletionProposal[]::new);
 							return proposals;
 						}
@@ -174,27 +175,55 @@ public class CucumberTemplates {
 
 	private static final class CucumberTemplateProposal extends TemplateProposal {
 
-		private String description;
+		private volatile Supplier<String> descriptionSupplier;
+		private volatile String description;
+		private volatile boolean descriptionResolved;
 
 		public CucumberTemplateProposal(Template template, TemplateContext context, IRegion region, Image image,
-				int relevance, String description) {
+				int relevance, Supplier<String> descriptionSupplier) {
 			super(template, context, region, image, relevance);
-			this.description = description;
-			if (description != null && description.startsWith("<html")) {
-				setInformationControlCreator(new IInformationControlCreator() {
+			this.descriptionSupplier = descriptionSupplier;
+		}
+
+		/**
+		 * Resolves the description on first use and memoizes it - deferred this far so an expensive
+		 * description (e.g. rendered Javadoc) is only ever computed for a proposal the user actually
+		 * inspects (JFace queries this lazily for the currently highlighted proposal), not for every
+		 * candidate produced by {@link #computeTemplateProposals}.
+		 */
+		private String resolveDescription() {
+			if (!descriptionResolved) {
+				synchronized (this) {
+					if (!descriptionResolved) {
+						description = descriptionSupplier == null ? null : descriptionSupplier.get();
+						descriptionSupplier = null;
+						descriptionResolved = true;
+					}
+				}
+			}
+			return description;
+		}
+
+		@Override
+		public IInformationControlCreator getInformationControlCreator() {
+			String resolvedDescription = resolveDescription();
+			if (resolvedDescription != null && resolvedDescription.startsWith("<html")) {
+				return new IInformationControlCreator() {
 
 					@Override
 					public IInformationControl createInformationControl(Shell parent) {
-						return new HtmlInformationControl(parent, description);
+						return new HtmlInformationControl(parent, resolvedDescription);
 					}
-				});
+				};
 			}
+			return super.getInformationControlCreator();
 		}
 
 		@Override
 		public String getAdditionalProposalInfo() {
-			if (description != null) {
-				return description;
+			String resolvedDescription = resolveDescription();
+			if (resolvedDescription != null) {
+				return resolvedDescription;
 			}
 			return getTemplate().getDescription();
 		}

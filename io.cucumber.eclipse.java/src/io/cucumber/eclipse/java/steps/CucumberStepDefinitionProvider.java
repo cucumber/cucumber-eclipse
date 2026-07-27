@@ -86,7 +86,9 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 						"findStepDefinitions phase breakdown (summed across all step def(s), threads run in parallel"
 								+ " so this can exceed wall time): getMethods=" + toMs(getMethodsNanos)
 								+ "ms, resolveTypeMethod=" + toMs(filterNanos) + "ms, lineNumber="
-								+ toMs(lineNumberNanos) + "ms");
+								+ toMs(lineNumberNanos)
+								+ "ms; javadoc is now computed lazily on first getDescription() call - see"
+								+ " JavaGlueModelCache's own trace line for its render/cache-hit timing");
 			}
 			return result;
 		} catch (OperationCanceledException e) {
@@ -130,14 +132,14 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 					String id = method.getHandleIdentifier();
 					return new StepDefinition(id, JDTUtil.getMethodName(method), expression, type.getResource(),
 							lineNumber, method.getElementName(), type.getPackageFragment().getElementName(),
-							getParameter(method), JDTUtil.getJavadoc(method));
+							getParameter(method), () -> modelCache.getJavadoc(method));
 				}
 			} catch (JavaModelException e) {
 			}
 		}
 		return new StepDefinition(cucumberStepDefinition.getLocation(), StepDefinition.NO_LABEL,
 				new ExpressionDefinition(cucumberStepDefinition.getPattern()), null, -1,
-				cucumberStepDefinition.getLocation(), "", null, null);
+				cucumberStepDefinition.getLocation(), "", null, (String) null);
 	}
 
 	private static long toMs(LongAdder nanos) {
