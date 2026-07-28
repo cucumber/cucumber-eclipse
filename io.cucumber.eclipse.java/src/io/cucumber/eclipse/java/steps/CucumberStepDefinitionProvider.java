@@ -27,6 +27,7 @@ import org.osgi.service.component.annotations.Reference;
 import io.cucumber.eclipse.editor.steps.ExpressionDefinition;
 import io.cucumber.eclipse.editor.steps.IStepDefinitionsProvider;
 import io.cucumber.eclipse.editor.steps.StepDefinition;
+import io.cucumber.eclipse.editor.steps.StepParameter;
 import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.java.JDTUtil;
 import io.cucumber.eclipse.java.cache.JavaGlueModelCache;
@@ -132,7 +133,13 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 					String id = method.getHandleIdentifier();
 					return new StepDefinition(id, JDTUtil.getMethodName(method), expression, type.getResource(),
 							lineNumber, method.getElementName(), type.getPackageFragment().getElementName(),
-							getParameter(method), () -> modelCache.getJavadoc(method));
+							() -> {
+								try {
+									return getParameter(method);
+								} catch (JavaModelException e) {
+									return new StepParameter[0];
+								}
+							}, () -> modelCache.getJavadoc(method));
 				}
 			} catch (JavaModelException e) {
 			}

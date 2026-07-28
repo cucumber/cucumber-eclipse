@@ -33,7 +33,9 @@ public final class StepDefinition {
 	private final String sourceName;
 	private final String packageName;
 	private final String id;
-	private StepParameter[] parameters;
+	private volatile Supplier<StepParameter[]> parametersSupplier;
+	private volatile StepParameter[] parameters;
+	private volatile boolean parametersResolved;
 	private volatile Supplier<String> descriptionSupplier;
 	private volatile String description;
 	private volatile boolean descriptionResolved;
@@ -53,22 +55,27 @@ public final class StepDefinition {
 	 * @param sourceName     the name of the source, if not given, the name of te
 	 *                       resource might be used
 	 * @param packageName    the packagename of the source
-	 * @param parameterNames the parameter names of the corresponding method
+	 * @param parametersSupplier resolves the parameters of the corresponding method, lazily on the
+	 *                       first actual call to {@link #getParameters()} and memoized from then on -
+	 *                       useful when resolving parameter types (e.g. enum constant values) upfront
+	 *                       is expensive and most step definitions never have their parameters looked
+	 *                       at (only actually needed when a proposal for this step is inserted).
 	 */
 	public StepDefinition(String id, String label, ExpressionDefinition expression, IResource source, int lineNumber,
-			String sourceName, String packageName, StepParameter[] parameters, String description) {
-		this(id, label, expression, source, lineNumber, sourceName, packageName, parameters, () -> description);
+			String sourceName, String packageName, Supplier<StepParameter[]> parametersSupplier, String description) {
+		this(id, label, expression, source, lineNumber, sourceName, packageName, parametersSupplier, () -> description);
 	}
 
 	/**
 	 * Same as {@link #StepDefinition(String, String, ExpressionDefinition, IResource, int, String,
-	 * String, StepParameter[], String)} but the description is resolved lazily, on the first actual
+	 * String, Supplier, String)} but the description is resolved lazily too, on the first actual
 	 * call to {@link #getDescription()}, and memoized from then on - useful when computing the
 	 * description upfront (e.g. rendering Javadoc) is expensive and most step definitions never have
 	 * their description looked at.
 	 */
 	public StepDefinition(String id, String label, ExpressionDefinition expression, IResource source, int lineNumber,
-			String sourceName, String packageName, StepParameter[] parameters, Supplier<String> descriptionSupplier) {
+			String sourceName, String packageName, Supplier<StepParameter[]> parametersSupplier,
+			Supplier<String> descriptionSupplier) {
 		this.id = id;
 		this.label = label;
 		this.expression = expression;
@@ -76,11 +83,27 @@ public final class StepDefinition {
 		this.lineNumber = lineNumber;
 		this.sourceName = sourceName;
 		this.packageName = packageName;
+		this.parametersSupplier = parametersSupplier;
 		this.descriptionSupplier = descriptionSupplier;
-		this.parameters = Objects.requireNonNullElseGet(parameters, () -> new StepParameter[0]);
 	}
 
 	public StepParameter[] getParameters() {
+		if (!parametersResolved) {
+			synchronized (this) {
+				if (!parametersResolved) {
+					long start = Tracing.PERF_STEPS ? System.nanoTime() : 0;
+					StepParameter[] resolved = parametersSupplier == null ? null : parametersSupplier.get();
+					parameters = Objects.requireNonNullElseGet(resolved, () -> new StepParameter[0]);
+					if (Tracing.PERF_STEPS) {
+						Tracing.get().trace(Tracing.PERFORMANCE_STEPS, "StepDefinition.getParameters(): lazily "
+								+ "computed " + parameters.length + " parameter(s) for '" + id + "' in "
+								+ ((System.nanoTime() - start) / 1_000_000) + "ms");
+					}
+					parametersSupplier = null;
+					parametersResolved = true;
+				}
+			}
+		}
 		return parameters;
 	}
 
