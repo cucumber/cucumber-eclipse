@@ -11,7 +11,7 @@ import io.cucumber.eclipse.editor.Tracing;
 /**
  * A parse stepdefinition that relates either to a source file or a classpath
  * item
- * 
+ *
  * @author Christoph Läubrich
  *
  */
@@ -25,17 +25,57 @@ public final class StepDefinition {
 	public static final Comparator<? super StepDefinition> EXPRESSION_TEXT_ORDER = (s1, s2) -> s1.getExpression().getText()
 			.compareToIgnoreCase(s2.getExpression().getText());
 
-	private final IResource source;
-	private final int lineNumber;
+	/**
+	 * The location-derived attributes of a {@link StepDefinition} - grouped together since they're
+	 * all resolved from the same underlying source lookup, not independently.
+	 */
+	public static final class ResolvedLocation {
+
+		public static final ResolvedLocation NONE = new ResolvedLocation(NO_SOURCE, NO_LINE_NUMBER, NO_SOURCE_NAME,
+				NO_PACKAGE_NAME);
+
+		private final IResource source;
+		private final int lineNumber;
+		private final String sourceName;
+		private final String packageName;
+
+		public ResolvedLocation(IResource source, int lineNumber, String sourceName, String packageName) {
+			this.source = source;
+			this.lineNumber = lineNumber;
+			this.sourceName = sourceName;
+			this.packageName = packageName;
+		}
+
+		public IResource getSource() {
+			return source;
+		}
+
+		public int getLineNumber() {
+			return lineNumber;
+		}
+
+		public String getSourceName() {
+			return sourceName;
+		}
+
+		public String getPackageName() {
+			return packageName;
+		}
+
+	}
+
 	private final ExpressionDefinition expression;
 	private final String label;
-
-	private final String sourceName;
-	private final String packageName;
 	private final String id;
+
+	private volatile Supplier<ResolvedLocation> locationSupplier;
+	private volatile ResolvedLocation location;
+	private volatile boolean locationResolved;
+
 	private volatile Supplier<StepParameter[]> parametersSupplier;
 	private volatile StepParameter[] parameters;
 	private volatile boolean parametersResolved;
+
 	private volatile Supplier<String> descriptionSupplier;
 	private volatile String description;
 	private volatile boolean descriptionResolved;
@@ -43,48 +83,60 @@ public final class StepDefinition {
 	/**
 	 * Creates a new {@link StepDefinition}
 	 *
-	 * @param id             the persistent id of this step, this might be used by
-	 *                       plugins to uniquely identify a step across others in
-	 *                       the workspace
-	 * @param label          a userfriendly label
-	 * @param expression     the expresion that this step contains
-	 * @param source         the source where this step is created from
-	 * @param lineNumber     an optional line limber where in the resource the step
-	 *                       was found use {@link #NO_LINE_NUMBER} in case where no
-	 *                       is available
-	 * @param sourceName     the name of the source, if not given, the name of te
-	 *                       resource might be used
-	 * @param packageName    the packagename of the source
+	 * @param id                 the persistent id of this step, this might be used by plugins to
+	 *                           uniquely identify a step across others in the workspace
+	 * @param label              a userfriendly label
+	 * @param expression         the expresion that this step contains
+	 * @param locationSupplier   resolves this step's source/line-number/source-name/package-name,
+	 *                           lazily on the first actual call to any of {@link #getSource()},
+	 *                           {@link #getLineNumber()}, {@link #getSourceName()},
+	 *                           {@link #getPackageName()}, and memoized from then on - useful when
+	 *                           computing this upfront (e.g. resolving a JDT method) is expensive and
+	 *                           most step definitions never have their location looked at
 	 * @param parametersSupplier resolves the parameters of the corresponding method, lazily on the
-	 *                       first actual call to {@link #getParameters()} and memoized from then on -
-	 *                       useful when resolving parameter types (e.g. enum constant values) upfront
-	 *                       is expensive and most step definitions never have their parameters looked
-	 *                       at (only actually needed when a proposal for this step is inserted).
+	 *                           first actual call to {@link #getParameters()} and memoized from then
+	 *                           on - useful when resolving parameter types (e.g. enum constant
+	 *                           values) upfront is expensive and most step definitions never have
+	 *                           their parameters looked at (only actually needed when a proposal for
+	 *                           this step is inserted)
 	 */
-	public StepDefinition(String id, String label, ExpressionDefinition expression, IResource source, int lineNumber,
-			String sourceName, String packageName, Supplier<StepParameter[]> parametersSupplier, String description) {
-		this(id, label, expression, source, lineNumber, sourceName, packageName, parametersSupplier, () -> description);
+	public StepDefinition(String id, String label, ExpressionDefinition expression,
+			Supplier<ResolvedLocation> locationSupplier, Supplier<StepParameter[]> parametersSupplier,
+			String description) {
+		this(id, label, expression, locationSupplier, parametersSupplier, () -> description);
 	}
 
 	/**
-	 * Same as {@link #StepDefinition(String, String, ExpressionDefinition, IResource, int, String,
-	 * String, Supplier, String)} but the description is resolved lazily too, on the first actual
-	 * call to {@link #getDescription()}, and memoized from then on - useful when computing the
-	 * description upfront (e.g. rendering Javadoc) is expensive and most step definitions never have
-	 * their description looked at.
+	 * Same as {@link #StepDefinition(String, String, ExpressionDefinition, Supplier, Supplier,
+	 * String)} but the description is resolved lazily too, on the first actual call to
+	 * {@link #getDescription()}, and memoized from then on - useful when computing the description
+	 * upfront (e.g. rendering Javadoc) is expensive and most step definitions never have their
+	 * description looked at.
 	 */
-	public StepDefinition(String id, String label, ExpressionDefinition expression, IResource source, int lineNumber,
-			String sourceName, String packageName, Supplier<StepParameter[]> parametersSupplier,
+	public StepDefinition(String id, String label, ExpressionDefinition expression,
+			Supplier<ResolvedLocation> locationSupplier, Supplier<StepParameter[]> parametersSupplier,
 			Supplier<String> descriptionSupplier) {
 		this.id = id;
 		this.label = label;
 		this.expression = expression;
-		this.source = source;
-		this.lineNumber = lineNumber;
-		this.sourceName = sourceName;
-		this.packageName = packageName;
+		this.locationSupplier = locationSupplier;
 		this.parametersSupplier = parametersSupplier;
 		this.descriptionSupplier = descriptionSupplier;
+	}
+
+	private ResolvedLocation resolveLocation() {
+		if (!locationResolved) {
+			synchronized (this) {
+				if (!locationResolved) {
+					Supplier<ResolvedLocation> supplier = locationSupplier;
+					location = Objects.requireNonNullElse(supplier == null ? null : supplier.get(),
+							ResolvedLocation.NONE);
+					locationSupplier = null;
+					locationResolved = true;
+				}
+			}
+		}
+		return location;
 	}
 
 	public StepParameter[] getParameters() {
@@ -108,22 +160,24 @@ public final class StepDefinition {
 	}
 
 	public IResource getSource() {
-		return source;
+		return resolveLocation().getSource();
 	}
 
 	public int getLineNumber() {
-		return lineNumber;
+		return resolveLocation().getLineNumber();
 	}
 
 	public String getSourceName() {
-		if (sourceName == null && source != null) {
-			return source.getName();
+		ResolvedLocation resolved = resolveLocation();
+		String sourceName = resolved.getSourceName();
+		if (sourceName == null && resolved.getSource() != null) {
+			return resolved.getSource().getName();
 		}
 		return sourceName;
 	}
 
 	public String getPackageName() {
-		return packageName;
+		return resolveLocation().getPackageName();
 	}
 
 	public String getDescription() {
@@ -146,7 +200,7 @@ public final class StepDefinition {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return the id to identify this step in a persitent manner
 	 */
 	public String getId() {
@@ -155,13 +209,15 @@ public final class StepDefinition {
 
 	public String getLabel() {
 		if (label == null) {
-			return getSourceName() + ":" + this.lineNumber;
+			return getSourceName() + ":" + getLineNumber();
 		}
 		return label;
 	}
 
 	@Override
 	public String toString() {
+		IResource source = getSource();
+		int lineNumber = getLineNumber();
 
 		// For Steps from Current-Project
 		if (lineNumber != 0)
@@ -169,7 +225,8 @@ public final class StepDefinition {
 
 		// For Steps From External-ClassPath JAR
 		else
-			return "Step [text=" + getExpression() + ", source=" + sourceName + ", package=" + packageName + "]";
+			return "Step [text=" + getExpression() + ", source=" + getSourceName() + ", package=" + getPackageName()
+					+ "]";
 	}
 
 	public ExpressionDefinition getExpression() {
@@ -183,10 +240,6 @@ public final class StepDefinition {
 		result = prime * result + ((expression == null) ? 0 : expression.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((label == null) ? 0 : label.hashCode());
-		result = prime * result + lineNumber;
-		result = prime * result + ((packageName == null) ? 0 : packageName.hashCode());
-		result = prime * result + ((source == null) ? 0 : source.hashCode());
-		result = prime * result + ((sourceName == null) ? 0 : sourceName.hashCode());
 		return result;
 	}
 
@@ -213,23 +266,6 @@ public final class StepDefinition {
 			if (other.label != null)
 				return false;
 		} else if (!label.equals(other.label))
-			return false;
-		if (lineNumber != other.lineNumber)
-			return false;
-		if (packageName == null) {
-			if (other.packageName != null)
-				return false;
-		} else if (!packageName.equals(other.packageName))
-			return false;
-		if (source == null) {
-			if (other.source != null)
-				return false;
-		} else if (!source.equals(other.source))
-			return false;
-		if (sourceName == null) {
-			if (other.sourceName != null)
-				return false;
-		} else if (!sourceName.equals(other.sourceName))
 			return false;
 		return true;
 	}

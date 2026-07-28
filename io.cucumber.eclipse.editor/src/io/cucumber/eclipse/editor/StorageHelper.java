@@ -114,9 +114,10 @@ public class StorageHelper {
 		String sourceRef = (String) in.readObject();
 		IResource resource = ResourceHelper.find(sourceRef);
 		ExpressionDefinition expression = new ExpressionDefinition(expStr, expLang);
+		StepDefinition.ResolvedLocation location = new StepDefinition.ResolvedLocation(resource, line, sourceName,
+				packageName);
 		// FIXME
-		return new StepDefinition(id, label, expression, resource, line, sourceName, packageName,
-				() -> new StepParameter[0], (String) null);
+		return new StepDefinition(id, label, expression, () -> location, () -> new StepParameter[0], (String) null);
 	}
 
 }
