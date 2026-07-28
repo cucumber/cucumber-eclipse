@@ -4,16 +4,13 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.LongAdder;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
@@ -27,6 +24,7 @@ import org.osgi.service.component.annotations.Reference;
 import io.cucumber.eclipse.editor.steps.ExpressionDefinition;
 import io.cucumber.eclipse.editor.steps.IStepDefinitionsProvider;
 import io.cucumber.eclipse.editor.steps.StepDefinition;
+import io.cucumber.eclipse.editor.steps.StepDefinition.ResolvedLocation;
 import io.cucumber.eclipse.editor.steps.StepParameter;
 import io.cucumber.eclipse.editor.Tracing;
 import io.cucumber.eclipse.java.JDTUtil;
@@ -60,36 +58,28 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 			IProgressMonitor monitor) throws CoreException {
 		try {
 			IJavaProject javaProject = JDTUtil.getJavaProject(resource);
-			SubMonitor subMonitor = SubMonitor.convert(monitor, "Searching Java Glue Code steps", 200);
 			Collection<CucumberStepDefinition> steps = javaValidator.getAvailableSteps(viewer.getDocument());
 
 			boolean perf = Tracing.PERF_STEPS;
 			long start = perf ? System.currentTimeMillis() : 0;
 			if (perf) {
-				Tracing.get().trace(Tracing.PERFORMANCE_STEPS, "findStepDefinitions: resolving "
-						+ steps.size() + " step def(s) via JDT for " + resource.getName());
+				Tracing.get().trace(Tracing.PERFORMANCE_STEPS,
+						"findStepDefinitions: building " + steps.size() + " step definition(s) for "
+								+ resource.getName() + " - JDT resolution is deferred until a proposal's"
+								+ " description/parameters/location is actually requested; see"
+								+ " LazyStepMethod's own trace line for if/when that happens");
 			}
 
-			SubMonitor remaining = subMonitor.setWorkRemaining(steps.size());
+			// Shared per-invocation cache so multiple steps declared in the same class only resolve
+			// that class's IType once, if/when their lazy resolution actually runs.
 			Map<String, IType> typeBuffer = new ConcurrentHashMap<>();
-			LongAdder getMethodsNanos = new LongAdder();
-			LongAdder filterNanos = new LongAdder();
-			LongAdder lineNumberNanos = new LongAdder();
 			Collection<StepDefinition> result = steps.parallelStream()
-					.map(cucumberStep -> parseStepDefintion(cucumberStep, javaProject, typeBuffer, perf,
-							getMethodsNanos, filterNanos, lineNumberNanos, remaining.split(1)))
-					.filter(Objects::nonNull).collect(Collectors.toList());
+					.map(cucumberStep -> parseStepDefintion(cucumberStep, javaProject, typeBuffer))
+					.collect(Collectors.toList());
 
 			if (perf) {
-				Tracing.get().trace(Tracing.PERFORMANCE_STEPS, "findStepDefinitions: resolved "
+				Tracing.get().trace(Tracing.PERFORMANCE_STEPS, "findStepDefinitions: built "
 						+ result.size() + "/" + steps.size() + " in " + (System.currentTimeMillis() - start) + "ms");
-				Tracing.get().trace(Tracing.PERFORMANCE_STEPS,
-						"findStepDefinitions phase breakdown (summed across all step def(s), threads run in parallel"
-								+ " so this can exceed wall time): getMethods=" + toMs(getMethodsNanos)
-								+ "ms, resolveTypeMethod=" + toMs(filterNanos) + "ms, lineNumber="
-								+ toMs(lineNumberNanos)
-								+ "ms; javadoc is now computed lazily on first getDescription() call - see"
-								+ " JavaGlueModelCache's own trace line for its render/cache-hit timing");
 			}
 			return result;
 		} catch (OperationCanceledException e) {
@@ -98,59 +88,132 @@ public class CucumberStepDefinitionProvider extends JavaStepDefinitionsProvider 
 	}
 
 	private StepDefinition parseStepDefintion(CucumberStepDefinition cucumberStep, IJavaProject project,
-			Map<String, IType> typeBuffer, boolean perf, LongAdder getMethodsNanos, LongAdder filterNanos,
-			LongAdder lineNumberNanos, IProgressMonitor monitor) {
+			Map<String, IType> typeBuffer) {
 		CucumberCodeLocation codeLocation = cucumberStep.getCodeLocation();
 		io.cucumber.plugin.event.StepDefinition cucumberStepDefinition = cucumberStep.getStepDefinition();
-		IType type = typeBuffer.computeIfAbsent(codeLocation.getTypeName(), typeName -> {
-			try {
-				return project.findType(typeName, monitor);
-			} catch (JavaModelException e) {
-				return null;
-			}
-		});
-		if (type != null) {
-			try {
-				long t0 = perf ? System.nanoTime() : 0;
-				IMethod[] typeMethods = modelCache.getMethods(type);
-				if (perf) {
-					getMethodsNanos.add(System.nanoTime() - t0);
-				}
-				long t1 = perf ? System.nanoTime() : 0;
-				IMethod[] methods = modelCache.resolveTypeMethod(typeMethods, codeLocation);
-				if (perf) {
-					filterNanos.add(System.nanoTime() - t1);
-				}
-				if (methods.length == 1) {
-					// perfect match
-					IMethod method = methods[0];
-					long t2 = perf ? System.nanoTime() : 0;
-					int lineNumber = modelCache.getLineNumber(method.getCompilationUnit(), method);
-					if (perf) {
-						lineNumberNanos.add(System.nanoTime() - t2);
-					}
-					ExpressionDefinition expression = new ExpressionDefinition(cucumberStepDefinition.getPattern());
-					String id = method.getHandleIdentifier();
-					return new StepDefinition(id, JDTUtil.getMethodName(method), expression, type.getResource(),
-							lineNumber, method.getElementName(), type.getPackageFragment().getElementName(),
-							() -> {
-								try {
-									return getParameter(method);
-								} catch (JavaModelException e) {
-									return new StepParameter[0];
-								}
-							}, () -> modelCache.getJavadoc(method));
-				}
-			} catch (JavaModelException e) {
-			}
-		}
-		return new StepDefinition(cucumberStepDefinition.getLocation(), StepDefinition.NO_LABEL,
-				new ExpressionDefinition(cucumberStepDefinition.getPattern()), null, -1,
-				cucumberStepDefinition.getLocation(), "", null, (String) null);
+		String location = cucumberStepDefinition.getLocation();
+		ExpressionDefinition expression = new ExpressionDefinition(cucumberStepDefinition.getPattern());
+		LazyStepMethod lazyMethod = new LazyStepMethod(modelCache, project, typeBuffer, codeLocation);
+		return new StepDefinition(location, buildLabel(codeLocation), expression,
+				() -> resolveLocation(lazyMethod.resolve()), () -> resolveParameters(lazyMethod.resolve()),
+				() -> resolveJavadoc(lazyMethod.resolve()));
 	}
 
-	private static long toMs(LongAdder nanos) {
-		return nanos.sum() / 1_000_000;
+	/**
+	 * Builds a step's label directly from Cucumber's own reported code location - the same
+	 * information {@link JDTUtil#getMethodName(IMethod)} would produce from a resolved method, but
+	 * without needing to resolve anything via JDT first.
+	 */
+	private static String buildLabel(CucumberCodeLocation codeLocation) {
+		String typeName = codeLocation.getTypeName();
+		int lastDot = typeName.lastIndexOf('.');
+		String simpleName = lastDot >= 0 ? typeName.substring(lastDot + 1) : typeName;
+		return simpleName + "." + codeLocation.getMethodName() + "(" + String.join(",", codeLocation.getParameter())
+				+ ")";
+	}
+
+	private ResolvedLocation resolveLocation(IMethod method) {
+		if (method == null) {
+			return ResolvedLocation.NONE;
+		}
+		try {
+			IType type = method.getDeclaringType();
+			int lineNumber = modelCache.getLineNumber(method.getCompilationUnit(), method);
+			return new ResolvedLocation(type.getResource(), lineNumber, method.getElementName(),
+					type.getPackageFragment().getElementName());
+		} catch (JavaModelException e) {
+			return ResolvedLocation.NONE;
+		}
+	}
+
+	private StepParameter[] resolveParameters(IMethod method) {
+		if (method == null) {
+			return new StepParameter[0];
+		}
+		try {
+			return getParameter(method);
+		} catch (JavaModelException e) {
+			return new StepParameter[0];
+		}
+	}
+
+	private String resolveJavadoc(IMethod method) {
+		return method == null ? null : modelCache.getJavadoc(method);
+	}
+
+	/**
+	 * Lazily resolves the {@link IMethod} backing a step definition - the actual expensive JDT work
+	 * (find the declaring type, fetch its methods, disambiguate overloads) is deferred until
+	 * {@link #resolve()} is first called, and memoized from then on, so it happens at most once per
+	 * step regardless of how many of {@link StepDefinition}'s lazy accessors end up needing it.
+	 */
+	private static final class LazyStepMethod {
+
+		private final JavaGlueModelCache modelCache;
+		private final IJavaProject project;
+		private final Map<String, IType> typeBuffer;
+		private final CucumberCodeLocation codeLocation;
+
+		private volatile IMethod method;
+		private volatile boolean resolved;
+
+		LazyStepMethod(JavaGlueModelCache modelCache, IJavaProject project, Map<String, IType> typeBuffer,
+				CucumberCodeLocation codeLocation) {
+			this.modelCache = modelCache;
+			this.project = project;
+			this.typeBuffer = typeBuffer;
+			this.codeLocation = codeLocation;
+		}
+
+		IMethod resolve() {
+			if (!resolved) {
+				synchronized (this) {
+					if (!resolved) {
+						long start = Tracing.PERF_STEPS ? System.nanoTime() : 0;
+						try {
+							method = doResolve();
+						} catch (RuntimeException e) {
+							// resolution can now run long after findStepDefinitions returned (e.g. on
+							// template insertion or hover) - the project/type/method may no longer be
+							// in the state it was when this step was first listed, so fail open rather
+							// than propagate into StepDefinition's lazy accessors.
+							method = null;
+						}
+						if (Tracing.PERF_STEPS) {
+							Tracing.get().trace(Tracing.PERFORMANCE_STEPS,
+									"LazyStepMethod.resolve(): resolved '" + codeLocation + "' to "
+											+ (method != null ? method.getHandleIdentifier() : "<no match>") + " in "
+											+ ((System.nanoTime() - start) / 1_000_000) + "ms");
+						}
+						resolved = true;
+					}
+				}
+			}
+			return method;
+		}
+
+		private IMethod doResolve() {
+			IType type = typeBuffer.computeIfAbsent(codeLocation.getTypeName(), typeName -> {
+				try {
+					return project.findType(typeName, (IProgressMonitor) null);
+				} catch (JavaModelException e) {
+					return null;
+				}
+			});
+			if (type == null) {
+				return null;
+			}
+			try {
+				IMethod[] typeMethods = modelCache.getMethods(type);
+				IMethod[] methods = modelCache.resolveTypeMethod(typeMethods, codeLocation);
+				if (methods != null && methods.length == 1) {
+					return methods[0];
+				}
+			} catch (JavaModelException e) {
+			}
+			return null;
+		}
+
 	}
 
 }
