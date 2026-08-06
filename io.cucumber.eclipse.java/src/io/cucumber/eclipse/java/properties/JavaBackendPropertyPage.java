@@ -63,6 +63,15 @@ public class JavaBackendPropertyPage extends PropertyPage {
 	private void addValidationOption(Composite parent) {
 		IResource resource = getResource();
 		IEclipsePreferences node = CucumberJavaBackendProperties.getNode(resource);
+		if (node == null) {
+			// getResource() returned null (or could not adapt to a project's
+			// resource): nothing to configure here. Avoid the NPE reported in
+			// https://github.com/cucumber/cucumber-eclipse/issues/671 and show
+			// an explanatory message instead of a broken page.
+			Label notApplicable = new Label(parent, SWT.NONE);
+			notApplicable.setText("Cucumber Java options are not applicable to this element.");
+			return;
+		}
 		Label label = new Label(parent, SWT.NONE);
 		label.setText("Validation Plugins ");
 		label.setToolTipText(
@@ -170,6 +179,11 @@ public class JavaBackendPropertyPage extends PropertyPage {
 	@Override
 	protected void performDefaults() {
 		super.performDefaults();
+		if (validationPlugins == null) {
+			// addValidationOption() showed the "not applicable" message and
+			// never created these controls.
+			return;
+		}
 		validationPlugins.setText("");
 		glueCodePackageTable.performDefaults();
 		hookButton.setSelection(false);
@@ -177,7 +191,18 @@ public class JavaBackendPropertyPage extends PropertyPage {
 
 	@Override
 	public boolean performOk() {
+		if (validationPlugins == null) {
+			// addValidationOption() already showed the "not applicable" message
+			// and left the form fields uninitialized; nothing to persist.
+			// Checked on the control itself (the same sentinel performDefaults()
+			// uses), not by recomputing getNode(), so this stays consistent even
+			// if getResource() could somehow answer differently between calls.
+			return true;
+		}
 		IEclipsePreferences node = CucumberJavaBackendProperties.getNode(getResource());
+		if (node == null) {
+			return true;
+		}
 		node.put(CucumberJavaBackendProperties.KEY_VALIDATION_PLUGINS, validationPlugins.getText());
 		node.putBoolean(CucumberJavaBackendProperties.KEY_ENABLE_PROJECT_SPECIFIC_SETTINGS, enableProjectSpecific.getSelection());
 		FilterStrings filters = glueCodePackageTable.getFilters();

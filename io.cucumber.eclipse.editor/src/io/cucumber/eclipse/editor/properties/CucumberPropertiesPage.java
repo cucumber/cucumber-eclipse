@@ -41,11 +41,21 @@ public class CucumberPropertiesPage extends PropertyPage {
 	@Override
 	protected Control createContents(Composite parent) {
 		Composite composite = new Composite(parent, SWT.NONE);
-		GridLayout layout = new GridLayout(2, false);
-		composite.setLayout(layout);
 		IResource resource = getResource();
 		IEclipsePreferences node = CucumberEditorProperties.getNode(resource);
-		
+		if (node == null) {
+			// getResource() returned null (or could not adapt to a project's
+			// resource): nothing to configure here. Avoid the NPE reported in
+			// https://github.com/cucumber/cucumber-eclipse/issues/671 and show
+			// an explanatory message instead of a broken page.
+			composite.setLayout(new GridLayout());
+			Label notApplicable = new Label(composite, SWT.NONE);
+			notApplicable.setText("Cucumber properties are not applicable to this element.");
+			return composite;
+		}
+		GridLayout layout = new GridLayout(2, false);
+		composite.setLayout(layout);
+
 		enableProjectSpecific = new Button(composite, SWT.CHECK);
 		enableProjectSpecific.setText("Enable project specific settings");
 		enableProjectSpecific.setSelection(node.getBoolean(CucumberEditorProperties.KEY_ENABLE_PROJECT_SPECIFIC_SETTINGS, false));
@@ -105,7 +115,19 @@ public class CucumberPropertiesPage extends PropertyPage {
 
 	@Override
 	public boolean performOk() {
+		if (enableProjectSpecific == null) {
+			// createContents() already showed the "not applicable" message and
+			// left the form fields uninitialized; nothing to persist. Checked
+			// on the control itself (the control createContents() only
+			// creates on the applicable branch), not by recomputing
+			// getNode(), so this stays consistent even if getResource()
+			// could somehow answer differently between the two calls.
+			return true;
+		}
 		IEclipsePreferences node = CucumberEditorProperties.getNode(getResource());
+		if (node == null) {
+			return true;
+		}
 		node.putBoolean(CucumberEditorProperties.KEY_ENABLE_PROJECT_SPECIFIC_SETTINGS, enableProjectSpecific.getSelection());
 		for (Entry<Mode, Button> entry : modeButtons.entrySet()) {
 			node.putBoolean(CucumberEditorProperties.KEY_SHOW_LAUNCH_SHORTCUT_PREFIX + entry.getKey().name(), entry.getValue().getSelection());
