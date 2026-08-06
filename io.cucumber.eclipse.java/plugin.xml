@@ -70,6 +70,9 @@
             class="io.cucumber.eclipse.java.properties.JavaBackendPropertyPage"
             id="cucumber.eclipse.backends.java.properties.samplePropertyPage"
             name="Java Backend">
+         <enabledWhen>
+            <adapt type="org.eclipse.core.resources.IResource"/>
+         </enabledWhen>
       </page>
    </extension>
 </plugin>

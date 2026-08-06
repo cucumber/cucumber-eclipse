@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -190,12 +191,23 @@ public final record CucumberJavaBackendProperties(IEclipsePreferences node) {
 
 	/**
 	 * Gets the Eclipse preferences node for the given resource's project.
-	 * 
-	 * @param resource the resource whose project node should be retrieved
-	 * @return the preferences node for the project
+	 *
+	 * @param resource the resource whose project node should be retrieved, or null
+	 * @return the preferences node for the project, or null if resource is null or
+	 *         has no project (e.g. the workspace root, which is an IResource but
+	 *         whose {@link IResource#getProject()} returns null)
 	 */
 	static IEclipsePreferences getNode(IResource resource) {
-		ProjectScope scope = new ProjectScope(resource.getProject());
+		if (resource == null) {
+			return null;
+		}
+		IProject project = resource.getProject();
+		if (project == null) {
+			// IWorkspaceRoot#getProject() returns null, and ProjectScope
+			// rejects a null project with an IllegalArgumentException.
+			return null;
+		}
+		ProjectScope scope = new ProjectScope(project);
 		IEclipsePreferences node = scope.getNode(CucumberJavaBackendProperties.NAMESPACE);
 		return node;
 	}
