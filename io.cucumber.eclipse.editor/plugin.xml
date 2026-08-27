@@ -393,6 +393,9 @@
          icon="icons/cukes.gif"
          id="cucumber.eclipse.editor.properties.main"
          name="Cucumber">
+      <enabledWhen>
+         <adapt type="org.eclipse.core.resources.IResource"/>
+      </enabledWhen>
    </page>
 </extension>
 	 <!-- Eclipse Activity Support -->
