@@ -1,5 +1,8 @@
 package io.cucumber.eclipse.editor.properties;
 
+import java.util.Objects;
+
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -103,12 +106,20 @@ public record CucumberEditorProperties(IEclipsePreferences node) {
 
 	/**
 	 * Gets the Eclipse preferences node for the given resource's project.
-	 * 
-	 * @param resource the resource whose project node should be retrieved
+	 *
+	 * @param resource the resource whose project node should be retrieved, must not
+	 *                 be null and must belong to a project
 	 * @return the preferences node for the project
+	 * @throws NullPointerException if the resource is null, or has no project (e.g.
+	 *                              the workspace root, which is an IResource but
+	 *                              whose {@link IResource#getProject()} returns
+	 *                              null)
 	 */
 	static IEclipsePreferences getNode(IResource resource) {
-		ProjectScope scope = new ProjectScope(resource.getProject());
+		Objects.requireNonNull(resource, "no resource to read the properties from");
+		IProject project = Objects.requireNonNull(resource.getProject(),
+				() -> "resource has no project: " + resource);
+		ProjectScope scope = new ProjectScope(project);
 		IEclipsePreferences node = scope.getNode(NAMESPACE);
 		return node;
 	}
