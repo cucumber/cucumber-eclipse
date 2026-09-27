@@ -111,6 +111,7 @@ public class CucumberBehaveLauncher implements ILauncher {
 		ILaunchConfigurationWorkingCopy wc = type.newInstance(null,
 				lm.generateLaunchConfigurationName(resource.getName()));
 		
+		wc.setAttribute(CucumberBehaveLaunchConstants.ATTR_PROJECT, project.getName());
 		wc.setAttribute(CucumberBehaveLaunchConstants.ATTR_FEATURE_PATH, featurePath);
 		wc.setAttribute(CucumberBehaveLaunchConstants.ATTR_WORKING_DIRECTORY, 
 				project.getLocation().toOSString());
