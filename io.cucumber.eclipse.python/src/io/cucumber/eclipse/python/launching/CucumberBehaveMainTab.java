@@ -9,6 +9,8 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.internal.ui.SWTFactory;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
+import org.eclipse.jdt.internal.debug.ui.launcher.LauncherMessages;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -23,14 +25,18 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.dialogs.ElementListSelectionDialog;
+import org.eclipse.ui.model.WorkbenchLabelProvider;
 
 public class CucumberBehaveMainTab extends AbstractLaunchConfigurationTab implements ILaunchConfigurationTab {
 
+	protected Text projectText;
 	protected Text featurePathText;
 	protected Text workingDirectoryText;
 	protected Text pythonInterpreterText;
 	protected Text tagsText;
 	private WidgetListener listener = new WidgetListener();
+	private Button projectButton;
 	private Button featureButton;
 	private Button workingDirectoryButton;
 	private Button verboseCheckbox;
@@ -51,7 +57,9 @@ public class CucumberBehaveMainTab extends AbstractLaunchConfigurationTab implem
 		@Override
 		public void widgetSelected(SelectionEvent e) {
 			Object source = e.getSource();
-			if (source == featureButton) {
+			if (source == projectButton) {
+				handleProjectButtonSelected();
+			} else if (source == featureButton) {
 				FileDialog fileDialog = new FileDialog(getShell());
 				fileDialog.setText("Select Feature File");
 				fileDialog.setFilterExtensions(new String[] { "*.feature" });
@@ -77,12 +85,34 @@ public class CucumberBehaveMainTab extends AbstractLaunchConfigurationTab implem
 	@Override
 	public void createControl(Composite parent) {
 		Composite comp = SWTFactory.createComposite(parent, parent.getFont(), 1, 1, GridData.FILL_BOTH);
+		createProjectEditor(comp);
 		createFeaturePathEditor(comp);
 		createWorkingDirectoryEditor(comp);
 		createPythonInterpreterEditor(comp);
 		createTagsEditor(comp);
 		createBehaveOptions(comp);
 		setControl(comp);
+	}
+
+	private void createProjectEditor(Composite comp) {
+		Font font = comp.getFont();
+		Group group = new Group(comp, SWT.NONE);
+		group.setText("Project:");
+		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+		group.setLayoutData(gd);
+		GridLayout layout = new GridLayout();
+		layout.numColumns = 2;
+		group.setLayout(layout);
+		group.setFont(font);
+		
+		projectText = new Text(group, SWT.SINGLE | SWT.BORDER);
+		gd = new GridData(GridData.FILL_HORIZONTAL);
+		projectText.setLayoutData(gd);
+		projectText.setFont(font);
+		projectText.addModifyListener(listener);
+
+		projectButton = createPushButton(group, LauncherMessages.AbstractJavaMainTab_1, null);
+		projectButton.addSelectionListener(listener);
 	}
 
 	private void createFeaturePathEditor(Composite comp) {
@@ -194,6 +224,7 @@ public class CucumberBehaveMainTab extends AbstractLaunchConfigurationTab implem
 
 	@Override
 	public void performApply(ILaunchConfigurationWorkingCopy config) {
+		config.setAttribute(CucumberBehaveLaunchConstants.ATTR_PROJECT, projectText.getText().trim());
 		config.setAttribute(CucumberBehaveLaunchConstants.ATTR_FEATURE_PATH, featurePathText.getText().trim());
 		config.setAttribute(CucumberBehaveLaunchConstants.ATTR_WORKING_DIRECTORY, workingDirectoryText.getText().trim());
 		config.setAttribute(CucumberBehaveLaunchConstants.ATTR_PYTHON_INTERPRETER, pythonInterpreterText.getText().trim());
@@ -205,9 +236,21 @@ public class CucumberBehaveMainTab extends AbstractLaunchConfigurationTab implem
 
 	@Override
 	public void setDefaults(ILaunchConfigurationWorkingCopy config) {
-		// Set default values
-		config.setAttribute(CucumberBehaveLaunchConstants.ATTR_FEATURE_PATH, "");
-		config.setAttribute(CucumberBehaveLaunchConstants.ATTR_WORKING_DIRECTORY, getDefaultWorkingDirectory());
+		IProject project = CucumberBehaveLaunchUtils.getProject();
+		String featurePath = CucumberBehaveLaunchUtils.getFeaturePath();
+		
+		if (project != null && featurePath != null) {
+			// Auto-fill project and feature path based on active editor
+			config.setAttribute(CucumberBehaveLaunchConstants.ATTR_PROJECT, project.getName());
+			config.setAttribute(CucumberBehaveLaunchConstants.ATTR_FEATURE_PATH, featurePath);
+			config.setAttribute(CucumberBehaveLaunchConstants.ATTR_WORKING_DIRECTORY, 
+					project.getLocation().toOSString());
+		} else {
+			// Set default empty values
+			config.setAttribute(CucumberBehaveLaunchConstants.ATTR_PROJECT, "");
+			config.setAttribute(CucumberBehaveLaunchConstants.ATTR_FEATURE_PATH, "");
+			config.setAttribute(CucumberBehaveLaunchConstants.ATTR_WORKING_DIRECTORY, getDefaultWorkingDirectory());
+		}
 		config.setAttribute(CucumberBehaveLaunchConstants.ATTR_PYTHON_INTERPRETER, "python");
 		config.setAttribute(CucumberBehaveLaunchConstants.ATTR_TAGS, "");
 		config.setAttribute(CucumberBehaveLaunchConstants.ATTR_IS_VERBOSE, false);
@@ -217,6 +260,7 @@ public class CucumberBehaveMainTab extends AbstractLaunchConfigurationTab implem
 
 	@Override
 	public void initializeFrom(ILaunchConfiguration config) {
+		updateFromConfig(config, CucumberBehaveLaunchConstants.ATTR_PROJECT, projectText);
 		updateFromConfig(config, CucumberBehaveLaunchConstants.ATTR_FEATURE_PATH, featurePathText);
 		updateFromConfig(config, CucumberBehaveLaunchConstants.ATTR_WORKING_DIRECTORY, workingDirectoryText);
 		updateFromConfig(config, CucumberBehaveLaunchConstants.ATTR_PYTHON_INTERPRETER, pythonInterpreterText);
@@ -252,6 +296,41 @@ public class CucumberBehaveMainTab extends AbstractLaunchConfigurationTab implem
 			return projects[0].getLocation().toOSString();
 		}
 		return "";
+	}
+
+	private void handleProjectButtonSelected() {
+		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+		IProject[] projects = root.getProjects();
+		
+		ElementListSelectionDialog dialog = new ElementListSelectionDialog(
+				getShell(),
+				WorkbenchLabelProvider.getDecoratingWorkbenchLabelProvider());
+		dialog.setTitle("Project Selection");
+		dialog.setMessage("Select a project:");
+		dialog.setElements(projects);
+		
+		// Set currently selected project if any
+		String currentProject = projectText.getText().trim();
+		if (!currentProject.isEmpty()) {
+			for (IProject project : projects) {
+				if (project.getName().equals(currentProject)) {
+					dialog.setInitialSelections(new Object[] { project });
+					break;
+				}
+			}
+		}
+		
+		if (dialog.open() == Window.OK) {
+			IProject project = (IProject) dialog.getFirstResult();
+			if (project != null) {
+				projectText.setText(project.getName());
+				
+				// Auto-fill working directory if not already set
+				if (workingDirectoryText.getText().trim().isEmpty()) {
+					workingDirectoryText.setText(project.getLocation().toOSString());
+				}
+			}
+		}
 	}
 
 	@Override
