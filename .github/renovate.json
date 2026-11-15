@@ -4,6 +4,12 @@
     "config:recommended",
     ":rebaseStalePrs"
   ],
+  "packageRules": [
+    {
+      "groupName": "cucumber ecosystem",
+      "matchPackagePatterns": ["^io.cucumber:"]
+    }
+  ],
   "customManagers": [
     {
       "customType": "regex",
