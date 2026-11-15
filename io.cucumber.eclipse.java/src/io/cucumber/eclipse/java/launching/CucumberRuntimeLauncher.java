@@ -84,7 +84,7 @@ public class CucumberRuntimeLauncher implements ILauncher {
 						Scenario scenario = (Scenario) object;
 						URI locationURI = resource.getLocationURI();
 						featuresWithLines.add(FeatureWithLines.create(locationURI,
-								Collections.singleton(scenario.getLocation().getLine().intValue())));
+								Collections.singleton(scenario.getLocation().getLine())));
 					} else if (object instanceof Expression) {
 						filters.add((Expression) object);
 					}

@@ -180,9 +180,9 @@ public class MarkerFactory {
 					if (error.getSource().getLocation().isPresent()) {
 						SourceReference source = error.getSource();
 						Location location = source.getLocation().get();
-						Long l = location.getLine();
-						line = l == null ? null : l.intValue();
-						column = location.getColumn().orElse(-1l).intValue();
+						int l = location.getLine();
+						line = l == null ? null : l;
+						column = location.getColumn().orElse(-1);
 					} else {
 						line = -1;
 						column = -1;

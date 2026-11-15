@@ -58,7 +58,7 @@ public class ShoppingSteps {
 
     @Then("my change should be {}")
     public void my_change_should_be_(int change) {
-        assertThat(-calc.value().intValue(), equalTo(change));
+        assertThat(-calc.value(), equalTo(change));
     }
 
     @Given("the following shopping list:")
