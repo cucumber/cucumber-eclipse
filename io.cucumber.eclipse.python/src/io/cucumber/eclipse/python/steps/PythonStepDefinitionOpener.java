@@ -50,7 +50,7 @@ public class PythonStepDefinitionOpener implements IStepDefinitionOpener {
 				: Collections.emptyList();
 
 		// Find the step match for this step based on line number
-		int stepLine = step.getLocation().getLine().intValue();
+		int stepLine = step.getLocation().getLine();
 		StepMatch match = matchedSteps.stream().filter(m -> m.getFeatureLine() == stepLine).findFirst().orElse(null);
 
 		if (match == null) {

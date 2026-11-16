@@ -196,7 +196,7 @@ final class BehaveGlueJob {
 				// Find unmatched steps by comparing with all steps in document
 				List<Integer> unmatchedLineNumbers = new ArrayList<>();
 				document.getSteps().forEach(step -> {
-					int lineNumber = step.getLocation().getLine().intValue();
+					int lineNumber = step.getLocation().getLine();
 					if (!stepMatchMap.containsKey(lineNumber)) {
 						unmatchedLineNumbers.add(lineNumber);
 					}

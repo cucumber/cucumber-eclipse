@@ -25,7 +25,7 @@ public class GherkingStepStackFrame extends GherkingStackFrame {
 	private DebugRunnable stepOverHandler;
 
 	public GherkingStepStackFrame(IThread thread, TestStep testStep, Step step, StepDefinition stepDefinition) {
-		super(thread, step.getLocation().getLine().intValue(), "[" + step.getKeyword().strip() + "] " + step.getText());
+		super(thread, step.getLocation().getLine(), "[" + step.getKeyword().strip() + "] " + step.getText());
 		this.testStep = testStep;
 		this.step = step;
 		this.stepDefinition = stepDefinition;
