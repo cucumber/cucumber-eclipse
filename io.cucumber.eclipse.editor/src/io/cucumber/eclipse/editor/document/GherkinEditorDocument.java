@@ -148,9 +148,9 @@ public final class GherkinEditorDocument extends GherkinStream {
 	 */
 	public Position getPosition(io.cucumber.messages.types.Location location, int lineOffset)
 			throws BadLocationException {
-		int line =  location.getLine().intValue();
+		int line =  location.getLine();
 		int offset = document.getLineOffset(line - 1 - lineOffset);
-		return new Position(offset + location.getColumn().orElse(0l).intValue() - 1, 1);
+		return new Position(offset + location.getColumn().orElse(0) - 1, 1);
 	}
 
 	/**
@@ -162,7 +162,7 @@ public final class GherkinEditorDocument extends GherkinStream {
 	 * @throws BadLocationException if the location is invalid
 	 */
 	public Position getEolPosition(io.cucumber.messages.types.Location location) throws BadLocationException {
-		int line = location.getLine().intValue();
+		int line = location.getLine();
 		int offset = document.getLineOffset(line - 1);
 		int lineLength = document.getLineLength(line - 1);
 		// Workaround for Bug 570740

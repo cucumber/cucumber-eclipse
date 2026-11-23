@@ -82,9 +82,9 @@ public class TestStepEvent {
 	public IStackFrame[] getStackTrace(IThread thread) {
 		GherkingStackFrame stepFrame = new GherkingStepStackFrame(thread, testStep, step, stepDefinition);
 
-		GherkingStackFrame scenarioFrame = new GherkingStackFrame(thread, scenario.getLocation().getLine().intValue(),
+		GherkingStackFrame scenarioFrame = new GherkingStackFrame(thread, scenario.getLocation().getLine(),
 				"[" + scenario.getKeyword().strip() + "] " + scenario.getName());
-		GherkingStackFrame featureFrame = new GherkingStackFrame(thread, feature.getLocation().getLine().intValue(),
+		GherkingStackFrame featureFrame = new GherkingStackFrame(thread, feature.getLocation().getLine(),
 				"[" + feature.getKeyword().strip() + "] " + feature.getName());
 		return new IStackFrame[] { stepFrame, scenarioFrame, featureFrame };
 	}

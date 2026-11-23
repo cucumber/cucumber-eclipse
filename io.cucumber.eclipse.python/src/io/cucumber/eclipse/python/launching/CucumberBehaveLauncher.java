@@ -65,7 +65,7 @@ public class CucumberBehaveLauncher implements ILauncher {
 				for (Object object : selection) {
 					if (object instanceof Scenario) {
 						Scenario scenario = (Scenario) object;
-						lines.add(scenario.getLocation().getLine().intValue());
+						lines.add(scenario.getLocation().getLine());
 					} else if (object instanceof Expression) {
 						tagFilters.add((Expression) object);
 					}
